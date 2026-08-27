@@ -66,14 +66,22 @@
   .fl-sv .x{margin-left:7px;opacity:.55;font-weight:400}
   .fl-add{border:1px dashed var(--line);background:none;border-radius:20px;padding:7px 14px;
     font-family:inherit;font-size:12.5px;color:var(--sub);cursor:pointer}
-  .fl-tables{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;max-width:640px}
-  @media(max-width:720px){.fl-tables{grid-template-columns:repeat(4,1fr)}}
-  .fl-t{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 4px;
-    text-align:center;cursor:pointer;transition:background .15s ease,border-color .15s ease}
-  .fl-t .tn{font-size:12px;font-weight:600}
-  .fl-t .ts{font-size:9px;color:var(--sub);margin-top:2px;min-height:11px;overflow:hidden;
+  .fl-map{position:relative;width:100%;max-width:760px;height:320px;background:var(--bg);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .fl-lbl{position:absolute;font-size:9px;font-weight:600;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--faint);pointer-events:none}
+  .fl-t{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;
+    border:2px solid var(--line);background:var(--surface);cursor:pointer;text-align:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    touch-action:none;user-select:none;-webkit-user-select:none;
+    transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
+  .fl-t.sq{border-radius:10px}
+  .fl-t .tn{font-size:11.5px;font-weight:700;line-height:1}
+  .fl-t .ts{font-size:8px;font-weight:600;margin-top:2px;max-width:38px;overflow:hidden;
     text-overflow:ellipsis;white-space:nowrap}
-  .fl-t.mine{background:var(--green-bg);border-color:#CFE0D5}
+  .fl-t.drag{box-shadow:0 8px 18px rgba(23,29,26,.18);z-index:5}
+  .fl-sv .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;
+    background:var(--faint);vertical-align:1px}
   .fl-tables.off,.fl-row.off{opacity:.35;pointer-events:none}
   .fl-pool{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--sub);margin-top:14px;cursor:pointer}
   .setr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);
@@ -277,10 +285,16 @@
 
     <div class="card mt">
       <h3>Floor tonight</h3>
-      <div class="cs">Pick a server, then tap their tables. Guests tipping at those tables
-        tip that server by name. Replaced by the POS employee-on-check once integrated.</div>
+      <div class="cs">Pick a server, then tap their tables on the plan. Drag tables to match
+        your room. Guests tipping at those tables tip that server by name. Replaced by the
+        POS employee-on-check once integrated.</div>
       <div class="fl-row" id="fl-servers"></div>
-      <div class="fl-tables" id="fl-tables"></div>
+      <div class="fl-map" id="fl-tables">
+        <span class="fl-lbl" style="left:12px;top:10px">Window</span>
+        <span class="fl-lbl" style="right:12px;top:10px">Bar</span>
+        <span class="fl-lbl" style="left:12px;bottom:10px">Entrance</span>
+        <span class="fl-lbl" style="right:12px;bottom:10px">Terrace</span>
+      </div>
       <label class="fl-pool"><input type="checkbox" id="fl-pooled" onchange="floorPool(this.checked)">
         This venue pools tips (one house pool, no per-table assignment)</label>
     </div>
@@ -550,7 +564,21 @@ function paintTonight(){
   } else box.style.display = 'none';
 }
 
-/* ---- floor assignment ---- */
+/* ---- floor assignment ----
+   The plan is a stylised room, not a survey: default positions sketch a dining
+   room (window row, centre cluster, bar, terrace); dragging persists percent
+   coordinates so a venue can roughly mirror its real floor in a minute. */
+var FL_COLORS = ['#0F4B3A', '#B4423A', '#26327A', '#8A6A1F', '#5B3E82', '#3A6B78'];
+var FL_DEFAULT = {
+  1:{x:10,y:22}, 2:{x:24,y:22}, 3:{x:38,y:22}, 4:{x:52,y:22},
+  5:{x:14,y:50}, 6:{x:30,y:52}, 7:{x:46,y:50}, 8:{x:22,y:78,sq:1}, 9:{x:40,y:80,sq:1},
+  10:{x:66,y:20,sq:1}, 11:{x:78,y:20,sq:1}, 12:{x:90,y:20,sq:1},
+  13:{x:70,y:52}, 14:{x:86,y:52}, 15:{x:70,y:80}, 16:{x:86,y:80}
+};
+function flColor(f, name){
+  var i = f.servers.indexOf(name);
+  return i < 0 ? 'var(--faint)' : FL_COLORS[i % FL_COLORS.length];
+}
 var flActive = null;
 function escF(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paintFloor(){
@@ -560,7 +588,8 @@ function paintFloor(){
   f.servers.forEach(function(name){
     var b = document.createElement('button');
     b.className = 'fl-sv' + (name === flActive ? ' on' : '');
-    b.innerHTML = escF(name) + (f.servers.length > 1 ? '<span class="x">&times;</span>' : '');
+    b.innerHTML = '<span class="dot" style="background:' + flColor(f, name) + '"></span>' +
+      escF(name) + (f.servers.length > 1 ? '<span class="x">&times;</span>' : '');
     b.onclick = function(){ flActive = name; paintFloor(); };
     var x = b.querySelector('.x');
     if (x) x.onclick = function(e){
@@ -578,16 +607,47 @@ function paintFloor(){
     if (n && n.trim()){ f.servers.push(n.trim().slice(0, 24)); flActive = n.trim().slice(0, 24); Aalayna.setFloor(f); }
   };
   row.appendChild(add);
-  var grid = $('fl-tables'); grid.innerHTML = '';
+  var grid = $('fl-tables');
+  grid.querySelectorAll('.fl-t').forEach(function(el){ el.remove(); });
+  f.layout = f.layout || {};
   for (var t = 1; t <= 16; t++){(function(t){
+    var pos = f.layout[String(t)] || FL_DEFAULT[t];
     var who = f.tables[String(t)] || '';
     var d = document.createElement('div');
-    d.className = 'fl-t' + (who ? ' mine' : '');
+    d.className = 'fl-t' + (FL_DEFAULT[t].sq ? ' sq' : '');
+    d.style.left = pos.x + '%'; d.style.top = pos.y + '%';
+    if (who){
+      var c = flColor(f, who);
+      d.style.borderColor = c; d.style.color = c;
+    }
     d.innerHTML = '<div class="tn">' + t + '</div><div class="ts">' + escF(who.split(' ')[0]) + '</div>';
-    d.onclick = function(){
-      if (f.tables[String(t)] === flActive) delete f.tables[String(t)];
-      else f.tables[String(t)] = flActive;
-      Aalayna.setFloor(f);
+    /* tap = assign; a drag past 6px = move the table instead */
+    d.onpointerdown = function(e){
+      e.preventDefault();
+      var r = grid.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, moved = false;
+      function mv(ev){
+        if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) < 6) return;
+        moved = true;
+        d.classList.add('drag');
+        var x = Math.min(96, Math.max(4, (ev.clientX - r.left) / r.width * 100));
+        var y = Math.min(90, Math.max(8, (ev.clientY - r.top) / r.height * 100));
+        d.style.left = x + '%'; d.style.top = y + '%';
+      }
+      function up(ev){
+        document.removeEventListener('pointermove', mv);
+        document.removeEventListener('pointerup', up);
+        d.classList.remove('drag');
+        if (moved){
+          f.layout[String(t)] = { x: Math.round(parseFloat(d.style.left)), y: Math.round(parseFloat(d.style.top)) };
+          Aalayna.setFloor(f);
+        } else {
+          if (f.tables[String(t)] === flActive) delete f.tables[String(t)];
+          else f.tables[String(t)] = flActive;
+          Aalayna.setFloor(f);
+        }
+      }
+      document.addEventListener('pointermove', mv);
+      document.addEventListener('pointerup', up);
     };
     grid.appendChild(d);
   })(t);}
