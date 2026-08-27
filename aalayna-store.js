@@ -69,7 +69,7 @@
     it('i07','mez',"Mixed Grill platter","Kabab, shish taouk, lamb chops, fries",16.00,
        ['lamb','chicken','beef','garlic','potato','sunflower oil'],[],1140,78,72,44,
        { opts:[{name:'Extras',type:'many',choices:[
-           {n:'Extra lamb chop',p:4.5},{n:'Garlic toum',p:.75},
+           {n:'Extra lamb chop',p:4.5,ing:['lamb']},{n:'Garlic toum',p:.75},
            {n:'Grilled tomato & onion',p:1.25},{n:'Swap fries for salad',p:0}]}] }),
     it('i08','mez',"Arayes","Grilled pita, spiced minced lamb, onion, parsley",7.50,
        ['pita bread','minced lamb','onion','parsley','spices'],['gluten'],640,31,34,52,{fr:0,ar:0}),
@@ -77,7 +77,7 @@
     it('i09','swt',"Knefeh b'Jebne + kaakeh","Akkawi cheese, semolina, ghee, sugar syrup, sesame kaakeh",4.50,
        ['akkawi cheese','semolina','ghee','sugar syrup','sesame kaakeh'],['dairy','gluten','sesame'],720,21,33,88,
        { opts:[{name:'Extras',type:'many',choices:[
-           {n:'Extra ashta',p:1.5},{n:'Double kaakeh',p:1},
+           {n:'Extra ashta',p:1.5,ing:['ashta'],al:['dairy']},{n:'Double kaakeh',p:1},
            {n:'Hold the syrup',p:0},{n:'Pistachio crust',p:1.25}]}] }),
     it('i10','swt',"Halawet el Jeben","Sweet cheese dough, ashta cream, rose syrup, pistachio",4.00,
        ['sweet cheese dough','ashta cream','rose syrup','pistachio'],['dairy','gluten','nuts'],480,11,19,66),
@@ -96,12 +96,14 @@
     it('i16','drk',"Fresh lemonade w' mazaher","Lemon, sugar, orange blossom water, mint",3.00,
        ['lemon','sugar','orange blossom water','mint'],[],130,0,0,33,{fr:0,ar:0}),
     it('i17','drk',"Latte","Espresso, steamed milk",3.50,
-       ['coffee','milk'],['dairy'],180,9,9,14,
+       ['coffee'],[],180,9,9,14,
        { opts:[
          {name:'Milk',type:'one',choices:[
-           {n:'Fresh cow milk',p:0},{n:'Oat milk',p:0.75},{n:'Almond milk',p:0.75}]},
+           {n:'Fresh cow milk',p:0,ing:['milk'],al:['dairy']},
+           {n:'Oat milk',p:0.75,ing:['oat milk']},
+           {n:'Almond milk',p:0.75,ing:['almond'],al:['nuts']}]},
          {name:'Extras',type:'many',choices:[
-           {n:'Extra shot',p:0.75},{n:'Vanilla syrup',p:0.5}]}
+           {n:'Extra shot',p:0.75,ing:['coffee']},{n:'Vanilla syrup',p:0.5}]}
        ] })
   ];
 
@@ -185,7 +187,12 @@
                 name: g.name || 'Options',
                 type: g.type === 'one' ? 'one' : 'many',
                 choices: (Array.isArray(g.choices) ? g.choices : [])
-                  .map(function (c) { return { n: c.n || '', p: typeof c.p === 'number' ? c.p : (+c.p || 0) }; })
+                  .map(function (c) {
+                    return { n: c.n || '', p: typeof c.p === 'number' ? c.p : (+c.p || 0),
+                             /* what THIS choice adds to the dish — the dish's own al/ing stay the unavoidable base */
+                             ing: Array.isArray(c.ing) ? c.ing : [],
+                             al: Array.isArray(c.al) ? c.al.filter(function (a) { return ALLERGENS.indexOf(a) > -1; }) : [] };
+                  })
                   .filter(function (c) { return c.n; })
               };
             }).filter(function (g) { return g.choices.length; }),
@@ -202,7 +209,7 @@
      A device that scanned the QR last week holds last week's data shape in
      localStorage. New fields (like per-item translations) must be merged in
      silently — a field demo can never depend on someone finding "Reset". */
-  var SCHEMA = 3;
+  var SCHEMA = 4;
   function migrate() {
     var meta = read('aal.schema', 0);
     if (meta >= SCHEMA) return;
@@ -220,11 +227,13 @@
         return normalise(x);
       });
       // v3: the latte (option-group demo dish) joins menus seeded before it existed
-      if (!m.items.some(function (x) { return x.id === 'i17'; })) {
-        var latte = clone(SEED_ITEMS.filter(function (x) { return x.id === 'i17'; })[0]);
-        latte.tr = clone(SEED_TR.i17);
-        m.items.push(normalise(latte));
-      }
+      // v4: its dairy moved from the dish base into the cow-milk choice — refresh it
+      var latteSeed = clone(SEED_ITEMS.filter(function (x) { return x.id === 'i17'; })[0]);
+      latteSeed.tr = clone(SEED_TR.i17);
+      var have = m.items.filter(function (x) { return x.id === 'i17'; })[0];
+      if (!have) m.items.push(normalise(latteSeed));
+      else { have.al = latteSeed.al; have.ing = latteSeed.ing; have.opts = latteSeed.opts;
+             m.items[m.items.indexOf(have)] = normalise(have); }
       write(key, m);
     });
     try { localStorage.setItem('aal.schema', JSON.stringify(SCHEMA)); } catch (e) {}

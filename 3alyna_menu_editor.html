@@ -82,7 +82,14 @@
   .og-x{background:none;border:none;color:var(--faint);font-size:15px;cursor:pointer;
     padding:2px 4px;flex-shrink:0;font-family:inherit}
   .og-x:hover{color:var(--red)}
-  .oc{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .oc{margin-top:8px}
+  .oc-r{display:flex;gap:8px;align-items:center}
+  .oc-al{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+  .alx{background:var(--bg);border:1px solid var(--line-soft);border-radius:5px;
+    font-family:inherit;font-size:9px;font-weight:600;letter-spacing:.03em;color:var(--faint);
+    padding:2.5px 6px;cursor:pointer;text-transform:uppercase;
+    transition:background .15s ease,color .15s ease,border-color .15s ease}
+  .alx.on{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber)}
   .oc input.cn{flex:1;min-width:0;border:none;border-bottom:1px solid var(--line-soft);
     font-family:inherit;font-size:12.5px;background:none;outline:none;padding:4px 0;color:var(--ink)}
   .oc input.cn:focus{border-bottom-color:var(--green)}
@@ -439,7 +446,7 @@
   the guest's menu at all. Repricing stays at the top because it is the feature nobody else in
   Lebanon has.
 </div>
-<script src="aalayna-store.js?v=4"></script>
+<script src="aalayna-store.js?v=5"></script>
 <script>
 /* Service windows. Restaurants think in dayparts ("we stop serving breakfast at 11:30"),
    so the window lives on the SECTION, not the item. */
@@ -680,12 +687,18 @@ function paintOpts(){
     var el = document.createElement('div');
     el.className = 'og';
     var rows = g.choices.map(function(c, ci){
-      return '<div class="oc">' +
+      var ticks = Aalayna.ALLERGENS.map(function(a){
+        var on = (c.al || []).indexOf(a) > -1;
+        return '<button class="alx' + (on ? ' on' : '') + '"' +
+          ' onclick="optAl(' + gi + ',' + ci + ',\'' + a + '\')">' + a + '</button>';
+      }).join('');
+      return '<div class="oc"><div class="oc-r">' +
         '<input class="cn" value="' + escA(c.n) + '" placeholder="Choice — e.g. Oat milk"' +
           ' oninput="optC(' + gi + ',' + ci + ',\'n\',this.value)">' +
         '<input class="cp" value="' + (c.p ? c.p.toFixed(2) : '') + '" placeholder="+ 0.00"' +
           ' inputmode="decimal" onchange="optC(' + gi + ',' + ci + ',\'p\',this.value)">' +
-        '<button class="og-x" onclick="optDelC(' + gi + ',' + ci + ')">&times;</button></div>';
+        '<button class="og-x" onclick="optDelC(' + gi + ',' + ci + ')">&times;</button></div>' +
+        '<div class="oc-al">' + ticks + '</div></div>';
     }).join('');
     el.innerHTML =
       '<div class="og-h">' +
@@ -708,11 +721,20 @@ function optC(gi, ci, k, v){
   if (k === 'p') c.p = parseFloat(v) || 0; else c.n = v;
   dirty();
 }
+/* what THIS choice brings to the dish — cow milk brings dairy, almond brings nuts.
+   The guest app subtracts and adds these live as choices change. */
+function optAl(gi, ci, a){
+  var c = cur().opts[gi].choices[ci];
+  c.al = c.al || [];
+  var k = c.al.indexOf(a);
+  if (k > -1) c.al.splice(k, 1); else c.al.push(a);
+  dirty(); paintOpts();
+}
 function optDelC(gi, ci){ cur().opts[gi].choices.splice(ci, 1); dirty(); paintOpts(); }
 function optDelG(gi){ cur().opts.splice(gi, 1); dirty(); paintOpts(); }
-function optAddC(gi){ cur().opts[gi].choices.push({n:'', p:0}); dirty(); paintOpts(); }
+function optAddC(gi){ cur().opts[gi].choices.push({n:'', p:0, al:[], ing:[]}); dirty(); paintOpts(); }
 function addOptGroup(){
-  cur().opts.push({name:'', type:'many', choices:[{n:'', p:0}]});
+  cur().opts.push({name:'', type:'many', choices:[{n:'', p:0, al:[], ing:[]}]});
   dirty(); paintOpts();
 }
 
