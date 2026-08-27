@@ -22,7 +22,9 @@
     --ease:cubic-bezier(0.23,1,0.32,1);
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  html{scroll-behavior:smooth;scroll-snap-type:y mandatory;scroll-padding-top:57px}
+  /* long sections must never trap the scroll on small screens */
+  @media(max-width:880px){html{scroll-snap-type:y proximity}}
   body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
     color:var(--ink);-webkit-font-smoothing:antialiased;font-feature-settings:'tnum'}
 
@@ -48,8 +50,12 @@
   @media(max-width:640px){.nav-links a:not(.btn){display:none}}
 
   /* ─── hero ─── */
-  .hero{padding:88px 0 96px}
-  @media(max-width:640px){.hero{padding:60px 0 64px}}
+  .hero,section.wrap,.final{
+    min-height:calc(100vh - 57px);min-height:calc(100svh - 57px);
+    display:flex;flex-direction:column;justify-content:center;
+    scroll-snap-align:start}
+  footer{scroll-snap-align:end}
+  .hero{padding:32px 22px}
   .hero-grid{display:flex;flex-direction:column;align-items:center;text-align:center}
   .hero-grid .lead{margin-left:auto;margin-right:auto;max-width:540px}
   .hero-grid .hero-ctas,.hero-grid .built{justify-content:center}
@@ -64,8 +70,8 @@
     border:1px solid var(--line);border-radius:20px;padding:6px 12px}
 
   /* ─── sections ─── */
-  section.wrap{padding:96px 22px}
-  @media(max-width:640px){section.wrap{padding:64px 22px}}
+  section.wrap{padding:48px 22px}
+  @media(max-width:640px){section.wrap{padding:40px 18px}}
   .sec-k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
   h2{font-size:clamp(24px,3vw,32px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-top:10px}
   .sec-sub{font-size:14.5px;color:var(--sub);line-height:1.65;margin-top:12px;max-width:560px}
@@ -74,7 +80,8 @@
   @media(max-width:880px){.cards{grid-template-columns:1fr}}
   .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px}
   .card .ic{width:38px;height:38px;border-radius:11px;background:var(--brand-bg);color:var(--brand);
-    display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:14px}
+    display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .card .ic svg{width:19px;height:19px}
   .card h3{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
   .card p{font-size:13px;color:var(--sub);line-height:1.65;margin-top:8px}
 
@@ -117,7 +124,8 @@
   details p{font-size:13.5px;color:var(--sub);line-height:1.7;padding-bottom:18px}
 
   /* ─── final cta + footer ─── */
-  .final{background:var(--surface);border-top:1px solid var(--line);text-align:center;padding:96px 22px}
+  .final{background:var(--surface);border-top:1px solid var(--line);text-align:center;
+    padding:48px 22px;align-items:center}
   .final h2{margin-top:0}
   .final .hero-ctas{justify-content:center}
   footer{border-top:1px solid var(--line);padding:28px 22px;font-size:12px;color:var(--faint)}
@@ -174,22 +182,22 @@
   <div class="sec-k rv">What changes for you</div>
   <h2 class="rv">Six outcomes. One QR.</h2>
   <div class="cards">
-    <div class="card rv"><div class="ic">⏱</div><h3>Tables turn faster</h3>
+    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M10 2h4"/></svg></div><h3>Tables turn faster</h3>
       <p>Parties settle and leave without flagging anyone down. Cash tables tell the floor
       which note they're handing over — one trip with the change instead of two.</p></div>
-    <div class="card rv"><div class="ic">🤝</div><h3>Tips reach your servers</h3>
+    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="12" rx="2"/><circle cx="12" cy="13" r="2.6"/><path d="M5.5 10v.01M18.5 16v.01"/></svg></div><h3>Tips reach your servers</h3>
       <p>Every digital tip is assigned to the server who earned it, with a payout record
       you sign off nightly. Your floor will push the QR for you.</p></div>
-    <div class="card rv"><div class="ic">⭐</div><h3>Reviews while they're happy</h3>
+    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z"/></svg></div><h3>Reviews while they're happy</h3>
       <p>Guests are asked at the table, right after they settle — and land on your real
       Google page. Complaints come to you privately instead.</p></div>
-    <div class="card rv"><div class="ic">📊</div><h3>You see your floor</h3>
+    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg></div><h3>You see your floor</h3>
       <p>Payment mix, tips by server, a settlement statement for your close, table time —
       tonight and weekly, on your phone.</p></div>
-    <div class="card rv"><div class="ic">💱</div><h3>Reprice in seconds</h3>
+    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l3 3-3 3"/><path d="M20 6H9a5 5 0 0 0-5 5"/><path d="M7 21l-3-3 3-3"/><path d="M4 18h11a5 5 0 0 0 5-5"/></svg></div><h3>Reprice in seconds</h3>
       <p>Costs moved? Reprice the whole menu by percentage in ten seconds — every QR menu
       updates before the door opens. No designer, no reprints.</p></div>
-    <div class="card rv"><div class="ic">🏦</div><h3>Money goes to you, directly</h3>
+    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg></div><h3>Money goes to you, directly</h3>
       <p>Payments settle into your own Whish and card accounts. 3alayna never holds your
       funds and never touches card data.</p></div>
   </div>
@@ -229,11 +237,13 @@
         <li>Google reviews &amp; private feedback</li>
         <li>Owner dashboard &amp; nightly statement</li>
         <li>Menu editor with instant repricing</li>
+        <li>Staff onboarding — we train your floor</li>
       </ul>
     </div>
     <div class="pilot rv">
       <h3>Start with two free dinner services</h3>
-      <p>We set everything up and run it on your floor for two services — free. We measure
+      <p>We set everything up, train your servers, and run it on your floor for two
+      services — free. We measure
       table time, settlement, tips and reviews together, against numbers we agree on
       before the first plate. If it doesn't move anything, we leave. If it does, it's
       $100 a month, cancel anytime.</p>
