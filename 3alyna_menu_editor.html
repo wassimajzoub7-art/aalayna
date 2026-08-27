@@ -339,9 +339,9 @@
           <select class="in" id="ed-sec" onchange="dirty()"></select>
         </div>
       </div>
-      <button class="cta cta-green" style="margin-top:18px" onclick="saveItem()">Save</button>
-      <button class="danger" onclick="removeItem()">Remove from menu</button>
-      <button class="cta cta-ghost" onclick="closeOv('ov-item')">Cancel</button>
+      <button class="cta cta-green" id="ed-save" style="margin-top:18px" onclick="saveItem()">Save</button>
+      <button class="danger" id="ed-del" onclick="removeItem()">Remove from menu</button>
+      <button class="cta cta-ghost" onclick="cancelEdit()">Cancel</button>
     </div>
   </div>
   <!-- ============ reprice ============ -->
@@ -387,53 +387,13 @@
       <button class="cta cta-green" style="margin-top:18px" onclick="closeOv('ov-win')">Done</button>
     </div>
   </div>
-  <!-- ============ add ============ -->
-  <div class="ov" id="ov-add">
-    <div class="scrim" onclick="closeOv('ov-add')"></div>
-    <div class="sheet">
-      <div class="grab"></div>
-      <div class="sh-t">Add a dish</div>
-      <div class="sh-s">Name and price is enough. Everything else can wait.</div>
-      <div class="fld">
-        <div class="lb">Name</div>
-        <input class="in" id="ad-name" placeholder="Sfeeha b'Laban">
-      </div>
-      <div class="row2">
-        <div class="fld">
-          <div class="lb">Price</div>
-          <input class="in" id="ad-price" inputmode="decimal" placeholder="6.00">
-        </div>
-        <div class="fld">
-          <div class="lb">Section</div>
-          <select class="in" id="ad-sec"></select>
-        </div>
-      </div>
-      <div class="fld">
-        <div class="lb">Ingredients <span class="tag">OPTIONAL NOW</span></div>
-        <div class="chips" id="ad-ing"></div>
-        <input class="chipin" id="ad-ingin" placeholder="Type an ingredient, press Enter">
-      </div>
-      <div class="fld">
-        <div class="lb">Français &amp; العربية</div>
-        <div class="wopt on" id="ad-tr-auto" onclick="adTrMode('auto')">
-          <span class="rd"></span><span><div class="wn">Draft translations automatically</div>
-          <div class="ws">You review and adjust them before publishing</div></span>
-        </div>
-        <div class="wopt" id="ad-tr-manual" onclick="adTrMode('manual')">
-          <span class="rd"></span><span><div class="wn">I'll write them myself</div>
-          <div class="ws">The dish shows in English until you add them</div></span>
-        </div>
-      </div>
-      <button class="cta cta-green" style="margin-top:18px" onclick="addItem()">Add to menu</button>
-      <button class="cta cta-ghost" onclick="closeOv('ov-add')">Cancel</button>
-    </div>
-  </div>
+
 </div></div>
 <div class="switcher">
   <button class="swb" onclick="openOv('ov-fx')">Reprice sheet</button>
   <button class="swb" onclick="openWin(0)">Service hours</button>
   <button class="swb" onclick="editItem(6)">Edit a dish</button>
-  <button class="swb" onclick="openAdd(1)">Add a dish</button>
+  <button class="swb" onclick="newDish(1)">Add a dish</button>
   <button class="swb" onclick="reset()">&#8635; Reset</button>
 </div>
 <div class="note-out">
@@ -568,7 +528,7 @@ function render(){
     });
     var add = document.createElement('div');
     add.className = 'addrow';
-    add.onclick = function(){ openAdd(SECTIONS.indexOf(sec)); };
+    add.onclick = function(){ newDish(SECTIONS.indexOf(sec)); };
     add.innerHTML = '<span class="p">+</span><span>Add to ' + sec.name + '</span>';
     wrap.appendChild(add);
     box.appendChild(wrap);
@@ -589,7 +549,9 @@ function fillSecs(sel, val){
 function editItem(i){
   editing = i;
   var it = ITEMS[i];
-  $('ed-title').textContent = it.n;
+  $('ed-title').textContent = addingNew ? 'New dish' : it.n;
+  $('ed-save').textContent = addingNew ? 'Add to menu' : 'Save';
+  $('ed-del').textContent = addingNew ? 'Discard' : 'Remove from menu';
   edBuf = { en: { n: it.n, d: it.d },
             fr: { n: it.tr.fr.n, d: it.tr.fr.d },
             ar: { n: it.tr.ar.n, d: it.tr.ar.d } };
@@ -775,6 +737,21 @@ function draft(){
 function saveItem(){
   edStash();
   var it = ITEMS[editing];
+  if (addingNew && !edBuf.en.n.trim()){
+    edSwitch('en', document.querySelectorAll('#ed-langs button')[0]);
+    $('ed-name').focus();
+    toast('Give the dish a name first');
+    return;
+  }
+  var drafted = [];
+  if (addingNew){
+    ['fr','ar'].forEach(function(l){
+      if (!edBuf[l].n && !edBuf[l].d){
+        edBuf[l].n = edBuf.en.n; edBuf[l].d = edBuf.en.d;
+        drafted.push(l === 'fr' ? 'français' : 'العربية');
+      }
+    });
+  }
   it.n = edBuf.en.n || it.n;
   it.d = edBuf.en.d;
   it.tr = { fr: { n: edBuf.fr.n, d: edBuf.fr.d }, ar: { n: edBuf.ar.n, d: edBuf.ar.d } };
@@ -783,43 +760,40 @@ function saveItem(){
   it.p = parseFloat($('ed-price').value) || it.p;
   it.s = $('ed-sec').value;
   closeOv('ov-item'); render(); dirty();
-  toast('Saved — publish when you’re ready');
+  if (addingNew){
+    addingNew = false;
+    toast(it.n + ' added' + (drafted.length
+      ? ' — ' + drafted.join(' + ') + ' drafted, edit them any time' : ''));
+  } else {
+    toast('Saved — publish when you’re ready');
+  }
 }
 function removeItem(){
+  if (addingNew){ cancelEdit(); return; }
   var n = ITEMS[editing].n;
   ITEMS.splice(editing, 1);
   closeOv('ov-item'); render(); dirty();
   toast(n + ' removed');
 }
-/* ---------- add ---------- */
-var addIng = [], adTr = 'auto';
-function adTrMode(m){
-  adTr = m;
-  $('ad-tr-auto').classList.toggle('on', m === 'auto');
-  $('ad-tr-manual').classList.toggle('on', m === 'manual');
+/* ---------- add = edit ----------
+   A new dish is a blank item opened in the full editor, so add and edit can
+   never drift apart in depth again. */
+var addingNew = false;
+function newDish(secIdx){
+  var sec = SECTIONS[secIdx || 0] || SECTIONS[0];
+  ITEMS.push({ id: 'i' + Date.now().toString(36), s: sec.id, n: '', d: '', p: 0,
+               fr: 0, ar: 0, tr: { fr: { n:'', d:'' }, ar: { n:'', d:'' } },
+               ing: [], al: [], kcal: null, pr: null, ft: null, cb: null, conf: 0 });
+  addingNew = true;
+  editItem(ITEMS.length - 1);
 }
-function openAdd(secIdx){
-  adTrMode('auto');
-  $('ad-name').value = ''; $('ad-price').value = '';
-  addIng = [];
-  function redraw(){ paintChips('ad-ing', addIng, function(i){ addIng.splice(i,1); redraw(); }); }
-  chipInput('ad-ingin', function(){ return addIng; }, redraw);
-  redraw();
-  fillSecs($('ad-sec'), SECTIONS[secIdx || 0].id);
-  openOv('ov-add');
-}
-function addItem(){
-  var n = $('ad-name').value.trim();
-  if (!n){ $('ad-name').focus(); return; }
-  var auto = adTr === 'auto';
-  ITEMS.push({ id: 'i' + Date.now().toString(36), s: $('ad-sec').value, n: n, d: '',
-               p: parseFloat($('ad-price').value) || 0,
-               fr: auto ? 1 : 0, ar: auto ? 1 : 0,
-               tr: auto ? { fr: { n: n, d: '' }, ar: { n: n, d: '' } }
-                        : { fr: { n: '', d: '' }, ar: { n: '', d: '' } },
-               ing: addIng.slice(), al: [], kcal: null, pr: null, ft: null, cb: null, conf: 0 });
-  closeOv('ov-add'); render(); dirty();
-  toast(n + (adTr === 'auto' ? ' added — translations drafted, review in the item' : ' added — write FR and AR in the item'));
+function cancelEdit(){
+  if (addingNew){
+    ITEMS.splice(editing, 1);
+    addingNew = false;
+    push(); render();
+  }
+  closeOv('ov-item');
 }
 /* ---------- reprice ---------- */
 function setPct(el, v){
