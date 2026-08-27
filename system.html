@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3alayna — the system</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<script src="aalayna-store.js?v=8"></script>
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
+    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--ink);
+    min-height:100vh;padding:44px 20px 64px;background:var(--bg);
+    font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto}
+  header{margin-bottom:26px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  header h1{font-family:'Amiri',serif;font-size:34px;font-weight:700;line-height:1.1}
+  header h1 b{color:var(--green)}
+  header p{font-size:12px;color:var(--sub);margin-top:8px;letter-spacing:.06em;text-transform:uppercase}
+
+  .apps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:860px){.apps{grid-template-columns:1fr}}
+  a.app{display:block;background:var(--surface);border-radius:10px;padding:20px;text-decoration:none;
+    color:var(--ink);border:1px solid var(--line);transition:border-color .12s}
+  a.app:hover{border-color:#CFCCC5}
+  .who{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+  a.app h2{font-size:16px;font-weight:600;margin-top:8px;letter-spacing:-.01em}
+  a.app p{font-size:12px;color:var(--sub);line-height:1.6;margin-top:7px}
+  .go{display:inline-block;margin-top:12px;font-size:11.5px;font-weight:600;color:var(--green)}
+
+  .state{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);
+    border:1px solid var(--line);border-radius:10px;padding:13px 16px;margin-top:12px;
+    color:var(--sub);font-size:12.5px}
+  .state b{color:var(--ink);font-weight:600}
+  .state button{margin-left:auto;background:var(--surface);border:1px solid var(--line);
+    color:var(--ink);border-radius:8px;padding:7px 13px;font-size:11.5px;font-weight:500;
+    cursor:pointer;font-family:inherit;transition:border-color .12s}
+  .state button:hover{border-color:#CFCCC5}
+
+  .flow{background:var(--surface);border-radius:10px;padding:20px 22px;margin-top:12px;
+    border:1px solid var(--line)}
+  .flow h3{font-size:13.5px;font-weight:600}
+  .flow pre{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+    line-height:1.75;color:var(--sub);background:var(--bg);border:1px solid var(--line-soft);
+    border-radius:8px;padding:14px 16px;margin-top:12px;overflow-x:auto}
+  .rules{margin-top:14px;display:grid;gap:8px}
+  .rule{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.6;color:var(--sub)}
+  .rule b{color:var(--ink);font-weight:600}
+  .rule .n{width:18px;height:18px;border-radius:6px;background:var(--green-bg);color:var(--green);
+    font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;margin-top:2px}
+  .foot{color:var(--faint);font-size:11.5px;margin-top:20px;line-height:1.75}
+  .foot b{color:var(--sub);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>3alay<b>na</b></h1>
+    <p>THREE APPS · ONE DATA LAYER · HALLAB 1881</p>
+  </header>
+
+  <div class="apps">
+    <a class="app" href="3alyna_menu_editor.html">
+      <div class="who">The restaurant</div>
+      <h2>Menu editor</h2>
+      <p>Add and remove dishes, set service hours, and reprice the whole menu when the dollar
+         moves. Writes to a draft; nothing reaches a table until you publish.</p>
+      <span class="go">Open →</span>
+    </a>
+
+    <a class="app" href="3alyna_full_flow.html">
+      <div class="who">The guest</div>
+      <h2>Table</h2>
+      <p>Menu in English, français or العربية, in dollars or lira. See the bill, split it,
+         settle on Whish, card or cash — and tell the floor what note you're handing over.</p>
+      <span class="go">Open →</span>
+    </a>
+
+    <a class="app" href="3alyna_dashboard.html">
+      <div class="who">The restaurant</div>
+      <h2>Dashboard</h2>
+      <p>Tonight's settlement statement and the tips you owe your servers. Then the week —
+         table time, payment mix, guests, reviews.</p>
+      <span class="go">Open →</span>
+    </a>
+  </div>
+
+  <div class="state">
+    <span>Live menu <b id="s-ver">v1</b></span>
+    <span>·</span>
+    <span><b id="s-set">0</b> settlements tonight</span>
+    <span>·</span>
+    <span><b id="s-tot">$0.00</b> through 3alayna</span>
+    <span id="s-dirty"></span>
+    <button onclick="Aalayna.reset(); paint();">Reset everything</button>
+  </div>
+
+  <div class="flow">
+    <h3>How they're connected</h3>
+    <pre>  EDITOR ──write──▸ DRAFT
+                      │
+                   publish  ──▸ menu_versions v47   (immutable)
+                      │              │
+                      │         live_version = 47
+                      ▼              │
+                    TABLE ◂──read────┘   caches by version, never sees a draft
+                      │
+                   settle  ──▸ settlements[]  ──▸ DASHBOARD
+                                                    tonight's statement
+                                                    tips owed by server</pre>
+
+    <div class="rules">
+      <div class="rule"><span class="n">1</span><span>
+        <b>Publishing mints an immutable version.</b> A diner's menu can never change under their
+        thumb mid-meal, and rolling back is just pointing <code>live_version</code> at the one before.
+      </span></div>
+      <div class="rule"><span class="n">2</span><span>
+        <b>An open check is priced at order time.</b> Reprice the menu +8% and tonight's bills do
+        not move. Retroactive repricing would be a serious bug, not a feature.
+      </span></div>
+      <div class="rule"><span class="n">3</span><span>
+        <b>Settlement only moves forward on a provider callback or an operator action.</b> A diner
+        returning to the page is not confirmation — they can fake a redirect, not a webhook.
+      </span></div>
+      <div class="rule"><span class="n">4</span><span>
+        <b>Cash-declared is a claim, not a collection.</b> It shows on the statement as declared and
+        stays there until someone counts the drawer.
+      </span></div>
+      <div class="rule"><span class="n">5</span><span>
+        <b>Translations are keyed by dish id, never by position.</b> Adding a dish in the editor used
+        to shift every Arabic name onto the wrong plate.
+      </span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>localStorage stands in for the backend.</b> The apps are separate pages sharing one origin —
+    the same shape they'd have as routes on a real server. Open the editor and the table in two
+    tabs, publish, and watch the menu change.<br>
+    Payments are simulated. No money moves and no provider is connected.
+  </div>
+</div>
+
+<script>
+function paint(){
+  document.getElementById('s-ver').textContent = 'v' + Aalayna.published().version;
+  document.getElementById('s-set').textContent = Aalayna.settlements().length;
+  document.getElementById('s-tot').textContent = '$' + Aalayna.settledTotal().toFixed(2);
+  document.getElementById('s-dirty').innerHTML = Aalayna.isDirty()
+    ? '· <b style="color:#F0DFA8">unpublished changes</b>' : '';
+}
+paint();
+Aalayna.on(paint);
+</script>
+</body>
+</html>
