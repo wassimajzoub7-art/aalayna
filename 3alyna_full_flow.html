@@ -122,13 +122,13 @@
   .rc-r{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;color:#9DBBAC}
   .rc-r b{color:#fff;font-weight:600}
   .rc-note{margin-top:10px;font-size:10.5px;color:#9DBBAC}
-  .mailrc{display:flex;gap:8px;margin-top:14px}
-  .mailin{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
-    border-radius:9px;color:#fff;padding:11px 12px;font-family:inherit;font-size:12px}
+  .mailrc{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+  .mailin{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:9px;color:#fff;padding:13px 14px;font-family:inherit;font-size:15px}
   .mailin::placeholder{color:rgba(255,255,255,.45)}
   .mailin:focus{outline:none;border-color:rgba(255,255,255,.4)}
   .mailbtn{border:1px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:9px;
-    padding:11px 16px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;
+    padding:10px;width:100%;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;
     transition:background .15s ease,transform .12s var(--ease)}
   .mailbtn:active{transform:scale(.96)}
   .maildone{margin-top:14px;font-size:12px;color:#CBDDD2;display:flex;gap:6px;align-items:center;
@@ -646,7 +646,6 @@
           <div class="rc-rows">
             <div class="rc-r"><span>Paid via</span><b id="rc-method">Whish Money</b></div>
             <div class="rc-r"><span>Table</span><b>12</b></div>
-            <div class="rc-r"><span>Time</span><b id="rc-time">21:42</b></div>
           </div>
           <div class="rc-note">Payment confirmed &middot; recorded on the table's bill</div>
         </div>
@@ -1422,7 +1421,6 @@ function finishSettle(rail){
   $('rc-method').textContent = RAIL_NAMES[rail] + (rail === 'cash' && note > 0 && note - tot > 0
     ? ' · ' + usd(note - tot) + ' change' : '');
   var d = new Date();
-  $('rc-time').textContent = ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
   go('v-done');
   var w = $('inner');
   w.classList.remove('go');
