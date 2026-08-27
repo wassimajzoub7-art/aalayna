@@ -51,11 +51,9 @@
 
   /* ─── hero ─── */
   @keyframes heroIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas,.hero .hero-note,.hero .built{
-    animation:heroIn .6s var(--ease) both}
+  .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas{animation:heroIn .6s var(--ease) both}
   .hero h1{animation-delay:.08s}.hero .lead{animation-delay:.16s}
-  .hero .hero-ctas{animation-delay:.24s}.hero .hero-note{animation-delay:.3s}
-  .hero .built{animation-delay:.38s}
+  .hero .hero-ctas{animation-delay:.24s}
   .hero,section.wrap,.final{
     min-height:calc(100vh - 57px);min-height:calc(100svh - 57px);
     display:flex;flex-direction:column;justify-content:center;
@@ -64,16 +62,12 @@
   .hero{padding:32px 22px}
   .hero-grid{display:flex;flex-direction:column;align-items:center;text-align:center}
   .hero-grid .lead{margin-left:auto;margin-right:auto;max-width:540px}
-  .hero-grid .hero-ctas,.hero-grid .built{justify-content:center}
+  .hero-grid .hero-ctas{justify-content:center}
   .kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
   h1{font-size:clamp(32px,4.6vw,50px);font-weight:700;letter-spacing:-.025em;line-height:1.08;margin-top:14px}
   h1 em{font-style:normal;color:var(--brand)}
   .lead{font-size:16px;color:var(--sub);line-height:1.65;margin-top:18px;max-width:480px}
   .hero-ctas{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
-  .hero-note{font-size:12px;color:var(--faint);margin-top:14px}
-  .built{display:flex;gap:8px;flex-wrap:wrap;margin-top:30px}
-  .chip{font-size:11px;font-weight:600;color:var(--sub);background:var(--surface);
-    border:1px solid var(--line);border-radius:20px;padding:6px 12px}
 
   /* ─── sections ─── */
   section.wrap{padding:48px 22px}
@@ -154,8 +148,7 @@
   @media (prefers-reduced-motion:reduce){
     .rv{transform:none;transition:opacity .3s ease}
     .btn:active{transform:none}
-    .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas,.hero .hero-note,.hero .built{
-      animation:heroIn .3s ease both;transform:none}
+    .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas{animation:heroIn .3s ease both;transform:none}
     .card,.card:hover{transform:none;box-shadow:none}
     .price-card li{transform:none;transition:opacity .3s ease}
     details[open] p{animation:faqIn .2s ease}
@@ -190,12 +183,6 @@
         <a class="btn big" href="https://wa.me/961XXXXXXXX?text=Hi%2C%20I%27d%20like%20to%20see%203alayna%20at%20my%20restaurant">WhatsApp us</a>
         <!-- TODO: replace with your Calendly link -->
         <a class="btn big line" href="https://calendly.com/YOUR-LINK" target="_blank" rel="noopener">Book a session</a>
-      </div>
-      <div class="hero-note">Two dinner services, free, on your floor — we measure it together.</div>
-      <div class="built">
-        <span class="chip">Whish Money</span><span class="chip">Cash, first-class</span>
-        <span class="chip">Card</span><span class="chip">LL &amp; $</span>
-        <span class="chip">EN · FR · عربي</span>
       </div>
     </div>
   </div>
