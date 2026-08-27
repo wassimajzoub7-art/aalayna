@@ -122,14 +122,17 @@
   .rc-r{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;color:#9DBBAC}
   .rc-r b{color:#fff;font-weight:600}
   .rc-note{margin-top:10px;font-size:10.5px;color:#9DBBAC}
-  .mailrc{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-  .mailin{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+  .mailrc{display:flex;gap:8px;margin-top:14px;width:100%;max-width:280px;
+    margin-left:auto;margin-right:auto}
+  .mailin{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
     border-radius:9px;color:#fff;padding:13px 14px;font-family:inherit;font-size:15px}
   .mailin::placeholder{color:rgba(255,255,255,.45)}
   .mailin:focus{outline:none;border-color:rgba(255,255,255,.4)}
   .mailbtn{border:1px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:9px;
-    padding:10px;width:100%;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;
+    width:46px;flex-shrink:0;font-size:16px;line-height:1;cursor:pointer;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;
     transition:background .15s ease,transform .12s var(--ease)}
+  .mailbtn:hover{background:rgba(255,255,255,.1)}
   .mailbtn:active{transform:scale(.96)}
   .maildone{margin-top:14px;font-size:12px;color:#CBDDD2;display:flex;gap:6px;align-items:center;
     justify-content:center}
@@ -653,7 +656,7 @@
         <div class="mailrc" id="mailrc">
           <input class="mailin" id="mail-in" type="email"
             placeholder="Email &mdash; get your receipt (optional)">
-          <button class="mailbtn" onclick="sendReceipt()">Send</button>
+          <button class="mailbtn" onclick="sendReceipt()" aria-label="Send receipt">&#10148;</button>
         </div>
         <div class="maildone" id="mail-done" style="display:none">
           &#10003; Receipt sent to <b></b></div>
