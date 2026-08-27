@@ -742,8 +742,8 @@ function serving(win){
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
 /* demo: another guest already settled part of the bill */
 var PREPAID = false;
-var PREPAID_LINES = { 'Mixed Grill platter': 'Rami', 'Knefeh b\'Jebne + kaakeh': 'Rami' };
-function linePaid(l){ return PREPAID && PREPAID_LINES[l.n]; }
+var PREPAID_LINES = { 'Mixed Grill platter': 1, 'Knefeh b\'Jebne + kaakeh': 1 };
+function linePaid(l){ return PREPAID && !!PREPAID_LINES[l.n]; }
 function remaining(){
   return BILL.reduce(function(a, l){ return a + (linePaid(l) ? 0 : l.p); }, 0);
 }
@@ -757,7 +757,8 @@ function loadMenu(){
   CATS.forEach(function(c){ live[c.id] = 1; });
   MENU = m.items.filter(function(x){ return live[x.sec]; }).map(function(x){
     return {id:x.id, c:x.sec, n:x.name, d:x.desc, p:x.price, ing:x.ing, al:x.al,
-            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf, cust:x.cust, adds:x.adds||[]};
+            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf, cust:x.cust,
+            adds:x.adds||[], tr:x.tr};
   });
   BILL = Aalayna.check().map(function(l){ return {n:l.name, q:l.q, p:l.p}; });
   TOTAL = Aalayna.checkTotal();
@@ -801,46 +802,15 @@ var T = {
       rKcal:function(n){return 'أكثر من ٤٠٠ سعرة (' + n + ')'},
       rProt:function(n){return 'بروتين قليل · ' + n + 'غ'}}
 };
-var NAMES = {
-  'i01':{fr:"Assiette de foul et houmous", ar:"صحن فول وحمص"},
-  'i02':{fr:"Œufs à l'awarma", ar:"بيض بالقاورما"},
-  'i03':{fr:"Lahm b'ajin · 4 pièces", ar:"لحم بعجين · ٤ قطع"},
-  'i04':{fr:"Fatteh au yaourt", ar:"فتة باللبن"},
-  'i05':{fr:"Taboulé", ar:"تبولة"},
-  'i06':{fr:"Houmous beyrouthin", ar:"حمص بيروتي"},
-  'i07':{fr:"Assiette de grillades", ar:"مشاوي مشكلة"},
-  'i08':{fr:"Arayes", ar:"عرايس"},
-  'i09':{fr:"Knefeh au fromage + kaake", ar:"كنافة بالجبنة + كعكة"},
-  'i10':{fr:"Halawet el jeben", ar:"حلاوة الجبن"},
-  'i11':{fr:"Assortiment de baklava · 250g", ar:"بقلاوة مشكلة · ٢٥٠ غ"},
-  'i12':{fr:"Glace ashta", ar:"بوظة قشطة"},
-  'i13':{fr:"Espresso", ar:"إسبريسو"},
-  'i14':{fr:"Café libanais", ar:"قهوة عربية"},
-  'i15':{fr:"Jallab", ar:"جلاب"},
-  'i16':{fr:"Limonade à la fleur d'oranger", ar:"ليموناضة بماء الزهر"}
-};
-/* the row description is now the short "what's in it" line */
-var DESCS = {
-  'i01':{en:"Fava beans, chickpeas, tahini, olive oil, cumin", fr:"Fèves, pois chiches, tahini, huile d'olive, cumin", ar:"فول، حمص، طحينة، زيت زيتون، كمون"},
-  'i02':{en:"Baladi eggs, preserved lamb confit, ghee", fr:"Œufs baladi, confit d'agneau, ghee", ar:"بيض بلدي، قاورما، سمنة"},
-  'i03':{en:"Minced lamb, tomato, onion, pomegranate molasses, pine nuts", fr:"Agneau haché, tomate, oignon, mélasse de grenade, pignons", ar:"لحمة مفرومة، بندورة، بصل، دبس رمان، صنوبر"},
-  'i04':{en:"Chickpeas, garlic yogurt, fried bread, pine nuts", fr:"Pois chiches, yaourt à l'ail, pain frit, pignons", ar:"حمص، لبن بالثوم، خبز مقلي، صنوبر"},
-  'i05':{en:"Parsley, bulgur, tomato, onion, lemon, olive oil", fr:"Persil, boulgour, tomate, oignon, citron, huile d'olive", ar:"بقدونس، برغل، بندورة، بصل، حامض، زيت زيتون"},
-  'i06':{en:"Chickpeas, tahini, garlic, lemon, hot pepper", fr:"Pois chiches, tahini, ail, citron, piment", ar:"حمص، طحينة، ثوم، حامض، فليفلة حارة"},
-  'i07':{en:"Kabab, shish taouk, lamb chops, fries", fr:"Kebab, chiche taouk, côtelettes d'agneau, frites", ar:"كباب، شيش طاووق، ريش غنم، بطاطا"},
-  'i08':{en:"Grilled pita, spiced minced lamb, onion, parsley", fr:"Pain pita grillé, agneau haché épicé, oignon, persil", ar:"خبز مشوي، لحمة مفرومة، بصل، بقدونس"},
-  'i09':{en:"Akkawi cheese, semolina, ghee, sugar syrup, sesame kaakeh", fr:"Fromage akkawi, semoule, ghee, sirop, kaake au sésame", ar:"جبنة عكاوي، سميد، سمنة، قطر، كعكة بالسمسم"},
-  'i10':{en:"Sweet cheese dough, ashta cream, rose syrup, pistachio", fr:"Pâte de fromage sucrée, crème ashta, sirop de rose, pistache", ar:"عجينة جبن حلوة، قشطة، ماء ورد، فستق"},
-  'i11':{en:"Filo pastry, pistachio, cashew, ghee, sugar syrup", fr:"Pâte filo, pistache, noix de cajou, ghee, sirop", ar:"عجين رقيق، فستق، كاجو، سمنة، قطر"},
-  'i12':{en:"Milk, cream, mastic, sugar, pistachio crust", fr:"Lait, crème, mastic, sucre, croûte de pistache", ar:"حليب، قشطة، مستكة، سكر، فستق"},
-  'i13':{en:"Single origin, pulled to order", fr:"Origine unique, préparé à la commande", ar:"بن مختار، يُحضّر عند الطلب"},
-  'i14':{en:"Rakweh for two, orange blossom water", fr:"Rakweh pour deux, eau de fleur d'oranger", ar:"ركوة لشخصين، ماء زهر"},
-  'i15':{en:"Date molasses, rose water, pine nuts, raisins", fr:"Mélasse de dattes, eau de rose, pignons, raisins secs", ar:"دبس تمر، ماء ورد، صنوبر، زبيب"},
-  'i16':{en:"Lemon, sugar, orange blossom water, mint", fr:"Citron, sucre, eau de fleur d'oranger, menthe", ar:"حامض، سكر، ماء زهر، نعناع"}
-};
 function t(k){ return T[LANG][k]; }
-function nameOf(m){ return (LANG === 'en' || !NAMES[m.id]) ? m.n : NAMES[m.id][LANG]; }
-function descOf(m){ return DESCS[m.id] ? DESCS[m.id][LANG] : m.d; }
+function nameOf(m){
+  if (LANG === 'en') return m.n;
+  return (m.tr && m.tr[LANG] && m.tr[LANG].n) || m.n;   // English is the fallback
+}
+function descOf(m){
+  if (LANG === 'en') return m.d;
+  return (m.tr && m.tr[LANG] && m.tr[LANG].d) || m.d;
+}
 /* price display follows the currency toggle — the diner-facing half of the FX feature */
 function price(v){
   if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE / 1000) * 1000).toLocaleString('en-US');
@@ -1063,7 +1033,7 @@ function buildBill(){
     var paidBy = linePaid(b);
     d.className = 'r-item' + (paidBy ? ' r-paid' : '');
     d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n +
-                  (paidBy ? '<span class="paidtag">PAID · ' + paidBy + '</span>' : '') + '</div>' +
+                  (paidBy ? '<span class="paidtag">PAID</span>' : '') + '</div>' +
                   '<div class="p">' + usd(b.p) + '</div>';
     box.appendChild(d);
   });
@@ -1084,7 +1054,7 @@ function buildPick(){
     if (paidBy){
       d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
         '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
-        '<span class="paidtag">PAID · ' + paidBy + '</span></span><span class="pr">' + usd(b.p) + '</span>';
+        '<span class="paidtag">PAID</span></span><span class="pr">' + usd(b.p) + '</span>';
       box.appendChild(d);
       return;
     }

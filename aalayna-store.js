@@ -94,6 +94,28 @@
        ['lemon','sugar','orange blossom water','mint'],[],130,0,0,33,{fr:0,ar:0})
   ];
 
+  /* ---------- seed translations -----------------------------------------
+     Per-item FR/AR name and description. These live ON the item so the editor
+     can edit them; the diner app reads them with English as the fallback. */
+  var SEED_TR = {
+    i01:{fr:{n:"Assiette de foul et houmous",d:"Fèves, pois chiches, tahini, huile d'olive, cumin"},ar:{n:"صحن فول وحمص",d:"فول، حمص، طحينة، زيت زيتون، كمون"}},
+    i02:{fr:{n:"Œufs à l'awarma",d:"Œufs baladi, confit d'agneau, ghee"},ar:{n:"بيض بالقاورما",d:"بيض بلدي، قاورما، سمنة"}},
+    i03:{fr:{n:"Lahm b'ajin · 4 pièces",d:"Agneau haché, tomate, oignon, mélasse de grenade, pignons"},ar:{n:"لحم بعجين · ٤ قطع",d:"لحمة مفرومة، بندورة، بصل، دبس رمان، صنوبر"}},
+    i04:{fr:{n:"Fatteh au yaourt",d:"Pois chiches, yaourt à l'ail, pain frit, pignons"},ar:{n:"فتة باللبن",d:"حمص، لبن بالثوم، خبز مقلي، صنوبر"}},
+    i05:{fr:{n:"Taboulé",d:"Persil, boulgour, tomate, oignon, citron, huile d'olive"},ar:{n:"تبولة",d:"بقدونس، برغل، بندورة، بصل، حامض، زيت زيتون"}},
+    i06:{fr:{n:"Houmous beyrouthin",d:"Pois chiches, tahini, ail, citron, piment"},ar:{n:"حمص بيروتي",d:"حمص، طحينة، ثوم، حامض، فليفلة حارة"}},
+    i07:{fr:{n:"Assiette de grillades",d:"Kebab, chiche taouk, côtelettes d'agneau, frites"},ar:{n:"مشاوي مشكلة",d:"كباب، شيش طاووق، ريش غنم، بطاطا"}},
+    i08:{fr:{n:"Arayes",d:"Pain pita grillé, agneau haché épicé, oignon, persil"},ar:{n:"عرايس",d:"خبز مشوي، لحمة مفرومة، بصل، بقدونس"}},
+    i09:{fr:{n:"Knefeh au fromage + kaake",d:"Fromage akkawi, semoule, ghee, sirop, kaake au sésame"},ar:{n:"كنافة بالجبنة + كعكة",d:"جبنة عكاوي، سميد، سمنة، قطر، كعكة بالسمسم"}},
+    i10:{fr:{n:"Halawet el jeben",d:"Pâte de fromage sucrée, crème ashta, sirop de rose, pistache"},ar:{n:"حلاوة الجبن",d:"عجينة جبن حلوة، قشطة، ماء ورد، فستق"}},
+    i11:{fr:{n:"Assortiment de baklava · 250g",d:"Pâte filo, pistache, noix de cajou, ghee, sirop"},ar:{n:"بقلاوة مشكلة · ٢٥٠ غ",d:"عجين رقيق، فستق، كاجو، سمنة، قطر"}},
+    i12:{fr:{n:"Glace ashta",d:"Lait, crème, mastic, sucre, croûte de pistache"},ar:{n:"بوظة قشطة",d:"حليب، قشطة، مستكة، سكر، فستق"}},
+    i13:{fr:{n:"Espresso",d:"Origine unique, préparé à la commande"},ar:{n:"إسبريسو",d:"بن مختار، يُحضّر عند الطلب"}},
+    i14:{fr:{n:"Café libanais",d:"Rakweh pour deux, eau de fleur d'oranger"},ar:{n:"قهوة عربية",d:"ركوة لشخصين، ماء زهر"}},
+    i15:{fr:{n:"Jallab",d:"Mélasse de dattes, eau de rose, pignons, raisins secs"},ar:{n:"جلاب",d:"دبس تمر، ماء ورد، صنوبر، زبيب"}},
+    i16:{fr:{n:"Limonade à la fleur d'oranger",d:"Citron, sucre, eau de fleur d'oranger, menthe"},ar:{n:"ليموناضة بماء الزهر",d:"حامض، سكر، ماء زهر، نعناع"}}
+  };
+
   /* the open check the diner sees — in production this comes from the POS */
   var SEED_CHECK = [
     { id:'i07', q:2, p:32.00 }, { id:'i03', q:3, p:18.00 }, { id:'i08', q:2, p:15.00 },
@@ -135,8 +157,12 @@
       pr:   x.pr   == null ? null : +x.pr,
       ft:   x.ft   == null ? null : +x.ft,
       cb:   x.cb   == null ? null : +x.cb,
-      fr:   x.fr ? 1 : 0,
-      ar:   x.ar ? 1 : 0,
+      tr: {
+        fr: { n: (x.tr && x.tr.fr && x.tr.fr.n) || '', d: (x.tr && x.tr.fr && x.tr.fr.d) || '' },
+        ar: { n: (x.tr && x.tr.ar && x.tr.ar.n) || '', d: (x.tr && x.tr.ar && x.tr.ar.d) || '' }
+      },
+      fr: (x.tr && x.tr.fr && (x.tr.fr.n || x.tr.fr.d)) ? 1 : 0,
+      ar: (x.tr && x.tr.ar && (x.tr.ar.n || x.tr.ar.d)) ? 1 : 0,
       cust: x.cust ? 1 : 0,
       adds: Array.isArray(x.adds) ? x.adds : [],
       /* conf is a DECLARATION, not a side effect. It is only true when the kitchen
@@ -150,7 +176,17 @@
 
   function seedIfEmpty() {
     if (!read(K.live, null)) {
-      var m = { version: 1, sections: clone(SEED_SECTIONS), items: clone(SEED_ITEMS), at: 'seed' };
+      var seeded = clone(SEED_ITEMS).map(function (x) {
+        var tr = SEED_TR[x.id] ? clone(SEED_TR[x.id]) : null;
+        if (tr) {
+          // items seeded with fr:0 / ar:0 model a venue that hasn't translated them yet
+          if (x.fr === 0) tr.fr = { n: '', d: '' };
+          if (x.ar === 0) tr.ar = { n: '', d: '' };
+          x.tr = tr;
+        }
+        return x;
+      });
+      var m = { version: 1, sections: clone(SEED_SECTIONS), items: seeded.map(normalise), at: 'seed' };
       write(K.live, m);
       write(K.draft, clone(m));
     }

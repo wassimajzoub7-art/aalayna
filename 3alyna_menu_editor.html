@@ -281,14 +281,22 @@
     <div class="sheet">
       <div class="grab"></div>
       <div class="sh-t" id="ed-title">Edit dish</div>
-      <div class="fld">
-        <div class="lb">Name <span class="tag">EN</span></div>
-        <input class="in" id="ed-name" oninput="dirty()">
+      <div class="scope" id="ed-langs" style="margin-top:14px">
+        <button class="on" onclick="edSwitch('en', this)">English</button>
+        <button onclick="edSwitch('fr', this)">Français</button>
+        <button onclick="edSwitch('ar', this)">العربية</button>
       </div>
       <div class="fld">
-        <div class="lb">What's in it <span class="tag">EN</span></div>
-        <textarea class="in" id="ed-desc" oninput="dirty()"></textarea>
+        <div class="lb">Name <span class="tag" id="ed-lang-tag">EN</span></div>
+        <input class="in" id="ed-name" oninput="edStash()">
       </div>
+      <div class="fld">
+        <div class="lb"><span id="ed-desc-lb">What's in it</span> <span class="tag" id="ed-lang-tag2">EN</span></div>
+        <textarea class="in" id="ed-desc" oninput="edStash()"></textarea>
+      </div>
+      <button class="cta cta-gold" id="ed-draft-one" style="margin-top:10px;display:none" onclick="draftLang()">
+        Auto-draft this language from English
+      </button>
       <div class="fld">
         <div class="lb">Ingredients <span class="tag">DRIVES FILTERS</span></div>
         <div class="chips" id="ed-ing"></div>
@@ -317,8 +325,9 @@
       </button>
 
       <div class="aibar" id="ed-ai">
-        <span>Français and العربية will be <b>drafted for you</b> — you approve before it goes live.</span>
-        <button onclick="draft()">Draft</button>
+        <span>Missing translations can be <b>drafted automatically</b> — you review before publishing,
+        or write them yourself in the tabs above.</span>
+        <button onclick="draft()">Draft all</button>
       </div>
       <div class="row2">
         <div class="fld">
@@ -404,6 +413,17 @@
         <div class="chips" id="ad-ing"></div>
         <input class="chipin" id="ad-ingin" placeholder="Type an ingredient, press Enter">
       </div>
+      <div class="fld">
+        <div class="lb">Français &amp; العربية</div>
+        <div class="wopt on" id="ad-tr-auto" onclick="adTrMode('auto')">
+          <span class="rd"></span><span><div class="wn">Draft translations automatically</div>
+          <div class="ws">You review and adjust them before publishing</div></span>
+        </div>
+        <div class="wopt" id="ad-tr-manual" onclick="adTrMode('manual')">
+          <span class="rd"></span><span><div class="wn">I'll write them myself</div>
+          <div class="ws">The dish shows in English until you add them</div></span>
+        </div>
+      </div>
       <button class="cta cta-green" style="margin-top:18px" onclick="addItem()">Add to menu</button>
       <button class="cta cta-ghost" onclick="closeOv('ov-add')">Cancel</button>
     </div>
@@ -440,6 +460,7 @@ function pull(){
   ITEMS    = d.items.map(function(x){
     return {id:x.id, s:x.sec, n:x.name, d:x.desc, p:x.price, fr:x.fr, ar:x.ar,
             ing:(x.ing||[]).slice(), al:(x.al||[]).slice(),
+            tr: x.tr ? JSON.parse(JSON.stringify(x.tr)) : {fr:{n:'',d:''},ar:{n:'',d:''}},
             kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf};
   });
 }
@@ -449,8 +470,8 @@ function push(){
   d.items = ITEMS.map(function(x){
     var prev = (Aalayna.published().items.filter(function(o){ return o.id === x.id; })[0]) || {};
     return Object.assign({}, prev, {
-      id:x.id, sec:x.s, name:x.n, desc:x.d, price:x.p, fr:x.fr, ar:x.ar,
-      ing:x.ing, al:x.al, kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf
+      id:x.id, sec:x.s, name:x.n, desc:x.d, price:x.p,
+      ing:x.ing, al:x.al, tr:x.tr, kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf
     });
   });
   Aalayna.saveDraft(d);
@@ -569,11 +590,16 @@ function editItem(i){
   editing = i;
   var it = ITEMS[i];
   $('ed-title').textContent = it.n;
-  $('ed-name').value = it.n;
-  $('ed-desc').value = it.d;
+  edBuf = { en: { n: it.n, d: it.d },
+            fr: { n: it.tr.fr.n, d: it.tr.fr.d },
+            ar: { n: it.tr.ar.n, d: it.tr.ar.d } };
+  edLang = 'en';
+  document.querySelectorAll('#ed-langs button').forEach(function(x, k){ x.classList.toggle('on', k === 0); });
+  edPaint();
   $('ed-price').value = it.p.toFixed(2);
   fillSecs($('ed-sec'), it.s);
-  $('ed-ai').style.display = (it.fr && it.ar) ? 'none' : 'flex';
+  var hasFr = it.tr.fr.n || it.tr.fr.d, hasAr = it.tr.ar.n || it.tr.ar.d;
+  $('ed-ai').style.display = (hasFr && hasAr) ? 'none' : 'flex';
 
   ['kcal','pr','ft','cb'].forEach(function(k){
     $('ed-' + k).value = (it[k] == null ? '' : it[k]);
@@ -639,6 +665,48 @@ function chipInput(inputId, getList, after){
   };
 }
 function cur(){ return ITEMS[editing]; }
+
+/* ---- per-language editing ----
+   Edits go into a buffer per language; everything commits on Save. The fr/ar
+   badges are derived from content by the store, never set by hand.
+   Auto-draft is SIMULATED here: names carry over (dish names rarely translate),
+   descriptions copy from English pending review. In production this is a
+   translation-model call. */
+var edLang = 'en', edBuf = null;
+function edStash(){
+  if (!edBuf) return;
+  edBuf[edLang].n = $('ed-name').value;
+  edBuf[edLang].d = $('ed-desc').value;
+  cur().conf = cur().conf;   // translations don't touch confirmation
+  dirty();
+}
+function edPaint(){
+  var b = edBuf[edLang];
+  $('ed-name').value = b.n;
+  $('ed-desc').value = b.d;
+  var rtl = edLang === 'ar';
+  $('ed-name').setAttribute('dir', rtl ? 'rtl' : 'ltr');
+  $('ed-desc').setAttribute('dir', rtl ? 'rtl' : 'ltr');
+  var tag = edLang.toUpperCase();
+  $('ed-lang-tag').textContent = tag;
+  $('ed-lang-tag2').textContent = tag;
+  $('ed-desc-lb').textContent = edLang === 'en' ? "What's in it" : 'Description';
+  $('ed-draft-one').style.display =
+    (edLang !== 'en' && !edBuf[edLang].n && !edBuf[edLang].d) ? 'block' : 'none';
+}
+function edSwitch(l, btn){
+  edStash();
+  edLang = l;
+  document.querySelectorAll('#ed-langs button').forEach(function(x){ x.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  edPaint();
+}
+function draftLang(){
+  edBuf[edLang].n = edBuf.en.n;          // dish names carry over
+  edBuf[edLang].d = edBuf.en.d;          // description drafted from English
+  edPaint(); edStash();
+  toast('Drafted from English — adjust anything that reads wrong');
+}
 function paintAllergens(){
   var it = cur(), box = $('ed-al');
   var sug = suggested(it.ing).filter(function(a){ return it.al.indexOf(a) === -1; });
@@ -697,16 +765,21 @@ function confirmDish(){
   toast(ITEMS[editing].n + ' confirmed — now in guest filters');
 }
 function draft(){
-  var it = ITEMS[editing];
-  it.fr = 1; it.ar = 1;
+  ['fr','ar'].forEach(function(l){
+    if (!edBuf[l].n && !edBuf[l].d){ edBuf[l].n = edBuf.en.n; edBuf[l].d = edBuf.en.d; }
+  });
   $('ed-ai').style.display = 'none';
-  render(); dirty();
-  toast('Français + العربية drafted — review in Languages');
+  edPaint(); edStash();
+  toast('Both languages drafted — review them in the tabs');
 }
 function saveItem(){
+  edStash();
   var it = ITEMS[editing];
-  it.n = $('ed-name').value || it.n;
-  it.d = $('ed-desc').value;
+  it.n = edBuf.en.n || it.n;
+  it.d = edBuf.en.d;
+  it.tr = { fr: { n: edBuf.fr.n, d: edBuf.fr.d }, ar: { n: edBuf.ar.n, d: edBuf.ar.d } };
+  it.fr = (it.tr.fr.n || it.tr.fr.d) ? 1 : 0;
+  it.ar = (it.tr.ar.n || it.tr.ar.d) ? 1 : 0;
   it.p = parseFloat($('ed-price').value) || it.p;
   it.s = $('ed-sec').value;
   closeOv('ov-item'); render(); dirty();
@@ -719,8 +792,14 @@ function removeItem(){
   toast(n + ' removed');
 }
 /* ---------- add ---------- */
-var addIng = [];
+var addIng = [], adTr = 'auto';
+function adTrMode(m){
+  adTr = m;
+  $('ad-tr-auto').classList.toggle('on', m === 'auto');
+  $('ad-tr-manual').classList.toggle('on', m === 'manual');
+}
 function openAdd(secIdx){
+  adTrMode('auto');
   $('ad-name').value = ''; $('ad-price').value = '';
   addIng = [];
   function redraw(){ paintChips('ad-ing', addIng, function(i){ addIng.splice(i,1); redraw(); }); }
@@ -732,11 +811,15 @@ function openAdd(secIdx){
 function addItem(){
   var n = $('ad-name').value.trim();
   if (!n){ $('ad-name').focus(); return; }
+  var auto = adTr === 'auto';
   ITEMS.push({ id: 'i' + Date.now().toString(36), s: $('ad-sec').value, n: n, d: '',
-               p: parseFloat($('ad-price').value) || 0, fr: 0, ar: 0,
+               p: parseFloat($('ad-price').value) || 0,
+               fr: auto ? 1 : 0, ar: auto ? 1 : 0,
+               tr: auto ? { fr: { n: n, d: '' }, ar: { n: n, d: '' } }
+                        : { fr: { n: '', d: '' }, ar: { n: '', d: '' } },
                ing: addIng.slice(), al: [], kcal: null, pr: null, ft: null, cb: null, conf: 0 });
   closeOv('ov-add'); render(); dirty();
-  toast(n + (addIng.length ? ' added — now add nutrition to confirm it' : ' added — needs ingredients'));
+  toast(n + (adTr === 'auto' ? ' added — translations drafted, review in the item' : ' added — write FR and AR in the item'));
 }
 /* ---------- reprice ---------- */
 function setPct(el, v){
