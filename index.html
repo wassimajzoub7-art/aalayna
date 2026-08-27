@@ -46,8 +46,9 @@
 
   /* ─── hero ─── */
   .hero{padding:72px 0 40px}
-  .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
-  @media(max-width:880px){.hero-grid{grid-template-columns:1fr;gap:40px}}
+  .hero-grid{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .hero-grid .lead{margin-left:auto;margin-right:auto;max-width:540px}
+  .hero-grid .hero-ctas,.hero-grid .built{justify-content:center}
   .kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
   h1{font-size:clamp(32px,4.6vw,50px);font-weight:700;letter-spacing:-.025em;line-height:1.08;margin-top:14px}
   h1 em{font-style:normal;color:var(--green)}
@@ -57,17 +58,6 @@
   .built{display:flex;gap:8px;flex-wrap:wrap;margin-top:30px}
   .chip{font-size:11px;font-weight:600;color:var(--sub);background:var(--surface);
     border:1px solid var(--line);border-radius:20px;padding:6px 12px}
-
-  /* the live demo, framed as a phone */
-  .phone-wrap{display:flex;justify-content:center}
-  .phone{width:320px;height:640px;background:#111;border-radius:38px;padding:10px;
-    box-shadow:0 24px 60px rgba(23,29,26,.18), 0 2px 8px rgba(23,29,26,.1);position:relative}
-  .phone::before{content:'';position:absolute;top:20px;left:50%;transform:translateX(-50%);
-    width:88px;height:22px;background:#111;border-radius:12px;z-index:2}
-  .phone iframe{width:100%;height:100%;border:none;border-radius:29px;background:#fff}
-  .phone-cap{text-align:center;font-size:12px;color:var(--faint);margin-top:16px}
-  .phone-cap a{color:var(--green);font-weight:600;text-decoration:none}
-  @media(max-width:880px){.phone{width:290px;height:580px}}
 
   /* ─── sections ─── */
   section{padding:64px 0}
@@ -171,13 +161,6 @@
         <span class="chip">Card</span><span class="chip">LL &amp; $</span>
         <span class="chip">EN · FR · عربي</span>
       </div>
-    </div>
-    <div>
-      <div class="phone-wrap">
-        <div class="phone"><iframe src="3alyna_full_flow.html" title="3alayna live demo" loading="lazy"></iframe></div>
-      </div>
-      <div class="phone-cap">This is the real product, live — tap it.
-        <a href="3alyna_full_flow.html">Open full-screen →</a></div>
     </div>
   </div>
 </header>
