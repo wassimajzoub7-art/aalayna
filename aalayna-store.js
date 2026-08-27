@@ -174,6 +174,32 @@
     return !!(x.ing && x.ing.length) && x.kcal != null && x.pr != null && x.ft != null && x.cb != null;
   }
 
+  /* ---------- migration ---------------------------------------------------
+     A device that scanned the QR last week holds last week's data shape in
+     localStorage. New fields (like per-item translations) must be merged in
+     silently — a field demo can never depend on someone finding "Reset". */
+  var SCHEMA = 2;
+  function migrate() {
+    var meta = read('aal.schema', 0);
+    if (meta >= SCHEMA) return;
+    [K.live, K.draft].forEach(function (key) {
+      var m = read(key, null);
+      if (!m || !m.items) return;
+      m.items = m.items.map(function (x) {
+        // attach seed translations to seed items that predate the tr field
+        if ((!x.tr || (!x.tr.fr && !x.tr.ar)) && SEED_TR[x.id]) {
+          var tr = clone(SEED_TR[x.id]);
+          if (x.fr === 0) tr.fr = { n: '', d: '' };
+          if (x.ar === 0) tr.ar = { n: '', d: '' };
+          x.tr = tr;
+        }
+        return normalise(x);
+      });
+      write(key, m);
+    });
+    try { localStorage.setItem('aal.schema', JSON.stringify(SCHEMA)); } catch (e) {}
+  }
+
   function seedIfEmpty() {
     if (!read(K.live, null)) {
       var seeded = clone(SEED_ITEMS).map(function (x) {
@@ -306,5 +332,6 @@
   };
 
   seedIfEmpty();
+  migrate();
   global.Aalayna = A;
 })(window);
