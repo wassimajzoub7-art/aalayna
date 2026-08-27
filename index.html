@@ -50,10 +50,6 @@
   @media(max-width:640px){.nav-links a:not(.btn){display:none}}
 
   /* ─── hero ─── */
-  @keyframes heroIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas{animation:heroIn .6s var(--ease) both}
-  .hero h1{animation-delay:.08s}.hero .lead{animation-delay:.16s}
-  .hero .hero-ctas{animation-delay:.24s}
   .hero,section.wrap,.final{
     min-height:calc(100vh - 57px);min-height:calc(100svh - 57px);
     display:flex;flex-direction:column;justify-content:center;
@@ -66,7 +62,7 @@
   .kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
   h1{font-size:clamp(32px,4.6vw,50px);font-weight:700;letter-spacing:-.025em;line-height:1.08;margin-top:14px}
   h1 em{font-style:normal;color:var(--brand)}
-  .lead{font-size:16px;color:var(--sub);line-height:1.65;margin-top:18px;max-width:480px}
+  .lead{font-size:17px;color:var(--sub);line-height:1.65;margin-top:18px;max-width:480px}
   .hero-ctas{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
 
   /* ─── sections ─── */
@@ -74,7 +70,7 @@
   @media(max-width:640px){section.wrap{padding:40px 18px}}
   .sec-k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
   h2{font-size:clamp(24px,3vw,32px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-top:10px}
-  .sec-sub{font-size:14.5px;color:var(--sub);line-height:1.65;margin-top:12px;max-width:560px}
+  .sec-sub{font-size:15.5px;color:var(--sub);line-height:1.65;margin-top:12px;max-width:560px}
 
   .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
   @media(max-width:880px){.cards{grid-template-columns:1fr}}
@@ -88,7 +84,7 @@
     display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .card .ic svg{width:19px;height:19px}
   .card h3{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
-  .card p{font-size:13px;color:var(--sub);line-height:1.65;margin-top:8px}
+  .card p{font-size:13.5px;color:var(--sub);line-height:1.65;margin-top:8px}
 
   /* how it works */
   .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
@@ -96,11 +92,11 @@
   .step{border-top:2px solid var(--brand);padding-top:18px}
   .step .n{font-size:12px;font-weight:700;color:var(--brand)}
   .step h3{font-size:16px;font-weight:600;margin-top:6px}
-  .step p{font-size:13px;color:var(--sub);line-height:1.65;margin-top:8px}
+  .step p{font-size:13.5px;color:var(--sub);line-height:1.65;margin-top:8px}
 
   /* ─── pricing ─── */
-  .price-grid{display:flex;justify-content:center;margin-top:36px}
-  .price-card{width:100%;max-width:520px}
+  .price-flex{display:grid;grid-template-columns:1fr 500px;gap:56px;align-items:center}
+  @media(max-width:880px){.price-flex{grid-template-columns:1fr;gap:32px}}
   .price-card{background:var(--petrol);color:#fff;border-radius:18px;padding:36px 34px;position:relative;overflow:hidden}
   .price-card::after{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;
     border-radius:50%;background:rgba(255,255,255,.05)}
@@ -113,23 +109,23 @@
   .price-card li{font-size:13.5px;line-height:1.5;padding:5px 0;display:flex;gap:10px;color:#D9E2E0;
     opacity:0;transform:translateX(-8px);
     transition:opacity .4s var(--ease),transform .4s var(--ease)}
-  .price-card.in li{opacity:1;transform:none}
-  .price-card.in li:nth-child(1){transition-delay:.1s}.price-card.in li:nth-child(2){transition-delay:.16s}
-  .price-card.in li:nth-child(3){transition-delay:.22s}.price-card.in li:nth-child(4){transition-delay:.28s}
-  .price-card.in li:nth-child(5){transition-delay:.34s}.price-card.in li:nth-child(6){transition-delay:.4s}
-  .price-card.in li:nth-child(7){transition-delay:.46s}
+  .act .price-card li{opacity:1;transform:none}
+  .act .price-card li:nth-child(1){transition-delay:.25s}.act .price-card li:nth-child(2){transition-delay:.31s}
+  .act .price-card li:nth-child(3){transition-delay:.37s}.act .price-card li:nth-child(4){transition-delay:.43s}
+  .act .price-card li:nth-child(5){transition-delay:.49s}.act .price-card li:nth-child(6){transition-delay:.55s}
+  .act .price-card li:nth-child(7){transition-delay:.61s}
   .price-card li::before{content:'✓';color:var(--sand);font-weight:700}
 
   /* ─── faq ─── */
   .faq{margin:36px 0 0}
   details{background:var(--surface);border:1px solid var(--line);border-radius:12px;
     padding:0 20px;margin-bottom:10px}
-  summary{font-size:14.5px;font-weight:600;padding:18px 0;cursor:pointer;list-style:none;
+  summary{font-size:15.5px;font-weight:600;padding:18px 0;cursor:pointer;list-style:none;
     display:flex;justify-content:space-between;align-items:center}
   summary::-webkit-details-marker{display:none}
   summary::after{content:'+';font-size:18px;color:var(--faint);transition:transform .2s var(--ease)}
   details[open] summary::after{transform:rotate(45deg)}
-  details p{font-size:13.5px;color:var(--sub);line-height:1.7;padding-bottom:18px}
+  details p{font-size:14.5px;color:var(--sub);line-height:1.7;padding-bottom:18px}
   @keyframes faqIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
   details[open] p{animation:faqIn .28s var(--ease)}
 
@@ -143,12 +139,11 @@
   footer a{color:var(--sub);text-decoration:none}
 
   /* entrance motion — gentle, once, honest to reduced-motion */
-  .rv{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
-  .rv.in{opacity:1;transform:none}
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+  .act .rv{opacity:1;transform:none}
   @media (prefers-reduced-motion:reduce){
     .rv{transform:none;transition:opacity .3s ease}
     .btn:active{transform:none}
-    .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas{animation:heroIn .3s ease both;transform:none}
     .card,.card:hover{transform:none;box-shadow:none}
     .price-card li{transform:none;transition:opacity .3s ease}
     details[open] p{animation:faqIn .2s ease}
@@ -173,12 +168,12 @@
 <header class="hero wrap">
   <div class="hero-grid">
     <div>
-      <div class="kicker">Built in Lebanon, for Lebanon</div>
-      <h1>Your guests settle the bill.<br><em>Your tables turn faster.</em></h1>
-      <p class="lead">A QR on the table opens your menu in English, français and عربي,
+      <div class="kicker rv">Built in Lebanon, for Lebanon</div>
+      <h1 class="rv">Your guests settle the bill.<br><em>Your tables turn faster.</em></h1>
+      <p class="lead rv">A QR on the table opens your menu in English, français and عربي,
         in dollars and lira. Guests split the bill and pay it on their phone with Whish,
         card, or cash. No app, no account, no waiting for the card machine.</p>
-      <div class="hero-ctas">
+      <div class="hero-ctas rv">
         <!-- TODO: replace 961XXXXXXXX with the business WhatsApp number -->
         <a class="btn big" href="https://wa.me/961XXXXXXXX?text=Hi%2C%20I%27d%20like%20to%20see%203alayna%20at%20my%20restaurant">WhatsApp us</a>
         <!-- TODO: replace with your Calendly link -->
@@ -231,11 +226,13 @@
 </section>
 
 <section id="pricing" class="wrap">
-  <div class="sec-k rv">Pricing</div>
-  <h2 class="rv">One flat fee. Never a cut.</h2>
-  <p class="sec-sub rv">Others take a percentage of every check. We never touch your money,
-    so there is nothing to take a percentage of.</p>
-  <div class="price-grid">
+  <div class="price-flex">
+    <div>
+      <div class="sec-k rv">Pricing</div>
+      <h2 class="rv">One flat fee. Never a cut.</h2>
+      <p class="sec-sub rv">Others take a percentage of every check. We never touch your
+        money, so there is nothing to take a percentage of.</p>
+    </div>
     <div class="price-card rv">
       <div class="price-tag">Everything included</div>
       <div class="price-n">$100<span> / month</span></div>
@@ -297,16 +294,21 @@
 </footer>
 
 <script>
-  var io = new IntersectionObserver(function(es){
-    es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, {threshold:.12});
-  // siblings reveal as a cascade, 70ms apart, capped so late items never lag
-  document.querySelectorAll('.cards, .steps, .faq').forEach(function(group){
-    Array.prototype.forEach.call(group.children, function(el, i){
-      el.style.transitionDelay = Math.min(i, 6) * 70 + 'ms';
+  // each full-page panel choreographs its content: a staggered cascade on every
+  // entry, reset on exit, so snapping between sections always animates
+  var panels = document.querySelectorAll('.hero, section.wrap, .final');
+  panels.forEach(function(panel){
+    panel.querySelectorAll('.rv').forEach(function(el, i){
+      el.style.transitionDelay = Math.min(i, 9) * 70 + 'ms';
     });
   });
-  document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+  var pio = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (e.isIntersecting) e.target.classList.add('act');
+      else e.target.classList.remove('act');
+    });
+  }, {threshold:.25});
+  panels.forEach(function(p){ pio.observe(p); });
 </script>
 </body>
 </html>
