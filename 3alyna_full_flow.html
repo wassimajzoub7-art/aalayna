@@ -97,7 +97,53 @@
   [dir="rtl"] .sel select{padding:6px 9px 6px 18px}
   [dir="rtl"] .sel::after{right:auto;left:7px}
 
-  .fchips{display:flex;gap:6px;padding:13px 18px 0;flex-wrap:wrap;flex-shrink:0}
+  .fchips{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+  .ftrig{display:flex;align-items:center;gap:10px;padding:12px 18px 0;flex-shrink:0}
+  .fbtn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);
+    border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:600;color:var(--ink);cursor:pointer;
+    font-family:inherit;transition:border-color .12s}
+  .fbtn:hover{border-color:#CFCCC5}
+  .fbtn .fi{font-size:11px;color:var(--sub)}
+  .fbadge{background:var(--green);color:#fff;font-size:9.5px;font-weight:600;border-radius:8px;
+    padding:1px 6px;min-width:16px;text-align:center}
+  .fsum{font-size:11px;color:var(--green);font-weight:500}
+  .rcpt{margin-top:2px;width:100%;max-width:280px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:16px 18px}
+  .rc-amt{font-size:30px;font-weight:600;color:#fff;letter-spacing:-.01em}
+  .rc-rows{margin-top:12px;border-top:1px solid rgba(255,255,255,.14);padding-top:4px}
+  .rc-r{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;color:#9DBBAC}
+  .rc-r b{color:#fff;font-weight:600}
+  .rc-note{margin-top:10px;font-size:10.5px;color:#9DBBAC}
+  .rate-wrap{margin-top:20px}
+  .rate-q{font-size:13px;font-weight:600;color:#fff}
+  .dstars{display:flex;gap:10px;justify-content:center;margin-top:10px}
+  .dstars .star{font-size:30px;color:rgba(255,255,255,.3)}
+  .dstars .star:hover{color:var(--gold-lt)}
+  .dstars .star.on{color:var(--gold)}
+  .linky{margin-top:12px;text-align:center;font-size:11px;color:var(--sub);text-decoration:underline;
+    cursor:pointer}
+  .sim-note{margin-top:12px;text-align:center;font-size:10px;color:var(--faint);line-height:1.5}
+  .wh-mark{width:64px;height:38px;border-radius:9px;background:#E4002B;color:#fff;font-weight:700;
+    font-size:13px;display:flex;align-items:center;justify-content:center;margin:2px auto 12px}
+  .wh-steps{display:flex;gap:8px;margin:16px 0}
+  .wh-s{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 4px;
+    font-size:10.5px;color:var(--sub)}
+  .wh-s b{display:block;color:var(--green);font-size:12px;margin-bottom:3px}
+  .cardhead{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .cardhead .lock{font-size:12px}
+  .cardby{margin-left:auto;font-size:10px;color:var(--faint);font-weight:500;letter-spacing:.04em}
+  .fldc{margin-top:12px}
+  .lbc{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub);margin-bottom:5px}
+  .inc{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px;font-size:14px;
+    font-family:inherit;background:var(--surface);font-feature-settings:'tnum'}
+  .inc:focus{outline:none;border-color:var(--green)}
+  .rowc{display:flex;gap:9px}
+  .rowc .fldc{flex:1}
+  .r-paid{opacity:.5}
+  .r-paid .p{text-decoration:line-through}
+  .paidtag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:.04em;color:var(--green);
+    background:var(--green-bg);border-radius:5px;padding:1px 6px;margin-left:6px;text-decoration:none}
+  .pl.dis{opacity:.45;pointer-events:none}
   .fc{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;
     font-size:11px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .12s}
   .fc.on{background:var(--green-bg);border-color:var(--green-line);color:var(--green);font-weight:600}
@@ -382,17 +428,12 @@
         <option value="usd">USD $</option><option value="lbp">LBP&nbsp;LL</option>
       </select></div>
     </div>
-    <div class="fchips">
-      <button class="fc" id="f-veg" onclick="togF('veg')">Vegetarian</button>
-      <button class="fc" id="f-nonuts" onclick="togF('nonuts')">No nuts</button>
-      <button class="fc" id="f-nodairy" onclick="togF('nodairy')">No dairy</button>
-      <button class="fc" id="f-light" onclick="togF('light')">Under 400 kcal</button>
-      <button class="fc" id="f-protein" onclick="togF('protein')">High protein</button>
-    </div>
-    <div class="fbar" id="fbar">
-      <span class="cnt" id="fcount">12</span>
-      <span id="fmsg">of 16 dishes work for you</span>
-      <button class="clr" id="fclear" onclick="clearF()">Clear</button>
+    <div class="ftrig" id="ftrig">
+      <button class="fbtn" onclick="openOv('ov-filters')">
+        <span class="fi">&#9776;</span> Dietary filters
+        <span class="fbadge" id="fbadge" style="display:none">0</span>
+      </button>
+      <span class="fsum" id="fsum"></span>
     </div>
     <div class="cats" id="cats"><span id="ink"></span></div>
     <div class="scroll" id="menuscroll" style="padding-bottom:96px"></div>
@@ -450,7 +491,7 @@
       <div class="hint" id="restnote">$114.37 left for the other three. They'll see it update live.</div>
     </div>
     <div class="dock">
-      <button class="cta cta-green" onclick="go('v-pay')"><span class="sheen"></span>Continue</button>
+      <button class="cta cta-green" id="continue-btn" onclick="go('v-pay')"><span class="sheen"></span>Continue &middot; $38.13</button>
       <div class="powered">powered by <b>3alayna</b></div>
     </div>
   </div>
@@ -500,12 +541,6 @@
           <button class="chip" onclick="setNote(this,100)">$100</button>
           <button class="chip" onclick="setNote(this,0)">Exact</button>
         </div>
-        <div class="chg-sub" id="cursub">Bring my change in</div>
-        <div class="cur" id="curwrap">
-          <button class="curb on" onclick="setCur(this,'usd')">Dollars</button>
-          <button class="curb" onclick="setCur(this,'lbp')">Lira</button>
-          <button class="curb" onclick="setCur(this,'any')">Either's fine</button>
-        </div>
         <div class="chg-out" id="chgout">Abou Karim comes <b>once</b>, with your change already counted.</div>
       </div>
       <div class="cashnote" id="cashnote">
@@ -528,18 +563,23 @@
         <h2 class="display shukran">Shukran.</h2>
         <div class="ar">&#1588;&#1603;&#1585;&#1575;&#1611;</div>
         <div class="rule2"></div>
-        <div class="done-p" id="donep">
-          Table 12 is settled.<br>Take your time, leave when you like.
+        <div class="rcpt">
+          <div class="rc-amt" id="rc-amt">$41.94</div>
+          <div class="rc-rows">
+            <div class="rc-r"><span>Paid via</span><b id="rc-method">Whish Money</b></div>
+            <div class="rc-r"><span>Table</span><b>12</b></div>
+            <div class="rc-r"><span>Time</span><b id="rc-time">21:42</b></div>
+          </div>
+          <div class="rc-note">Payment confirmed &middot; recorded on the table's bill</div>
         </div>
-        <div class="twoup">
-          <button class="offer" onclick="openOv('ov-google')">
-            <div class="ic">&#9733;</div>
-            <div><div class="ot">Say something about <span class="v-short">Hallab</span></div><div class="os" id="v-review-sub">144 years, one review at a time</div></div>
-          </button>
-          <button class="offer" onclick="openOv('ov-priv')">
-            <div class="ic">&#9993;</div>
-            <div><div class="ot">Or tell us privately</div><div class="os">Straight to the owner, never public</div></div>
-          </button>
+
+        <div class="rate-wrap">
+          <div class="rate-q">How was <span class="v-short">Hallab</span> tonight?</div>
+          <div class="dstars" id="dstars">
+            <span class="star" onclick="rate(1)">&#9733;</span><span class="star" onclick="rate(2)">&#9733;</span>
+            <span class="star" onclick="rate(3)">&#9733;</span><span class="star" onclick="rate(4)">&#9733;</span>
+            <span class="star" onclick="rate(5)">&#9733;</span>
+          </div>
         </div>
       </div>
       <div class="dock-dk">
@@ -606,6 +646,71 @@
         <span class="sheen"></span>Send to the owner
       </button>
       <button class="cta cta-ghost" onclick="closeOv('ov-priv')">Maybe later</button>
+      <div class="linky" onclick="closeOv('ov-priv'); openOv('ov-google')">Prefer to post on Google instead?</div>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: dietary filters ============ -->
+  <div class="ov" id="ov-filters">
+    <div class="scrim" onclick="closeOv('ov-filters')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t">Dietary filters</div>
+      <div class="sh-s">Dishes that don't fit stay visible but fade, with the reason shown.</div>
+      <div class="fchips" style="padding:14px 0 0">
+        <button class="fc" id="f-veg" onclick="togF('veg')">Vegetarian</button>
+        <button class="fc" id="f-nonuts" onclick="togF('nonuts')">No nuts</button>
+        <button class="fc" id="f-nodairy" onclick="togF('nodairy')">No dairy</button>
+        <button class="fc" id="f-light" onclick="togF('light')">Under 400 kcal</button>
+        <button class="fc" id="f-protein" onclick="togF('protein')">High protein</button>
+      </div>
+      <div class="fbar" id="fbar">
+        <span class="cnt" id="fcount">16</span>
+        <span id="fmsg">of 16 dishes work for you</span>
+        <button class="clr" id="fclear" onclick="clearF()">Clear</button>
+      </div>
+      <button class="cta cta-green" style="margin-top:16px" onclick="closeOv('ov-filters')">Done</button>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: Whish handoff (simulated) ============ -->
+  <div class="ov" id="ov-whish">
+    <div class="scrim"></div>
+    <div class="sheet" style="text-align:center">
+      <div class="grab"></div>
+      <div class="wh-mark">whish</div>
+      <div class="sh-t" style="text-align:center" id="wh-amt">Pay $41.94</div>
+      <div class="sh-s" style="text-align:center">The Whish app opens with the amount and reference
+        already filled in. Confirm there and you're brought straight back.</div>
+      <div class="wh-steps">
+        <div class="wh-s"><b>1</b> Whish opens</div>
+        <div class="wh-s"><b>2</b> You confirm</div>
+        <div class="wh-s"><b>3</b> Table updates</div>
+      </div>
+      <button class="cta cta-green" id="wh-btn" onclick="whishConfirm()">Open Whish</button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-whish')">Cancel</button>
+      <div class="sim-note">Simulated &mdash; in production this is a Whish deep link with a payment callback.</div>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: card checkout (simulated hosted page) ============ -->
+  <div class="ov" id="ov-card">
+    <div class="scrim"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="cardhead"><span class="lock">&#128274;</span> Secure checkout
+        <span class="cardby">areeba &middot; simulated</span></div>
+      <div class="sh-s">This page is hosted by the venue's payment provider.
+        Card details never touch 3alayna.</div>
+      <div class="fldc"><div class="lbc">Card number</div>
+        <input class="inc" placeholder="4242 4242 4242 4242" inputmode="numeric"></div>
+      <div class="rowc">
+        <div class="fldc"><div class="lbc">Expiry</div><input class="inc" placeholder="MM / YY"></div>
+        <div class="fldc"><div class="lbc">CVC</div><input class="inc" placeholder="123"></div>
+      </div>
+      <button class="cta cta-green" id="card-btn" onclick="cardConfirm()">Pay $41.94</button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-card')">Cancel</button>
+      <div class="sim-note">Simulated &mdash; in production this is the gateway's hosted page (3-D Secure included).</div>
     </div>
   </div>
 </div></div>
@@ -616,12 +721,13 @@
   <button class="sw" onclick="go('v-settle')">Split</button>
   <button class="sw" onclick="go('v-pay')">Pay</button>
   <button class="sw" onclick="settle()">Thanks</button>
+  <button class="sw" id="ppsw" onclick="togglePrepaid()">Someone already paid &rarr;</button>
   <button class="sw" id="covsw" onclick="toggleCoverage()">Menu not fully confirmed &rarr;</button>
 </div>
 <div class="note-out">
-  Full flow in Hallab's green and gold. The venue owns every surface; 3alayna is the footer credit.
-  <b>Change-ahead</b> lives under the cash option. Review and private feedback are offered to
-  <b>every</b> diner in parallel &mdash; never branched on rating.
+  The venue owns every surface; 3alayna is the footer credit. <b>Change-ahead</b> lives under the
+  cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
+  with a visible Google link kept inside the private sheet.
 </div>
 <script src="aalayna-store.js?v=2"></script>
 <script>
@@ -634,6 +740,13 @@ function serving(win){
   return n >= w[0] && n < w[1];
 }
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
+/* demo: another guest already settled part of the bill */
+var PREPAID = false;
+var PREPAID_LINES = { 'Mixed Grill platter': 'Rami', 'Knefeh b\'Jebne + kaakeh': 'Rami' };
+function linePaid(l){ return PREPAID && PREPAID_LINES[l.n]; }
+function remaining(){
+  return BILL.reduce(function(a, l){ return a + (linePaid(l) ? 0 : l.p); }, 0);
+}
 function loadMenu(){
   var m = Aalayna.published();
   MENU_V = m.version;
@@ -752,7 +865,7 @@ function renderMenu(){
 }
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
-var tipRate = .10, kind = 'whish', note = 0, cur = 'usd';
+var tipRate = .10, kind = 'whish', note = 0;
 var curItem = null, curAdds = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -829,7 +942,7 @@ function buildMenu(){
   var sc = $('menuscroll');
   if (!sc._spy){ sc.addEventListener('scroll', spy, { passive: true }); sc._spy = 1; }
   var ready = menuReady();
-  document.querySelector('.fchips').style.display = ready ? 'flex' : 'none';
+  document.getElementById('ftrig').style.display = ready ? 'flex' : 'none';
   if (!ready) clearF();
   var s = $('menuscroll');
   s.innerHTML = '';
@@ -893,6 +1006,10 @@ function applyF(){
   document.getElementById('fcount').textContent = ok;
   document.getElementById('fmsg').textContent =
     t('of') + ' ' + total + ' ' + (ok === 1 ? t('works') : t('work'));
+  var nOn = Object.keys(filt).filter(function(k){ return filt[k]; }).length;
+  var badge = document.getElementById('fbadge'), sum = document.getElementById('fsum');
+  if (badge){ badge.style.display = nOn ? 'inline-block' : 'none'; badge.textContent = nOn; }
+  if (sum) sum.textContent = nOn ? (ok + ' ' + t('of') + ' ' + total + ' ' + t('work')) : '';
 }
 function openItem(m){
   curItem = m; curAdds = {};
@@ -943,22 +1060,34 @@ function buildBill(){
   var box = $('r-items'); box.innerHTML = '';
   BILL.forEach(function(b){
     var d = document.createElement('div');
-    d.className = 'r-item';
-    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n + '</div>' +
+    var paidBy = linePaid(b);
+    d.className = 'r-item' + (paidBy ? ' r-paid' : '');
+    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n +
+                  (paidBy ? '<span class="paidtag">PAID · ' + paidBy + '</span>' : '') + '</div>' +
                   '<div class="p">' + usd(b.p) + '</div>';
     box.appendChild(d);
   });
-  $('r-tot').textContent = usd(TOTAL);
-  $('r-ll').textContent = ll(TOTAL);
-  $('land-tot').textContent = price(TOTAL);
-  $('pill-tot').textContent = price(TOTAL);
+  var rem = remaining();
+  $('r-tot').textContent = usd(rem);
+  document.querySelector('.r-total .l').textContent = PREPAID ? 'REMAINING' : 'TOTAL';
+  $('r-ll').textContent = ll(rem) + (PREPAID ? ' · of ' + usd(TOTAL) + ' total' : '');
+  $('land-tot').textContent = price(rem);
+  $('pill-tot').textContent = price(rem);
 }
 /* ---------------- settle ---------------- */
 function buildPick(){
   var box = $('picklist'); box.innerHTML = '';
   BILL.forEach(function(b, i){
     var d = document.createElement('div');
-    d.className = 'pl';
+    var paidBy = linePaid(b);
+    d.className = 'pl' + (paidBy ? ' dis' : '');
+    if (paidBy){
+      d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
+        '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
+        '<span class="paidtag">PAID · ' + paidBy + '</span></span><span class="pr">' + usd(b.p) + '</span>';
+      box.appendChild(d);
+      return;
+    }
     d.onclick = function(){
       picked[i] = !picked[i];
       d.classList.toggle('on', picked[i]);
@@ -983,12 +1112,15 @@ function ppl(d){
   calcShare();
 }
 function calcShare(){
-  if (splitMode === 'even')      share = TOTAL / people;
-  else if (splitMode === 'all')  share = TOTAL;
-  else { share = 0; BILL.forEach(function(b, i){ if (picked[i]) share += b.p; }); }
+  var rem = remaining();
+  if (splitMode === 'even')      share = rem / people;
+  else if (splitMode === 'all')  share = rem;
+  else { share = 0; BILL.forEach(function(b, i){ if (picked[i] && !linePaid(b)) share += b.p; }); }
   $('sh-v').textContent = usd(share);
   $('sh-ll').textContent = ll(share);
-  var rest = TOTAL - share;
+  var cb = $('continue-btn');
+  if (cb) cb.innerHTML = '<span class="sheen"></span>Continue · ' + usd(share + share * tipRate);
+  var rest = rem - share;
   $('restnote').textContent = rest > 0.01
     ? usd(rest) + ' left for the rest of the table. They see it update live.'
     : 'That covers the whole table. Everyone else is done.';
@@ -1015,28 +1147,19 @@ function setNote(el, n){
   el.classList.add('on');
   paintPay();
 }
-function setCur(el, c){
-  cur = c;
-  document.querySelectorAll('.curb').forEach(function(b){ b.classList.remove('on'); });
-  el.classList.add('on');
-  paintPay();
-}
-function money(v){ return (cur === 'lbp') ? 'LL ' + Math.round(v * RATE).toLocaleString('en-US') : usd(v); }
+function money(v){ return usd(v); }
 function paintChange(due){
-  var out = $('chgout'), sub = $('cursub'), wrap = $('curwrap');
+  var out = $('chgout');
   if (note === 0){
-    sub.style.opacity = '.35'; wrap.style.opacity = '.35';
     out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. Abou Karim just collects the notes — no trip to the till.';
     return;
   }
-  sub.style.opacity = '1'; wrap.style.opacity = '1';
   var back = note - due;
   if (back < 0){
     out.innerHTML = '<b>$' + note + '</b> doesn’t cover ' + usd(due) + '. Pick a bigger note, or split it with the table.';
     return;
   }
-  out.innerHTML = 'Abou Karim comes <b>once</b>, with <b>' + money(back) + '</b> already counted.' +
-    (cur === 'lbp' ? '<br><span style="font-size:11px;opacity:.75">at ' + RATE.toLocaleString('en-US') + ' LL / $1</span>' : '');
+  out.innerHTML = 'Abou Karim comes <b>once</b>, with <b>' + usd(back) + '</b> already counted.';
 }
 function paintPay(){
   var t = share * tipRate, tot = share + t, isCash = (kind === 'cash');
@@ -1047,16 +1170,6 @@ function paintPay(){
   $('tv15').textContent = usd(share * .15);
   $('paybtn').innerHTML = '<span class="sheen"></span>' +
     (isCash ? 'Tell the floor — paying cash' : 'Pay ' + usd(tot));
-  var line;
-  if (isCash && note > 0 && note - tot > 0){
-    line = 'Abou Karim is on his way<br>with <b>' + money(note - tot) + '</b> for you.';
-  } else if (t > 0){
-    line = 'Table 12 is settled.<br><b>Abou Karim</b> has his ' + usd(t) +
-           '.<br>Take your time, leave when you like.';
-  } else {
-    line = 'Table 12 is settled.<br>Take your time, leave when you like.';
-  }
-  $('donep').innerHTML = line;
   if (isCash) paintChange(tot);   // tot, not share — the change must account for the tip
 }
 /* ---------------- success ---------------- */
@@ -1078,17 +1191,58 @@ function makeBurst(){
 function settle(){
   paintPay();
   var t = share * tipRate, tot = share + t;
+  if (kind === 'whish'){
+    $('wh-amt').textContent = 'Pay ' + usd(tot);
+    $('wh-btn').textContent = 'Open Whish';
+    openOv('ov-whish');
+    return;
+  }
+  if (kind === 'card'){
+    $('card-btn').textContent = 'Pay ' + usd(tot);
+    openOv('ov-card');
+    return;
+  }
+  finishSettle('cash');
+}
+function whishConfirm(){
+  var b = $('wh-btn');
+  b.textContent = 'Confirming with Whish…';
+  setTimeout(function(){ closeOv('ov-whish'); finishSettle('whish'); }, 900);
+}
+function cardConfirm(){
+  var b = $('card-btn');
+  b.textContent = 'Processing…';
+  setTimeout(function(){ closeOv('ov-card'); finishSettle('card'); }, 900);
+}
+var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
+function finishSettle(rail){
+  var t = share * tipRate, tot = share + t;
   Aalayna.settle({
-    table: 12, rail: kind, amount: tot, tip: t, server: 'Abou Karim',
-    note: (kind === 'cash' ? note : 0),
-    change: (kind === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
+    table: 12, rail: rail, amount: tot, tip: t, server: 'Abou Karim',
+    note: (rail === 'cash' ? note : 0),
+    change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
   });
+  $('rc-amt').textContent = usd(tot);
+  $('rc-method').textContent = RAIL_NAMES[rail] + (rail === 'cash' && note > 0 && note - tot > 0
+    ? ' · ' + usd(note - tot) + ' change' : '');
+  var d = new Date();
+  $('rc-time').textContent = ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
   go('v-done');
   var w = $('inner');
   w.classList.remove('go');
   makeBurst();
   void w.offsetWidth;
   w.classList.add('go');
+}
+/* Sunday-style routing: 4-5 stars → Google; 1-3 → private feedback,
+   with a visible link to Google kept inside the private sheet. */
+function rate(n){
+  rating = n;
+  document.querySelectorAll('#dstars .star').forEach(function(st, i){ st.classList.toggle('on', i < n); });
+  setTimeout(function(){
+    if (n >= 4){ setStar(n); openOv('ov-google'); }
+    else openOv('ov-priv');
+  }, 350);
 }
 function setStar(n){
   rating = n;
@@ -1107,6 +1261,14 @@ function toggleCoverage(){
     : 'Menu not fully confirmed \u2192';
   buildMenu();
 }
+function togglePrepaid(){
+  PREPAID = !PREPAID;
+  document.getElementById('ppsw').innerHTML = PREPAID
+    ? 'Reset: nobody paid yet &rarr;' : 'Someone already paid &rarr;';
+  picked = {};
+  buildBill(); buildPick(); calcShare();
+  go('v-bill');
+}
 function restart(){
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
   $('pn').textContent = 4;
@@ -1120,6 +1282,11 @@ function restart(){
   clearF();
   $('chg').classList.remove('on');
   $('cashnote').style.display = 'none';
+  document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); });
+  PREPAID = false;
+  var pp = document.getElementById('ppsw');
+  if (pp) pp.innerHTML = 'Someone already paid &rarr;';
+  buildBill(); buildPick(); calcShare();
   go('v-land');
 }
 /* ---------------- boot ---------------- */
