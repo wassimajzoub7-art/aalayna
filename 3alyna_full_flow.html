@@ -133,10 +133,9 @@
     display:flex;align-items:center;justify-content:center;
     transition:background .15s ease,transform .12s var(--ease)}
   .mailbtn:hover{background:rgba(255,255,255,.1)}
+  .mailbtn.sent{background:rgba(255,255,255,.18);border-color:transparent;cursor:default}
+  .mailin:disabled{opacity:.75}
   .mailbtn:active{transform:scale(.96)}
-  .maildone{margin-top:14px;font-size:12px;color:#CBDDD2;display:flex;gap:6px;align-items:center;
-    justify-content:center}
-  .maildone b{color:#fff;font-weight:600}
   .rate-wrap{margin-top:20px}
   .rate-q{font-size:13px;font-weight:600;color:#fff}
   .dstars{display:flex;gap:10px;justify-content:center;margin-top:10px}
@@ -658,8 +657,7 @@
             placeholder="Email &mdash; get your receipt (optional)">
           <button class="mailbtn" onclick="sendReceipt()" aria-label="Send receipt">&#10148;</button>
         </div>
-        <div class="maildone" id="mail-done" style="display:none">
-          &#10003; Receipt sent to <b></b></div>
+
 
         <div class="rate-wrap">
           <div class="rate-q">How was <span class="v-short">Hallab</span> tonight?</div>
@@ -671,7 +669,6 @@
         </div>
       </div>
       <div class="dock-dk">
-        <button class="cta cta-line-lt" onclick="restart()">Run the demo again</button>
         <div class="powered dk">powered by <b>3alayna</b></div>
       </div>
     </div>
@@ -1445,10 +1442,11 @@ function rate(n){
 function sendReceipt(){
   var v = $('mail-in').value.trim();
   if (!/^\S+@\S+\.\S+$/.test(v)){ $('mail-in').focus(); return; }
-  $('mailrc').style.display = 'none';
-  var d = $('mail-done');
-  d.querySelector('b').textContent = v;
-  d.style.display = 'flex';
+  var btn = document.querySelector('.mailbtn');
+  btn.innerHTML = '&#10003;';
+  btn.classList.add('sent');
+  btn.onclick = null;
+  $('mail-in').disabled = true;
 }
 function setStar(n){
   rating = n;
@@ -1505,7 +1503,9 @@ function restart(){
   $('chg').classList.remove('on');
   $('cashnote').style.display = 'none';
   document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); });
-  $('mail-in').value = ''; $('mailrc').style.display = 'flex'; $('mail-done').style.display = 'none';
+  $('mail-in').value = ''; $('mail-in').disabled = false;
+  var mb = document.querySelector('.mailbtn');
+  mb.innerHTML = '&#10148;'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
   PREPAID = false;
   var pp = document.getElementById('ppsw');
   if (pp) pp.innerHTML = 'Someone already paid &rarr;';
