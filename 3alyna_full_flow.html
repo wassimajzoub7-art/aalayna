@@ -122,6 +122,18 @@
   .rc-r{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;color:#9DBBAC}
   .rc-r b{color:#fff;font-weight:600}
   .rc-note{margin-top:10px;font-size:10.5px;color:#9DBBAC}
+  .mailrc{display:flex;gap:8px;margin-top:14px}
+  .mailin{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:9px;color:#fff;padding:11px 12px;font-family:inherit;font-size:12px}
+  .mailin::placeholder{color:rgba(255,255,255,.45)}
+  .mailin:focus{outline:none;border-color:rgba(255,255,255,.4)}
+  .mailbtn{border:1px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:9px;
+    padding:11px 16px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;
+    transition:background .15s ease,transform .12s var(--ease)}
+  .mailbtn:active{transform:scale(.96)}
+  .maildone{margin-top:14px;font-size:12px;color:#CBDDD2;display:flex;gap:6px;align-items:center;
+    justify-content:center}
+  .maildone b{color:#fff;font-weight:600}
   .rate-wrap{margin-top:20px}
   .rate-q{font-size:13px;font-weight:600;color:#fff}
   .dstars{display:flex;gap:10px;justify-content:center;margin-top:10px}
@@ -240,6 +252,12 @@
   .seg button{flex:1;border:none;background:transparent;border-radius:7px;padding:9px 4px;font-size:12px;
     font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s,opacity .15s}
   .seg button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(23,29,26,.08)}
+  .amtbox{display:flex;align-items:center;gap:8px;margin-top:14px;background:var(--surface);
+    border:1px solid var(--line);border-radius:10px;padding:6px 14px}
+  .amtbox:focus-within{border-color:var(--green)}
+  .acur{font-size:20px;font-weight:600;color:var(--sub)}
+  .amtin{flex:1;min-width:0;border:none;background:none;outline:none;font-family:inherit;
+    font-size:24px;font-weight:600;color:var(--ink);padding:8px 0;font-feature-settings:'tnum'}
   .ppl{display:flex;align-items:center;justify-content:space-between;margin-top:14px;
     background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px}
   .ppl .lab{font-size:12.5px;font-weight:600}
@@ -509,9 +527,10 @@
       <div class="b-title">How are we doing this?</div>
       <div class="b-sub">Nobody has to work out the maths</div>
       <div class="seg">
-        <button id="s-even" class="on" onclick="mode('even')">Split evenly</button>
-        <button id="s-item" onclick="mode('item')">Pick my items</button>
-        <button id="s-all" onclick="mode('all')">I've got it all</button>
+        <button id="s-even" class="on" onclick="mode('even')">Evenly</button>
+        <button id="s-item" onclick="mode('item')">My items</button>
+        <button id="s-amt" onclick="mode('amt')">An amount</button>
+        <button id="s-all" onclick="mode('all')">All of it</button>
       </div>
       <div id="evenwrap">
         <div class="ppl">
@@ -526,6 +545,13 @@
       <div id="itemwrap" style="display:none">
         <div class="picklist" id="picklist"></div>
         <div class="hint">Tap what was yours. The rest stays on the table for the others.</div>
+      </div>
+      <div id="amtwrap" style="display:none">
+        <div class="amtbox">
+          <span class="acur">$</span>
+          <input class="amtin" id="amt-in" inputmode="decimal" placeholder="0.00" oninput="calcShare()">
+        </div>
+        <div class="hint" id="amt-hint"></div>
       </div>
       <div class="share">
         <div class="k">YOUR SHARE</div>
@@ -556,7 +582,7 @@
         <div class="tips">
           <button class="tipb" onclick="setTip(this,0)"><div class="tp">Nope</div><div class="tv">&nbsp;</div></button>
           <button class="tipb" onclick="setTip(this,.05)"><div class="tp">5%</div><div class="tv" id="tv5">$1.91</div></button>
-          <button class="tipb" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
+          <button class="tipb on" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
           <button class="tipb" onclick="setTip(this,.15)"><div class="tp">15%</div><div class="tv" id="tv15">$5.72</div></button>
         </div>
       </div>
@@ -616,6 +642,14 @@
           </div>
           <div class="rc-note">Payment confirmed &middot; recorded on the table's bill</div>
         </div>
+
+        <div class="mailrc" id="mailrc">
+          <input class="mailin" id="mail-in" type="email"
+            placeholder="Email &mdash; get your receipt (optional)">
+          <button class="mailbtn" onclick="sendReceipt()">Send</button>
+        </div>
+        <div class="maildone" id="mail-done" style="display:none">
+          &#10003; Receipt sent to <b></b></div>
 
         <div class="rate-wrap">
           <div class="rate-q">How was <span class="v-short">Hallab</span> tonight?</div>
@@ -772,7 +806,7 @@
   cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
   with a visible Google link kept inside the private sheet.
 </div>
-<script src="aalayna-store.js?v=5"></script>
+<script src="aalayna-store.js?v=6"></script>
 <script>
 /* ---------------- data ---------------- */
 var RATE = 89400;
@@ -905,7 +939,7 @@ function renderMenu(){
 }
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
-var tipRate = 0, kind = 'whish', note = 0;
+var tipRate = .10, kind = 'whish', note = 0;
 var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -1232,9 +1266,11 @@ function buildPick(){
 }
 function mode(m){
   splitMode = m;
-  ['even','item','all'].forEach(function(k){ $('s-' + k).classList.toggle('on', k === m); });
+  ['even','item','amt','all'].forEach(function(k){ $('s-' + k).classList.toggle('on', k === m); });
   $('evenwrap').style.display = (m === 'even') ? 'block' : 'none';
   $('itemwrap').style.display = (m === 'item') ? 'block' : 'none';
+  $('amtwrap').style.display  = (m === 'amt')  ? 'block' : 'none';
+  if (m === 'amt') $('amt-in').focus();
   calcShare();
 }
 function ppl(d){
@@ -1246,13 +1282,18 @@ function calcShare(){
   var rem = remaining();
   if (splitMode === 'even')      share = rem / people;
   else if (splitMode === 'all')  share = rem;
+  else if (splitMode === 'amt'){
+    // whatever they type, never more than what the table still owes
+    share = Math.max(0, Math.min(rem, parseFloat($('amt-in').value) || 0));
+    $('amt-hint').textContent = 'Whatever you like — up to the ' + usd(rem) + ' remaining.';
+  }
   else { share = 0; BILL.forEach(function(b, i){
     var avail = b.q - paidUnits(b);
     if (picked[i] && avail > 0) share += (b.p / b.q) * Math.min(picked[i], avail); }); }
   $('sh-v').textContent = usd(share);
   $('sh-ll').textContent = ll(share);
   var cb = $('continue-btn');
-  if (cb) cb.innerHTML = '<span class="sheen"></span>Continue · ' + usd(share + share * tipRate);
+  if (cb) cb.innerHTML = '<span class="sheen"></span>Continue · ' + usd(share);
   var rest = rem - share;
   $('restnote').textContent = rest > 0.01
     ? usd(rest) + ' left for the rest of the table. They see it update live.'
@@ -1377,6 +1418,15 @@ function rate(n){
     else openOv('ov-priv');
   }, 350);
 }
+/* optional, after payment — never a gate. Simulated like the payments. */
+function sendReceipt(){
+  var v = $('mail-in').value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(v)){ $('mail-in').focus(); return; }
+  $('mailrc').style.display = 'none';
+  var d = $('mail-done');
+  d.querySelector('b').textContent = v;
+  d.style.display = 'flex';
+}
 function setStar(n){
   rating = n;
   document.querySelectorAll('#gstars .star').forEach(function(s, i){ s.classList.toggle('on', i < n); });
@@ -1403,19 +1453,20 @@ function togglePrepaid(){
   go('v-bill');
 }
 function restart(){
-  people = 4; splitMode = 'even'; picked = {}; tipRate = 0; kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
+  people = 4; splitMode = 'even'; picked = {}; tipRate = .10; kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
   $('pn').textContent = 4;
   mode('even');
   document.querySelectorAll('.pl').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
   document.querySelectorAll('#gstars .star').forEach(function(s){ s.classList.remove('on'); });
   document.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('on'); });
-  document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
+  document.querySelectorAll('.tipb').forEach(function(b, i){ b.classList.toggle('on', i === 2); });
   document.querySelectorAll('.pm').forEach(function(p, i){ p.classList.toggle('on', i === 0); });
   clearF();
   $('chg').classList.remove('on');
   $('cashnote').style.display = 'none';
   document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); });
+  $('mail-in').value = ''; $('mailrc').style.display = 'flex'; $('mail-done').style.display = 'none';
   PREPAID = false;
   var pp = document.getElementById('ppsw');
   if (pp) pp.innerHTML = 'Someone already paid &rarr;';

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=5"></script>
+<script src="aalayna-store.js?v=6"></script>
 <style>
   :root{
     --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
@@ -58,6 +58,23 @@
   .btn.done{background:var(--green-bg);border-color:var(--green-line);color:var(--green);cursor:default}
   .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
 
+  .setr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);
+    font-size:12.5px}
+  .setr:last-child{border-bottom:none}
+  .setr .tm{color:var(--sub);width:44px;font-feature-settings:'tnum'}
+  .setr .tb2{width:56px;color:var(--sub)}
+  .setr .rl{width:86px;font-weight:500}
+  .setr .am{margin-left:auto;font-weight:600;font-feature-settings:'tnum'}
+  .setr .tp2{color:var(--sub);width:70px;text-align:right;font-feature-settings:'tnum'}
+  .setr.refunded .am,.setr.refunded .tp2,.setr.refunded .rl,.setr.refunded .tb2{
+    text-decoration:line-through;color:var(--faint)}
+  .rfb{border:1px solid var(--line);background:var(--surface);color:var(--red);border-radius:7px;
+    padding:5px 10px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;
+    transition:border-color .15s ease,background .15s ease}
+  .rfb:hover{border-color:var(--red)}
+  .rfb.arm{background:var(--red);border-color:var(--red);color:#fff}
+  .rftag{font-size:9.5px;font-weight:600;letter-spacing:.05em;color:var(--red);
+    border:1px solid #EAD2CF;background:var(--red-bg,#F9EEEC);border-radius:5px;padding:2.5px 7px}
   .view{display:none} .view.on{display:block;animation:viewIn .2s var(--eo)}
   @keyframes viewIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
@@ -238,6 +255,13 @@
         <div id="tips" style="margin-top:8px"></div>
         <div class="note" id="tipdone" style="display:none"><span>✓</span><span>All tip payments recorded.</span></div>
       </div>
+    </div>
+
+    <div class="card mt">
+      <h3>Settlements</h3>
+      <div class="cs">Every payment recorded this service. Refunds mark the row and leave the
+        statement &mdash; nothing is ever deleted.</div>
+      <div id="setrows" style="margin-top:10px"></div>
     </div>
   </div>
 
@@ -488,6 +512,7 @@ function paintTonight(){
     '</b> across <b>' + n + (n===1?' table':' tables') + '</b> this service. The POS remains the ' +
     'system of record; treat this statement as an input to the close, not the close itself.';
 
+  paintRows();
   var box = $('shortbox');
   if (r.cash > 0){
     box.style.display = 'flex';
@@ -496,6 +521,45 @@ function paintTonight(){
   } else box.style.display = 'none';
 }
 
+var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash, declared' };
+function paintRows(){
+  var box = $('setrows'); box.innerHTML = '';
+  var all = Aalayna.settlements().slice().reverse();
+  if (!all.length){
+    box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:12px 0">No settlements yet ' +
+      'this service. Rows appear as guests pay.</div>';
+    return;
+  }
+  all.forEach(function(x){
+    var d = document.createElement('div');
+    d.className = 'setr' + (x.refunded ? ' refunded' : '');
+    var t = new Date(x.ts);
+    var hh = ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2);
+    d.innerHTML =
+      '<span class="tm">' + hh + '</span>' +
+      '<span class="tb2">Table ' + x.table + '</span>' +
+      '<span class="rl">' + (RAIL_LABEL[x.rail] || x.rail) + '</span>' +
+      '<span class="am">' + money(x.amount) + '</span>' +
+      '<span class="tp2">' + (x.tip ? '+' + money(x.tip) + ' tip' : '') + '</span>' +
+      (x.refunded
+        ? '<span class="rftag">REFUNDED</span>'
+        : '<button class="rfb" onclick="refundRow(this, \'' + x.id + '\')">Refund</button>');
+    box.appendChild(d);
+  });
+}
+/* two taps, no dialog: first arms the button, second executes */
+function refundRow(btn, id){
+  if (!btn.classList.contains('arm')){
+    btn.classList.add('arm');
+    btn.textContent = 'Confirm refund';
+    setTimeout(function(){
+      if (btn.isConnected){ btn.classList.remove('arm'); btn.textContent = 'Refund'; }
+    }, 3000);
+    return;
+  }
+  Aalayna.refund(id);
+  toast('Refund recorded — statement and tips updated');
+}
 function paintTips(){
   var box = $('tips'); box.innerHTML = '';
   var owed = Aalayna.tipsOwed();
@@ -531,8 +595,8 @@ function payTip(server, amount){
 function exportCSV(){
   var s = Aalayna.settlements();
   if (!s.length){ toast('No settlements to export'); return; }
-  var rows = [['id','timestamp','table','method','amount','tip','server']];
-  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server]); });
+  var rows = [['id','timestamp','table','method','amount','tip','server','refunded']];
+  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server, x.refunded || '']); });
   var csv = rows.map(function(r){ return r.join(','); }).join('\n');
   try{
     var a = document.createElement('a');
