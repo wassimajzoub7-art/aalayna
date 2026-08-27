@@ -50,6 +50,12 @@
   @media(max-width:640px){.nav-links a:not(.btn){display:none}}
 
   /* ─── hero ─── */
+  @keyframes heroIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas,.hero .hero-note,.hero .built{
+    animation:heroIn .6s var(--ease) both}
+  .hero h1{animation-delay:.08s}.hero .lead{animation-delay:.16s}
+  .hero .hero-ctas{animation-delay:.24s}.hero .hero-note{animation-delay:.3s}
+  .hero .built{animation-delay:.38s}
   .hero,section.wrap,.final{
     min-height:calc(100vh - 57px);min-height:calc(100svh - 57px);
     display:flex;flex-direction:column;justify-content:center;
@@ -78,7 +84,12 @@
 
   .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
   @media(max-width:880px){.cards{grid-template-columns:1fr}}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;
+    transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s ease}
+  @media (hover:hover) and (pointer:fine){
+    .card:hover{transform:translateY(-4px);border-color:#DED4C8;
+      box-shadow:0 12px 28px rgba(33,27,22,.08)}
+  }
   .card .ic{width:38px;height:38px;border-radius:11px;background:var(--brand-bg);color:var(--brand);
     display:flex;align-items:center;justify-content:center;margin-bottom:14px}
   .card .ic svg{width:19px;height:19px}
@@ -94,8 +105,8 @@
   .step p{font-size:13px;color:var(--sub);line-height:1.65;margin-top:8px}
 
   /* ─── pricing ─── */
-  .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin-top:36px}
-  @media(max-width:880px){.price-grid{grid-template-columns:1fr}}
+  .price-grid{display:flex;justify-content:center;margin-top:36px}
+  .price-card{width:100%;max-width:520px}
   .price-card{background:var(--petrol);color:#fff;border-radius:18px;padding:36px 34px;position:relative;overflow:hidden}
   .price-card::after{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;
     border-radius:50%;background:rgba(255,255,255,.05)}
@@ -105,23 +116,28 @@
     color:var(--peach);margin-bottom:14px}
   .price-no{font-size:15px;font-weight:600;margin-top:12px;color:var(--peach)}
   .price-card ul{list-style:none;margin-top:22px;border-top:1px solid rgba(255,255,255,.16);padding-top:18px}
-  .price-card li{font-size:13.5px;line-height:1.5;padding:5px 0;display:flex;gap:10px;color:#D9E2E0}
+  .price-card li{font-size:13.5px;line-height:1.5;padding:5px 0;display:flex;gap:10px;color:#D9E2E0;
+    opacity:0;transform:translateX(-8px);
+    transition:opacity .4s var(--ease),transform .4s var(--ease)}
+  .price-card.in li{opacity:1;transform:none}
+  .price-card.in li:nth-child(1){transition-delay:.1s}.price-card.in li:nth-child(2){transition-delay:.16s}
+  .price-card.in li:nth-child(3){transition-delay:.22s}.price-card.in li:nth-child(4){transition-delay:.28s}
+  .price-card.in li:nth-child(5){transition-delay:.34s}.price-card.in li:nth-child(6){transition-delay:.4s}
+  .price-card.in li:nth-child(7){transition-delay:.46s}
   .price-card li::before{content:'✓';color:var(--sand);font-weight:700}
-  .pilot{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px}
-  .pilot h3{font-size:17px;font-weight:600}
-  .pilot p{font-size:13.5px;color:var(--sub);line-height:1.7;margin-top:10px}
-  .pilot .btn{margin-top:18px}
 
   /* ─── faq ─── */
-  .faq{max-width:720px;margin:36px auto 0}
+  .faq{margin:36px 0 0}
   details{background:var(--surface);border:1px solid var(--line);border-radius:12px;
     padding:0 20px;margin-bottom:10px}
-  summary{font-size:14px;font-weight:600;padding:17px 0;cursor:pointer;list-style:none;
+  summary{font-size:14.5px;font-weight:600;padding:18px 0;cursor:pointer;list-style:none;
     display:flex;justify-content:space-between;align-items:center}
   summary::-webkit-details-marker{display:none}
   summary::after{content:'+';font-size:18px;color:var(--faint);transition:transform .2s var(--ease)}
   details[open] summary::after{transform:rotate(45deg)}
   details p{font-size:13.5px;color:var(--sub);line-height:1.7;padding-bottom:18px}
+  @keyframes faqIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+  details[open] p{animation:faqIn .28s var(--ease)}
 
   /* ─── final cta + footer ─── */
   .final{background:var(--surface);border-top:1px solid var(--line);text-align:center;
@@ -138,6 +154,11 @@
   @media (prefers-reduced-motion:reduce){
     .rv{transform:none;transition:opacity .3s ease}
     .btn:active{transform:none}
+    .hero .kicker,.hero h1,.hero .lead,.hero .hero-ctas,.hero .hero-note,.hero .built{
+      animation:heroIn .3s ease both;transform:none}
+    .card,.card:hover{transform:none;box-shadow:none}
+    .price-card li{transform:none;transition:opacity .3s ease}
+    details[open] p{animation:faqIn .2s ease}
   }
 </style>
 </head>
@@ -240,16 +261,6 @@
         <li>Staff onboarding — we train your floor</li>
       </ul>
     </div>
-    <div class="pilot rv">
-      <h3>Start with two free dinner services</h3>
-      <p>We set everything up, train your servers, and run it on your floor for two
-      services — free. We measure
-      table time, settlement, tips and reviews together, against numbers we agree on
-      before the first plate. If it doesn't move anything, we leave. If it does, it's
-      $100 a month, cancel anytime.</p>
-      <!-- TODO: replace 961XXXXXXXX with the business WhatsApp number -->
-      <a class="btn" href="https://wa.me/961XXXXXXXX?text=Hi%2C%20I%27d%20like%20the%20free%20two-service%20pilot">Book the free pilot</a>
-    </div>
   </div>
 </section>
 
@@ -298,6 +309,12 @@
   var io = new IntersectionObserver(function(es){
     es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, {threshold:.12});
+  // siblings reveal as a cascade, 70ms apart, capped so late items never lag
+  document.querySelectorAll('.cards, .steps, .faq').forEach(function(group){
+    Array.prototype.forEach.call(group.children, function(el, i){
+      el.style.transitionDelay = Math.min(i, 6) * 70 + 'ms';
+    });
+  });
   document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
 </script>
 </body>
