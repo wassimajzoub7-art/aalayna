@@ -23,14 +23,14 @@
      the whole system rebrands to that restaurant on this device. The QR card
      generator writes these params so an owner scans straight into "their" demo. */
   var DEFAULT_VENUE = { name: 'Hallab 1881', place: 'Kasr El Helou',
-                        est: 'EST. 1881 · TRIPOLI', heritage: 1 };
+                        est: 'EST. 1881 · TRIPOLI', heritage: 1, gplace: '' };
   function venueFromURL() {
     try {
       var q = new URLSearchParams(global.location.search);
       var n = (q.get('venue') || '').trim();
       if (!n) return null;
       return { name: n.slice(0, 40), place: (q.get('place') || '').trim().slice(0, 40),
-               est: '', heritage: 0 };
+               est: '', heritage: 0, gplace: (q.get('gplace') || '').trim().slice(0, 60) };
     } catch (e) { return null; }
   }
 
@@ -367,6 +367,16 @@
       return read(K.venue, null) || DEFAULT_VENUE;
     },
     setVenue: function (v) { write(K.venue, v); },
+    /* The one integration that needs no partner: with a Place ID this opens the
+       venue's actual Google review box; without one it opens their real Maps
+       listing (review is one tap from there). Works for any walk-in demo venue. */
+    reviewURL: function () {
+      var v = A.venue();
+      if (v.gplace) return 'https://search.google.com/local/writereview?placeid=' +
+        encodeURIComponent(v.gplace);
+      return 'https://www.google.com/maps/search/?api=1&query=' +
+        encodeURIComponent(v.name + (v.place ? ' ' + v.place : '') + ' Lebanon');
+    },
     resetVenue: function () { try { localStorage.removeItem(K.venue); } catch (e) {} fire(K.venue); },
 
     /* ---- plumbing ---- */

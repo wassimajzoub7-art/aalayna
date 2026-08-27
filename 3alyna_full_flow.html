@@ -707,7 +707,7 @@
         <button class="opt" onclick="togOpt(this)">Worth the drive</button>
       </div>
       <textarea class="ta" placeholder="Anything you'd tell a friend..."></textarea>
-      <button class="cta cta-green" style="margin-top:14px" onclick="closeOv('ov-google')">
+      <button class="cta cta-green" style="margin-top:14px" onclick="postGoogle(this)">
         <span class="sheen"></span>Post to Google
       </button>
       <button class="cta cta-ghost" onclick="closeOv('ov-google')">Maybe later</button>
@@ -814,7 +814,7 @@
   cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
   with a visible Google link kept inside the private sheet.
 </div>
-<script src="aalayna-store.js?v=6"></script>
+<script src="aalayna-store.js?v=7"></script>
 <script>
 /* ---------------- data ---------------- */
 var RATE = 89400;
@@ -1456,6 +1456,20 @@ function setStar(n){
      success screen. Routing low ratings away from Google is review gating. */
 }
 function togOpt(el){ el.classList.toggle('on'); }
+/* REAL integration: opens the venue's actual Google review page. Google has no
+   API for submitting reviews (by design), so anything typed here rides along on
+   the clipboard for the guest to paste. */
+function postGoogle(btn){
+  var ta = document.querySelector('#ov-google .ta');
+  var words = ta ? ta.value.trim() : '';
+  if (words && navigator.clipboard){
+    try { navigator.clipboard.writeText(words); } catch(e){}
+  }
+  window.open(Aalayna.reviewURL(), '_blank');
+  btn.innerHTML = '<span class="sheen"></span>' +
+    (words ? 'Opened — your words are copied, just paste' : 'Opened Google');
+  setTimeout(function(){ closeOv('ov-google'); }, 1600);
+}
 /* demo only: flip between a venue that has finished confirming its menu and one that
    hasn't. Note what the second state does NOT contain — no warnings, no badges, no
    half-information. Just an ordinary menu. */
