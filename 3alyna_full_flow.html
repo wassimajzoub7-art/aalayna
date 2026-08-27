@@ -299,12 +299,15 @@
   .tiphead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
   .tiphead .l{font-size:12.5px;font-weight:600}
   .tiphead .r{font-size:11px;color:var(--green);font-weight:500}
-  .tips{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .tips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
   .tipb{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 2px;
     cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
   .tipb .tp{font-weight:600;font-size:13px}
   .tipb .tv{font-size:10px;color:var(--sub);margin-top:2px}
   .tipb.on{border-color:var(--green-line);background:var(--green-bg)}
+  .tipcw{display:flex;align-items:center;gap:7px;margin-top:8px;background:var(--surface);
+    border:1px solid var(--line);border-radius:8px;padding:2px 12px}
+  .tipcw:focus-within{border-color:var(--green)}
   .tipb.on .tp{color:var(--green)}
   .pays{margin-top:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
   .pm{display:flex;align-items:center;gap:11px;padding:12px 13px;cursor:pointer;
@@ -577,13 +580,18 @@
       <div class="tipwrap">
         <div class="tiphead">
           <div class="l">Something for Abou Karim?</div>
-          <div class="r">goes to him, in full</div>
         </div>
         <div class="tips">
           <button class="tipb" onclick="setTip(this,0)"><div class="tp">Nope</div><div class="tv">&nbsp;</div></button>
           <button class="tipb" onclick="setTip(this,.05)"><div class="tp">5%</div><div class="tv" id="tv5">$1.91</div></button>
           <button class="tipb on" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
           <button class="tipb" onclick="setTip(this,.15)"><div class="tp">15%</div><div class="tv" id="tv15">$5.72</div></button>
+          <button class="tipb" id="tipb-c" onclick="tipCustom(this)"><div class="tp">Other</div><div class="tv">&nbsp;</div></button>
+        </div>
+        <div class="tipcw" id="tipcw" style="display:none">
+          <span class="acur" style="font-size:15px">$</span>
+          <input class="amtin" id="tip-in" style="font-size:17px;padding:6px 0" inputmode="decimal"
+            placeholder="0.00" oninput="tipTyped()">
         </div>
       </div>
       <div class="pays">
@@ -939,7 +947,8 @@ function renderMenu(){
 }
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
-var tipRate = .10, kind = 'whish', note = 0;
+var tipRate = .10, tipFlat = null, kind = 'whish', note = 0;
+function tipAmt(){ return tipFlat != null ? tipFlat : share * tipRate; }
 var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -1302,9 +1311,22 @@ function calcShare(){
 }
 /* ---------------- pay ---------------- */
 function setTip(el, r){
-  tipRate = r;
+  tipRate = r; tipFlat = null;
+  $('tipcw').style.display = 'none';
   document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
   el.classList.add('on');
+  paintPay();
+}
+function tipCustom(el){
+  document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  $('tipcw').style.display = 'flex';
+  tipFlat = parseFloat($('tip-in').value) || 0;
+  $('tip-in').focus();
+  paintPay();
+}
+function tipTyped(){
+  tipFlat = Math.max(0, parseFloat($('tip-in').value) || 0);
   paintPay();
 }
 function pick(el, k){
@@ -1336,7 +1358,7 @@ function paintChange(due){
   out.innerHTML = 'Abou Karim comes <b>once</b>, with <b>' + usd(back) + '</b> already counted.';
 }
 function paintPay(){
-  var t = share * tipRate, tot = share + t, isCash = (kind === 'cash');
+  var t = tipAmt(), tot = share + t, isCash = (kind === 'cash');
   $('bigamt').textContent = usd(tot);
   $('bigll').textContent = ll(tot);
   $('tv5').textContent  = usd(share * .05);
@@ -1364,7 +1386,7 @@ function makeBurst(){
 }
 function settle(){
   paintPay();
-  var t = share * tipRate, tot = share + t;
+  var t = tipAmt(), tot = share + t;
   if (kind === 'whish'){
     $('wh-amt').textContent = 'Pay ' + usd(tot);
     $('wh-btn').textContent = 'Open Whish';
@@ -1390,7 +1412,7 @@ function cardConfirm(){
 }
 var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function finishSettle(rail){
-  var t = share * tipRate, tot = share + t;
+  var t = tipAmt(), tot = share + t;
   Aalayna.settle({
     table: 12, rail: rail, amount: tot, tip: t, server: 'Abou Karim',
     note: (rail === 'cash' ? note : 0),
@@ -1453,7 +1475,9 @@ function togglePrepaid(){
   go('v-bill');
 }
 function restart(){
-  people = 4; splitMode = 'even'; picked = {}; tipRate = .10; kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
+  people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
+  kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
+  $('tip-in').value = ''; $('tipcw').style.display = 'none';
   $('pn').textContent = 4;
   mode('even');
   document.querySelectorAll('.pl').forEach(function(p){ p.classList.remove('on'); });
