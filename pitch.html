@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3alayna — one-pager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
+    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA; --gold:#C9A227;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
+    color:var(--ink);padding:38px 20px 64px;-webkit-font-smoothing:antialiased}
+  .page{max-width:760px;margin:0 auto;background:var(--surface);border:1px solid var(--line);
+    border-radius:12px;padding:40px 44px}
+  .brand{font-family:'Amiri',serif;font-size:26px;font-weight:700}
+  .brand b{color:var(--green)}
+  .tag{font-size:11px;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
+  h1{font-size:23px;font-weight:600;letter-spacing:-.015em;line-height:1.3;margin-top:26px}
+  h1 em{font-style:normal;color:var(--green)}
+  .lead{font-size:13.5px;color:var(--sub);line-height:1.7;margin-top:10px;max-width:600px}
+
+  h2{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sub);
+    margin:30px 0 12px;padding-top:22px;border-top:1px solid var(--line)}
+  .props{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+  @media(max-width:640px){.props{grid-template-columns:1fr}}
+  .prop{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.6;color:var(--sub)}
+  .prop b{color:var(--ink);font-weight:600}
+  .prop .n{width:18px;height:18px;border-radius:6px;background:var(--green-bg);color:var(--green);
+    font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;margin-top:2px}
+
+  .ask{background:var(--green-bg);border:1px solid var(--green-line);border-radius:10px;
+    padding:16px 18px;font-size:13px;line-height:1.7;color:var(--green);margin-top:6px}
+  .ask b{font-weight:600}
+
+  .qs{columns:2;column-gap:26px;font-size:12px;color:var(--sub);line-height:1.65}
+  @media(max-width:640px){.qs{columns:1}}
+  .qs li{margin:0 0 8px 16px;break-inside:avoid}
+  .note{font-size:11px;color:var(--faint);line-height:1.65;margin-top:26px;padding-top:16px;
+    border-top:1px solid var(--line)}
+  .noprint-bar{max-width:760px;margin:0 auto 14px;display:flex;justify-content:flex-end}
+  .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;
+    font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--ink)}
+  @media print{
+    body{background:#fff;padding:0}
+    .page{border:none;border-radius:0;padding:10mm 6mm}
+    .noprint-bar{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="noprint-bar"><button class="btn" onclick="window.print()">Print</button></div>
+<div class="page">
+
+  <div class="brand">3alay<b>na</b></div>
+  <div class="tag">Restaurant settlement · Lebanon</div>
+
+  <h1>Your tables turn faster, your servers keep their tips,
+    and your menu <em>never lags the dollar.</em></h1>
+  <div class="lead">A QR on the table opens your menu in English, français and عربي, in dollars and
+    lira. Guests split the bill and settle it themselves — Whish, card, or cash — without waiting
+    for anyone. You see your floor for the first time.</div>
+
+  <h2>What changes for you</h2>
+  <div class="props">
+    <div class="prop"><span class="n">1</span><span><b>Tables turn faster.</b> Parties settle and
+      leave without flagging anyone down. Cash tables tell the floor which note they're handing
+      over — one trip with the change instead of two.</span></div>
+    <div class="prop"><span class="n">2</span><span><b>Servers get tipped by name, in full, the
+      same night.</b> Every digital tip is assigned to the server who earned it, with a payout
+      record you sign off nightly.</span></div>
+    <div class="prop"><span class="n">3</span><span><b>Reviews come in while the guest is still
+      happy</b> — asked at the table, right after they settle. Complaints go to you privately
+      instead of to Google.</span></div>
+    <div class="prop"><span class="n">4</span><span><b>You see your floor.</b> Payment mix, tips by
+      server, settlement statement for your close, table time — nightly and weekly, on your
+      phone.</span></div>
+    <div class="prop"><span class="n">5</span><span><b>Your menu never lags the dollar.</b> Reprice
+      everything by percentage in ten seconds — every QR menu updates before the door opens. No
+      designer, no reprints.</span></div>
+    <div class="prop"><span class="n">6</span><span><b>Money goes to you, directly.</b> Payments
+      settle into your own Whish or card accounts. 3alayna never holds your funds.</span></div>
+  </div>
+
+  <h2>The offer</h2>
+  <div class="ask"><b>Two dinner services, free, on your floor.</b> We run it, we measure it, and we
+    look at the numbers together — table time, settlement rate, tips. If it doesn't move anything,
+    we leave. If it does, it's a flat monthly fee. No commission on your sales, ever.</div>
+
+  <h2>What we'll ask you (five minutes)</h2>
+  <ol class="qs">
+    <li>When the dollar moved last month, how many days were you still selling at old prices?</li>
+    <li>Who changes your menu prices today, and how long does it take?</li>
+    <li>On a Friday at 21:00, how many parties are waiting outside?</li>
+    <li>How long does a table sit after the last plate is cleared?</li>
+    <li>How many trips does a server make just to settle one bill?</li>
+    <li>How many card machines cover the whole floor?</li>
+    <li>What share of your checks settle in cash?</li>
+    <li>Which POS do you run?</li>
+    <li>When guests pay by wallet, is it Whish or OMT?</li>
+  </ol>
+
+  <div class="note">
+    3alayna is built in Lebanon, for how Lebanese restaurants actually run — cash included, Whish
+    included, three languages, two currencies. Payments are processed by your own licensed
+    providers; menu and settlement software by 3alayna. Pilot references available after the first
+    deployments.
+  </div>
+</div>
+</body>
+</html>

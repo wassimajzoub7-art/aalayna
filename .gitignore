@@ -1,0 +1,11 @@
+# allowlist: only the deployed system goes public
+*
+!.gitignore
+!index.html
+!3alyna_full_flow.html
+!3alyna_menu_editor.html
+!3alyna_dashboard.html
+!aalayna-store.js
+!qr.html
+!qr-lib.js
+!pitch.html

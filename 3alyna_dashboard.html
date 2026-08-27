@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3alayna — operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<script src="aalayna-store.js?v=2"></script>
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
+    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
+    --red:#B4423A; --red-bg:#F9EEEC;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
+    --side:#0F2E24;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);display:flex;min-height:100vh;
+    font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+
+  /* ───────── sidebar ───────── */
+  .side{width:218px;flex-shrink:0;background:var(--side);color:#fff;position:sticky;top:0;
+    height:100vh;display:flex;flex-direction:column}
+  .brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .brand .n{font-family:'Amiri',serif;font-size:21px;font-weight:700;color:#fff;line-height:1}
+  .brand .n b{color:#E8B4B8;font-weight:700}
+  .brand .s{font-size:10px;color:#8FA79A;margin-top:7px;letter-spacing:.06em;text-transform:uppercase}
+  nav{padding:10px 10px;flex:1}
+  .ni{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
+    color:#9DB4A9;font-family:inherit;font-size:13px;font-weight:500;text-align:left;
+    padding:9px 11px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:background .12s,color .12s}
+  .ni:hover{background:rgba(255,255,255,.05);color:#fff}
+  .ni.on{background:rgba(255,255,255,.09);color:#fff}
+  .ni .bg{margin-left:auto;background:var(--red);color:#fff;font-size:9.5px;font-weight:600;
+    border-radius:8px;padding:1px 6px}
+  .side-f{padding:14px 20px 18px;border-top:1px solid rgba(255,255,255,.08);
+    font-size:10.5px;color:#7E958A;line-height:1.6}
+
+  /* ───────── main ───────── */
+  main{flex:1;min-width:0;padding:26px 32px 64px;max-width:1160px}
+  .top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+    padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  h1{font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .sub{font-size:12.5px;color:var(--sub);margin-top:4px}
+  .actions{display:flex;gap:8px}
+  .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 13px;
+    font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--ink);
+    white-space:nowrap;transition:border-color .12s,background .12s}
+  .btn:hover{border-color:#CFCCC5}
+  .btn.done{background:var(--green-bg);border-color:var(--green-line);color:var(--green);cursor:default}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+
+  .view{display:none} .view.on{display:block}
+
+  .grid{display:grid;gap:12px}
+  .g2{grid-template-columns:1.4fr 1fr}
+  .g2e{grid-template-columns:1fr 1fr}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .mt{margin-top:12px}
+  @media(max-width:1060px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g2e{grid-template-columns:1fr}}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .card h3{font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+  .card .cs{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
+
+  /* KPI */
+  .k{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub)}
+  .v{font-size:25px;font-weight:600;margin-top:9px;letter-spacing:-.01em;line-height:1}
+  .d{font-size:11.5px;margin-top:8px;color:var(--sub);display:flex;align-items:center;gap:6px}
+  .pill{display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;border-radius:6px;padding:2px 6px}
+  .pill.up{background:var(--green-bg);color:var(--green)}
+  .pill.dn{background:var(--red-bg);color:var(--red)}
+
+  /* statement */
+  .sr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13px}
+  .sr:last-child{border-bottom:none}
+  .rail{display:flex;align-items:center;gap:8px;flex:1;color:var(--ink)}
+  .dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+  .sr .amt{font-weight:600}
+  .sr.tot{border-top:1px solid var(--ink);border-bottom:none;margin-top:4px;padding-top:12px}
+  .sr.tot .amt{font-size:17px}
+  .note{display:flex;gap:9px;align-items:flex-start;margin-top:14px;padding:11px 13px;border-radius:8px;
+    font-size:11.5px;line-height:1.55;color:var(--sub);background:var(--bg);border:1px solid var(--line)}
+  .note b{color:var(--ink);font-weight:600}
+  .note.warn{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber)}
+  .note.warn b{color:var(--amber)}
+
+  /* ledger */
+  .tip{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+  .tip:last-child{border-bottom:none}
+  .av{width:30px;height:30px;border-radius:8px;background:var(--green-bg);color:var(--green);
+    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11.5px;flex-shrink:0}
+  .tip .nm{flex:1;font-size:13px;font-weight:500}
+  .tip .nm span{display:block;font-size:11px;color:var(--sub);font-weight:400;margin-top:1px}
+  .tip .amt{font-size:14px;font-weight:600;margin-right:2px}
+
+  /* charts */
+  .bars{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:16px;
+    border-bottom:1px solid var(--line)}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+  .bar .cols{display:flex;gap:3px;width:100%;height:100%;align-items:flex-end;justify-content:center}
+  .col{width:100%;max-width:26px;border-radius:3px 3px 0 0;background:var(--green);min-height:3px}
+  .col.mut{background:#CFCCC5}
+  .axis{display:flex;gap:10px;margin-top:7px}
+  .axis span{flex:1;text-align:center;font-size:10.5px;color:var(--sub)}
+  .vals{display:flex;gap:10px;margin-top:2px}
+  .vals span{flex:1;text-align:center;font-size:10px;color:var(--faint)}
+  .legend{display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--sub)}
+  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:5px}
+
+  /* horizontal list bars */
+  .hrow{display:grid;grid-template-columns:1fr 90px 52px;gap:10px;align-items:center;
+    padding:7px 0;font-size:12.5px}
+  .hrow .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .track{height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+  .fill{height:100%;border-radius:3px;background:var(--green);display:block}
+  .hrow .p{text-align:right;font-weight:600;font-size:12px}
+
+  /* stacked mix */
+  .mix{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px;margin-top:14px}
+  .mtab{margin-top:12px;width:100%;border-collapse:collapse}
+  .mtab td{padding:6px 0;font-size:12.5px;border-bottom:1px solid var(--line-soft)}
+  .mtab tr:last-child td{border-bottom:none}
+  .mtab .r{text-align:right;font-weight:600}
+  .mtab .pc{text-align:right;color:var(--sub);width:48px}
+
+  /* funnel */
+  .step{display:grid;grid-template-columns:110px 1fr 78px;gap:12px;align-items:center;padding:8px 0;font-size:12.5px}
+  .step .p{text-align:right;font-weight:600}
+
+  /* reviews */
+  .rv{padding:12px 0;border-bottom:1px solid var(--line-soft)}
+  .rv:last-child{border-bottom:none}
+  .rv .h{display:flex;align-items:center;gap:8px}
+  .st{color:var(--amber);font-size:11px;letter-spacing:1px}
+  .rv .w{font-size:11px;color:var(--faint);margin-left:auto}
+  .rv .t{font-size:12.5px;line-height:1.55;margin-top:5px;color:#3C453F}
+  .fb{padding:12px 0;border-bottom:1px solid var(--line-soft);display:flex;gap:10px}
+  .fb:last-child{border-bottom:none}
+  .fb .dt2{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:6px}
+  .fb .t{font-size:12.5px;line-height:1.55;color:#3C453F}
+  .fb .m{font-size:11px;color:var(--faint);margin-top:3px}
+
+  .lock{display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft);
+    font-size:12.5px;color:var(--sub)}
+  .lock:last-child{border-bottom:none}
+  .lock b{color:var(--ink);font-weight:500}
+  .lock .tag{margin-left:auto;font-size:10px;font-weight:600;letter-spacing:.05em;color:var(--faint);
+    border:1px solid var(--line);border-radius:6px;padding:2px 7px;white-space:nowrap}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,10px);background:var(--ink);color:#fff;
+    border-radius:9px;padding:11px 16px;font-size:12.5px;font-weight:500;opacity:0;pointer-events:none;
+    transition:all .25s ease;z-index:99}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<aside class="side">
+  <div class="brand">
+    <div class="n">3alay<b>na</b></div>
+    <div class="s" id="v-sub">Hallab 1881 · Kasr El Helou</div>
+  </div>
+  <nav>
+    <button class="ni on" onclick="go(this,'tonight')">Tonight</button>
+    <button class="ni" onclick="go(this,'week')">This week</button>
+    <button class="ni" onclick="go(this,'guests')">Guests</button>
+    <button class="ni" onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
+    <button class="ni" onclick="go(this,'team')">Team</button>
+  </nav>
+  <div class="side-f">Weekly summary is emailed every Monday, 08:00.</div>
+</aside>
+
+<main>
+
+  <!-- ═══════════ TONIGHT ═══════════ -->
+  <div class="view on" id="v-tonight">
+    <div class="top">
+      <div>
+        <h1>Tonight</h1>
+        <div class="sub" id="t-date">Settlement activity, current service</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="exportCSV()">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="card"><div class="k">Settled in-app</div><div class="v" id="k-tot">$0.00</div>
+        <div class="d">including tips</div></div>
+      <div class="card"><div class="k">Tables</div><div class="v" id="t-scan">0</div>
+        <div class="d">settled through 3alayna</div></div>
+      <div class="card"><div class="k">Average per table</div><div class="v" id="k-avg">—</div>
+        <div class="d">in-app tables only</div></div>
+      <div class="card"><div class="k">Tip rate</div><div class="v" id="k-tip">—</div>
+        <div class="d">tips ÷ net settled</div></div>
+    </div>
+
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>Settlement statement</h3>
+        <div class="cs">Amounts settled through 3alayna this service, by payment method.</div>
+        <div style="margin-top:12px">
+          <div class="sr"><span class="rail"><span class="dot" style="background:#C4283C"></span>Whish Money</span><span class="amt" id="r-whish">$0.00</span></div>
+          <div class="sr"><span class="rail"><span class="dot" style="background:#26327A"></span>Card</span><span class="amt" id="r-card">$0.00</span></div>
+          <div class="sr"><span class="rail"><span class="dot" style="background:#0F4B3A"></span>Cash, declared</span><span class="amt" id="r-cash">$0.00</span></div>
+          <div class="sr tot"><span class="rail">Total settled in-app</span><span class="amt" id="r-tot">$0.00</span></div>
+        </div>
+        <div class="note warn" id="shortbox" style="display:none"></div>
+        <div class="note"><span>ⓘ</span><span id="t-note"></span></div>
+      </div>
+
+      <div class="card">
+        <h3>Tips payable</h3>
+        <div class="cs">Digital tips collected this service. Pay out at close and record each payment.</div>
+        <div id="tips" style="margin-top:8px"></div>
+        <div class="note" id="tipdone" style="display:none"><span>✓</span><span>All tip payments recorded.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ WEEK ═══════════ -->
+  <div class="view" id="v-week">
+    <div class="top">
+      <div>
+        <h1>This week</h1>
+        <div class="sub">Mon 12 – Sun 18 Aug · 71 of 210 checks settled in-app (33.8%)</div>
+      </div>
+      <div class="actions"><button class="btn">Week</button><button class="btn primary">Month</button></div>
+    </div>
+
+    <div class="grid g4">
+      <div class="card"><div class="k">Settled in-app</div><div class="v">$4,860.00</div>
+        <div class="d"><span class="pill up">▲ 18%</span> vs prior week</div></div>
+      <div class="card"><div class="k">In-app adoption</div><div class="v">33.8%</div>
+        <div class="d"><span class="pill up">▲ 6.2 pts</span> from week 1</div></div>
+      <div class="card"><div class="k">Avg per table</div><div class="v">$68.45</div>
+        <div class="d"><span class="pill up">▲ 4%</span> vs prior week</div></div>
+      <div class="card"><div class="k">Tip rate</div><div class="v">9.4%</div>
+        <div class="d"><span class="pill up">▲ 1.1 pts</span> vs prior week</div></div>
+    </div>
+
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>Table turnaround</h3>
+        <div class="cs">Median minutes, seating to next seating. In-app tables vs all other tables.</div>
+        <div class="bars" id="dwell"></div>
+        <div class="axis" id="dwell-ax"></div>
+        <div class="vals" id="dwell-v"></div>
+        <div class="legend">
+          <span><i style="background:var(--green)"></i>Settled in-app</span>
+          <span><i style="background:#CFCCC5"></i>Other tables</span>
+        </div>
+        <div class="note"><span>ⓘ</span><span>Sample: 71 in-app vs 139 other tables. In-app tables
+          self-select and may differ systematically. Directional indicator, not a controlled comparison.</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Settlement funnel</h3>
+        <div class="cs">Weekly progression from scan to settled bill.</div>
+        <div style="margin-top:12px" id="funnel"></div>
+        <div class="note"><span>ⓘ</span><span>Adoption denominator is the weekly check count from
+          the POS Z-report, entered manually until POS integration.</span></div>
+        <h3 style="margin-top:20px">Available with POS integration</h3>
+        <div style="margin-top:6px">
+          <div class="lock"><span><b>Covers</b> — total guests served</span><span class="tag">POS</span></div>
+          <div class="lock"><span><b>Table turnover rate</b> — parties ÷ tables ÷ duration</span><span class="tag">POS</span></div>
+          <div class="lock"><span><b>RevPASH</b> — revenue per available seat-hour</span><span class="tag">POS</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2e mt">
+      <div class="card">
+        <h3>Payment mix</h3>
+        <div class="cs">Share of in-app settled volume.</div>
+        <div class="mix" id="mixbar"></div>
+        <table class="mtab" id="mixtab"></table>
+      </div>
+      <div class="card">
+        <h3>Top items</h3>
+        <div class="cs">By order count, items on in-app checks.</div>
+        <div style="margin-top:10px" id="top"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ GUESTS ═══════════ -->
+  <div class="view" id="v-guests">
+    <div class="top">
+      <div>
+        <h1>Guests</h1>
+        <div class="sub">Derived from returning devices and payment instruments · 71 in-app tables this week</div>
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="card"><div class="k">Returning</div><div class="v">28.2%</div>
+        <div class="d">20 of 71 devices or cards seen before</div></div>
+      <div class="card"><div class="k">First seen</div><div class="v">71.8%</div>
+        <div class="d">51 tables</div></div>
+      <div class="card"><div class="k">Foreign-issued cards</div><div class="v">19.0%</div>
+        <div class="d">of in-app card and wallet volume</div></div>
+      <div class="card"><div class="k">Median payers per table</div><div class="v">3</div>
+        <div class="d">from bill splits</div></div>
+    </div>
+
+    <div class="grid g2e mt">
+      <div class="card">
+        <h3>Card and wallet issuing region</h3>
+        <div class="cs">In-app payments only. Cash-declared tables carry no identifying signal.</div>
+        <div class="mix" id="origbar"></div>
+        <table class="mtab" id="origtab"></table>
+      </div>
+      <div class="card">
+        <h3>Bill split size</h3>
+        <div class="cs">Number of payers per in-app table.</div>
+        <div class="bars" id="party"></div>
+        <div class="axis" id="party-ax"></div>
+        <div class="vals" id="party-v"></div>
+      </div>
+    </div>
+
+    <div class="note mt"><span>ⓘ</span><span><b>Measurement basis.</b> These figures count devices and
+      payment instruments, not individuals. One payer represents a full table; a replaced phone registers
+      as new; a shared card registers as one guest. Interpret as trend, not census.</span></div>
+  </div>
+
+  <!-- ═══════════ REVIEWS ═══════════ -->
+  <div class="view" id="v-reviews">
+    <div class="top">
+      <div>
+        <h1>Reviews &amp; feedback</h1>
+        <div class="sub">Both channels are offered to every guest after settlement, independent of rating</div>
+      </div>
+    </div>
+
+    <div class="grid g4">
+      <div class="card"><div class="k">Google rating</div><div class="v">4.7</div>
+        <div class="d"><span class="pill up">▲ 0.2</span> over 6 weeks</div></div>
+      <div class="card"><div class="k">Reviews this week</div><div class="v">34</div>
+        <div class="d">31 at five stars</div></div>
+      <div class="card"><div class="k">Review conversion</div><div class="v">47.9%</div>
+        <div class="d">34 of 71 settled tables</div></div>
+      <div class="card"><div class="k">Private feedback, unread</div><div class="v" style="color:var(--red)">2</div>
+        <div class="d">not published anywhere</div></div>
+    </div>
+
+    <div class="grid g2e mt">
+      <div class="card">
+        <h3>Rating trend</h3>
+        <div class="cs">Weekly average, trailing six weeks.</div>
+        <div class="bars" id="rtrend"></div>
+        <div class="axis" id="rtrend-ax"></div>
+        <div class="vals" id="rtrend-v"></div>
+      </div>
+      <div class="card">
+        <h3>Private feedback</h3>
+        <div class="cs">Submitted by guests who chose not to post publicly.</div>
+        <div id="fbs" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h3>Recent public reviews</h3>
+      <div id="rvs" style="margin-top:4px"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TEAM ═══════════ -->
+  <div class="view" id="v-team">
+    <div class="top">
+      <div>
+        <h1>Team</h1>
+        <div class="sub">Digital tips are payable to the named server, in full, at close of the same service</div>
+      </div>
+    </div>
+
+    <div class="grid g2e">
+      <div class="card">
+        <h3>Tips by server — this week</h3>
+        <div class="cs">Suitable basis for weekly one-on-ones alongside guest feedback.</div>
+        <div id="team" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <h3>Payout record</h3>
+        <div class="cs">Payments recorded at close of each service.</div>
+        <div style="margin-top:8px" id="hist"></div>
+        <div class="note"><span>ⓘ</span><span>The guest-facing application states that tips reach the
+          named server in full, the same night. This record is the audit trail for that commitment.</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"><span id="toast-t"></span></div>
+
+<script>
+/* ───────── static illustrative data (labelled where shown) ───────── */
+var DWELL = [
+  {d:'Mon', a:61, b:70}, {d:'Tue', a:64, b:72}, {d:'Wed', a:63, b:74},
+  {d:'Thu', a:67, b:78}, {d:'Fri', a:71, b:83}, {d:'Sat', a:74, b:86}, {d:'Sun', a:66, b:76}];
+var FUNNEL = [ {n:'QR scans', v:96}, {n:'Bills opened', v:84}, {n:'Settled in-app', v:71} ];
+var MIX = [
+  {n:'Whish Money', v:1846.80, c:'#C4283C'}, {n:'Card', v:1263.60, c:'#26327A'},
+  {n:'Cash, declared', v:874.80, c:'#0F4B3A'}, {n:'OMT Pay', v:534.60, c:'#B87718'},
+  {n:'Other', v:340.20, c:'#9AA29C'}];
+var ORIG = [
+  {n:'Lebanon', v:74, c:'#0F4B3A'}, {n:'GCC', v:11, c:'#B87718'},
+  {n:'Europe', v:9, c:'#26327A'}, {n:'Other', v:6, c:'#9AA29C'}];
+var PARTY = [{d:'1', v:9},{d:'2', v:26},{d:'3', v:14},{d:'4', v:15},{d:'5+', v:7}];
+var TOP = [
+  {n:"Knefeh b'Jebne + kaakeh", v:214}, {n:'Mixed Grill platter', v:151},
+  {n:"Lahm b'Ajin", v:139}, {n:'Lebanese coffee', v:128}, {n:'Tabbouleh', v:96}];
+var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
+var RVS = [
+  {s:5, w:'2 days ago', t:'Paid on my phone before the waiter came back. Knefeh remains the best in Tripoli.'},
+  {s:5, w:'3 days ago', t:'Split the bill four ways in seconds. Service was excellent.'},
+  {s:4, w:'5 days ago', t:'Busy on a Friday but the table was ready quickly. Baklava worth the drive.'}];
+var FBS = [
+  {t:'The terrace took around twenty minutes to be cleared although the table was free.', m:'Saturday · table 8'},
+  {t:'Coffee arrived cold. Everything else was very good.', m:'Sunday · table 21'}];
+var WEEKTEAM = [
+  {n:'Abou Karim', t:156.00, k:44}, {n:'Georges', t:121.00, k:38},
+  {n:'Mariam', t:98.00, k:29}, {n:'Rami', t:43.00, k:18}];
+
+/* ───────── utilities ───────── */
+function $(id){ return document.getElementById(id); }
+function money(v){ return '$' + v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function toast(m){
+  $('toast-t').textContent = m;
+  $('toast').classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ $('toast').classList.remove('on'); }, 2400);
+}
+function go(el, v){
+  document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
+  el.classList.add('on');
+  document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('on'); });
+  $('v-' + v).classList.add('on');
+}
+
+/* ───────── Tonight — live from the store ───────── */
+function paintTonight(){
+  var r = Aalayna.byRail(), s = Aalayna.settlements();
+  var tot = Aalayna.settledTotal(), n = s.length;
+  var tips = s.reduce(function(a,b){ return a + (b.tip||0); }, 0);
+  var net = tot - tips;
+
+  $('r-whish').textContent = money(r.whish);
+  $('r-card').textContent  = money(r.card);
+  $('r-cash').textContent  = money(r.cash);
+  $('r-tot').textContent   = money(tot);
+
+  $('k-tot').textContent  = money(tot);
+  $('t-scan').textContent = n;
+  $('k-avg').textContent  = n ? money(tot/n) : '—';
+  $('k-tip').textContent  = net > 0 ? (100*tips/net).toFixed(1) + '%' : '—';
+
+  var d = new Date();
+  $('t-date').textContent = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) +
+    ' · settlement activity, current service';
+
+  $('t-note').innerHTML = '3alayna records only bills settled through the QR — <b>' + money(tot) +
+    '</b> across <b>' + n + (n===1?' table':' tables') + '</b> this service. The POS remains the ' +
+    'system of record; treat this statement as an input to the close, not the close itself.';
+
+  var box = $('shortbox');
+  if (r.cash > 0){
+    box.style.display = 'flex';
+    box.innerHTML = '<span>⚠</span><span><b>' + money(r.cash) + '</b> declared as cash is pending ' +
+      'drawer verification. Declared amounts are guest claims until counted.</span>';
+  } else box.style.display = 'none';
+}
+
+function paintTips(){
+  var box = $('tips'); box.innerHTML = '';
+  var owed = Aalayna.tipsOwed();
+  if (!owed.length){
+    box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:12px 0">No digital tips recorded ' +
+      'this service. Entries appear as guests settle.</div>';
+    $('tipdone').style.display = 'none';
+    return;
+  }
+  var left = 0;
+  owed.forEach(function(t){
+    if (!t.paid) left += t.amount;
+    var row = document.createElement('div');
+    row.className = 'tip';
+    row.innerHTML = '<span class="av">' + t.server.split(' ').map(function(w){return w[0];}).join('').slice(0,2) + '</span>' +
+      '<span class="nm">' + t.server + '<span>digital tips, this service</span></span>' +
+      '<span class="amt">' + money(t.amount) + '</span>';
+    var b = document.createElement('button');
+    b.className = 'btn' + (t.paid ? ' done' : '');
+    b.textContent = t.paid ? 'Recorded ✓' : 'Record payment';
+    if (!t.paid) b.onclick = function(){ payTip(t.server, t.amount); };
+    row.appendChild(b);
+    box.appendChild(row);
+  });
+  $('tipdone').style.display = left === 0 ? 'flex' : 'none';
+}
+function payTip(server, amount){
+  Aalayna.payTip(server);
+  paintTips();
+  toast('Payment of ' + money(amount) + ' to ' + server + ' recorded');
+}
+
+function exportCSV(){
+  var s = Aalayna.settlements();
+  if (!s.length){ toast('No settlements to export'); return; }
+  var rows = [['id','timestamp','table','method','amount','tip','server']];
+  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server]); });
+  var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+  try{
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'aalayna-settlements.csv';
+    a.click();
+    toast('Statement exported — ' + s.length + ' rows');
+  }catch(e){ toast('Export unavailable in this preview'); }
+}
+
+/* ───────── charts ───────── */
+function groupedBars(el, axEl, vEl, data, max){
+  var box = $(el), ax = $(axEl), vv = $(vEl);
+  box.innerHTML = ''; ax.innerHTML = ''; vv.innerHTML = '';
+  data.forEach(function(d){
+    var g = document.createElement('div');
+    g.className = 'bar';
+    g.innerHTML = '<div class="cols">' +
+      '<div class="col" style="height:' + (d.a/max*100) + '%"></div>' +
+      '<div class="col mut" style="height:' + (d.b/max*100) + '%"></div></div>';
+    box.appendChild(g);
+    ax.insertAdjacentHTML('beforeend','<span>' + d.d + '</span>');
+    vv.insertAdjacentHTML('beforeend','<span>' + d.a + '·' + d.b + '</span>');
+  });
+}
+function simpleBars(el, axEl, vEl, data, fmt){
+  var box = $(el), ax = $(axEl), vv = $(vEl);
+  box.innerHTML = ''; ax.innerHTML = ''; vv.innerHTML = '';
+  var max = Math.max.apply(null, data.map(function(d){ return d.v; })) * 1.1;
+  data.forEach(function(d){
+    var g = document.createElement('div');
+    g.className = 'bar';
+    g.innerHTML = '<div class="cols"><div class="col" style="height:' + (d.v/max*100) + '%"></div></div>';
+    box.appendChild(g);
+    ax.insertAdjacentHTML('beforeend','<span>' + d.d + '</span>');
+    vv.insertAdjacentHTML('beforeend','<span>' + (fmt ? fmt(d.v) : d.v) + '</span>');
+  });
+}
+function stacked(barId, tabId, data, isMoney){
+  var bar = $(barId), tab = $(tabId);
+  bar.innerHTML = ''; tab.innerHTML = '';
+  var sum = data.reduce(function(a,b){ return a + b.v; }, 0);
+  data.forEach(function(d){
+    var seg = document.createElement('div');
+    seg.style.flex = d.v; seg.style.background = d.c;
+    bar.appendChild(seg);
+    tab.insertAdjacentHTML('beforeend',
+      '<tr><td><span class="dot" style="display:inline-block;margin-right:8px;background:' + d.c + '"></span>' + d.n + '</td>' +
+      '<td class="r">' + (isMoney ? money(d.v) : d.v + '%') + '</td>' +
+      '<td class="pc">' + (100*d.v/sum).toFixed(1) + '%</td></tr>');
+  });
+}
+function hbars(el, data, unit){
+  var box = $(el); box.innerHTML = '';
+  var max = Math.max.apply(null, data.map(function(d){ return d.v; }));
+  data.forEach(function(d){
+    box.insertAdjacentHTML('beforeend',
+      '<div class="hrow"><span class="n">' + d.n + '</span>' +
+      '<span class="track"><span class="fill" style="width:' + (100*d.v/max) + '%"></span></span>' +
+      '<span class="p">' + d.v + (unit||'') + '</span></div>');
+  });
+}
+function funnel(){
+  var box = $('funnel'); box.innerHTML = '';
+  var max = FUNNEL[0].v;
+  FUNNEL.forEach(function(f, i){
+    var pct = (100*f.v/max).toFixed(0) + '%';
+    box.insertAdjacentHTML('beforeend',
+      '<div class="step"><span style="color:var(--sub)">' + f.n + '</span>' +
+      '<span class="track"><span class="fill" style="width:' + (100*f.v/max) + '%"></span></span>' +
+      '<span class="p">' + f.v + ' <span style="color:var(--faint);font-weight:400">' + pct + '</span></span></div>');
+  });
+}
+function paintReviews(){
+  var box = $('rvs'); box.innerHTML = '';
+  RVS.forEach(function(r){
+    box.insertAdjacentHTML('beforeend','<div class="rv"><div class="h"><span class="st">' +
+      '★'.repeat(r.s) + '</span><span class="w">' + r.w + '</span></div><div class="t">' + r.t + '</div></div>');
+  });
+  var f = $('fbs'); f.innerHTML = '';
+  FBS.forEach(function(x){
+    f.insertAdjacentHTML('beforeend','<div class="fb"><span class="dt2"></span><span><div class="t">' +
+      x.t + '</div><div class="m">' + x.m + '</div></span></div>');
+  });
+}
+function paintTeam(){
+  var box = $('team'); box.innerHTML = '';
+  WEEKTEAM.forEach(function(t){
+    box.insertAdjacentHTML('beforeend','<div class="tip"><span class="av">' +
+      t.n.split(' ').map(function(w){return w[0];}).join('').slice(0,2) + '</span>' +
+      '<span class="nm">' + t.n + '<span>' + t.k + ' tables · avg ' + money(t.t/t.k) + ' per table</span></span>' +
+      '<span class="amt">' + money(t.t) + '</span></div>');
+  });
+  var h = $('hist'); h.innerHTML = '';
+  [{n:'Friday 16 Aug', v:'$96.00 · 4 servers'},{n:'Thursday 15 Aug', v:'$71.00 · 4 servers'},
+   {n:'Wednesday 14 Aug', v:'$58.00 · 3 servers'},{n:'Tuesday 13 Aug', v:'$63.00 · 4 servers'}]
+  .forEach(function(d){
+    h.insertAdjacentHTML('beforeend','<div class="hrow" style="grid-template-columns:1fr auto">' +
+      '<span class="n" style="color:var(--sub)">' + d.n + '</span><span class="p">' + d.v + '</span></div>');
+  });
+}
+
+/* ───────── boot ───────── */
+(function(){ var v = Aalayna.venue();
+  document.getElementById('v-sub').textContent = (v.name + (v.place ? ' · ' + v.place : '')).toUpperCase(); })();
+paintTonight();
+paintTips();
+Aalayna.on(function(){ paintTonight(); paintTips(); });
+
+groupedBars('dwell','dwell-ax','dwell-v', DWELL, 92);
+funnel();
+stacked('mixbar','mixtab', MIX, true);
+hbars('top', TOP, '');
+stacked('origbar','origtab', ORIG, false);
+simpleBars('party','party-ax','party-v', PARTY);
+simpleBars('rtrend','rtrend-ax','rtrend-v', RTREND.map(function(r){return {d:r.d,v:r.v};}), function(v){ return v.toFixed(1); });
+paintReviews();
+paintTeam();
+</script>
+</body>
+</html>

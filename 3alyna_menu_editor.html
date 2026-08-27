@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3alayna — menu editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
+    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
+    --red:#B4423A; --red-bg:#F9EEEC;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
+    color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:26px 16px 40px;font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+  .stage{width:100%;max-width:430px;margin-bottom:14px}
+  .stage .t{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .stage .t b{font-weight:600;color:var(--green)}
+  .stage .s{font-size:11px;color:var(--sub);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
+
+  .phone{width:430px;max-width:96vw;height:76vh;min-height:640px;background:var(--surface);
+    border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden;
+    box-shadow:0 1px 2px rgba(23,29,26,.04)}
+  .screen{width:100%;height:100%;display:flex;flex-direction:column;background:var(--surface)}
+
+  /* header */
+  .hd{flex-shrink:0;padding:18px 18px 0;background:var(--surface);z-index:20}
+  .hd-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .hd h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .hd .sub{font-size:11.5px;color:var(--sub);margin-top:3px}
+  .live{display:inline-flex;align-items:center;gap:6px;background:var(--green-bg);color:var(--green);
+    font-size:10px;font-weight:600;border-radius:6px;padding:4px 8px;letter-spacing:.05em;flex-shrink:0}
+  .live .d{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .live.dirty{background:var(--amber-bg);color:var(--amber)}
+  .live.dirty .d{background:var(--amber)}
+
+  /* reprice entry */
+  .fx{margin-top:13px;width:100%;border:1px solid var(--amber-line);border-radius:10px;padding:12px 13px;
+    cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:11px;text-align:left;
+    background:var(--amber-bg);transition:border-color .12s}
+  .fx:active{border-color:var(--amber)}
+  .fx .ic{width:30px;height:30px;border-radius:8px;background:var(--amber);color:#fff;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
+  .fx .t1{font-size:12.5px;font-weight:600;color:var(--amber)}
+  .fx .t2{font-size:11px;color:var(--amber);opacity:.8;margin-top:2px}
+  .fx .ch{margin-left:auto;color:var(--amber);font-size:15px;opacity:.7}
+
+  .clock{display:flex;align-items:center;gap:7px;margin-top:10px;padding:8px 11px;border-radius:8px;
+    background:var(--bg);border:1px solid var(--line);font-size:11px;color:var(--sub)}
+  .clock b{color:var(--ink);font-weight:600}
+
+  .tabs{display:flex;gap:16px;padding:13px 18px 0;border-bottom:1px solid var(--line);flex-shrink:0}
+  .tb{background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:500;
+    color:var(--sub);padding:0 1px 9px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tb.on{color:var(--ink);border-bottom-color:var(--green);font-weight:600}
+
+  /* list */
+  .body{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:92px}
+  .body::-webkit-scrollbar{display:none}
+  .sec{border-bottom:1px solid var(--line-soft)}
+  .sec-h{display:flex;align-items:center;gap:9px;padding:13px 18px 9px;cursor:pointer;background:var(--surface)}
+  .sec-h .cv{font-size:9px;color:var(--faint);transition:transform .2s;width:10px}
+  .sec.closed .cv{transform:rotate(-90deg)}
+  .sec-h .nm{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub)}
+  .sec-h .ct{font-size:10.5px;color:var(--faint)}
+  .sec-items{overflow:hidden;transition:max-height .25s ease}
+  .sec.closed .sec-items{max-height:0 !important}
+  .sec.dim-sec .it,.sec.dim-sec .addrow{opacity:.45}
+
+  .it{display:flex;align-items:center;gap:11px;padding:10px 18px;border-top:1px solid var(--line-soft);
+    transition:background .12s}
+  .it:hover{background:var(--bg)}
+  .it.off{opacity:.45}
+  .it.off .pr{text-decoration:line-through;color:var(--sub)}
+  .grip{color:#D8D5CF;font-size:13px;cursor:grab;flex-shrink:0;line-height:1;letter-spacing:-1px}
+  .it .tx{flex:1;min-width:0;cursor:pointer}
+  .it .nm{font-size:13px;font-weight:500;line-height:1.3}
+  .it .meta{font-size:11px;color:var(--sub);margin-top:2px;display:flex;gap:7px;align-items:center}
+  .lang{display:inline-flex;gap:3px}
+  .lg{font-size:8.5px;font-weight:600;letter-spacing:.04em;padding:1.5px 5px;border-radius:4px;
+    background:var(--green-bg);color:var(--green)}
+  .lg.miss{background:var(--line-soft);color:var(--faint)}
+  .it .pr{font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0}
+
+  /* service window chips */
+  .win{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:600;letter-spacing:.02em;
+    border-radius:6px;padding:3px 7px;background:var(--line-soft);color:var(--sub);cursor:pointer;
+    flex-shrink:0;transition:background .12s}
+  .win:hover{background:var(--line)}
+  .win.now{background:var(--green-bg);color:var(--green)}
+  .win.now .dt{width:4px;height:4px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+  .win.later{background:var(--amber-bg);color:var(--amber)}
+
+  .addrow{display:flex;align-items:center;gap:9px;padding:10px 18px;border-top:1px dashed var(--line);
+    color:var(--green);font-size:12px;font-weight:500;cursor:pointer;background:var(--surface)}
+  .addrow:hover{background:var(--green-bg)}
+  .addrow .p{width:18px;height:18px;border-radius:5px;background:var(--green-bg);display:flex;
+    align-items:center;justify-content:center;font-size:13px;line-height:1}
+
+  /* publish bar */
+  .pub{position:absolute;left:0;right:0;bottom:0;z-index:30;padding:12px 16px 16px;
+    background:linear-gradient(transparent, var(--surface) 32%)}
+  .cta{width:100%;border:1px solid transparent;border-radius:10px;padding:13px;font-size:13.5px;
+    font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .12s}
+  .cta:active{opacity:.85}
+  .cta-green{background:var(--green);color:#fff}
+  .cta-green:disabled{background:var(--line-soft);color:var(--faint);cursor:default}
+  .cta-line{background:var(--surface);color:var(--ink);border-color:var(--line);margin-top:8px}
+  .cta-ghost{background:transparent;color:var(--sub);font-weight:500;font-size:12.5px;margin-top:2px}
+  .cta-gold{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-line)}
+
+  /* sheets */
+  .ov{position:absolute;inset:0;z-index:60;display:none;align-items:flex-end}
+  .ov.on{display:flex}
+  .scrim{position:absolute;inset:0;background:rgba(23,29,26,.4)}
+  .sheet{position:relative;width:100%;background:var(--surface);border-radius:14px 14px 0 0;
+    border-top:1px solid var(--line);padding:16px 18px 20px;animation:up .28s ease;
+    max-height:92%;overflow-y:auto;scrollbar-width:none}
+  .sheet::-webkit-scrollbar{display:none}
+  @keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+  .grab{width:34px;height:4px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+  .sh-t{font-size:16px;font-weight:600;letter-spacing:-.01em}
+  .sh-s{font-size:12px;color:var(--sub);margin-top:4px;line-height:1.5}
+
+  .fld{margin-top:14px}
+  .lb{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub);
+    margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .lb .tag{font-size:8.5px;letter-spacing:.04em;padding:2px 6px;border-radius:4px;
+    background:var(--amber-bg);color:var(--amber);font-weight:600}
+  .in{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 11px;font-size:13px;
+    font-family:inherit;background:var(--surface);color:var(--ink)}
+  .in:focus{outline:none;border-color:var(--green)}
+  textarea.in{resize:none;height:60px;line-height:1.5}
+  .row2{display:flex;gap:9px}
+  .row2 .fld{flex:1}
+
+  .aibar{display:flex;align-items:center;gap:9px;margin-top:9px;background:var(--green-bg);
+    border:1px solid var(--green-line);border-radius:8px;padding:9px 11px;font-size:11px;
+    color:var(--green);line-height:1.45}
+  .aibar b{font-weight:600}
+  .aibar button{margin-left:auto;flex-shrink:0;background:var(--green);color:#fff;border:none;
+    border-radius:6px;padding:6px 11px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:inherit}
+
+  /* ingredients / allergens / nutrition */
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .cx{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);
+    border-radius:6px;padding:4px 8px;font-size:11.5px;color:var(--ink)}
+  .cx b{cursor:pointer;color:var(--faint);font-weight:600;font-size:12px;line-height:1}
+  .cx b:hover{color:var(--red)}
+  .cx.al{background:var(--red-bg);border-color:#EAD2CF;color:var(--red)}
+  .chipin{width:100%;border:1px dashed var(--line);border-radius:8px;padding:9px 11px;
+    font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--ink)}
+  .chipin:focus{outline:none;border-color:var(--green);border-style:solid}
+  .algs{display:flex;flex-wrap:wrap;gap:6px}
+  .alg{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 10px;
+    font-size:11.5px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;
+    transition:all .12s}
+  .alg.on{background:var(--red-bg);border-color:#EAD2CF;color:var(--red);font-weight:600}
+  .alg.sug{border-color:var(--amber-line);border-style:dashed;color:var(--amber)}
+  .sugg{display:flex;gap:8px;align-items:flex-start;margin-top:9px;background:var(--amber-bg);
+    border:1px solid var(--amber-line);border-radius:8px;padding:9px 11px;font-size:11px;
+    color:var(--amber);line-height:1.5}
+  .sugg b{font-weight:600}
+  .macro{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .macro .m{position:relative}
+  .macro input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 6px;
+    font-size:13.5px;font-family:inherit;background:var(--surface);text-align:center;color:var(--ink)}
+  .macro input:focus{outline:none;border-color:var(--green)}
+  .macro .ml{font-size:8.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--faint);text-align:center;margin-top:5px}
+  .confbar{display:flex;gap:9px;align-items:flex-start;margin-top:14px;padding:11px 12px;
+    border-radius:8px;font-size:11.5px;line-height:1.5;border:1px solid}
+  .confbar.no{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber)}
+  .confbar.yes{background:var(--green-bg);border-color:var(--green-line);color:var(--green)}
+  .confbar b{font-weight:600}
+
+  /* reprice sheet */
+  .pct{display:flex;align-items:center;justify-content:center;gap:16px;margin:16px 0 6px}
+  .pct button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);
+    background:var(--surface);font-size:18px;cursor:pointer;color:var(--ink);font-family:inherit;line-height:1}
+  .pct button:active{background:var(--bg)}
+  .pct .v{font-size:36px;font-weight:600;min-width:104px;text-align:center;letter-spacing:-.01em}
+  .pct .v.up{color:var(--green)} .pct .v.dn{color:var(--red)}
+  .quick{display:flex;gap:7px;justify-content:center;margin-top:6px}
+  .qb{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 11px;
+    font-size:11.5px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .12s}
+  .qb.on{background:var(--green-bg);border-color:var(--green-line);color:var(--green);font-weight:600}
+  .scope{display:flex;background:var(--line-soft);border-radius:8px;padding:3px;margin-top:16px}
+  .scope button{flex:1;border:none;background:transparent;border-radius:6px;padding:8px 4px;
+    font-size:12px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .15s}
+  .scope button.on{background:var(--surface);color:var(--ink);font-weight:600;
+    box-shadow:0 1px 3px rgba(23,29,26,.08)}
+  .prev{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .prev-h{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--sub);padding:10px 13px 7px}
+  .pv{display:flex;align-items:center;gap:9px;padding:8px 13px;border-top:1px solid var(--line-soft);font-size:12px}
+  .pv .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pv .o{color:var(--faint);text-decoration:line-through}
+  .pv .ar{color:var(--faint);font-size:10px}
+  .pv .nw{font-weight:600;color:var(--green)}
+  .rate{display:flex;align-items:flex-start;gap:9px;margin-top:13px;background:var(--amber-bg);
+    border:1px solid var(--amber-line);border-radius:8px;padding:10px 11px;font-size:11px;
+    color:var(--amber);line-height:1.5}
+  .rate b{font-weight:600}
+  .danger{background:var(--surface);color:var(--red);border:1px solid #EAD2CF;border-radius:10px;
+    padding:11px;width:100%;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;margin-top:12px}
+
+  /* schedule sheet */
+  .wopt{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid var(--line);
+    border-radius:10px;background:var(--surface);cursor:pointer;margin-top:8px;transition:all .12s}
+  .wopt.on{border-color:var(--green);background:var(--green-bg)}
+  .wopt .rd{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);flex-shrink:0;
+    transition:all .15s}
+  .wopt.on .rd{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px var(--surface)}
+  .wopt .wn{font-size:13px;font-weight:600}
+  .wopt .ws{font-size:11px;color:var(--sub);margin-top:2px}
+
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,10px);background:var(--ink);
+    color:#fff;border-radius:9px;padding:11px 16px;font-size:12px;font-weight:500;opacity:0;
+    pointer-events:none;transition:all .25s ease;z-index:99;display:flex;align-items:center;gap:8px}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  .toast .k{color:#9DE3C0}
+
+  .switcher{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .swb{background:var(--surface);border:1px solid var(--line);color:var(--sub);border-radius:8px;
+    padding:7px 12px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:500}
+  .swb:hover{border-color:#CFCCC5;color:var(--ink)}
+  .note-out{color:var(--sub);font-size:11.5px;text-align:center;margin-top:16px;max-width:600px;line-height:1.7}
+  .note-out b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="t">3alay<b>na</b> — menu editor</div>
+  <div class="s">what the restaurant sees</div>
+</div>
+<div class="phone"><div class="screen">
+  <div class="hd">
+    <div class="hd-row">
+      <div>
+        <h1>Menu</h1>
+        <div class="sub" id="v-sub">Hallab 1881 · Kasr El Helou</div>
+      </div>
+      <div class="live" id="state"><span class="d"></span><span id="state-t">LIVE</span></div>
+    </div>
+    <button class="fx" onclick="openOv('ov-fx')">
+      <span class="ic">%</span>
+      <span>
+        <div class="t1">Reprice the whole menu</div>
+        <div class="t2" id="fx-sub">Last changed 23 days ago · dollar moved 6% since</div>
+      </span>
+      <span class="ch">&#8250;</span>
+    </button>
+    <div class="clock" id="clock"></div>
+  </div>
+  <div class="tabs">
+    <button class="tb on" onclick="tab(this,'items')">Items</button>
+    <button class="tb" onclick="tab(this,'lang')">Languages</button>
+  </div>
+  <div class="body" id="list"></div>
+  <div class="pub">
+    <button class="cta cta-green" id="pubbtn" onclick="publish()" disabled>Everything is live</button>
+  </div>
+  <div class="toast" id="toast"><span class="k">&#10003;</span><span id="toast-t"></span></div>
+  <!-- ============ item editor ============ -->
+  <div class="ov" id="ov-item">
+    <div class="scrim" onclick="closeOv('ov-item')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t" id="ed-title">Edit dish</div>
+      <div class="fld">
+        <div class="lb">Name <span class="tag">EN</span></div>
+        <input class="in" id="ed-name" oninput="dirty()">
+      </div>
+      <div class="fld">
+        <div class="lb">What's in it <span class="tag">EN</span></div>
+        <textarea class="in" id="ed-desc" oninput="dirty()"></textarea>
+      </div>
+      <div class="fld">
+        <div class="lb">Ingredients <span class="tag">DRIVES FILTERS</span></div>
+        <div class="chips" id="ed-ing"></div>
+        <input class="chipin" id="ed-ingin" placeholder="Type an ingredient, press Enter">
+      </div>
+
+      <div class="fld">
+        <div class="lb">Allergens <span class="tag">YOU DECLARE THESE</span></div>
+        <div class="algs" id="ed-al"></div>
+        <div class="sugg" id="ed-sug" style="display:none"></div>
+      </div>
+
+      <div class="fld">
+        <div class="lb">Per serving</div>
+        <div class="macro">
+          <div class="m"><input id="ed-kcal" inputmode="numeric" placeholder="—"><div class="ml">KCAL</div></div>
+          <div class="m"><input id="ed-pr" inputmode="numeric" placeholder="—"><div class="ml">PROTEIN</div></div>
+          <div class="m"><input id="ed-ft" inputmode="numeric" placeholder="—"><div class="ml">FAT</div></div>
+          <div class="m"><input id="ed-cb" inputmode="numeric" placeholder="—"><div class="ml">CARBS</div></div>
+        </div>
+      </div>
+
+      <div class="confbar" id="ed-conf"></div>
+      <button class="cta cta-gold" id="ed-confbtn" style="margin-top:10px;display:none" onclick="confirmDish()">
+        Confirm — put this dish in guest filters
+      </button>
+
+      <div class="aibar" id="ed-ai">
+        <span>Français and العربية will be <b>drafted for you</b> — you approve before it goes live.</span>
+        <button onclick="draft()">Draft</button>
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <div class="lb">Price</div>
+          <input class="in" id="ed-price" inputmode="decimal" oninput="dirty()">
+        </div>
+        <div class="fld">
+          <div class="lb">Section</div>
+          <select class="in" id="ed-sec" onchange="dirty()"></select>
+        </div>
+      </div>
+      <button class="cta cta-green" style="margin-top:18px" onclick="saveItem()">Save</button>
+      <button class="danger" onclick="removeItem()">Remove from menu</button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-item')">Cancel</button>
+    </div>
+  </div>
+  <!-- ============ reprice ============ -->
+  <div class="ov" id="ov-fx">
+    <div class="scrim" onclick="closeOv('ov-fx')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t">Reprice</div>
+      <div class="sh-s">Every price moves together. Nothing changes until you publish.</div>
+      <div class="pct">
+        <button onclick="bump(-1)">&minus;</button>
+        <div class="v up" id="pv">+5%</div>
+        <button onclick="bump(1)">+</button>
+      </div>
+      <div class="quick">
+        <button class="qb" onclick="setPct(this,-5)">&minus;5%</button>
+        <button class="qb on" onclick="setPct(this,5)">+5%</button>
+        <button class="qb" onclick="setPct(this,8)">+8%</button>
+        <button class="qb" onclick="setPct(this,12)">+12%</button>
+      </div>
+      <div class="scope">
+        <button class="on" onclick="scope(this,'all')">Whole menu</button>
+        <button onclick="scope(this,'sec')">One section</button>
+      </div>
+      <div class="prev" id="prev"></div>
+      <div class="rate">
+        <span>&#9432;</span>
+        <span>The dollar has moved <b>6%</b> since you last repriced. Menus show USD and LL —
+        LL follows the rate automatically.</span>
+      </div>
+      <button class="cta cta-green" style="margin-top:16px" onclick="applyFx()">Apply to 16 dishes</button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-fx')">Cancel</button>
+    </div>
+  </div>
+  <!-- ============ service window ============ -->
+  <div class="ov" id="ov-win">
+    <div class="scrim" onclick="closeOv('ov-win')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t" id="win-title">When is this served?</div>
+      <div class="sh-s">Guests only see this section during its hours. Outside them it isn't on the menu at all.</div>
+      <div id="win-opts"></div>
+      <button class="cta cta-green" style="margin-top:18px" onclick="closeOv('ov-win')">Done</button>
+    </div>
+  </div>
+  <!-- ============ add ============ -->
+  <div class="ov" id="ov-add">
+    <div class="scrim" onclick="closeOv('ov-add')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t">Add a dish</div>
+      <div class="sh-s">Name and price is enough. Everything else can wait.</div>
+      <div class="fld">
+        <div class="lb">Name</div>
+        <input class="in" id="ad-name" placeholder="Sfeeha b'Laban">
+      </div>
+      <div class="row2">
+        <div class="fld">
+          <div class="lb">Price</div>
+          <input class="in" id="ad-price" inputmode="decimal" placeholder="6.00">
+        </div>
+        <div class="fld">
+          <div class="lb">Section</div>
+          <select class="in" id="ad-sec"></select>
+        </div>
+      </div>
+      <div class="fld">
+        <div class="lb">Ingredients <span class="tag">OPTIONAL NOW</span></div>
+        <div class="chips" id="ad-ing"></div>
+        <input class="chipin" id="ad-ingin" placeholder="Type an ingredient, press Enter">
+      </div>
+      <button class="cta cta-green" style="margin-top:18px" onclick="addItem()">Add to menu</button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-add')">Cancel</button>
+    </div>
+  </div>
+</div></div>
+<div class="switcher">
+  <button class="swb" onclick="openOv('ov-fx')">Reprice sheet</button>
+  <button class="swb" onclick="openWin(0)">Service hours</button>
+  <button class="swb" onclick="editItem(6)">Edit a dish</button>
+  <button class="swb" onclick="openAdd(1)">Add a dish</button>
+  <button class="swb" onclick="reset()">&#8635; Reset</button>
+</div>
+<div class="note-out">
+  <b>Sections carry service hours, not items.</b> Restaurants think in dayparts — "we stop serving
+  breakfast at 11:30" — so the window sits on the section. Outside its hours a section is not on
+  the guest's menu at all. Repricing stays at the top because it is the feature nobody else in
+  Lebanon has.
+</div>
+<script src="aalayna-store.js?v=2"></script>
+<script>
+/* Service windows. Restaurants think in dayparts ("we stop serving breakfast at 11:30"),
+   so the window lives on the SECTION, not the item. */
+var WINDOWS = [
+  {id:'all',   name:'All day',   from:0,    to:1440, sub:'Always on the menu'},
+  {id:'brkf',  name:'Breakfast', from:420,  to:690,  sub:'7:00 — 11:30'},
+  {id:'lunch', name:'Lunch',     from:720,  to:960,  sub:'12:00 — 16:00'},
+  {id:'dinner',name:'Dinner',    from:1080, to:1410, sub:'18:00 — 23:30'}
+];
+/* ---- bound to the shared draft. The editor is the only writer. ---- */
+var SECTIONS = [], ITEMS = [];
+function pull(){
+  var d = Aalayna.draft();
+  SECTIONS = d.sections.map(function(x){ return {id:x.id, name:x.name, w:x.win}; });
+  ITEMS    = d.items.map(function(x){
+    return {id:x.id, s:x.sec, n:x.name, d:x.desc, p:x.price, fr:x.fr, ar:x.ar,
+            ing:(x.ing||[]).slice(), al:(x.al||[]).slice(),
+            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf};
+  });
+}
+function push(){
+  var d = Aalayna.draft();
+  d.sections = SECTIONS.map(function(x){ return {id:x.id, name:x.name, win:x.w}; });
+  d.items = ITEMS.map(function(x){
+    var prev = (Aalayna.published().items.filter(function(o){ return o.id === x.id; })[0]) || {};
+    return Object.assign({}, prev, {
+      id:x.id, sec:x.s, name:x.n, desc:x.d, price:x.p, fr:x.fr, ar:x.ar,
+      ing:x.ing, al:x.al, kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf
+    });
+  });
+  Aalayna.saveDraft(d);
+}
+function nowMin(){ var d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+function fmtNow(){
+  var d = new Date();
+  return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+}
+function win(id){ return WINDOWS.filter(function(w){ return w.id === id; })[0]; }
+function isNow(wid){ var w = win(wid), n = nowMin(); return n >= w.from && n < w.to; }
+pull();
+var closed = {}, isDirty = false, editing = -1, pct = 5, fxScope = 'all', view = 'items';
+function $(id){ return document.getElementById(id); }
+function usd(v){ return '$' + v.toFixed(2); }
+function openOv(id){ if(id==='ov-fx') paintPrev(); $(id).classList.add('on'); }
+function closeOv(id){ $(id).classList.remove('on'); }
+function toast(msg){
+  $('toast-t').textContent = msg;
+  $('toast').classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ $('toast').classList.remove('on'); }, 2400);
+}
+function dirty(){
+  push();
+  isDirty = true;
+  $('state').classList.add('dirty');
+  $('state-t').textContent = 'UNPUBLISHED';
+  var b = $('pubbtn');
+  b.disabled = false;
+  b.textContent = 'Publish to every table';
+}
+function publish(){
+  var v = Aalayna.publish();
+  isDirty = false;
+  $('state').classList.remove('dirty');
+  $('state-t').textContent = 'LIVE';
+  var b = $('pubbtn');
+  b.disabled = true;
+  b.textContent = 'Everything is live';
+  toast('Published v' + v + ' — live on every table. No reprints.');
+}
+/* ---------- list ---------- */
+function render(){
+  var L = $('list'); L.innerHTML = '';
+  SECTIONS.forEach(function(sec){
+    var items = ITEMS.filter(function(i){ return i.s === sec.id; });
+    var box = document.createElement('div');
+    box.className = 'sec' + (closed[sec.id] ? ' closed' : '');
+    var w = win(sec.w), live = isNow(sec.w);
+    var h = document.createElement('div');
+    h.className = 'sec-h';
+    h.onclick = function(){ closed[sec.id] = !closed[sec.id]; render(); };
+    h.innerHTML = '<span class="cv">&#9660;</span><span class="nm">' + sec.name + '</span>';
+    var chip = document.createElement('span');
+    chip.className = 'win' + (sec.w === 'all' ? '' : (live ? ' now' : ' later'));
+    chip.innerHTML = (live && sec.w !== 'all' ? '<span class="dt"></span>' : '') +
+      (sec.w === 'all' ? 'ALL DAY' : w.sub.replace(/ /g, '')) ;
+    chip.onclick = function(e){ e.stopPropagation(); openWin(SECTIONS.indexOf(sec)); };
+    h.appendChild(chip);
+    var ct = document.createElement('span');
+    ct.className = 'ct'; ct.style.marginLeft = '0';
+    ct.textContent = items.length;
+    h.appendChild(ct);
+    box.appendChild(h);
+    if (sec.w !== 'all' && !live) box.classList.add('dim-sec');
+    var wrap = document.createElement('div');
+    wrap.className = 'sec-items';
+    items.forEach(function(it){
+      var idx = ITEMS.indexOf(it);
+      var row = document.createElement('div');
+      row.className = 'it';
+      var langs = view === 'lang'
+        ? '<span class="lang"><span class="lg">EN</span>' +
+          '<span class="lg' + (it.fr ? '' : ' miss') + '">FR</span>' +
+          '<span class="lg' + (it.ar ? '' : ' miss') + '">AR</span></span>'
+        : '<span>' + (it.d ? it.d.split(',')[0] : 'No description yet') + '</span>';
+      row.innerHTML =
+        '<span class="grip">&#8942;&#8942;</span>' +
+        '<span class="tx"><div class="nm">' + it.n + '</div>' +
+        '<div class="meta">' + langs + '</div></span>' +
+        '<span class="pr">' + usd(it.p) + '</span>';
+      row.querySelector('.tx').onclick = function(){ editItem(idx); };
+      wrap.appendChild(row);
+    });
+    var add = document.createElement('div');
+    add.className = 'addrow';
+    add.onclick = function(){ openAdd(SECTIONS.indexOf(sec)); };
+    add.innerHTML = '<span class="p">+</span><span>Add to ' + sec.name + '</span>';
+    wrap.appendChild(add);
+    box.appendChild(wrap);
+    L.appendChild(box);
+    wrap.style.maxHeight = closed[sec.id] ? '0px' : wrap.scrollHeight + 'px';
+  });
+}
+/* ---------- edit ---------- */
+function fillSecs(sel, val){
+  sel.innerHTML = '';
+  SECTIONS.forEach(function(s){
+    var o = document.createElement('option');
+    o.value = s.id; o.textContent = s.name;
+    if (s.id === val) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+function editItem(i){
+  editing = i;
+  var it = ITEMS[i];
+  $('ed-title').textContent = it.n;
+  $('ed-name').value = it.n;
+  $('ed-desc').value = it.d;
+  $('ed-price').value = it.p.toFixed(2);
+  fillSecs($('ed-sec'), it.s);
+  $('ed-ai').style.display = (it.fr && it.ar) ? 'none' : 'flex';
+
+  ['kcal','pr','ft','cb'].forEach(function(k){
+    $('ed-' + k).value = (it[k] == null ? '' : it[k]);
+    $('ed-' + k).oninput = function(){
+      var v = $('ed-' + k).value.trim(), t = cur();
+      t[k] = v === '' ? null : +v;
+      t.conf = 0;                        // nutrition changed, needs re-confirming
+      dirty(); paintConf();
+    };
+  });
+  function redrawIng(changed){
+    paintChips('ed-ing', cur().ing, function(i){
+      cur().ing.splice(i,1); cur().conf = 0; redrawIng(true);
+    });
+    if (changed) dirty();
+    paintAllergens(); paintConf();
+  }
+  chipInput('ed-ingin', function(){ return cur().ing; }, function(){ redrawIng(true); });
+  redrawIng(false);
+  openOv('ov-item');
+}
+/* Ingredients are typed. Allergens are TICKED from a fixed list — free text is how
+   a misspelt "pistachhio" silently drops out of a nut filter. */
+var SUGGEST = {
+  nuts:   ['pistachio','cashew','pine nut','almond','walnut','hazelnut','peanut'],
+  dairy:  ['cheese','yogurt','cream','milk','ghee','ashta','butter','labneh'],
+  gluten: ['flour','bread','bulgur','semolina','filo','pastry','kaakeh','pita','dough'],
+  sesame: ['tahini','sesame'],
+  egg:    ['egg'],
+  shellfish: ['shrimp','crab','lobster','prawn'],
+  soy:    ['soy']
+};
+function suggested(ing){
+  var out = [];
+  Object.keys(SUGGEST).forEach(function(a){
+    if (ing.some(function(i){
+      return SUGGEST[a].some(function(k){ return i.toLowerCase().indexOf(k) > -1; });
+    })) out.push(a);
+  });
+  return out;
+}
+function paintChips(el, list, onRemove, cls){
+  var box = $(el); box.innerHTML = '';
+  list.forEach(function(v, i){
+    var c = document.createElement('span');
+    c.className = 'cx' + (cls ? ' ' + cls : '');
+    c.innerHTML = v + '<b>&times;</b>';
+    c.querySelector('b').onclick = function(){ onRemove(i); };
+    box.appendChild(c);
+  });
+}
+function chipInput(inputId, getList, after){
+  var el = $(inputId);
+  el.onkeydown = function(e){
+    if (e.key !== 'Enter' && e.key !== ',') return;
+    e.preventDefault();
+    var v = el.value.trim().toLowerCase();
+    if (!v) return;
+    var list = (typeof getList === 'function') ? getList() : getList;
+    if (list.indexOf(v) === -1) list.push(v);
+    el.value = '';
+    after();
+  };
+}
+function cur(){ return ITEMS[editing]; }
+function paintAllergens(){
+  var it = cur(), box = $('ed-al');
+  var sug = suggested(it.ing).filter(function(a){ return it.al.indexOf(a) === -1; });
+  box.innerHTML = '';
+  Aalayna.ALLERGENS.forEach(function(a){
+    var b = document.createElement('button');
+    var on = it.al.indexOf(a) > -1;
+    b.className = 'alg' + (on ? ' on' : (sug.indexOf(a) > -1 ? ' sug' : ''));
+    b.textContent = a.charAt(0).toUpperCase() + a.slice(1);
+    b.onclick = function(){
+      var t = cur();                     // resolve now, not at paint time
+      var i = t.al.indexOf(a);
+      if (i > -1) t.al.splice(i, 1); else t.al.push(a);
+      t.conf = 0;                        // changing an allergen list un-confirms the dish
+      dirty(); paintAllergens(); paintConf();
+    };
+    box.appendChild(b);
+  });
+  var sb = $('ed-sug');
+  if (sug.length){
+    sb.style.display = 'flex';
+    sb.innerHTML = '<span>&#9432;</span><span>Your ingredients suggest <b>' +
+      sug.join(', ') + '</b>. Tick it if that is right — we will never tick it for you.</span>';
+  } else { sb.style.display = 'none'; }
+}
+function paintConf(){
+  var it = cur();
+  var miss = Aalayna.missing({ing:it.ing, kcal:it.kcal, pr:it.pr, ft:it.ft, cb:it.cb});
+  var bar = $('ed-conf'), btn = $('ed-confbtn');
+  if (it.conf){
+    bar.className = 'confbar yes';
+    bar.innerHTML = '<span>&#10003;</span><span><b>Confirmed.</b> This dish appears in guest ' +
+      'allergen and nutrition filters.</span>';
+    btn.style.display = 'none';
+  } else if (miss.length){
+    bar.className = 'confbar no';
+    bar.innerHTML = '<span>&#9888;</span><span>Not in guest filters yet — still needs <b>' +
+      miss.join(' and ') + '</b>.</span>';
+    btn.style.display = 'none';
+  } else {
+    bar.className = 'confbar no';
+    bar.innerHTML = '<span>&#9888;</span><span>Ready. Confirm the allergens above are correct and ' +
+      'this dish joins the guest filters.</span>';
+    btn.style.display = 'block';
+  }
+}
+function confirmDish(){
+  var t = cur();
+  if (!Aalayna.canConfirm(t)){
+    toast('Still needs ' + Aalayna.missing(t).join(' and '));
+    paintConf();
+    return;
+  }
+  t.conf = 1;
+  dirty(); paintConf();
+  toast(ITEMS[editing].n + ' confirmed — now in guest filters');
+}
+function draft(){
+  var it = ITEMS[editing];
+  it.fr = 1; it.ar = 1;
+  $('ed-ai').style.display = 'none';
+  render(); dirty();
+  toast('Français + العربية drafted — review in Languages');
+}
+function saveItem(){
+  var it = ITEMS[editing];
+  it.n = $('ed-name').value || it.n;
+  it.d = $('ed-desc').value;
+  it.p = parseFloat($('ed-price').value) || it.p;
+  it.s = $('ed-sec').value;
+  closeOv('ov-item'); render(); dirty();
+  toast('Saved — publish when you’re ready');
+}
+function removeItem(){
+  var n = ITEMS[editing].n;
+  ITEMS.splice(editing, 1);
+  closeOv('ov-item'); render(); dirty();
+  toast(n + ' removed');
+}
+/* ---------- add ---------- */
+var addIng = [];
+function openAdd(secIdx){
+  $('ad-name').value = ''; $('ad-price').value = '';
+  addIng = [];
+  function redraw(){ paintChips('ad-ing', addIng, function(i){ addIng.splice(i,1); redraw(); }); }
+  chipInput('ad-ingin', function(){ return addIng; }, redraw);
+  redraw();
+  fillSecs($('ad-sec'), SECTIONS[secIdx || 0].id);
+  openOv('ov-add');
+}
+function addItem(){
+  var n = $('ad-name').value.trim();
+  if (!n){ $('ad-name').focus(); return; }
+  ITEMS.push({ id: 'i' + Date.now().toString(36), s: $('ad-sec').value, n: n, d: '',
+               p: parseFloat($('ad-price').value) || 0, fr: 0, ar: 0,
+               ing: addIng.slice(), al: [], kcal: null, pr: null, ft: null, cb: null, conf: 0 });
+  closeOv('ov-add'); render(); dirty();
+  toast(n + (addIng.length ? ' added — now add nutrition to confirm it' : ' added — needs ingredients'));
+}
+/* ---------- reprice ---------- */
+function setPct(el, v){
+  pct = v;
+  document.querySelectorAll('.qb').forEach(function(b){ b.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  paintPrev();
+}
+function bump(d){
+  pct = Math.max(-50, Math.min(50, pct + d));
+  document.querySelectorAll('.qb').forEach(function(b){ b.classList.remove('on'); });
+  paintPrev();
+}
+function scope(el, s){
+  fxScope = s;
+  document.querySelectorAll('.scope button').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  paintPrev();
+}
+function targets(){
+  return fxScope === 'all' ? ITEMS : ITEMS.filter(function(i){ return i.s === 'mez'; });
+}
+function newPrice(p){ return Math.round(p * (1 + pct / 100) * 4) / 4; }  // nearest 0.25
+function paintPrev(){
+  var v = $('pv');
+  v.textContent = (pct >= 0 ? '+' : '') + pct + '%';
+  v.className = 'v ' + (pct >= 0 ? 'up' : 'dn');
+  var t = targets();
+  var box = $('prev');
+  box.innerHTML = '<div class="prev-h">Preview · ' + t.length + ' dishes</div>' +
+    t.slice(0, 4).map(function(i){
+      return '<div class="pv"><span class="n">' + i.n + '</span>' +
+        '<span class="o">' + usd(i.p) + '</span>' +
+        '<span class="ar">&#8594;</span>' +
+        '<span class="nw">' + usd(newPrice(i.p)) + '</span></div>';
+    }).join('') +
+    (t.length > 4 ? '<div class="pv"><span class="n" style="color:#A8A099">and ' + (t.length - 4) + ' more</span></div>' : '');
+  document.querySelector('#ov-fx .cta-green').textContent = 'Apply to ' + t.length + ' dishes';
+}
+function applyFx(){
+  var t = targets();
+  t.forEach(function(i){ i.p = newPrice(i.p); });
+  closeOv('ov-fx'); render(); dirty();
+  $('fx-sub').textContent = 'Repriced just now · ' + (pct >= 0 ? '+' : '') + pct + '% on ' + t.length + ' dishes';
+  toast(t.length + ' prices updated — not live yet');
+}
+/* ---------- service windows ---------- */
+var winSec = 0;
+function openWin(i){
+  winSec = i;
+  var sec = SECTIONS[i];
+  $('win-title').textContent = 'When is ' + sec.name + ' served?';
+  var box = $('win-opts'); box.innerHTML = '';
+  WINDOWS.forEach(function(w){
+    var el = document.createElement('div');
+    el.className = 'wopt' + (sec.w === w.id ? ' on' : '');
+    el.onclick = function(){ setWin(w.id); };
+    el.innerHTML = '<span class="rd"></span><span><div class="wn">' + w.name + '</div>' +
+                   '<div class="ws">' + w.sub + '</div></span>';
+    box.appendChild(el);
+  });
+  openOv('ov-win');
+}
+function setWin(id){
+  SECTIONS[winSec].w = id;
+  openWin(winSec);
+  render(); dirty(); paintClock();
+  toast(SECTIONS[winSec].name + ' → ' + win(id).name);
+}
+function paintClock(){
+  var on = SECTIONS.filter(function(s){ return isNow(s.w); }).length;
+  $('clock').innerHTML = 'It is <b>' + fmtNow() + '</b> · guests currently see <b>' +
+    on + ' of ' + SECTIONS.length + '</b> sections';
+}
+/* ---------- tabs ---------- */
+function tab(el, v){
+  view = v;
+  document.querySelectorAll('.tb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  render();
+}
+function reset(){
+  Aalayna.reset();
+  pull();
+  closed = {}; pct = 5; fxScope = 'all'; isDirty = false;
+  $('state').classList.remove('dirty');
+  $('state-t').textContent = 'LIVE';
+  $('pubbtn').disabled = true;
+  $('pubbtn').textContent = 'Everything is live';
+  $('fx-sub').textContent = 'Last changed 23 days ago · dollar moved 6% since';
+  document.querySelectorAll('.tb').forEach(function(b, i){ b.classList.toggle('on', i === 0); });
+  view = 'items';
+  render(); paintClock();
+}
+(function(){ var v = Aalayna.venue();
+  document.getElementById('v-sub').textContent = v.name + (v.place ? ' · ' + v.place : ''); })();
+render();
+paintClock();
+// another tab published or reset — reload from the store
+Aalayna.on(function(){ pull(); render(); paintClock(); });
+setInterval(function(){ render(); paintClock(); }, 60000);   // sections open and close on their own
+</script>
+</body>
+</html>

@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3alayna × Hallab 1881 — full flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
+    --green:#0F4B3A; --green-deep:#0B3A2D; --green-bg:#EDF3EF; --green-line:#D5E3DA;
+    --gold:#C9A227; --gold-lt:#E8D9A8;
+    --red:#B4423A; --red-bg:#F9EEEC;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
+    --ivory:#FFFFFF; --paper:#FFFFFF; --hair:#E7E5E0; --coral:#B4423A;
+    --spring:ease; --ease:ease;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
+    color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:26px 16px 40px;font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+  .stage{width:100%;max-width:410px;margin-bottom:14px}
+  .stage .t{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .stage .t b{font-weight:600;color:var(--green)}
+  .stage .s{font-size:11px;color:var(--sub);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
+
+  .phone{width:410px;max-width:96vw;height:80vh;min-height:660px;background:var(--surface);
+    border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden;
+    box-shadow:0 1px 2px rgba(23,29,26,.04)}
+  .screen{width:100%;height:100%;position:relative;background:var(--surface)}
+  .view{position:absolute;inset:0;display:none;flex-direction:column;background:var(--surface)}
+  .view.on{display:flex;animation:rise .3s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+
+  .scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .dock{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;z-index:20;
+    background:linear-gradient(transparent, var(--surface) 32%)}
+  .back{position:absolute;top:16px;inset-inline-start:14px;z-index:30;width:32px;height:32px;
+    border-radius:9px;background:var(--surface);border:1px solid var(--line);font-size:14px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+
+  .display{font-weight:600;line-height:1.1;letter-spacing:-.01em}
+
+  .cta{width:100%;border:1px solid transparent;border-radius:10px;padding:14px;font-size:14px;
+    font-weight:600;cursor:pointer;font-family:inherit;position:relative;overflow:hidden;
+    transition:opacity .12s}
+  .cta:active{opacity:.85}
+  .cta:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  .cta-green{background:var(--green);color:#fff}
+  .cta-line{background:var(--surface);color:var(--ink);border-color:var(--line);margin-top:8px}
+  .cta-line-lt{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+  .cta-ghost{background:transparent;color:var(--sub);font-weight:500;font-size:12.5px;margin-top:2px}
+  .cta .sheen{display:none}
+  .cta:hover .sheen{display:none}
+  .powered{text-align:center;font-size:10.5px;color:var(--faint);padding:10px 0 2px}
+  .powered b{color:var(--sub);font-weight:600}
+  .powered.dk{color:rgba(255,255,255,.45)} .powered.dk b{color:rgba(255,255,255,.7)}
+
+  /* ── landing ── */
+  .hero{height:210px;flex-shrink:0;position:relative;overflow:hidden;background:var(--green-deep)}
+  .hero .pat{display:none}
+  .hero::after{content:none}
+  .crest{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;
+    color:#F2EDE0;width:80%;padding:16px 10px 14px;border:1px solid rgba(255,255,255,.22);border-radius:6px}
+  .crest .est{font-size:9px;letter-spacing:.24em;color:#9DBBAC;margin-bottom:6px}
+  .crest .name{font-family:'Amiri',serif;font-size:30px;font-weight:700;line-height:1.05;color:#fff}
+  .crest .place{font-size:11px;color:#9DBBAC;margin-top:7px}
+  .crest .rule{width:40px;height:1px;background:var(--gold);margin:11px auto 0}
+  .land-body{flex:1;display:flex;flex-direction:column;padding:20px 20px 118px;background:var(--surface);
+    overflow-y:auto;scrollbar-width:none}
+  .land-body::-webkit-scrollbar{display:none}
+  .greet{font-family:'Amiri',serif;font-size:24px;font-weight:700}
+  .tbl{display:inline-flex;align-items:center;gap:7px;margin-top:10px;background:var(--green-bg);
+    color:var(--green);font-size:11.5px;font-weight:600;border-radius:6px;padding:5px 10px;width:fit-content}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .note{font-size:12.5px;color:var(--sub);margin-top:12px;line-height:1.6}
+
+  /* ── menu ── */
+  .m-head{padding-block:18px 0;padding-inline:56px 128px;flex-shrink:0}
+  .m-head .vn{font-family:'Amiri',serif;font-size:19px;font-weight:700}
+  .m-head .vs{font-size:11px;color:var(--sub);margin-top:2px}
+  .sels{position:absolute;top:16px;inset-inline-end:14px;z-index:30;display:flex;gap:5px}
+  .sel{position:relative;flex:0 0 auto}
+  .sel select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--surface);
+    border-radius:8px;padding:6px 18px 6px 9px;font-size:10.5px;font-weight:600;color:var(--ink);
+    font-family:inherit;cursor:pointer}
+  .sel select:hover{border-color:#CFCCC5}
+  .sel select:focus{outline:none;border-color:var(--green)}
+  .sel::after{content:'\25BE';position:absolute;right:7px;top:50%;transform:translateY(-50%);
+    font-size:9px;color:var(--sub);pointer-events:none;line-height:1}
+  [dir="rtl"] .sel select{padding:6px 9px 6px 18px}
+  [dir="rtl"] .sel::after{right:auto;left:7px}
+
+  .fchips{display:flex;gap:6px;padding:13px 18px 0;flex-wrap:wrap;flex-shrink:0}
+  .fc{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;
+    font-size:11px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .12s}
+  .fc.on{background:var(--green-bg);border-color:var(--green-line);color:var(--green);font-weight:600}
+  .fbar{display:none;align-items:center;gap:9px;margin:10px 18px 0;padding:8px 11px;border-radius:8px;
+    background:var(--green-bg);border:1px solid var(--green-line);font-size:11.5px;color:var(--green);font-weight:500}
+  .fbar.on{display:flex}
+  .fbar .cnt{font-size:13px;font-weight:600}
+  .fbar .clr{margin-inline-start:auto;background:none;border:none;color:var(--green);font-size:11px;
+    font-weight:600;cursor:pointer;text-decoration:underline;font-family:inherit}
+
+  .cats{display:flex;gap:16px;overflow-x:auto;padding:12px 18px 0;scrollbar-width:none;flex-shrink:0;
+    border-bottom:1px solid var(--line);position:relative}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{flex-shrink:0;background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:500;
+    color:var(--sub);padding:0 1px 9px;cursor:pointer}
+  .cat.on{color:var(--ink);font-weight:600}
+  #ink{position:absolute;bottom:-1px;height:2px;background:var(--green);border-radius:1px;
+    transition:left .25s ease,width .25s ease}
+
+  .sect-h{display:flex;align-items:center;gap:10px;padding:18px 18px 8px;
+    font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);
+    background:var(--surface)}
+  .sect-h::after{content:'';flex:1;height:1px;background:var(--line-soft)}
+  .sect-h:first-child{padding-top:12px}
+
+  .mi{display:flex;align-items:flex-start;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line-soft);
+    cursor:pointer;transition:background .12s,opacity .2s}
+  .mi:last-child{border-bottom:none}
+  .mi:hover{background:var(--bg)}
+  .mi:hover .more{color:var(--green)}
+  .mi.dim{opacity:.4}
+  .mi.dim .mp{color:var(--sub)}
+  .mi .tx{flex:1;min-width:0}
+  .mi .mn{font-size:13.5px;font-weight:600;line-height:1.35}
+  .mi .md{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
+  .mi .mp{font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;padding-top:1px}
+  .more{display:flex;align-items:center;gap:4px;margin-top:7px;font-size:10.5px;font-weight:500;
+    color:var(--faint);transition:color .12s;width:fit-content}
+  .more .ch{font-size:11px;line-height:1}
+  [dir="rtl"] .more .ch{transform:scaleX(-1)}
+  .why{display:none;align-items:center;gap:5px;margin-top:7px;font-size:10px;font-weight:600;
+    color:var(--red);background:var(--red-bg);border:1px solid #EAD2CF;border-radius:6px;
+    padding:3px 7px;width:fit-content}
+  .mi.dim .why{display:inline-flex}
+  .why .x{font-size:8px;opacity:.8}
+
+  .billpill{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:22;
+    background:var(--green);color:#fff;border:none;border-radius:10px;padding:12px 20px;
+    font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;
+    gap:10px;white-space:nowrap;box-shadow:0 6px 18px rgba(15,75,58,.3);transition:opacity .12s}
+  .billpill:active{opacity:.85}
+  .billpill .amt{color:var(--gold-lt)}
+
+  /* ── bill ── */
+  .b-body{padding:60px 18px 128px}
+  .b-title{font-size:17px;font-weight:600;text-align:center;letter-spacing:-.01em}
+  .b-sub{font-size:11.5px;color:var(--sub);text-align:center;margin-top:3px}
+  .receipt{background:var(--surface);border:1px solid var(--line);margin-top:16px;
+    padding:13px 16px 11px;border-radius:10px}
+  .receipt::before,.receipt::after{content:none}
+  .r-crest{text-align:center;font-size:9px;letter-spacing:.22em;color:var(--faint);font-weight:600;
+    padding-bottom:9px;border-bottom:1px dashed var(--line);margin-bottom:2px}
+  .r-item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;
+    border-bottom:1px solid var(--line-soft);font-size:12.5px}
+  .r-item:last-of-type{border-bottom:none}
+  .r-item .q{color:var(--sub);font-size:11px;margin-right:6px}
+  .r-item .p{font-weight:600}
+  .r-total{display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px 2px;
+    border-top:1px solid var(--ink);margin-top:6px}
+  .r-total .l{font-size:10.5px;letter-spacing:.1em;color:var(--sub);font-weight:600}
+  .r-total .a{font-size:24px;font-weight:600;letter-spacing:-.01em}
+  .r-ll{text-align:right;font-size:10.5px;color:var(--sub);padding:2px 2px 4px}
+  .hint{font-size:11.5px;color:var(--sub);margin-top:11px;line-height:1.55;text-align:center}
+
+  /* ── settle ── */
+  .seg{display:flex;background:var(--line-soft);border-radius:9px;padding:3px;margin-top:16px}
+  .seg button{flex:1;border:none;background:transparent;border-radius:7px;padding:9px 4px;font-size:12px;
+    font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .15s}
+  .seg button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(23,29,26,.08)}
+  .ppl{display:flex;align-items:center;justify-content:space-between;margin-top:14px;
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px}
+  .ppl .lab{font-size:12.5px;font-weight:600}
+  .stp{display:flex;align-items:center;gap:14px}
+  .stp button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--surface);
+    font-size:15px;cursor:pointer;color:var(--ink);font-family:inherit}
+  .stp button:active{background:var(--bg)}
+  .stp .n{font-size:17px;font-weight:600;min-width:22px;text-align:center}
+  .share{margin-top:14px;text-align:center;background:var(--green-bg);border:1px solid var(--green-line);
+    border-radius:10px;padding:18px 14px}
+  .share .k{font-size:10px;color:var(--green);font-weight:600;letter-spacing:.08em}
+  .share .v{font-size:34px;font-weight:600;color:var(--green);margin-top:6px;letter-spacing:-.01em}
+  .share .ll{font-size:10.5px;color:var(--green);opacity:.75;margin-top:4px}
+  .picklist{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .pl{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line-soft);
+    cursor:pointer;font-size:12.5px;transition:background .12s}
+  .pl:last-child{border-bottom:none}
+  .pl.on{background:var(--green-bg)}
+  .pl .cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:all .12s}
+  .pl.on .cb{background:var(--green);border-color:var(--green)}
+  .pl .nm{flex:1}
+  .pl .pr{font-weight:600}
+
+  /* ── pay ── */
+  .amt{text-align:center}
+  .amt .who{font-size:11.5px;color:var(--sub);margin-bottom:7px}
+  .amt .big{font-size:40px;font-weight:600;letter-spacing:-.02em}
+  .amt .ll{font-size:11px;color:var(--sub);margin-top:6px}
+  .tipwrap{margin-top:20px}
+  .tiphead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .tiphead .l{font-size:12.5px;font-weight:600}
+  .tiphead .r{font-size:11px;color:var(--green);font-weight:500}
+  .tips{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .tipb{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 2px;
+    cursor:pointer;font-family:inherit;transition:all .12s}
+  .tipb .tp{font-weight:600;font-size:13px}
+  .tipb .tv{font-size:10px;color:var(--sub);margin-top:2px}
+  .tipb.on{border-color:var(--green-line);background:var(--green-bg)}
+  .tipb.on .tp{color:var(--green)}
+  .pays{margin-top:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .pm{display:flex;align-items:center;gap:11px;padding:12px 13px;cursor:pointer;
+    border-bottom:1px solid var(--line-soft);transition:background .12s}
+  .pm:last-child{border-bottom:none}
+  .pm.on{background:var(--green-bg)}
+  .mark{width:36px;height:23px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+    font-size:8px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.02em}
+  .pm .pn{font-size:12.5px;font-weight:600}
+  .pm .pd{font-size:10.5px;color:var(--sub);margin-top:1px}
+  .radio{margin-left:auto;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);
+    flex-shrink:0;transition:all .12s}
+  .pm.on .radio{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px var(--surface)}
+  .cashnote{background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:8px;
+    padding:10px 12px;font-size:11px;color:var(--amber);margin-top:10px;line-height:1.55;display:none}
+  .cashnote b{font-weight:600}
+  .chg{display:none;margin-top:10px;border:1px solid var(--amber-line);background:var(--amber-bg);
+    border-radius:10px;padding:13px 12px}
+  .chg.on{display:block;animation:rise .25s ease}
+  .chg-q{font-size:12px;font-weight:600;color:var(--amber);margin-bottom:8px}
+  .chg-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .chip{border:1px solid var(--amber-line);background:var(--surface);border-radius:7px;padding:9px 2px;
+    cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--amber);transition:all .12s}
+  .chip.on{background:var(--green);border-color:var(--green);color:#fff}
+  .chg-sub{font-size:10.5px;color:var(--amber);margin:11px 0 6px;font-weight:600}
+  .cur{display:flex;gap:6px}
+  .curb{flex:1;border:1px solid var(--amber-line);background:var(--surface);border-radius:7px;padding:8px 2px;
+    cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;color:var(--amber);transition:all .12s}
+  .curb.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+  .chg-out{margin-top:12px;padding-top:11px;border-top:1px dashed var(--amber-line);
+    font-size:12px;color:var(--amber);line-height:1.55}
+  .chg-out b{font-weight:600}
+
+  /* ── success — the venue's screen ── */
+  .done-inner{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--green-deep)}
+  .pat2{display:none} .vig{display:none}
+  .burst{display:none} .burst i{display:none}
+  .go .burst i{animation:none}
+  .done-body{position:relative;z-index:3;flex:1;overflow-y:auto;scrollbar-width:none;
+    padding:40px 24px 14px;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center}
+  .done-body::-webkit-scrollbar{display:none}
+  .seal{width:74px;height:74px;flex:0 0 74px;border-radius:50%;background:#fff;color:var(--green);
+    display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:18px}
+  .seal::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(255,255,255,.25)}
+  .seal{position:relative}
+  .go .seal{animation:rise .4s ease}
+  .est2{font-size:9px;letter-spacing:.24em;color:#9DBBAC;margin-bottom:8px;text-transform:uppercase}
+  .shukran{font-family:'Amiri',serif;font-size:42px;font-weight:700;color:#fff;margin-bottom:2px}
+  .ar{font-size:20px;color:var(--gold-lt);direction:rtl;line-height:1.3;margin-bottom:13px}
+  .rule2{width:44px;height:1px;background:var(--gold);margin-bottom:14px;flex:0 0 auto}
+  .done-p{font-size:13px;color:#C9D8CF;line-height:1.7;max-width:270px;text-wrap:balance}
+  .done-p b{color:#fff;font-weight:600}
+  .twoup{margin-top:20px;width:100%;display:flex;flex-direction:column;gap:8px}
+  .offer{display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:10px;
+    padding:12px;font-family:inherit;transition:background .12s}
+  .offer:active{background:rgba(255,255,255,.14)}
+  .offer:hover{background:rgba(255,255,255,.12)}
+  .offer .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:14px;flex-shrink:0;background:rgba(255,255,255,.12);color:var(--gold-lt)}
+  .offer .ot{font-size:12.5px;font-weight:600;color:#fff}
+  .offer .os{font-size:10.5px;color:#9DBBAC;margin-top:2px}
+  .dock-dk{position:relative;z-index:6;flex:0 0 auto;padding:4px 24px 18px}
+
+  /* ── overlays ── */
+  .ov{position:absolute;inset:0;z-index:60;display:none;align-items:flex-end}
+  .ov.on{display:flex}
+  .ov .scrim{position:absolute;inset:0;background:rgba(23,29,26,.4)}
+  .sheet{position:relative;width:100%;background:var(--surface);border-radius:14px 14px 0 0;
+    border-top:1px solid var(--line);padding:16px 18px 20px;animation:up .28s ease;
+    max-height:92%;overflow-y:auto;scrollbar-width:none}
+  .sheet::-webkit-scrollbar{display:none}
+  @keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+  .grab{width:34px;height:4px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+  .sh-t{font-size:16px;font-weight:600;text-align:left;letter-spacing:-.01em}
+  .sh-s{font-size:12px;color:var(--sub);text-align:left;margin-top:5px;line-height:1.55}
+  [dir="rtl"] .sh-t,[dir="rtl"] .sh-s{text-align:right}
+  .idet .sh-t{font-size:20px;line-height:1.2;margin-top:2px}
+  .idet .sh-s{font-size:12.5px;margin-top:8px}
+  .idet .sh-t::after{content:'';display:block;width:38px;height:1.5px;background:var(--gold);
+    border-radius:1px;margin-top:11px}
+  [dir="rtl"] .idet .sh-t::after{margin-inline-start:0}
+  .idet .alrt{margin-top:13px}
+  .adds{margin-top:14px}
+  .add{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft);
+    cursor:pointer;font-size:13px}
+  .add:last-child{border-bottom:none}
+  .add .cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:all .12s}
+  .add.on .cb{background:var(--green);border-color:var(--green)}
+  .add .an{flex:1}
+  .add .ap{color:var(--sub);font-size:12px}
+  .alrt{margin-top:12px;display:flex;gap:8px;align-items:flex-start;border-radius:8px;
+    padding:10px 11px;font-size:11px;line-height:1.55;border:1px solid}
+  .alrt b{color:inherit;font-weight:600}
+  .stars{display:flex;gap:8px;justify-content:center;margin:16px 0 4px}
+  .star{font-size:26px;color:var(--line);cursor:pointer;transition:color .12s}
+  .star:hover{color:var(--amber)}
+  .star.on{color:var(--amber)}
+  .ta{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px;font-size:12.5px;
+    font-family:inherit;resize:none;height:88px;margin-top:12px;background:var(--surface)}
+  .ta:focus{outline:none;border-color:var(--green)}
+  .opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+  .opt{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 10px;
+    font-size:11px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .12s}
+  .opt.on{background:var(--green-bg);border-color:var(--green-line);color:var(--green);font-weight:600}
+
+  .switcher{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .sw{background:var(--surface);border:1px solid var(--line);color:var(--sub);border-radius:8px;
+    padding:7px 12px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:500}
+  .sw:hover{border-color:#CFCCC5;color:var(--ink)}
+  .note-out{color:var(--sub);font-size:11.5px;text-align:center;margin-top:16px;max-width:600px;line-height:1.7}
+  .note-out b{color:var(--ink);font-weight:600}
+
+  /* legacy keyframes kept as no-ops for JS-toggled classes */
+  @keyframes pop{from{opacity:0}to{opacity:0}}
+  @keyframes stamp{from{opacity:1}to{opacity:1}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="t">3alay<b>na</b> &times; <span id="v-name-stage">Hallab 1881</span></div>
+  <div class="s">landing &middot; menu &middot; bill &middot; split &middot; pay &middot; thanks</div>
+</div>
+<div class="phone"><div class="screen">
+  <!-- ================= 1. LANDING ================= -->
+  <div class="view on" id="v-land">
+    <div class="hero">
+      <div class="pat"></div>
+      <div class="crest">
+        <div class="est" id="v-est">EST. 1881 &middot; TRIPOLI</div>
+        <div class="name" id="v-name-crest">Hallab 1881</div>
+        <div class="place" id="v-place">Kasr El Helou &middot; Riad El Solh Street</div>
+        <div class="rule"></div>
+      </div>
+    </div>
+    <div class="land-body">
+      <div class="greet">Ahla w sahla</div>
+      <div class="tbl"><span class="dot"></span>Table 12 &middot; bill syncs live</div>
+      <div class="note">
+        Have a look at the menu, take your time. When you're done, open the bill,
+        split it however you like, and settle it without waiting for anyone.
+      </div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" onclick="go('v-menu')"><span class="sheen"></span>See the menu</button>
+      <button class="cta cta-line" onclick="go('v-bill')">Open the bill &middot; <b id="land-tot">$152.50</b></button>
+      <div class="powered">powered by <b>3alayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 2. MENU ================= -->
+  <div class="view" id="v-menu">
+    <button class="back" onclick="go('v-land')">&#8592;</button>
+    <div class="m-head">
+      <div class="vn" id="v-name-menu">Hallab 1881</div>
+      <div class="vs" id="m-sub">Table 12 &middot; Kasr El Helou</div>
+    </div>
+    <div class="sels">
+      <div class="sel"><select id="langsel" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">EN</option><option value="fr">FR</option><option value="ar">AR</option>
+      </select></div>
+      <div class="sel"><select id="ccysel" onchange="setCcy(this.value)" aria-label="Currency">
+        <option value="usd">USD $</option><option value="lbp">LBP&nbsp;LL</option>
+      </select></div>
+    </div>
+    <div class="fchips">
+      <button class="fc" id="f-veg" onclick="togF('veg')">Vegetarian</button>
+      <button class="fc" id="f-nonuts" onclick="togF('nonuts')">No nuts</button>
+      <button class="fc" id="f-nodairy" onclick="togF('nodairy')">No dairy</button>
+      <button class="fc" id="f-light" onclick="togF('light')">Under 400 kcal</button>
+      <button class="fc" id="f-protein" onclick="togF('protein')">High protein</button>
+    </div>
+    <div class="fbar" id="fbar">
+      <span class="cnt" id="fcount">12</span>
+      <span id="fmsg">of 16 dishes work for you</span>
+      <button class="clr" id="fclear" onclick="clearF()">Clear</button>
+    </div>
+    <div class="cats" id="cats"><span id="ink"></span></div>
+    <div class="scroll" id="menuscroll" style="padding-bottom:96px"></div>
+    <button class="billpill" onclick="go('v-bill')">Open the bill <span class="amt" id="pill-tot">$152.50</span></button>
+  </div>
+  <!-- ================= 3. BILL ================= -->
+  <div class="view" id="v-bill">
+    <button class="back" onclick="go('v-menu')">&#8592;</button>
+    <div class="scroll b-body">
+      <div class="b-title">Table 12</div>
+      <div class="b-sub">4 guests &middot; opened 8:42 pm</div>
+      <div class="receipt">
+        <div class="r-crest" id="v-name-receipt">HALLAB 1881</div>
+        <div id="r-items"></div>
+        <div class="r-total"><div class="l">TOTAL</div><div class="a" id="r-tot">$152.50</div></div>
+        <div class="r-ll" id="r-ll">&asymp; LL 13,633,500</div>
+      </div>
+      <div class="hint">Anything you add from the menu appears here in a few seconds.</div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" onclick="go('v-settle')"><span class="sheen"></span>Settle my share</button>
+      <div class="powered">powered by <b>3alayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 4. SETTLE ================= -->
+  <div class="view" id="v-settle">
+    <button class="back" onclick="go('v-bill')">&#8592;</button>
+    <div class="scroll b-body">
+      <div class="b-title">How are we doing this?</div>
+      <div class="b-sub">Nobody has to work out the maths</div>
+      <div class="seg">
+        <button id="s-even" class="on" onclick="mode('even')">Split evenly</button>
+        <button id="s-item" onclick="mode('item')">Pick my items</button>
+        <button id="s-all" onclick="mode('all')">I've got it all</button>
+      </div>
+      <div id="evenwrap">
+        <div class="ppl">
+          <div class="lab">How many of you?</div>
+          <div class="stp">
+            <button onclick="ppl(-1)">&minus;</button>
+            <div class="n" id="pn">4</div>
+            <button onclick="ppl(1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div id="itemwrap" style="display:none">
+        <div class="picklist" id="picklist"></div>
+        <div class="hint">Tap what was yours. The rest stays on the table for the others.</div>
+      </div>
+      <div class="share">
+        <div class="k">YOUR SHARE</div>
+        <div class="v" id="sh-v">$38.13</div>
+        <div class="ll" id="sh-ll">&asymp; LL 3,408,522</div>
+      </div>
+      <div class="hint" id="restnote">$114.37 left for the other three. They'll see it update live.</div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" onclick="go('v-pay')"><span class="sheen"></span>Continue</button>
+      <div class="powered">powered by <b>3alayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 5. PAY ================= -->
+  <div class="view" id="v-pay">
+    <button class="back" onclick="go('v-settle')">&#8592;</button>
+    <div class="scroll" style="padding:88px 20px 130px">
+      <div class="amt">
+        <div class="who">Your share &middot; Table 12</div>
+        <div class="display big" id="bigamt">$38.13</div>
+        <div class="ll" id="bigll">&asymp; LL 3,408,522</div>
+      </div>
+      <div class="tipwrap">
+        <div class="tiphead">
+          <div class="l">Something for Abou Karim?</div>
+          <div class="r">goes to him, in full</div>
+        </div>
+        <div class="tips">
+          <button class="tipb" onclick="setTip(this,0)"><div class="tp">Nope</div><div class="tv">&nbsp;</div></button>
+          <button class="tipb" onclick="setTip(this,.05)"><div class="tp">5%</div><div class="tv" id="tv5">$1.91</div></button>
+          <button class="tipb on" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
+          <button class="tipb" onclick="setTip(this,.15)"><div class="tp">15%</div><div class="tv" id="tv15">$5.72</div></button>
+        </div>
+      </div>
+      <div class="pays">
+        <div class="pm on" onclick="pick(this,'whish')">
+          <div class="mark" style="background:#E4002B">whish</div>
+          <div><div class="pn">Whish Money</div><div class="pd">Opens with the amount filled in</div></div>
+          <div class="radio"></div>
+        </div>
+        <div class="pm" onclick="pick(this,'card')">
+          <div class="mark" style="background:#1A1F71">VISA</div>
+          <div><div class="pn">Card</div><div class="pd">Visa, Mastercard, Amex</div></div>
+          <div class="radio"></div>
+        </div>
+        <div class="pm" onclick="pick(this,'cash')">
+          <div class="mark" style="background:#3F8F6B">CASH</div>
+          <div><div class="pn">Paying cash</div><div class="pd">Comes off the table's total</div></div>
+          <div class="radio"></div>
+        </div>
+      </div>
+      <div class="chg" id="chg">
+        <div class="chg-q">What are you handing over?</div>
+        <div class="chg-row">
+          <button class="chip" onclick="setNote(this,20)">$20</button>
+          <button class="chip" onclick="setNote(this,50)">$50</button>
+          <button class="chip" onclick="setNote(this,100)">$100</button>
+          <button class="chip" onclick="setNote(this,0)">Exact</button>
+        </div>
+        <div class="chg-sub" id="cursub">Bring my change in</div>
+        <div class="cur" id="curwrap">
+          <button class="curb on" onclick="setCur(this,'usd')">Dollars</button>
+          <button class="curb" onclick="setCur(this,'lbp')">Lira</button>
+          <button class="curb" onclick="setCur(this,'any')">Either's fine</button>
+        </div>
+        <div class="chg-out" id="chgout">Abou Karim comes <b>once</b>, with your change already counted.</div>
+      </div>
+      <div class="cashnote" id="cashnote">
+        Marked <b>paid in cash</b> and taken off the table total automatically. No accounts, no downloads
+        &mdash; nobody's making Teta install anything.
+      </div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" id="paybtn" onclick="settle()"><span class="sheen"></span>Pay $41.94</button>
+      <div class="powered">powered by <b>3alayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 6. SUCCESS ================= -->
+  <div class="view" id="v-done">
+    <div class="done-inner" id="inner">
+      <div class="pat2"></div><div class="burst" id="burst"></div><div class="vig"></div>
+      <div class="done-body">
+        <div class="seal">&#10003;</div>
+        <div class="est2" id="v-est2">Est. 1881 &middot; Tripoli</div>
+        <h2 class="display shukran">Shukran.</h2>
+        <div class="ar">&#1588;&#1603;&#1585;&#1575;&#1611;</div>
+        <div class="rule2"></div>
+        <div class="done-p" id="donep">
+          Table 12 is settled.<br>Take your time, leave when you like.
+        </div>
+        <div class="twoup">
+          <button class="offer" onclick="openOv('ov-google')">
+            <div class="ic">&#9733;</div>
+            <div><div class="ot">Say something about <span class="v-short">Hallab</span></div><div class="os" id="v-review-sub">144 years, one review at a time</div></div>
+          </button>
+          <button class="offer" onclick="openOv('ov-priv')">
+            <div class="ic">&#9993;</div>
+            <div><div class="ot">Or tell us privately</div><div class="os">Straight to the owner, never public</div></div>
+          </button>
+        </div>
+      </div>
+      <div class="dock-dk">
+        <button class="cta cta-line-lt" onclick="restart()">Run the demo again</button>
+        <div class="powered dk">powered by <b>3alayna</b></div>
+      </div>
+    </div>
+  </div>
+  <!-- ============ OVERLAY: item detail ============ -->
+  <div class="ov" id="ov-item">
+    <div class="scrim" onclick="closeOv('ov-item')"></div>
+    <div class="sheet idet">
+      <div class="grab"></div>
+      <div class="sh-t" id="i-name">Mixed Grill platter</div>
+      <div class="sh-s" id="i-desc">Kabab, shish taouk, lamb chops, fries</div>
+      <div class="alrt" id="i-alrt"></div>
+      <div class="adds" id="i-adds"></div>
+      <button class="cta cta-green" style="margin-top:16px" onclick="closeOv('ov-item')">
+        <span class="sheen"></span>Add to the table &middot; <span id="i-tot">$16.00</span>
+      </button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-item')">Not now</button>
+    </div>
+  </div>
+  <!-- ============ OVERLAY: Google review ============ -->
+  <div class="ov" id="ov-google">
+    <div class="scrim" onclick="closeOv('ov-google')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t">How was it?</div>
+      <div class="sh-s">Goes straight to <span class="v-short">Hallab</span>'s Google page, in your own words.</div>
+      <div class="stars" id="gstars">
+        <span class="star" onclick="setStar(1)">&#9733;</span><span class="star" onclick="setStar(2)">&#9733;</span>
+        <span class="star" onclick="setStar(3)">&#9733;</span><span class="star" onclick="setStar(4)">&#9733;</span>
+        <span class="star" onclick="setStar(5)">&#9733;</span>
+      </div>
+      <div class="opts">
+        <button class="opt" onclick="togOpt(this)">The knefeh</button>
+        <button class="opt" onclick="togOpt(this)">Abou Karim</button>
+        <button class="opt" onclick="togOpt(this)">Fast service</button>
+        <button class="opt" onclick="togOpt(this)">Worth the drive</button>
+      </div>
+      <textarea class="ta" placeholder="Anything you'd tell a friend..."></textarea>
+      <button class="cta cta-green" style="margin-top:14px" onclick="closeOv('ov-google')">
+        <span class="sheen"></span>Post to Google
+      </button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-google')">Maybe later</button>
+    </div>
+  </div>
+  <!-- ============ OVERLAY: private feedback ============ -->
+  <div class="ov" id="ov-priv">
+    <div class="scrim" onclick="closeOv('ov-priv')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t">Just between us</div>
+      <div class="sh-s">Goes to the owner's phone. Never published anywhere.</div>
+      <div class="opts" style="margin-top:16px">
+        <button class="opt" onclick="togOpt(this)">Took too long</button>
+        <button class="opt" onclick="togOpt(this)">Food was cold</button>
+        <button class="opt" onclick="togOpt(this)">Bill was wrong</button>
+        <button class="opt" onclick="togOpt(this)">Something else</button>
+      </div>
+      <textarea class="ta" placeholder="Tell them what happened..."></textarea>
+      <button class="cta cta-green" style="margin-top:14px" onclick="closeOv('ov-priv')">
+        <span class="sheen"></span>Send to the owner
+      </button>
+      <button class="cta cta-ghost" onclick="closeOv('ov-priv')">Maybe later</button>
+    </div>
+  </div>
+</div></div>
+<div class="switcher">
+  <button class="sw" onclick="restart()">&#8635; Start over</button>
+  <button class="sw" onclick="go('v-menu')">Menu</button>
+  <button class="sw" onclick="go('v-bill')">Bill</button>
+  <button class="sw" onclick="go('v-settle')">Split</button>
+  <button class="sw" onclick="go('v-pay')">Pay</button>
+  <button class="sw" onclick="settle()">Thanks</button>
+  <button class="sw" id="covsw" onclick="toggleCoverage()">Menu not fully confirmed &rarr;</button>
+</div>
+<div class="note-out">
+  Full flow in Hallab's green and gold. The venue owns every surface; 3alayna is the footer credit.
+  <b>Change-ahead</b> lives under the cash option. Review and private feedback are offered to
+  <b>every</b> diner in parallel &mdash; never branched on rating.
+</div>
+<script src="aalayna-store.js?v=2"></script>
+<script>
+/* ---------------- data ---------------- */
+var RATE = 89400;
+/* ---- everything below is the PUBLISHED menu. Never the draft. ---- */
+var WINDOWS = {all:[0,1440], brkf:[420,690], lunch:[720,960], dinner:[1080,1410]};
+function serving(win){
+  var w = WINDOWS[win] || WINDOWS.all, d = new Date(), n = d.getHours()*60 + d.getMinutes();
+  return n >= w[0] && n < w[1];
+}
+var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
+function loadMenu(){
+  var m = Aalayna.published();
+  MENU_V = m.version;
+  // a section outside its service window is not on the guest's menu at all
+  CATS = m.sections.filter(function(x){ return serving(x.win); })
+                   .map(function(x){ return {id:x.id, label:x.name}; });
+  var live = {};
+  CATS.forEach(function(c){ live[c.id] = 1; });
+  MENU = m.items.filter(function(x){ return live[x.sec]; }).map(function(x){
+    return {id:x.id, c:x.sec, n:x.name, d:x.desc, p:x.price, ing:x.ing, al:x.al,
+            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf, cust:x.cust, adds:x.adds||[]};
+  });
+  BILL = Aalayna.check().map(function(l){ return {n:l.name, q:l.q, p:l.p}; });
+  TOTAL = Aalayna.checkTotal();
+}
+loadMenu();
+
+/* Confirmation is an ONBOARDING GATE, not a per-dish badge: unless every dish is
+   confirmed, nutrition and filters are absent entirely. A diner never sees a caveat. */
+var DEMO_INCOMPLETE = false;
+function menuReady(){ return !DEMO_INCOMPLETE && MENU.length > 0 && MENU.every(function(m){ return m.conf; }); }
+
+/* Dietary flags are DERIVED from the ingredient record, never hand-tagged. */
+var MEAT = ['lamb','chicken','beef','lamb awarma','minced lamb'];
+function isVeg(m){ return !(m.ing||[]).some(function(i){ return MEAT.indexOf(i) > -1; }); }
+function hasNuts(m){ return (m.al||[]).indexOf('nuts') > -1; }
+function hasDairy(m){ return (m.al||[]).indexOf('dairy') > -1; }
+function isLight(m){ return m.kcal != null && m.kcal <= 400; }
+function isHighP(m){ return m.pr != null && m.pr >= 20; }
+/* ---------------- i18n + currency ---------------- */
+var LANG = 'en', CCY = 'usd';
+var T = {
+  en:{filters:['Vegetarian','No nuts','No dairy','Under 400 kcal','High protein'],
+      cats:['Breakfast','Mezze & Grill','Knefeh & Sweets','Drinks'],
+      more:'For more details', of:'of', work:'dishes work for you', works:'dish works for you',
+      clear:'Clear', whatsin:"What's in it", table:'Table 12', sub:'Table 12 · Kasr El Helou',
+      rMeat:'has meat', rNuts:'contains nuts', rDairy:'contains dairy',
+      rKcal:function(n){return 'over 400 kcal (' + n + ')'},
+      rProt:function(n){return 'only ' + n + 'g protein'}},
+  fr:{filters:['Végétarien','Sans noix','Sans lactose','Moins de 400 kcal','Riche en protéines'],
+      cats:['Petit-déjeuner','Mezzé & grillades','Knefeh & douceurs','Boissons'],
+      more:'Plus de détails', of:'sur', work:'plats vous conviennent', works:'plat vous convient',
+      clear:'Effacer', whatsin:'Composition', table:'Table 12', sub:'Table 12 · Kasr El Helou',
+      rMeat:'contient de la viande', rNuts:'contient des noix', rDairy:'contient du lactose',
+      rKcal:function(n){return 'plus de 400 kcal (' + n + ')'},
+      rProt:function(n){return 'seulement ' + n + 'g de protéines'}},
+  ar:{filters:['نباتي','بدون مكسرات','بدون ألبان','أقل من ٤٠٠ سعرة','غني بالبروتين'],
+      cats:['فطور','مازة ومشاوي','كنافة وحلويات','مشروبات'],
+      more:'تفاصيل أكثر', of:'من', work:'أطباق تناسبك', works:'طبق يناسبك',
+      clear:'مسح', whatsin:'المكوّنات', table:'طاولة ١٢', sub:'طاولة ١٢ · قصر الحلو',
+      rMeat:'يحتوي على لحم', rNuts:'يحتوي على مكسرات', rDairy:'يحتوي على ألبان',
+      rKcal:function(n){return 'أكثر من ٤٠٠ سعرة (' + n + ')'},
+      rProt:function(n){return 'بروتين قليل · ' + n + 'غ'}}
+};
+var NAMES = {
+  'i01':{fr:"Assiette de foul et houmous", ar:"صحن فول وحمص"},
+  'i02':{fr:"Œufs à l'awarma", ar:"بيض بالقاورما"},
+  'i03':{fr:"Lahm b'ajin · 4 pièces", ar:"لحم بعجين · ٤ قطع"},
+  'i04':{fr:"Fatteh au yaourt", ar:"فتة باللبن"},
+  'i05':{fr:"Taboulé", ar:"تبولة"},
+  'i06':{fr:"Houmous beyrouthin", ar:"حمص بيروتي"},
+  'i07':{fr:"Assiette de grillades", ar:"مشاوي مشكلة"},
+  'i08':{fr:"Arayes", ar:"عرايس"},
+  'i09':{fr:"Knefeh au fromage + kaake", ar:"كنافة بالجبنة + كعكة"},
+  'i10':{fr:"Halawet el jeben", ar:"حلاوة الجبن"},
+  'i11':{fr:"Assortiment de baklava · 250g", ar:"بقلاوة مشكلة · ٢٥٠ غ"},
+  'i12':{fr:"Glace ashta", ar:"بوظة قشطة"},
+  'i13':{fr:"Espresso", ar:"إسبريسو"},
+  'i14':{fr:"Café libanais", ar:"قهوة عربية"},
+  'i15':{fr:"Jallab", ar:"جلاب"},
+  'i16':{fr:"Limonade à la fleur d'oranger", ar:"ليموناضة بماء الزهر"}
+};
+/* the row description is now the short "what's in it" line */
+var DESCS = {
+  'i01':{en:"Fava beans, chickpeas, tahini, olive oil, cumin", fr:"Fèves, pois chiches, tahini, huile d'olive, cumin", ar:"فول، حمص، طحينة، زيت زيتون، كمون"},
+  'i02':{en:"Baladi eggs, preserved lamb confit, ghee", fr:"Œufs baladi, confit d'agneau, ghee", ar:"بيض بلدي، قاورما، سمنة"},
+  'i03':{en:"Minced lamb, tomato, onion, pomegranate molasses, pine nuts", fr:"Agneau haché, tomate, oignon, mélasse de grenade, pignons", ar:"لحمة مفرومة، بندورة، بصل، دبس رمان، صنوبر"},
+  'i04':{en:"Chickpeas, garlic yogurt, fried bread, pine nuts", fr:"Pois chiches, yaourt à l'ail, pain frit, pignons", ar:"حمص، لبن بالثوم، خبز مقلي، صنوبر"},
+  'i05':{en:"Parsley, bulgur, tomato, onion, lemon, olive oil", fr:"Persil, boulgour, tomate, oignon, citron, huile d'olive", ar:"بقدونس، برغل، بندورة، بصل، حامض، زيت زيتون"},
+  'i06':{en:"Chickpeas, tahini, garlic, lemon, hot pepper", fr:"Pois chiches, tahini, ail, citron, piment", ar:"حمص، طحينة، ثوم، حامض، فليفلة حارة"},
+  'i07':{en:"Kabab, shish taouk, lamb chops, fries", fr:"Kebab, chiche taouk, côtelettes d'agneau, frites", ar:"كباب، شيش طاووق، ريش غنم، بطاطا"},
+  'i08':{en:"Grilled pita, spiced minced lamb, onion, parsley", fr:"Pain pita grillé, agneau haché épicé, oignon, persil", ar:"خبز مشوي، لحمة مفرومة، بصل، بقدونس"},
+  'i09':{en:"Akkawi cheese, semolina, ghee, sugar syrup, sesame kaakeh", fr:"Fromage akkawi, semoule, ghee, sirop, kaake au sésame", ar:"جبنة عكاوي، سميد، سمنة، قطر، كعكة بالسمسم"},
+  'i10':{en:"Sweet cheese dough, ashta cream, rose syrup, pistachio", fr:"Pâte de fromage sucrée, crème ashta, sirop de rose, pistache", ar:"عجينة جبن حلوة، قشطة، ماء ورد، فستق"},
+  'i11':{en:"Filo pastry, pistachio, cashew, ghee, sugar syrup", fr:"Pâte filo, pistache, noix de cajou, ghee, sirop", ar:"عجين رقيق، فستق، كاجو، سمنة، قطر"},
+  'i12':{en:"Milk, cream, mastic, sugar, pistachio crust", fr:"Lait, crème, mastic, sucre, croûte de pistache", ar:"حليب، قشطة، مستكة، سكر، فستق"},
+  'i13':{en:"Single origin, pulled to order", fr:"Origine unique, préparé à la commande", ar:"بن مختار، يُحضّر عند الطلب"},
+  'i14':{en:"Rakweh for two, orange blossom water", fr:"Rakweh pour deux, eau de fleur d'oranger", ar:"ركوة لشخصين، ماء زهر"},
+  'i15':{en:"Date molasses, rose water, pine nuts, raisins", fr:"Mélasse de dattes, eau de rose, pignons, raisins secs", ar:"دبس تمر، ماء ورد، صنوبر، زبيب"},
+  'i16':{en:"Lemon, sugar, orange blossom water, mint", fr:"Citron, sucre, eau de fleur d'oranger, menthe", ar:"حامض، سكر، ماء زهر، نعناع"}
+};
+function t(k){ return T[LANG][k]; }
+function nameOf(m){ return (LANG === 'en' || !NAMES[m.id]) ? m.n : NAMES[m.id][LANG]; }
+function descOf(m){ return DESCS[m.id] ? DESCS[m.id][LANG] : m.d; }
+/* price display follows the currency toggle — the diner-facing half of the FX feature */
+function price(v){
+  if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE / 1000) * 1000).toLocaleString('en-US');
+  return '$' + v.toFixed(2);
+}
+function setLang(v){ LANG = v; renderMenu(); }
+function setCcy(v){ CCY = v; renderMenu(); }
+function renderMenu(){
+  var m = $('v-menu');
+  m.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
+  $('langsel').value = LANG;
+  $('ccysel').value = CCY;
+  $('m-sub').textContent = t('sub');
+  $('pill-tot').textContent = price(TOTAL);
+  $('land-tot').textContent = price(TOTAL);
+  var f = t('filters');
+  ['veg','nonuts','nodairy','light','protein'].forEach(function(k,i){ $('f-'+k).textContent = f[i]; });
+  $('fclear').textContent = t('clear');
+  buildCats(true);
+  buildMenu();
+  applyF();
+}
+/* ---------------- state ---------------- */
+var people = 4, splitMode = 'even', picked = {}, share = 0;
+var tipRate = .10, kind = 'whish', note = 0, cur = 'usd';
+var curItem = null, curAdds = {}, rating = 0;
+/* ---------------- helpers ---------------- */
+function $(id){ return document.getElementById(id); }
+function usd(n){ return '$' + n.toFixed(2); }
+function ll(n){ return '≈ LL ' + Math.round(n * RATE).toLocaleString('en-US'); }
+function go(id){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
+  $(id).classList.add('on');
+  if (id === 'v-pay') paintPay();
+  if (id === 'v-menu'){
+    // the tab underline can only be measured once the view is actually laid out
+    var act = document.querySelector('.cat.on') || document.querySelector('.cat');
+    if (act) requestAnimationFrame(function(){ moveInk(act); });
+  }
+}
+function openOv(id){ $(id).classList.add('on'); }
+function closeOv(id){ $(id).classList.remove('on'); }
+/* ---------------- menu ---------------- */
+var filt = {veg:false, nonuts:false, nodairy:false, light:false, protein:false};
+/* Every reason is derived from the ingredient record, not from a hand-typed tag.
+   Items are DIMMED and given a reason, never hidden — four people share one menu,
+   and one person's filter should not erase the other three's dinner. */
+function buildCats(rebuild){
+  var wrap = $('cats'), ink = $('ink');
+  if (rebuild) wrap.querySelectorAll('.cat').forEach(function(c){ c.remove(); });
+  CATS.forEach(function(c, i){
+    var b = document.createElement('button');
+    b.className = 'cat' + (i === 0 ? ' on' : '');
+    b.textContent = (LANG==='en') ? c.label : (t('cats')[['brk','mez','swt','drk'].indexOf(c.id)] || c.label);
+    b.onclick = function(){ selectCat(b, c.id); };
+    wrap.insertBefore(b, ink);
+  });
+  requestAnimationFrame(function(){ moveInk(wrap.querySelector('.cat')); });
+}
+function moveInk(el){
+  var ink = $('ink');
+  ink.style.left = el.offsetLeft + 'px';
+  ink.style.width = el.offsetWidth + 'px';
+}
+var spyLock = 0;
+function selectCat(el, id){
+  markCat(el);
+  var h = document.querySelector('[data-sect="' + id + '"]'), sc = $('menuscroll');
+  if (h){
+    spyLock = 1;                                   // don't let the spy fight the smooth scroll
+    // offsetTop is measured against the positioned .view, not the scroller — use rects
+    var delta = h.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+    sc.scrollTo({ top: sc.scrollTop + delta, behavior: 'smooth' });
+    setTimeout(function(){ spyLock = 0; }, 650);
+  }
+}
+function markCat(el){
+  document.querySelectorAll('.cat').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  moveInk(el);
+}
+function spy(){
+  if (spyLock) return;
+  var sc = $('menuscroll'), heads = sc.querySelectorAll('.sect-h'), cur = 0;
+  var base = sc.getBoundingClientRect().top;
+  for (var i = 0; i < heads.length; i++){
+    if (heads[i].getBoundingClientRect().top - base <= 4) cur = i;
+  }
+  // the final section can never reach the top — there isn't enough content beneath it.
+  // Once you're at the bottom of the list you are, by definition, in the last section.
+  if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 90) cur = heads.length - 1;
+  var tabs = document.querySelectorAll('.cat');
+  if (tabs[cur] && !tabs[cur].classList.contains('on')){
+    markCat(tabs[cur]);
+    tabs[cur].scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+  }
+}
+function buildMenu(){
+  var sc = $('menuscroll');
+  if (!sc._spy){ sc.addEventListener('scroll', spy, { passive: true }); sc._spy = 1; }
+  var ready = menuReady();
+  document.querySelector('.fchips').style.display = ready ? 'flex' : 'none';
+  if (!ready) clearF();
+  var s = $('menuscroll');
+  s.innerHTML = '';
+  CATS.forEach(function(c){
+    var h = document.createElement('div');
+    h.className = 'sect-h'; h.dataset.sect = c.id;
+    h.textContent = (LANG==='en') ? c.label : (t('cats')[['brk','mez','swt','drk'].indexOf(c.id)] || c.label);
+    s.appendChild(h);
+    MENU.filter(function(m){ return m.c === c.id; }).forEach(function(m){
+      var d = document.createElement('div');
+      d.className = 'mi';
+      d.onclick = function(){ openItem(m); };
+      d.innerHTML =
+        '<div class="tx">' +
+          '<div class="mn">' + nameOf(m) + '</div>' +
+          '<div class="md">' + descOf(m) + '</div>' +
+          '<div class="why"><span class="x">&#10005;</span><span class="wt"></span></div>' +
+          '<div class="more">' + t('more') + '<span class="ch">&#8250;</span></div>' +
+        '</div>' +
+        '<div class="mp">' + price(m.p) + '</div>';
+      d._m = m;
+      s.appendChild(d);
+    });
+  });
+}
+function reasons(m){
+  var r = [];
+  if (filt.veg     && !isVeg(m))    r.push(t('rMeat'));
+  if (filt.nonuts  && hasNuts(m))   r.push(t('rNuts'));
+  if (filt.nodairy && hasDairy(m))  r.push(t('rDairy'));
+  if (filt.light   && !isLight(m))  r.push(t('rKcal')(m.kcal));
+  if (filt.protein && !isHighP(m))  r.push(t('rProt')(m.pr));
+  return r;
+}
+function togF(k){
+  filt[k] = !filt[k];
+  document.getElementById('f-' + k).classList.toggle('on', filt[k]);
+  applyF();
+}
+function clearF(){
+  Object.keys(filt).forEach(function(k){
+    filt[k] = false;
+    document.getElementById('f-' + k).classList.remove('on');
+  });
+  applyF();
+}
+function applyF(){
+  var any = Object.keys(filt).some(function(k){ return filt[k]; });
+  var ok = 0, total = 0;
+  document.querySelectorAll('.mi').forEach(function(mi){
+    var m = mi._m; if (!m) return;
+    total++;
+    var r = any ? reasons(m) : [];
+    mi.classList.toggle('dim', r.length > 0);
+    if (r.length === 0) ok++;
+    var w = mi.querySelector('.wt');
+    if (w) w.textContent = r.join(' · ');
+  });
+  var bar = document.getElementById('fbar');
+  bar.classList.toggle('on', any);
+  document.getElementById('fcount').textContent = ok;
+  document.getElementById('fmsg').textContent =
+    t('of') + ' ' + total + ' ' + (ok === 1 ? t('works') : t('work'));
+}
+function openItem(m){
+  curItem = m; curAdds = {};
+  $('i-name').textContent = nameOf(m);
+  $('i-desc').textContent = descOf(m);
+  $('ov-item').setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
+  // All-or-nothing gate still applies: an unconfirmed menu makes no allergen claim at all.
+  var ready = menuReady();
+  var alrt = $('i-alrt');
+  alrt.style.display = ready ? 'flex' : 'none';
+  if (ready){
+    var bg, bd, fg;
+    if (m.al.length){
+      alrt.innerHTML = '<span>&#9888;</span><span><b>Contains ' + m.al.join(', ') + '.</b> ' +
+        'If you have a serious allergy, tell your server too.</span>';
+      bg = '#FBEDEB'; bd = '#F3D9D5'; fg = '#8E3A33';
+    } else {
+      alrt.innerHTML = '<span>&#10003;</span><span><b>No common allergens</b> in this dish. ' +
+        'If you have a serious allergy, tell your server too.</span>';
+      bg = '#EAF1EC'; bd = '#CFE0D5'; fg = '#2F5A48';
+    }
+    alrt.style.background = bg; alrt.style.borderColor = bd; alrt.style.color = fg;
+  }
+  var box = $('i-adds'); box.innerHTML = '';
+  (m.adds || []).forEach(function(a, i){
+    var row = document.createElement('div');
+    row.className = 'add';
+    row.onclick = function(){
+      curAdds[i] = !curAdds[i];
+      row.classList.toggle('on', curAdds[i]);
+      calcItem();
+    };
+    row.innerHTML = '<span class="cb">&#10003;</span><span class="an">' + a.n + '</span>' +
+                    '<span class="ap">' + (a.p ? '+' + usd(a.p) : 'free') + '</span>';
+    box.appendChild(row);
+  });
+  calcItem();
+  openOv('ov-item');
+}
+function calcItem(){
+  var t = curItem.p;
+  var c = $('i-cta'); if (c) c.textContent = curItem.cust ? 'Add to the table' : 'Add to the table';
+  (curItem.adds || []).forEach(function(a, i){ if (curAdds[i]) t += a.p; });
+  $('i-tot').textContent = price(t);
+}
+/* ---------------- bill ---------------- */
+function buildBill(){
+  var box = $('r-items'); box.innerHTML = '';
+  BILL.forEach(function(b){
+    var d = document.createElement('div');
+    d.className = 'r-item';
+    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n + '</div>' +
+                  '<div class="p">' + usd(b.p) + '</div>';
+    box.appendChild(d);
+  });
+  $('r-tot').textContent = usd(TOTAL);
+  $('r-ll').textContent = ll(TOTAL);
+  $('land-tot').textContent = price(TOTAL);
+  $('pill-tot').textContent = price(TOTAL);
+}
+/* ---------------- settle ---------------- */
+function buildPick(){
+  var box = $('picklist'); box.innerHTML = '';
+  BILL.forEach(function(b, i){
+    var d = document.createElement('div');
+    d.className = 'pl';
+    d.onclick = function(){
+      picked[i] = !picked[i];
+      d.classList.toggle('on', picked[i]);
+      calcShare();
+    };
+    d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
+                  '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
+                  '</span><span class="pr">' + usd(b.p) + '</span>';
+    box.appendChild(d);
+  });
+}
+function mode(m){
+  splitMode = m;
+  ['even','item','all'].forEach(function(k){ $('s-' + k).classList.toggle('on', k === m); });
+  $('evenwrap').style.display = (m === 'even') ? 'block' : 'none';
+  $('itemwrap').style.display = (m === 'item') ? 'block' : 'none';
+  calcShare();
+}
+function ppl(d){
+  people = Math.max(1, Math.min(12, people + d));
+  $('pn').textContent = people;
+  calcShare();
+}
+function calcShare(){
+  if (splitMode === 'even')      share = TOTAL / people;
+  else if (splitMode === 'all')  share = TOTAL;
+  else { share = 0; BILL.forEach(function(b, i){ if (picked[i]) share += b.p; }); }
+  $('sh-v').textContent = usd(share);
+  $('sh-ll').textContent = ll(share);
+  var rest = TOTAL - share;
+  $('restnote').textContent = rest > 0.01
+    ? usd(rest) + ' left for the rest of the table. They see it update live.'
+    : 'That covers the whole table. Everyone else is done.';
+  paintPay();
+}
+/* ---------------- pay ---------------- */
+function setTip(el, r){
+  tipRate = r;
+  document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  paintPay();
+}
+function pick(el, k){
+  kind = k;
+  document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on'); });
+  el.classList.add('on');
+  $('cashnote').style.display = (k === 'cash') ? 'block' : 'none';
+  $('chg').classList.toggle('on', k === 'cash');
+  paintPay();
+}
+function setNote(el, n){
+  note = n;
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  paintPay();
+}
+function setCur(el, c){
+  cur = c;
+  document.querySelectorAll('.curb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  paintPay();
+}
+function money(v){ return (cur === 'lbp') ? 'LL ' + Math.round(v * RATE).toLocaleString('en-US') : usd(v); }
+function paintChange(due){
+  var out = $('chgout'), sub = $('cursub'), wrap = $('curwrap');
+  if (note === 0){
+    sub.style.opacity = '.35'; wrap.style.opacity = '.35';
+    out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. Abou Karim just collects the notes — no trip to the till.';
+    return;
+  }
+  sub.style.opacity = '1'; wrap.style.opacity = '1';
+  var back = note - due;
+  if (back < 0){
+    out.innerHTML = '<b>$' + note + '</b> doesn’t cover ' + usd(due) + '. Pick a bigger note, or split it with the table.';
+    return;
+  }
+  out.innerHTML = 'Abou Karim comes <b>once</b>, with <b>' + money(back) + '</b> already counted.' +
+    (cur === 'lbp' ? '<br><span style="font-size:11px;opacity:.75">at ' + RATE.toLocaleString('en-US') + ' LL / $1</span>' : '');
+}
+function paintPay(){
+  var t = share * tipRate, tot = share + t, isCash = (kind === 'cash');
+  $('bigamt').textContent = usd(tot);
+  $('bigll').textContent = ll(tot);
+  $('tv5').textContent  = usd(share * .05);
+  $('tv10').textContent = usd(share * .10);
+  $('tv15').textContent = usd(share * .15);
+  $('paybtn').innerHTML = '<span class="sheen"></span>' +
+    (isCash ? 'Tell the floor — paying cash' : 'Pay ' + usd(tot));
+  var line;
+  if (isCash && note > 0 && note - tot > 0){
+    line = 'Abou Karim is on his way<br>with <b>' + money(note - tot) + '</b> for you.';
+  } else if (t > 0){
+    line = 'Table 12 is settled.<br><b>Abou Karim</b> has his ' + usd(t) +
+           '.<br>Take your time, leave when you like.';
+  } else {
+    line = 'Table 12 is settled.<br>Take your time, leave when you like.';
+  }
+  $('donep').innerHTML = line;
+  if (isCash) paintChange(tot);   // tot, not share — the change must account for the tip
+}
+/* ---------------- success ---------------- */
+var GOLDS = ['#C9A227','#F0DFA8','#E2BE45','#F9EFDC','#9C7A16','#F0DFA8'];
+function makeBurst(){
+  var b = $('burst'); b.innerHTML = '';
+  for (var i = 0; i < 18; i++){
+    var s = document.createElement('i');
+    var ang = (Math.PI * 2 * i) / 18 + .3, dist = 74 + (i % 4) * 27;
+    s.style.background = GOLDS[i % GOLDS.length];
+    s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+    s.style.setProperty('--dy', Math.sin(ang) * dist * .82 + 'px');
+    s.style.setProperty('--rot', (i % 2 ? 240 : -200) + 'deg');
+    s.style.animationDelay = (i * 10) + 'ms';
+    if (i % 3 === 0) s.style.borderRadius = '50%';
+    b.appendChild(s);
+  }
+}
+function settle(){
+  paintPay();
+  var t = share * tipRate, tot = share + t;
+  Aalayna.settle({
+    table: 12, rail: kind, amount: tot, tip: t, server: 'Abou Karim',
+    note: (kind === 'cash' ? note : 0),
+    change: (kind === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
+  });
+  go('v-done');
+  var w = $('inner');
+  w.classList.remove('go');
+  makeBurst();
+  void w.offsetWidth;
+  w.classList.add('go');
+}
+function setStar(n){
+  rating = n;
+  document.querySelectorAll('#gstars .star').forEach(function(s, i){ s.classList.toggle('on', i < n); });
+  /* deliberately no branching on rating — both offers are shown to everyone on the
+     success screen. Routing low ratings away from Google is review gating. */
+}
+function togOpt(el){ el.classList.toggle('on'); }
+/* demo only: flip between a venue that has finished confirming its menu and one that
+   hasn't. Note what the second state does NOT contain — no warnings, no badges, no
+   half-information. Just an ordinary menu. */
+function toggleCoverage(){
+  DEMO_INCOMPLETE = !DEMO_INCOMPLETE;
+  $('covsw').innerHTML = DEMO_INCOMPLETE
+    ? 'Menu fully confirmed \u2192'
+    : 'Menu not fully confirmed \u2192';
+  buildMenu();
+}
+function restart(){
+  people = 4; splitMode = 'even'; picked = {}; tipRate = .10; kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
+  $('pn').textContent = 4;
+  mode('even');
+  document.querySelectorAll('.pl').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  document.querySelectorAll('#gstars .star').forEach(function(s){ s.classList.remove('on'); });
+  document.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('on'); });
+  document.querySelectorAll('.tipb').forEach(function(b, i){ b.classList.toggle('on', i === 2); });
+  document.querySelectorAll('.pm').forEach(function(p, i){ p.classList.toggle('on', i === 0); });
+  clearF();
+  $('chg').classList.remove('on');
+  $('cashnote').style.display = 'none';
+  go('v-land');
+}
+/* ---------------- boot ---------------- */
+/* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
+function paintVenue(){
+  var v = Aalayna.venue();
+  var short = v.name.split(/[ ·]/)[0];
+  var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
+  set('v-name-stage', v.name); set('v-name-crest', v.name); set('v-name-menu', v.name);
+  set('v-name-receipt', v.name.toUpperCase());
+  set('v-place', v.place || '');
+  set('v-est', v.heritage ? 'EST. 1881 · TRIPOLI' : (v.place ? v.place.toUpperCase() : 'YOUR MENU, LIVE'));
+  set('v-est2', v.heritage ? 'Est. 1881 · Tripoli' : v.name);
+  set('v-review-sub', v.heritage ? '144 years, one review at a time' : 'One review at a time');
+  document.querySelectorAll('.v-short').forEach(function(el){ el.textContent = short; });
+  var ms = document.getElementById('m-sub');
+  if (ms && LANG === 'en') ms.textContent = 'Table 12 · ' + (v.place || v.name);
+}
+buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue();
+Aalayna.on(function(){
+  var before = MENU_V;
+  loadMenu();
+  if (MENU_V !== before){          // a new version was published
+    buildCats(true); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu();
+  }
+});
+</script>
+</body>
+</html>
