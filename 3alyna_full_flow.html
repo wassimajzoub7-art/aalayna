@@ -909,7 +909,14 @@ function go(id){
     if (act) requestAnimationFrame(function(){ moveInk(act); });
   }
 }
-function openOv(id){ $(id).classList.add('on'); }
+function openOv(id){
+  var ov = $(id);
+  ov.classList.add('on');
+  // the sheet element is reused between opens — without this it keeps the
+  // scroll depth of the previous visit and opens mid-page on phones
+  var sh = ov.querySelector('.sheet');
+  if (sh) sh.scrollTop = 0;
+}
 function closeOv(id){
   var ov = $(id);
   if (!ov.classList.contains('on')) return;

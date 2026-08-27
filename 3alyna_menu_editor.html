@@ -493,7 +493,13 @@ pull();
 var collapsed = {}, isDirty = false, editing = -1, pct = 5, fxScope = 'all';
 function $(id){ return document.getElementById(id); }
 function usd(v){ return '$' + v.toFixed(2); }
-function openOv(id){ if(id==='ov-fx') paintPrev(); $(id).classList.add('on'); }
+function openOv(id){
+  if (id === 'ov-fx') paintPrev();
+  var ov = $(id);
+  ov.classList.add('on');
+  var sh = ov.querySelector('.sheet');
+  if (sh) sh.scrollTop = 0;
+}
 function closeOv(id){
   var ov = $(id);
   if (!ov.classList.contains('on')) return;
