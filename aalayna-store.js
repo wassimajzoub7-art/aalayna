@@ -16,7 +16,7 @@
   'use strict';
 
   var K = { draft: 'aal.draft', live: 'aal.live', settle: 'aal.settle', tips: 'aal.tips',
-            venue: 'aal.venue', rate: 'aal.rate' };
+            venue: 'aal.venue', rate: 'aal.rate', floor: 'aal.floor' };
 
   /* ---------- venue identity -------------------------------------------
      The walk-in trick: open any app with ?venue=Roadster's&place=Dbayeh and
@@ -367,6 +367,24 @@
       return read(K.venue, null) || DEFAULT_VENUE;
     },
     setVenue: function (v) { write(K.venue, v); },
+    /* ---- floor: which server has which table tonight ----
+       Set by the manager at service start (sections, not per-order); replaced by
+       the POS employee-on-check field once integration exists. Pooled mode is for
+       venues that pool tips — assignment goes dormant, one house pool. */
+    floor: function () {
+      var f = read(K.floor, null);
+      if (!f || !Array.isArray(f.servers) || !f.servers.length) {
+        f = { servers: ['Abou Karim', 'Sara', 'Jad'], tables: {}, pooled: false };
+      }
+      f.tables = f.tables || {};
+      return f;
+    },
+    setFloor: function (f) { write(K.floor, f); },
+    serverFor: function (table) {
+      var f = A.floor();
+      if (f.pooled) return 'Team pool';
+      return f.tables[String(table)] || f.servers[0];
+    },
     /* USD→LBP. The lira has been stable near 89,500 for years, so this is a
        venue setting with a sane default, not a live feed. Every LL figure on
        every guest phone follows it the moment it changes. */

@@ -581,7 +581,7 @@
       </div>
       <div class="tipwrap">
         <div class="tiphead">
-          <div class="l">Something for Abou Karim?</div>
+          <div class="l" id="tip-who">Something for Abou Karim?</div>
         </div>
         <div class="tips">
           <button class="tipb" onclick="setTip(this,0)"><div class="tp">Nope</div><div class="tv">&nbsp;</div></button>
@@ -621,7 +621,7 @@
           <button class="chip" onclick="setNote(this,100)">$100</button>
           <button class="chip" onclick="setNote(this,0)">Exact</button>
         </div>
-        <div class="chg-out" id="chgout">Abou Karim comes <b>once</b>, with your change already counted.</div>
+        <div class="chg-out" id="chgout">Your server comes <b>once</b>, with your change already counted.</div>
       </div>
       <div class="cashnote" id="cashnote">
         Marked <b>paid in cash</b> and taken off the table total automatically. No accounts, no downloads
@@ -813,7 +813,7 @@
   cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
   with a visible Google link kept inside the private sheet.
 </div>
-<script src="aalayna-store.js?v=8"></script>
+<script src="aalayna-store.js?v=9"></script>
 <script>
 /* ---------------- data ---------------- */
 function RATE(){ return Aalayna.rate(); }
@@ -1346,7 +1346,7 @@ function money(v){ return usd(v); }
 function paintChange(due){
   var out = $('chgout');
   if (note === 0){
-    out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. Abou Karim just collects the notes — no trip to the till.';
+    out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. ' + esc(SERVER) + ' just collects the notes — no trip to the till.';
     return;
   }
   var back = note - due;
@@ -1354,7 +1354,7 @@ function paintChange(due){
     out.innerHTML = '<b>$' + note + '</b> doesn’t cover ' + usd(due) + '. Pick a bigger note, or split it with the table.';
     return;
   }
-  out.innerHTML = 'Abou Karim comes <b>once</b>, with <b>' + usd(back) + '</b> already counted.';
+  out.innerHTML = esc(SERVER) + ' comes <b>once</b>, with <b>' + usd(back) + '</b> already counted.';
 }
 function paintPay(){
   var t = tipAmt(), tot = share + t, isCash = (kind === 'cash');
@@ -1413,7 +1413,7 @@ var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function finishSettle(rail){
   var t = tipAmt(), tot = share + t;
   Aalayna.settle({
-    table: 12, rail: rail, amount: tot, tip: t, server: 'Abou Karim',
+    table: 12, rail: rail, amount: tot, tip: t, server: SERVER,
     note: (rail === 'cash' ? note : 0),
     change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
   });
@@ -1514,7 +1514,16 @@ function restart(){
 }
 /* ---------------- boot ---------------- */
 /* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
+var TABLE = 12, SERVER = 'Abou Karim';
+function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function paintServer(){
+  SERVER = Aalayna.serverFor(TABLE);
+  var pooled = Aalayna.floor().pooled;
+  var el = $('tip-who');
+  if (el) el.textContent = pooled ? 'Something for the team?' : 'Something for ' + SERVER + '?';
+}
 function paintVenue(){
+  paintServer();
   var v = Aalayna.venue();
   var short = v.name.split(/[ ·]/)[0];
   var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };

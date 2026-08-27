@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=8"></script>
+<script src="aalayna-store.js?v=9"></script>
 <style>
   :root{
     --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
@@ -58,6 +58,24 @@
   .btn.done{background:var(--green-bg);border-color:var(--green-line);color:var(--green);cursor:default}
   .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
 
+  .fl-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 12px;align-items:center}
+  .fl-sv{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:7px 14px;
+    font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sub);cursor:pointer;
+    transition:background .15s ease,color .15s ease,border-color .15s ease}
+  .fl-sv.on{background:var(--green);border-color:var(--green);color:#fff}
+  .fl-sv .x{margin-left:7px;opacity:.55;font-weight:400}
+  .fl-add{border:1px dashed var(--line);background:none;border-radius:20px;padding:7px 14px;
+    font-family:inherit;font-size:12.5px;color:var(--sub);cursor:pointer}
+  .fl-tables{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;max-width:640px}
+  @media(max-width:720px){.fl-tables{grid-template-columns:repeat(4,1fr)}}
+  .fl-t{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 4px;
+    text-align:center;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+  .fl-t .tn{font-size:12px;font-weight:600}
+  .fl-t .ts{font-size:9px;color:var(--sub);margin-top:2px;min-height:11px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .fl-t.mine{background:var(--green-bg);border-color:#CFE0D5}
+  .fl-tables.off,.fl-row.off{opacity:.35;pointer-events:none}
+  .fl-pool{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--sub);margin-top:14px;cursor:pointer}
   .setr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);
     font-size:12.5px}
   .setr:last-child{border-bottom:none}
@@ -255,6 +273,16 @@
         <div id="tips" style="margin-top:8px"></div>
         <div class="note" id="tipdone" style="display:none"><span>✓</span><span>All tip payments recorded.</span></div>
       </div>
+    </div>
+
+    <div class="card mt">
+      <h3>Floor tonight</h3>
+      <div class="cs">Pick a server, then tap their tables. Guests tipping at those tables
+        tip that server by name. Replaced by the POS employee-on-check once integrated.</div>
+      <div class="fl-row" id="fl-servers"></div>
+      <div class="fl-tables" id="fl-tables"></div>
+      <label class="fl-pool"><input type="checkbox" id="fl-pooled" onchange="floorPool(this.checked)">
+        This venue pools tips (one house pool, no per-table assignment)</label>
     </div>
 
     <div class="card mt">
@@ -513,6 +541,7 @@ function paintTonight(){
     'system of record; treat this statement as an input to the close, not the close itself.';
 
   paintRows();
+  paintFloor();
   var box = $('shortbox');
   if (r.cash > 0){
     box.style.display = 'flex';
@@ -521,6 +550,56 @@ function paintTonight(){
   } else box.style.display = 'none';
 }
 
+/* ---- floor assignment ---- */
+var flActive = null;
+function escF(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function paintFloor(){
+  var f = Aalayna.floor();
+  if (flActive === null || f.servers.indexOf(flActive) < 0) flActive = f.servers[0];
+  var row = $('fl-servers'); row.innerHTML = '';
+  f.servers.forEach(function(name){
+    var b = document.createElement('button');
+    b.className = 'fl-sv' + (name === flActive ? ' on' : '');
+    b.innerHTML = escF(name) + (f.servers.length > 1 ? '<span class="x">&times;</span>' : '');
+    b.onclick = function(){ flActive = name; paintFloor(); };
+    var x = b.querySelector('.x');
+    if (x) x.onclick = function(e){
+      e.stopPropagation();
+      f.servers.splice(f.servers.indexOf(name), 1);
+      Object.keys(f.tables).forEach(function(t){ if (f.tables[t] === name) delete f.tables[t]; });
+      Aalayna.setFloor(f);
+    };
+    row.appendChild(b);
+  });
+  var add = document.createElement('button');
+  add.className = 'fl-add'; add.textContent = '+ Add server';
+  add.onclick = function(){
+    var n = prompt('Server name');
+    if (n && n.trim()){ f.servers.push(n.trim().slice(0, 24)); flActive = n.trim().slice(0, 24); Aalayna.setFloor(f); }
+  };
+  row.appendChild(add);
+  var grid = $('fl-tables'); grid.innerHTML = '';
+  for (var t = 1; t <= 16; t++){(function(t){
+    var who = f.tables[String(t)] || '';
+    var d = document.createElement('div');
+    d.className = 'fl-t' + (who ? ' mine' : '');
+    d.innerHTML = '<div class="tn">' + t + '</div><div class="ts">' + escF(who.split(' ')[0]) + '</div>';
+    d.onclick = function(){
+      if (f.tables[String(t)] === flActive) delete f.tables[String(t)];
+      else f.tables[String(t)] = flActive;
+      Aalayna.setFloor(f);
+    };
+    grid.appendChild(d);
+  })(t);}
+  $('fl-pooled').checked = !!f.pooled;
+  row.classList.toggle('off', !!f.pooled);
+  grid.classList.toggle('off', !!f.pooled);
+}
+function floorPool(on){
+  var f = Aalayna.floor();
+  f.pooled = on;
+  Aalayna.setFloor(f);
+}
 var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash, declared' };
 function paintRows(){
   var box = $('setrows'); box.innerHTML = '';
