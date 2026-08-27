@@ -786,10 +786,15 @@ function serving(win){
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
 /* demo: another guest already settled part of the bill */
 var PREPAID = false;
-var PREPAID_LINES = { 'Mixed Grill platter': 1, 'Knefeh b\'Jebne + kaakeh': 1 };
-function linePaid(l){ return PREPAID && !!PREPAID_LINES[l.n]; }
+/* units already paid per line — someone can pay for 1 of the 2 grills */
+var PREPAID_LINES = { 'Mixed Grill platter': 1, 'Knefeh b\'Jebne + kaakeh': 4 };
+function paidUnits(l){
+  if (!PREPAID) return 0;
+  return Math.min(l.q, PREPAID_LINES[l.n] || 0);
+}
+function linePaid(l){ return paidUnits(l) >= l.q; }
 function remaining(){
-  return BILL.reduce(function(a, l){ return a + (linePaid(l) ? 0 : l.p); }, 0);
+  return BILL.reduce(function(a, l){ return a + (l.p / l.q) * (l.q - paidUnits(l)); }, 0);
 }
 function loadMenu(){
   var m = Aalayna.published();
@@ -1164,11 +1169,12 @@ function buildBill(){
   var box = $('r-items'); box.innerHTML = '';
   BILL.forEach(function(b){
     var d = document.createElement('div');
-    var paidBy = linePaid(b);
-    d.className = 'r-item' + (paidBy ? ' r-paid' : '');
-    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n +
-                  (paidBy ? '<span class="paidtag">PAID</span>' : '') + '</div>' +
-                  '<div class="p">' + usd(b.p) + '</div>';
+    var paid = paidUnits(b), full = paid >= b.q;
+    d.className = 'r-item' + (full ? ' r-paid' : '');
+    var tag = full ? '<span class="paidtag">PAID</span>'
+            : paid ? '<span class="paidtag">' + paid + ' OF ' + b.q + ' PAID</span>' : '';
+    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n + tag + '</div>' +
+                  '<div class="p">' + usd(full ? b.p : (b.p / b.q) * (b.q - paid)) + '</div>';
     box.appendChild(d);
   });
   var rem = remaining();
@@ -1183,9 +1189,9 @@ function buildPick(){
   var box = $('picklist'); box.innerHTML = '';
   BILL.forEach(function(b, i){
     var d = document.createElement('div');
-    var paidBy = linePaid(b);
-    d.className = 'pl' + (paidBy ? ' dis' : '');
-    if (paidBy){
+    var paid = paidUnits(b), avail = b.q - paid;
+    d.className = 'pl' + (avail === 0 ? ' dis' : '');
+    if (avail === 0){
       d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
         '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
         '<span class="paidtag">PAID</span></span><span class="pr">' + usd(b.p) + '</span>';
@@ -1195,13 +1201,13 @@ function buildPick(){
     /* picked[i] is a UNIT COUNT, not a boolean — tapping the row takes one unit
        of the line, the stepper takes more. 4 people can each pay for their own
        coffee off a single 4x line. */
-    var unit = b.p / b.q;
+    var unit = b.p / b.q, lineOwed = unit * avail;
     function paint(){
       var n = picked[i] || 0;
       d.classList.toggle('on', n > 0);
-      d.querySelector('.pr').textContent = usd(n > 0 && n < b.q ? unit * n : b.p);
+      d.querySelector('.pr').textContent = usd(n > 0 && n < avail ? unit * n : lineOwed);
       var sn = d.querySelector('.sn');
-      if (sn) sn.textContent = n + ' of ' + b.q;
+      if (sn) sn.textContent = n + ' of ' + avail;
     }
     d.onclick = function(){
       picked[i] = picked[i] ? 0 : 1;
@@ -1209,14 +1215,15 @@ function buildPick(){
     };
     d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
                   '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
-                  (b.q > 1 ? '<span class="st">' +
+                  (paid ? '<span class="paidtag">' + paid + ' PAID</span>' : '') +
+                  (avail > 1 ? '<span class="st">' +
                     '<button class="sb" data-d="-1">&minus;</button><span class="sn"></span>' +
                     '<button class="sb" data-d="1">+</button></span>' : '') +
-                  '</span><span class="pr">' + usd(b.p) + '</span>';
+                  '</span><span class="pr">' + usd(lineOwed) + '</span>';
     d.querySelectorAll('.sb').forEach(function(sb){
       sb.onclick = function(e){
         e.stopPropagation();
-        picked[i] = Math.max(0, Math.min(b.q, (picked[i] || 0) + (+sb.dataset.d)));
+        picked[i] = Math.max(0, Math.min(avail, (picked[i] || 0) + (+sb.dataset.d)));
         paint(); calcShare();
       };
     });
@@ -1241,7 +1248,8 @@ function calcShare(){
   if (splitMode === 'even')      share = rem / people;
   else if (splitMode === 'all')  share = rem;
   else { share = 0; BILL.forEach(function(b, i){
-    if (picked[i] && !linePaid(b)) share += (b.p / b.q) * picked[i]; }); }
+    var avail = b.q - paidUnits(b);
+    if (picked[i] && avail > 0) share += (b.p / b.q) * Math.min(picked[i], avail); }); }
   $('sh-v').textContent = usd(share);
   $('sh-ll').textContent = ll(share);
   var cb = $('continue-btn');
