@@ -263,6 +263,14 @@
   .pl.on .cb{background:var(--green);border-color:var(--green)}
   .pl .nm{flex:1}
   .pl .pr{font-weight:600}
+  .pl .st{display:none;align-items:center;gap:5px;margin-inline-start:8px;vertical-align:middle}
+  .pl.on .st{display:inline-flex}
+  .sb{width:21px;height:21px;border-radius:6px;border:1px solid var(--green-line);background:var(--surface);
+    color:var(--green);font-size:12px;line-height:1;cursor:pointer;font-family:inherit;padding:0;
+    transition:transform .12s var(--ease),background .12s ease}
+  .sb:active{transform:scale(.92)}
+  .sn{font-size:10px;font-weight:600;color:var(--green);min-width:40px;text-align:center;
+    font-feature-settings:'tnum'}
 
   /* ── pay ── */
   .amt{text-align:center}
@@ -549,7 +557,7 @@
         <div class="tips">
           <button class="tipb" onclick="setTip(this,0)"><div class="tp">Nope</div><div class="tv">&nbsp;</div></button>
           <button class="tipb" onclick="setTip(this,.05)"><div class="tp">5%</div><div class="tv" id="tv5">$1.91</div></button>
-          <button class="tipb on" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
+          <button class="tipb" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
           <button class="tipb" onclick="setTip(this,.15)"><div class="tp">15%</div><div class="tv" id="tv15">$5.72</div></button>
         </div>
       </div>
@@ -893,7 +901,7 @@ function renderMenu(){
 }
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
-var tipRate = .10, kind = 'whish', note = 0;
+var tipRate = 0, kind = 'whish', note = 0;
 var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -1184,14 +1192,35 @@ function buildPick(){
       box.appendChild(d);
       return;
     }
+    /* picked[i] is a UNIT COUNT, not a boolean — tapping the row takes one unit
+       of the line, the stepper takes more. 4 people can each pay for their own
+       coffee off a single 4x line. */
+    var unit = b.p / b.q;
+    function paint(){
+      var n = picked[i] || 0;
+      d.classList.toggle('on', n > 0);
+      d.querySelector('.pr').textContent = usd(n > 0 && n < b.q ? unit * n : b.p);
+      var sn = d.querySelector('.sn');
+      if (sn) sn.textContent = n + ' of ' + b.q;
+    }
     d.onclick = function(){
-      picked[i] = !picked[i];
-      d.classList.toggle('on', picked[i]);
-      calcShare();
+      picked[i] = picked[i] ? 0 : 1;
+      paint(); calcShare();
     };
     d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
                   '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
+                  (b.q > 1 ? '<span class="st">' +
+                    '<button class="sb" data-d="-1">&minus;</button><span class="sn"></span>' +
+                    '<button class="sb" data-d="1">+</button></span>' : '') +
                   '</span><span class="pr">' + usd(b.p) + '</span>';
+    d.querySelectorAll('.sb').forEach(function(sb){
+      sb.onclick = function(e){
+        e.stopPropagation();
+        picked[i] = Math.max(0, Math.min(b.q, (picked[i] || 0) + (+sb.dataset.d)));
+        paint(); calcShare();
+      };
+    });
+    paint();
     box.appendChild(d);
   });
 }
@@ -1211,7 +1240,8 @@ function calcShare(){
   var rem = remaining();
   if (splitMode === 'even')      share = rem / people;
   else if (splitMode === 'all')  share = rem;
-  else { share = 0; BILL.forEach(function(b, i){ if (picked[i] && !linePaid(b)) share += b.p; }); }
+  else { share = 0; BILL.forEach(function(b, i){
+    if (picked[i] && !linePaid(b)) share += (b.p / b.q) * picked[i]; }); }
   $('sh-v').textContent = usd(share);
   $('sh-ll').textContent = ll(share);
   var cb = $('continue-btn');
@@ -1366,14 +1396,14 @@ function togglePrepaid(){
   go('v-bill');
 }
 function restart(){
-  people = 4; splitMode = 'even'; picked = {}; tipRate = .10; kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
+  people = 4; splitMode = 'even'; picked = {}; tipRate = 0; kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
   $('pn').textContent = 4;
   mode('even');
   document.querySelectorAll('.pl').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
   document.querySelectorAll('#gstars .star').forEach(function(s){ s.classList.remove('on'); });
   document.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('on'); });
-  document.querySelectorAll('.tipb').forEach(function(b, i){ b.classList.toggle('on', i === 2); });
+  document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
   document.querySelectorAll('.pm').forEach(function(p, i){ p.classList.toggle('on', i === 0); });
   clearF();
   $('chg').classList.remove('on');
