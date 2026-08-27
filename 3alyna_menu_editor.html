@@ -79,7 +79,13 @@
   .it:hover{background:var(--bg)}
   .it.off{opacity:.45}
   .it.off .pr{text-decoration:line-through;color:var(--sub)}
-  .grip{color:#D8D5CF;font-size:13px;cursor:grab;flex-shrink:0;line-height:1;letter-spacing:-1px}
+  .grip{color:#D8D5CF;font-size:13px;cursor:grab;flex-shrink:0;line-height:1;letter-spacing:-1px;
+    touch-action:none;padding:2px 3px;border-radius:4px}
+  .grip:hover{color:var(--sub);background:var(--line-soft)}
+  .it.dragging{opacity:.45;background:var(--green-bg)}
+  .sec.dragging{opacity:.55}
+  body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
+  body.is-dragging .grip{cursor:grabbing}
   .it .tx{flex:1;min-width:0;cursor:pointer}
   .it .nm{font-size:13px;font-weight:500;line-height:1.3}
   .it .meta{font-size:11px;color:var(--sub);margin-top:2px;display:flex;gap:7px;align-items:center}
@@ -457,7 +463,7 @@ function fmtNow(){
 function win(id){ return WINDOWS.filter(function(w){ return w.id === id; })[0]; }
 function isNow(wid){ var w = win(wid), n = nowMin(); return n >= w.from && n < w.to; }
 pull();
-var closed = {}, isDirty = false, editing = -1, pct = 5, fxScope = 'all', view = 'items';
+var collapsed = {}, isDirty = false, editing = -1, pct = 5, fxScope = 'all', view = 'items';
 function $(id){ return document.getElementById(id); }
 function usd(v){ return '$' + v.toFixed(2); }
 function openOv(id){ if(id==='ov-fx') paintPrev(); $(id).classList.add('on'); }
@@ -493,12 +499,17 @@ function render(){
   SECTIONS.forEach(function(sec){
     var items = ITEMS.filter(function(i){ return i.s === sec.id; });
     var box = document.createElement('div');
-    box.className = 'sec' + (closed[sec.id] ? ' closed' : '');
+    box.className = 'sec' + (collapsed[sec.id] ? ' closed' : '');
     var w = win(sec.w), live = isNow(sec.w);
     var h = document.createElement('div');
     h.className = 'sec-h';
-    h.onclick = function(){ closed[sec.id] = !closed[sec.id]; render(); };
-    h.innerHTML = '<span class="cv">&#9660;</span><span class="nm">' + sec.name + '</span>';
+    h.onclick = function(){ collapsed[sec.id] = !collapsed[sec.id]; render(); };
+    setTimeout(function(){
+      var g = h.querySelector('.sec-grip');
+      if (g) g.onpointerdown = function(e){ e.stopPropagation(); startDrag(e, box, 'sec'); };
+    }, 0);
+    h.innerHTML = '<span class="grip sec-grip" title="Drag to reorder">&#8942;&#8942;</span>' +
+      '<span class="cv">&#9660;</span><span class="nm">' + sec.name + '</span>';
     var chip = document.createElement('span');
     chip.className = 'win' + (sec.w === 'all' ? '' : (live ? ' now' : ' later'));
     chip.innerHTML = (live && sec.w !== 'all' ? '<span class="dt"></span>' : '') +
@@ -513,10 +524,13 @@ function render(){
     if (sec.w !== 'all' && !live) box.classList.add('dim-sec');
     var wrap = document.createElement('div');
     wrap.className = 'sec-items';
+    wrap.dataset.sec = sec.id;
+    box.dataset.sec = sec.id;
     items.forEach(function(it){
       var idx = ITEMS.indexOf(it);
       var row = document.createElement('div');
       row.className = 'it';
+      row.dataset.id = it.id;
       var langs = view === 'lang'
         ? '<span class="lang"><span class="lg">EN</span>' +
           '<span class="lg' + (it.fr ? '' : ' miss') + '">FR</span>' +
@@ -528,6 +542,7 @@ function render(){
         '<div class="meta">' + langs + '</div></span>' +
         '<span class="pr">' + usd(it.p) + '</span>';
       row.querySelector('.tx').onclick = function(){ editItem(idx); };
+      row.querySelector('.grip').onpointerdown = function(e){ startDrag(e, row, 'item'); };
       wrap.appendChild(row);
     });
     var add = document.createElement('div');
@@ -537,7 +552,7 @@ function render(){
     wrap.appendChild(add);
     box.appendChild(wrap);
     L.appendChild(box);
-    wrap.style.maxHeight = closed[sec.id] ? '0px' : wrap.scrollHeight + 'px';
+    wrap.style.maxHeight = collapsed[sec.id] ? '0px' : wrap.scrollHeight + 'px';
   });
 }
 /* ---------- edit ---------- */
@@ -796,6 +811,79 @@ function paintClock(){
   $('clock').innerHTML = 'It is <b>' + fmtNow() + '</b> · guests currently see <b>' +
     on + ' of ' + SECTIONS.length + '</b> sections';
 }
+/* ---------- drag to reorder ----------
+   Pointer-based so it works with mouse and touch. The dragged element moves
+   live in the DOM; on drop the data arrays are rebuilt FROM the DOM order and
+   pushed to the draft, so the guest menu inherits the order on next publish. */
+var drag = null;
+function startDrag(e, el, kind){
+  e.preventDefault();
+  drag = { el: el, kind: kind, moved: false };
+  document.body.classList.add('is-dragging');
+  el.classList.add('dragging');
+  document.addEventListener('pointermove', onDrag);
+  document.addEventListener('pointerup', endDrag);
+}
+function onDrag(e){
+  if (!drag) return;
+  drag.moved = true;
+  var under = document.elementFromPoint(e.clientX, e.clientY);
+  if (!under) return;
+  if (drag.kind === 'item'){
+    var row = under.closest && under.closest('.it');
+    if (row && row !== drag.el){
+      var r = row.getBoundingClientRect();
+      row.parentNode.insertBefore(drag.el, e.clientY < r.top + r.height/2 ? row : row.nextSibling);
+      return;
+    }
+    // empty section: drop above its add-row
+    var add = under.closest && under.closest('.addrow');
+    if (add && add.parentNode !== drag.el.parentNode){
+      add.parentNode.insertBefore(drag.el, add);
+    }
+  } else {
+    var sec = under.closest && under.closest('.sec');
+    if (sec && sec !== drag.el){
+      var rr = sec.getBoundingClientRect();
+      sec.parentNode.insertBefore(drag.el, e.clientY < rr.top + rr.height/2 ? sec : sec.nextSibling);
+    }
+  }
+}
+function endDrag(){
+  document.removeEventListener('pointermove', onDrag);
+  document.removeEventListener('pointerup', endDrag);
+  document.body.classList.remove('is-dragging');
+  if (!drag) return;
+  var d = drag; drag = null;
+  d.el.classList.remove('dragging');
+  if (!d.moved) return;
+
+  if (d.kind === 'item'){
+    // rebuild ITEMS in DOM order, adopting the section each row now sits in
+    var next = [];
+    document.querySelectorAll('.sec-items').forEach(function(wrap){
+      var sid = wrap.dataset.sec;
+      wrap.querySelectorAll('.it').forEach(function(row){
+        var it = ITEMS.filter(function(x){ return x.id === row.dataset.id; })[0];
+        if (it){ it.s = sid; next.push(it); }
+      });
+    });
+    if (next.length === ITEMS.length) ITEMS = next;
+    dirty();
+    toast('Order saved — publish to make it live');
+  } else {
+    var order = [];
+    document.querySelectorAll('.sec').forEach(function(b){
+      var sec = SECTIONS.filter(function(x){ return x.id === b.dataset.sec; })[0];
+      if (sec) order.push(sec);
+    });
+    if (order.length === SECTIONS.length) SECTIONS = order;
+    dirty();
+    toast('Section order saved — publish to make it live');
+  }
+  render();
+}
+
 /* ---------- tabs ---------- */
 function tab(el, v){
   view = v;
@@ -806,7 +894,7 @@ function tab(el, v){
 function reset(){
   Aalayna.reset();
   pull();
-  closed = {}; pct = 5; fxScope = 'all'; isDirty = false;
+  collapsed = {}; pct = 5; fxScope = 'all'; isDirty = false;
   $('state').classList.remove('dirty');
   $('state-t').textContent = 'LIVE';
   $('pubbtn').disabled = true;
