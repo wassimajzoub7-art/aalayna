@@ -69,6 +69,14 @@
   .sec-h .nm{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub)}
   .sec-h .ct{font-size:10.5px;color:var(--faint)}
   .sec-items{overflow:hidden;transition:max-height .3s var(--ease)}
+  .fxrate{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;
+    border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .fxr-l{font-size:12.5px;font-weight:600}
+  .fxr-s{font-size:10.5px;color:var(--sub);margin-top:2px}
+  .fxr-in{width:96px;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:13px;
+    font-family:inherit;text-align:right;background:var(--surface);color:var(--ink);
+    font-feature-settings:'tnum'}
+  .fxr-in:focus{outline:none;border-color:var(--green)}
 
   /* ── option groups (item editor) ── */
   .og{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
@@ -411,10 +419,12 @@
         <button onclick="scope(this,'sec')">One section</button>
       </div>
       <div class="prev" id="prev"></div>
-      <div class="rate">
-        <span>&#9432;</span>
-        <span>The dollar has moved <b>6%</b> since you last repriced. Menus show USD and LL —
-        LL follows the rate automatically.</span>
+      <div class="fxrate">
+        <div>
+          <div class="fxr-l">Exchange rate</div>
+          <div class="fxr-s">LL per $1 &mdash; every guest menu follows it instantly</div>
+        </div>
+        <input class="fxr-in" id="fx-rate" inputmode="numeric" onchange="saveRate(this)">
       </div>
       <button class="cta cta-green" style="margin-top:16px" onclick="applyFx()">Apply to 16 dishes</button>
       <button class="cta cta-ghost" onclick="closeOv('ov-fx')">Cancel</button>
@@ -446,7 +456,7 @@
   the guest's menu at all. Repricing stays at the top because it is the feature nobody else in
   Lebanon has.
 </div>
-<script src="aalayna-store.js?v=7"></script>
+<script src="aalayna-store.js?v=8"></script>
 <script>
 /* Service windows. Restaurants think in dayparts ("we stop serving breakfast at 11:30"),
    so the window lives on the SECTION, not the item. */
@@ -933,7 +943,15 @@ function targets(){
   return fxScope === 'all' ? ITEMS : ITEMS.filter(function(i){ return i.s === 'mez'; });
 }
 function newPrice(p){ return Math.round(p * (1 + pct / 100) * 4) / 4; }  // nearest 0.25
+function saveRate(el){
+  var v = Math.round(parseFloat(String(el.value).replace(/[^0-9.]/g,'')) || 0);
+  if (v < 1000 || v > 10000000){ el.value = Aalayna.rate().toLocaleString('en-US'); return; }
+  Aalayna.setRate(v);
+  el.value = v.toLocaleString('en-US');
+  toast('Rate set — LL ' + v.toLocaleString('en-US') + ' per $1, live on every menu');
+}
 function paintPrev(){
+  $('fx-rate').value = Aalayna.rate().toLocaleString('en-US');
   var v = $('pv');
   v.textContent = (pct >= 0 ? '+' : '') + pct + '%';
   v.className = 'v ' + (pct >= 0 ? 'up' : 'dn');

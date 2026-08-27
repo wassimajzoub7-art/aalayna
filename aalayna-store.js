@@ -16,7 +16,7 @@
   'use strict';
 
   var K = { draft: 'aal.draft', live: 'aal.live', settle: 'aal.settle', tips: 'aal.tips',
-            venue: 'aal.venue' };
+            venue: 'aal.venue', rate: 'aal.rate' };
 
   /* ---------- venue identity -------------------------------------------
      The walk-in trick: open any app with ?venue=Roadster's&place=Dbayeh and
@@ -367,6 +367,17 @@
       return read(K.venue, null) || DEFAULT_VENUE;
     },
     setVenue: function (v) { write(K.venue, v); },
+    /* USD→LBP. The lira has been stable near 89,500 for years, so this is a
+       venue setting with a sane default, not a live feed. Every LL figure on
+       every guest phone follows it the moment it changes. */
+    rate: function () {
+      var r = read(K.rate, 0);
+      return (r >= 1000 && r <= 10000000) ? r : 89500;
+    },
+    setRate: function (v) {
+      v = Math.round(+v || 0);
+      if (v >= 1000 && v <= 10000000) write(K.rate, v);
+    },
     /* The one integration that needs no partner: with a Place ID this opens the
        venue's actual Google review box; without one it opens their real Maps
        listing (review is one tap from there). Works for any walk-in demo venue. */

@@ -813,10 +813,10 @@
   cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
   with a visible Google link kept inside the private sheet.
 </div>
-<script src="aalayna-store.js?v=7"></script>
+<script src="aalayna-store.js?v=8"></script>
 <script>
 /* ---------------- data ---------------- */
-var RATE = 89400;
+function RATE(){ return Aalayna.rate(); }
 /* ---- everything below is the PUBLISHED menu. Never the draft. ---- */
 var WINDOWS = {all:[0,1440], brkf:[420,690], lunch:[720,960], dinner:[1080,1410]};
 function serving(win){
@@ -924,7 +924,7 @@ function descOf(m){
 }
 /* price display follows the currency toggle — the diner-facing half of the FX feature */
 function price(v){
-  if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE / 1000) * 1000).toLocaleString('en-US');
+  if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE() / 1000) * 1000).toLocaleString('en-US');
   return '$' + v.toFixed(2);
 }
 function setLang(v){ LANG = v; renderMenu(); }
@@ -952,7 +952,7 @@ var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
 function usd(n){ return '$' + n.toFixed(2); }
-function ll(n){ return '≈ LL ' + Math.round(n * RATE).toLocaleString('en-US'); }
+function ll(n){ return '≈ LL ' + Math.round(n * RATE()).toLocaleString('en-US'); }
 function go(id){
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
   $(id).classList.add('on');
