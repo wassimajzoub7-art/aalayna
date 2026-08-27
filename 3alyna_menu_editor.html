@@ -14,6 +14,7 @@
     --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
     --red:#B4423A; --red-bg:#F9EEEC;
     --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
+    --ease:cubic-bezier(0.23,1,0.32,1); --ease-drawer:cubic-bezier(0.32,0.72,0,1);
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
@@ -35,6 +36,7 @@
   .hd h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
   .hd .sub{font-size:11.5px;color:var(--sub);margin-top:3px}
   .live{display:inline-flex;align-items:center;gap:6px;background:var(--green-bg);color:var(--green);
+    transition:background .2s ease,color .2s ease;
     font-size:10px;font-weight:600;border-radius:6px;padding:4px 8px;letter-spacing:.05em;flex-shrink:0}
   .live .d{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -66,11 +68,11 @@
   .body::-webkit-scrollbar{display:none}
   .sec{border-bottom:1px solid var(--line-soft)}
   .sec-h{display:flex;align-items:center;gap:9px;padding:13px 18px 9px;cursor:pointer;background:var(--surface)}
-  .sec-h .cv{font-size:9px;color:var(--faint);transition:transform .2s;width:10px}
+  .sec-h .cv{font-size:9px;color:var(--faint);transition:transform .2s var(--ease);width:10px}
   .sec.closed .cv{transform:rotate(-90deg)}
   .sec-h .nm{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub)}
   .sec-h .ct{font-size:10.5px;color:var(--faint)}
-  .sec-items{overflow:hidden;transition:max-height .25s ease}
+  .sec-items{overflow:hidden;transition:max-height .3s var(--ease)}
   .sec.closed .sec-items{max-height:0 !important}
   .sec.dim-sec .it,.sec.dim-sec .addrow{opacity:.45}
 
@@ -82,7 +84,8 @@
   .grip{color:#D8D5CF;font-size:13px;cursor:grab;flex-shrink:0;line-height:1;letter-spacing:-1px;
     touch-action:none;padding:2px 3px;border-radius:4px}
   .grip:hover{color:var(--sub);background:var(--line-soft)}
-  .it.dragging{opacity:.45;background:var(--green-bg)}
+  .it.dragging{opacity:.85;background:var(--surface);transform:scale(1.015);
+    box-shadow:0 6px 18px rgba(23,29,26,.14);border-radius:8px;position:relative;z-index:5}
   .sec.dragging{opacity:.55}
   body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
   body.is-dragging .grip{cursor:grabbing}
@@ -114,8 +117,9 @@
   .pub{position:absolute;left:0;right:0;bottom:0;z-index:30;padding:12px 16px 16px;
     background:linear-gradient(transparent, var(--surface) 32%)}
   .cta{width:100%;border:1px solid transparent;border-radius:10px;padding:13px;font-size:13.5px;
-    font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .12s}
-  .cta:active{opacity:.85}
+    font-weight:600;cursor:pointer;font-family:inherit;
+    transition:transform .12s var(--ease),opacity .12s ease}
+  .cta:active{opacity:.9;transform:scale(.98)}
   .cta-green{background:var(--green);color:#fff}
   .cta-green:disabled{background:var(--line-soft);color:var(--faint);cursor:default}
   .cta-line{background:var(--surface);color:var(--ink);border-color:var(--line);margin-top:8px}
@@ -127,10 +131,16 @@
   .ov.on{display:flex}
   .scrim{position:absolute;inset:0;background:rgba(23,29,26,.4)}
   .sheet{position:relative;width:100%;background:var(--surface);border-radius:14px 14px 0 0;
-    border-top:1px solid var(--line);padding:16px 18px 20px;animation:up .28s ease;
+    border-top:1px solid var(--line);padding:16px 18px 20px;animation:up .35s var(--ease-drawer);
     max-height:92%;overflow-y:auto;scrollbar-width:none}
   .sheet::-webkit-scrollbar{display:none}
-  @keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+  .ov .scrim{animation:scrimIn .22s var(--ease)}
+  .ov.closing .sheet{animation:down .2s var(--ease) forwards}
+  .ov.closing .scrim{animation:scrimOut .2s var(--ease) forwards}
+  @keyframes up{from{transform:translateY(100%)}to{transform:none}}
+  @keyframes down{from{transform:none}to{transform:translateY(100%)}}
+  @keyframes scrimIn{from{opacity:0}to{opacity:1}}
+  @keyframes scrimOut{from{opacity:1}to{opacity:0}}
   .grab{width:34px;height:4px;border-radius:3px;background:var(--line);margin:0 auto 14px}
   .sh-t{font-size:16px;font-weight:600;letter-spacing:-.01em}
   .sh-s{font-size:12px;color:var(--sub);margin-top:4px;line-height:1.5}
@@ -167,7 +177,7 @@
   .algs{display:flex;flex-wrap:wrap;gap:6px}
   .alg{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 10px;
     font-size:11.5px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;
-    transition:all .12s}
+    transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
   .alg.on{background:var(--red-bg);border-color:#EAD2CF;color:var(--red);font-weight:600}
   .alg.sug{border-color:var(--amber-line);border-style:dashed;color:var(--amber)}
   .sugg{display:flex;gap:8px;align-items:flex-start;margin-top:9px;background:var(--amber-bg);
@@ -196,11 +206,11 @@
   .pct .v.up{color:var(--green)} .pct .v.dn{color:var(--red)}
   .quick{display:flex;gap:7px;justify-content:center;margin-top:6px}
   .qb{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 11px;
-    font-size:11.5px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .12s}
+    font-size:11.5px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
   .qb.on{background:var(--green-bg);border-color:var(--green-line);color:var(--green);font-weight:600}
   .scope{display:flex;background:var(--line-soft);border-radius:8px;padding:3px;margin-top:16px}
   .scope button{flex:1;border:none;background:transparent;border-radius:6px;padding:8px 4px;
-    font-size:12px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:all .15s}
+    font-size:12px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s,opacity .15s}
   .scope button.on{background:var(--surface);color:var(--ink);font-weight:600;
     box-shadow:0 1px 3px rgba(23,29,26,.08)}
   .prev{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
@@ -220,17 +230,18 @@
 
   /* schedule sheet */
   .wopt{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid var(--line);
-    border-radius:10px;background:var(--surface);cursor:pointer;margin-top:8px;transition:all .12s}
+    border-radius:10px;background:var(--surface);cursor:pointer;margin-top:8px;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
   .wopt.on{border-color:var(--green);background:var(--green-bg)}
   .wopt .rd{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);flex-shrink:0;
-    transition:all .15s}
+    transition:background .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s,opacity .15s}
   .wopt.on .rd{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px var(--surface)}
   .wopt .wn{font-size:13px;font-weight:600}
   .wopt .ws{font-size:11px;color:var(--sub);margin-top:2px}
 
   .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,10px);background:var(--ink);
     color:#fff;border-radius:9px;padding:11px 16px;font-size:12px;font-weight:500;opacity:0;
-    pointer-events:none;transition:all .25s ease;z-index:99;display:flex;align-items:center;gap:8px}
+    pointer-events:none;transition:transform .22s var(--ease),opacity .22s ease;z-index:99;
+    display:flex;align-items:center;gap:8px}
   .toast.on{opacity:1;transform:translate(-50%,0)}
   .toast .k{color:#9DE3C0}
 
@@ -240,6 +251,12 @@
   .swb:hover{border-color:#CFCCC5;color:var(--ink)}
   .note-out{color:var(--sub);font-size:11.5px;text-align:center;margin-top:16px;max-width:600px;line-height:1.7}
   .note-out b{color:var(--ink);font-weight:600}
+  @media (prefers-reduced-motion:reduce){
+    .sheet,.ov .scrim{animation:scrimIn .15s ease both !important}
+    .ov.closing .sheet,.ov.closing .scrim{animation:scrimOut .12s ease forwards !important}
+    .sec-items{transition:none}
+    .cta:active,.it.dragging{transform:none}
+  }
 </style>
 </head>
 <body>
@@ -448,7 +465,12 @@ var collapsed = {}, isDirty = false, editing = -1, pct = 5, fxScope = 'all', vie
 function $(id){ return document.getElementById(id); }
 function usd(v){ return '$' + v.toFixed(2); }
 function openOv(id){ if(id==='ov-fx') paintPrev(); $(id).classList.add('on'); }
-function closeOv(id){ $(id).classList.remove('on'); }
+function closeOv(id){
+  var ov = $(id);
+  if (!ov.classList.contains('on')) return;
+  ov.classList.add('closing');
+  setTimeout(function(){ ov.classList.remove('on'); ov.classList.remove('closing'); }, 200);
+}
 function toast(msg){
   $('toast-t').textContent = msg;
   $('toast').classList.add('on');
