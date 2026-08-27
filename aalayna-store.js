@@ -47,7 +47,7 @@
   function it(id, sec, name, desc, price, ing, al, kcal, pr, ft, cb, extra) {
     var o = { id: id, sec: sec, name: name, desc: desc, price: price,
               ing: ing, al: al, kcal: kcal, pr: pr, ft: ft, cb: cb,
-              conf: 1, fr: 1, ar: 1, cust: 0, adds: [] };
+              conf: 1, fr: 1, ar: 1, opts: [] };
     if (extra) for (var k in extra) o[k] = extra[k];
     return o;
   }
@@ -68,15 +68,17 @@
        ['chickpeas','tahini','garlic','lemon','hot pepper','olive oil'],['sesame'],310,11,20,24),
     it('i07','mez',"Mixed Grill platter","Kabab, shish taouk, lamb chops, fries",16.00,
        ['lamb','chicken','beef','garlic','potato','sunflower oil'],[],1140,78,72,44,
-       { cust:1, adds:[{n:'Extra lamb chop',p:4.5},{n:'Garlic toum',p:.75},
-                       {n:'Grilled tomato & onion',p:1.25},{n:'Swap fries for salad',p:0}] }),
+       { opts:[{name:'Extras',type:'many',choices:[
+           {n:'Extra lamb chop',p:4.5},{n:'Garlic toum',p:.75},
+           {n:'Grilled tomato & onion',p:1.25},{n:'Swap fries for salad',p:0}]}] }),
     it('i08','mez',"Arayes","Grilled pita, spiced minced lamb, onion, parsley",7.50,
        ['pita bread','minced lamb','onion','parsley','spices'],['gluten'],640,31,34,52,{fr:0,ar:0}),
 
     it('i09','swt',"Knefeh b'Jebne + kaakeh","Akkawi cheese, semolina, ghee, sugar syrup, sesame kaakeh",4.50,
        ['akkawi cheese','semolina','ghee','sugar syrup','sesame kaakeh'],['dairy','gluten','sesame'],720,21,33,88,
-       { cust:1, adds:[{n:'Extra ashta',p:1.5},{n:'Double kaakeh',p:1},
-                       {n:'Hold the syrup',p:0},{n:'Pistachio crust',p:1.25}] }),
+       { opts:[{name:'Extras',type:'many',choices:[
+           {n:'Extra ashta',p:1.5},{n:'Double kaakeh',p:1},
+           {n:'Hold the syrup',p:0},{n:'Pistachio crust',p:1.25}]}] }),
     it('i10','swt',"Halawet el Jeben","Sweet cheese dough, ashta cream, rose syrup, pistachio",4.00,
        ['sweet cheese dough','ashta cream','rose syrup','pistachio'],['dairy','gluten','nuts'],480,11,19,66),
     it('i11','swt',"Baklava assortment · 250g","Filo pastry, pistachio, cashew, ghee, sugar syrup",8.00,
@@ -87,11 +89,20 @@
     it('i13','drk',"Espresso","Single origin, pulled to order",2.00,['coffee'],[],5,0,0,1),
     it('i14','drk',"Lebanese coffee","Rakweh for two, orange blossom water",2.50,
        ['coffee','orange blossom water','sugar'],[],45,0,0,11,
-       { cust:1, adds:[{n:'Ziyede — sweet',p:0},{n:'Wasat — medium',p:0},{n:'Murra — no sugar',p:0}] }),
+       { opts:[{name:'Sugar',type:'one',choices:[
+           {n:'Ziyede — sweet',p:0},{n:'Wasat — medium',p:0},{n:'Murra — no sugar',p:0}]}] }),
     it('i15','drk',"Jallab","Date molasses, rose water, pine nuts, raisins",3.00,
        ['date molasses','grape molasses','rose water','pine nuts','raisins'],['nuts'],290,3,6,58),
     it('i16','drk',"Fresh lemonade w' mazaher","Lemon, sugar, orange blossom water, mint",3.00,
-       ['lemon','sugar','orange blossom water','mint'],[],130,0,0,33,{fr:0,ar:0})
+       ['lemon','sugar','orange blossom water','mint'],[],130,0,0,33,{fr:0,ar:0}),
+    it('i17','drk',"Latte","Espresso, steamed milk",3.50,
+       ['coffee','milk'],['dairy'],180,9,9,14,
+       { opts:[
+         {name:'Milk',type:'one',choices:[
+           {n:'Fresh cow milk',p:0},{n:'Oat milk',p:0.75},{n:'Almond milk',p:0.75}]},
+         {name:'Extras',type:'many',choices:[
+           {n:'Extra shot',p:0.75},{n:'Vanilla syrup',p:0.5}]}
+       ] })
   ];
 
   /* ---------- seed translations -----------------------------------------
@@ -113,7 +124,8 @@
     i13:{fr:{n:"Espresso",d:"Origine unique, préparé à la commande"},ar:{n:"إسبريسو",d:"بن مختار، يُحضّر عند الطلب"}},
     i14:{fr:{n:"Café libanais",d:"Rakweh pour deux, eau de fleur d'oranger"},ar:{n:"قهوة عربية",d:"ركوة لشخصين، ماء زهر"}},
     i15:{fr:{n:"Jallab",d:"Mélasse de dattes, eau de rose, pignons, raisins secs"},ar:{n:"جلاب",d:"دبس تمر، ماء ورد، صنوبر، زبيب"}},
-    i16:{fr:{n:"Limonade à la fleur d'oranger",d:"Citron, sucre, eau de fleur d'oranger, menthe"},ar:{n:"ليموناضة بماء الزهر",d:"حامض، سكر، ماء زهر، نعناع"}}
+    i16:{fr:{n:"Limonade à la fleur d'oranger",d:"Citron, sucre, eau de fleur d'oranger, menthe"},ar:{n:"ليموناضة بماء الزهر",d:"حامض، سكر، ماء زهر، نعناع"}},
+    i17:{fr:{n:"Latte",d:"Espresso, lait vapeur"},ar:{n:"لاتيه",d:"إسبريسو مع حليب مبخّر"}}
   };
 
   /* the open check the diner sees — in production this comes from the POS */
@@ -163,8 +175,20 @@
       },
       fr: (x.tr && x.tr.fr && (x.tr.fr.n || x.tr.fr.d)) ? 1 : 0,
       ar: (x.tr && x.tr.ar && (x.tr.ar.n || x.tr.ar.d)) ? 1 : 0,
-      cust: x.cust ? 1 : 0,
-      adds: Array.isArray(x.adds) ? x.adds : [],
+      /* option groups: 'one' = guest picks exactly one (milk, sweetness),
+         'many' = independent add-ons. Legacy flat `adds` folds into an Extras group. */
+      opts: (Array.isArray(x.opts) ? x.opts
+             : (Array.isArray(x.adds) && x.adds.length
+                ? [{ name: 'Extras', type: 'many', choices: x.adds }] : [])
+            ).map(function (g) {
+              return {
+                name: g.name || 'Options',
+                type: g.type === 'one' ? 'one' : 'many',
+                choices: (Array.isArray(g.choices) ? g.choices : [])
+                  .map(function (c) { return { n: c.n || '', p: typeof c.p === 'number' ? c.p : (+c.p || 0) }; })
+                  .filter(function (c) { return c.n; })
+              };
+            }).filter(function (g) { return g.choices.length; }),
       /* conf is a DECLARATION, not a side effect. It is only true when the kitchen
          has ingredients, macros, and has explicitly confirmed the allergen list. */
       conf: x.conf ? 1 : 0
@@ -178,7 +202,7 @@
      A device that scanned the QR last week holds last week's data shape in
      localStorage. New fields (like per-item translations) must be merged in
      silently — a field demo can never depend on someone finding "Reset". */
-  var SCHEMA = 2;
+  var SCHEMA = 3;
   function migrate() {
     var meta = read('aal.schema', 0);
     if (meta >= SCHEMA) return;
@@ -195,6 +219,12 @@
         }
         return normalise(x);
       });
+      // v3: the latte (option-group demo dish) joins menus seeded before it existed
+      if (!m.items.some(function (x) { return x.id === 'i17'; })) {
+        var latte = clone(SEED_ITEMS.filter(function (x) { return x.id === 'i17'; })[0]);
+        latte.tr = clone(SEED_TR.i17);
+        m.items.push(normalise(latte));
+      }
       write(key, m);
     });
     try { localStorage.setItem('aal.schema', JSON.stringify(SCHEMA)); } catch (e) {}

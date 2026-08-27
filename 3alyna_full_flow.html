@@ -126,8 +126,12 @@
   .rate-q{font-size:13px;font-weight:600;color:#fff}
   .dstars{display:flex;gap:10px;justify-content:center;margin-top:10px}
   .dstars .star{font-size:30px;color:rgba(255,255,255,.3)}
-  .dstars .star:hover{color:var(--gold-lt)}
   .dstars .star.on{color:var(--gold)}
+  /* pointing at star n lights 1..n — gold up to the cursor, dim after it */
+  @media (hover:hover) and (pointer:fine){
+    .dstars:hover .star{color:var(--gold-lt)}
+    .dstars .star:hover ~ .star{color:rgba(255,255,255,.3)}
+  }
   .linky{margin-top:12px;text-align:center;font-size:11px;color:var(--sub);text-decoration:underline;
     cursor:pointer}
   .sim-note{margin-top:12px;text-align:center;font-size:10px;color:var(--faint);line-height:1.5}
@@ -364,6 +368,10 @@
   [dir="rtl"] .idet .sh-t::after{margin-inline-start:0}
   .idet .alrt{margin-top:13px}
   .adds{margin-top:14px}
+  .opt-g{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--faint);margin:13px 0 3px}
+  .opt-g:first-child{margin-top:0}
+  .add .cb.rd{border-radius:50%;font-size:7px}
   .add{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft);
     cursor:pointer;font-size:13px}
   .add:last-child{border-bottom:none}
@@ -376,9 +384,12 @@
     padding:10px 11px;font-size:11px;line-height:1.55;border:1px solid}
   .alrt b{color:inherit;font-weight:600}
   .stars{display:flex;gap:8px;justify-content:center;margin:16px 0 4px}
-  .star{font-size:26px;color:var(--line);cursor:pointer;transition:color .12s}
-  .star:hover{color:var(--amber)}
+  .star{font-size:26px;color:var(--line);cursor:pointer;transition:color .12s ease}
   .star.on{color:var(--amber)}
+  @media (hover:hover) and (pointer:fine){
+    .stars:hover .star{color:var(--amber)}
+    .stars .star:hover ~ .star{color:var(--line)}
+  }
   .ta{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px;font-size:12.5px;
     font-family:inherit;resize:none;height:88px;margin-top:12px;background:var(--surface)}
   .ta:focus{outline:none;border-color:var(--green)}
@@ -725,7 +736,7 @@
         <div class="fldc"><div class="lbc">Expiry</div><input class="inc" placeholder="MM / YY"></div>
         <div class="fldc"><div class="lbc">CVC</div><input class="inc" placeholder="123"></div>
       </div>
-      <button class="cta cta-green" id="card-btn" onclick="cardConfirm()">Pay $41.94</button>
+      <button class="cta cta-green" id="card-btn" style="margin-top:20px" onclick="cardConfirm()">Pay $41.94</button>
       <button class="cta cta-ghost" onclick="closeOv('ov-card')">Cancel</button>
       <div class="sim-note">Simulated &mdash; in production this is the gateway's hosted page (3-D Secure included).</div>
     </div>
@@ -746,7 +757,7 @@
   cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
   with a visible Google link kept inside the private sheet.
 </div>
-<script src="aalayna-store.js?v=3"></script>
+<script src="aalayna-store.js?v=4"></script>
 <script>
 /* ---------------- data ---------------- */
 var RATE = 89400;
@@ -774,8 +785,8 @@ function loadMenu(){
   CATS.forEach(function(c){ live[c.id] = 1; });
   MENU = m.items.filter(function(x){ return live[x.sec]; }).map(function(x){
     return {id:x.id, c:x.sec, n:x.name, d:x.desc, p:x.price, ing:x.ing, al:x.al,
-            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf, cust:x.cust,
-            adds:x.adds||[], tr:x.tr};
+            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
+            opts:x.opts||[], tr:x.tr};
   });
   BILL = Aalayna.check().map(function(l){ return {n:l.name, q:l.q, p:l.p}; });
   TOTAL = Aalayna.checkTotal();
@@ -853,7 +864,7 @@ function renderMenu(){
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
 var tipRate = .10, kind = 'whish', note = 0;
-var curItem = null, curAdds = {}, rating = 0;
+var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
 function usd(n){ return '$' + n.toFixed(2); }
@@ -1009,7 +1020,7 @@ function applyF(){
   if (sum) sum.textContent = nOn ? (ok + ' ' + t('of') + ' ' + total + ' ' + t('work')) : '';
 }
 function openItem(m){
-  curItem = m; curAdds = {};
+  curItem = m; curSel = {};
   $('i-name').textContent = nameOf(m);
   $('i-desc').textContent = descOf(m);
   $('ov-item').setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
@@ -1031,25 +1042,50 @@ function openItem(m){
     alrt.style.background = bg; alrt.style.borderColor = bd; alrt.style.color = fg;
   }
   var box = $('i-adds'); box.innerHTML = '';
-  (m.adds || []).forEach(function(a, i){
-    var row = document.createElement('div');
-    row.className = 'add';
-    row.onclick = function(){
-      curAdds[i] = !curAdds[i];
-      row.classList.toggle('on', curAdds[i]);
-      calcItem();
-    };
-    row.innerHTML = '<span class="cb">&#10003;</span><span class="an">' + a.n + '</span>' +
-                    '<span class="ap">' + (a.p ? '+' + usd(a.p) : 'free') + '</span>';
-    box.appendChild(row);
+  /* 'one' groups behave like radios — the first choice is the default and is
+     already in the base price. 'many' groups are independent add-ons. */
+  (m.opts || []).forEach(function(g, gi){
+    var lb = document.createElement('div');
+    lb.className = 'opt-g'; lb.textContent = g.name;
+    box.appendChild(lb);
+    curSel[gi] = g.type === 'one' ? 0 : {};
+    g.choices.forEach(function(c, ci){
+      var row = document.createElement('div');
+      row.className = 'add' + (g.type === 'one' && ci === 0 ? ' on' : '');
+      row.dataset.g = gi;
+      row.onclick = function(){
+        if (g.type === 'one'){
+          curSel[gi] = ci;
+          box.querySelectorAll('[data-g="' + gi + '"]').forEach(function(r, k){
+            r.classList.toggle('on', k === ci);
+          });
+        } else {
+          curSel[gi][ci] = !curSel[gi][ci];
+          row.classList.toggle('on', curSel[gi][ci]);
+        }
+        calcItem();
+      };
+      row.innerHTML =
+        '<span class="cb' + (g.type === 'one' ? ' rd' : '') + '">' +
+          (g.type === 'one' ? '&#9679;' : '&#10003;') + '</span>' +
+        '<span class="an">' + c.n + '</span>' +
+        '<span class="ap">' + (c.p ? '+' + usd(c.p) : (g.type === 'one' ? '' : 'free')) + '</span>';
+      box.appendChild(row);
+    });
   });
   calcItem();
   openOv('ov-item');
 }
 function calcItem(){
   var t = curItem.p;
-  var c = $('i-cta'); if (c) c.textContent = curItem.cust ? 'Add to the table' : 'Add to the table';
-  (curItem.adds || []).forEach(function(a, i){ if (curAdds[i]) t += a.p; });
+  (curItem.opts || []).forEach(function(g, gi){
+    if (g.type === 'one'){
+      var c = g.choices[curSel[gi] || 0];
+      if (c) t += c.p;
+    } else {
+      g.choices.forEach(function(c, ci){ if (curSel[gi] && curSel[gi][ci]) t += c.p; });
+    }
+  });
   $('i-tot').textContent = price(t);
 }
 /* ---------------- bill ---------------- */

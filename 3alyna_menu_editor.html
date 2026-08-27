@@ -58,10 +58,6 @@
     background:var(--bg);border:1px solid var(--line);font-size:11px;color:var(--sub)}
   .clock b{color:var(--ink);font-weight:600}
 
-  .tabs{display:flex;gap:16px;padding:13px 18px 0;border-bottom:1px solid var(--line);flex-shrink:0}
-  .tb{background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:500;
-    color:var(--sub);padding:0 1px 9px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
-  .tb.on{color:var(--ink);border-bottom-color:var(--green);font-weight:600}
 
   /* list */
   .body{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:92px}
@@ -73,6 +69,32 @@
   .sec-h .nm{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub)}
   .sec-h .ct{font-size:10.5px;color:var(--faint)}
   .sec-items{overflow:hidden;transition:max-height .3s var(--ease)}
+
+  /* ── option groups (item editor) ── */
+  .og{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .og-h{display:flex;gap:8px;align-items:center}
+  .og-h input{flex:1;min-width:0;border:none;font-family:inherit;font-size:13px;font-weight:600;
+    background:none;color:var(--ink);outline:none;padding:2px 0}
+  .og-seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex-shrink:0}
+  .og-seg button{background:none;border:none;font-family:inherit;font-size:10px;font-weight:600;
+    padding:5px 8px;color:var(--sub);cursor:pointer;transition:background .15s ease,color .15s ease}
+  .og-seg button.on{background:var(--green-bg);color:var(--green)}
+  .og-x{background:none;border:none;color:var(--faint);font-size:15px;cursor:pointer;
+    padding:2px 4px;flex-shrink:0;font-family:inherit}
+  .og-x:hover{color:var(--red)}
+  .oc{display:flex;gap:8px;align-items:center;margin-top:6px}
+  .oc input.cn{flex:1;min-width:0;border:none;border-bottom:1px solid var(--line-soft);
+    font-family:inherit;font-size:12.5px;background:none;outline:none;padding:4px 0;color:var(--ink)}
+  .oc input.cn:focus{border-bottom-color:var(--green)}
+  .oc input.cp{width:64px;border:1px solid var(--line);border-radius:6px;font-family:inherit;
+    font-size:12px;padding:5px 7px;text-align:right;background:var(--surface);color:var(--ink)}
+  .oc input.cp:focus{outline:none;border-color:var(--green)}
+  .oc-add{background:none;border:none;font-family:inherit;font-size:11.5px;font-weight:600;
+    color:var(--green);cursor:pointer;padding:8px 0 0}
+  .optadd{width:100%;border:1px dashed var(--line);background:none;border-radius:10px;padding:10px;
+    font-family:inherit;font-size:12px;font-weight:500;color:var(--sub);cursor:pointer;
+    transition:border-color .15s ease,color .15s ease}
+  .optadd:hover{border-color:#CFCCC5;color:var(--ink)}
   .sec.closed .sec-items{max-height:0 !important}
   .sec.dim-sec .it,.sec.dim-sec .addrow{opacity:.45}
 
@@ -92,10 +114,6 @@
   .it .tx{flex:1;min-width:0;cursor:pointer}
   .it .nm{font-size:13px;font-weight:500;line-height:1.3}
   .it .meta{font-size:11px;color:var(--sub);margin-top:2px;display:flex;gap:7px;align-items:center}
-  .lang{display:inline-flex;gap:3px}
-  .lg{font-size:8.5px;font-weight:600;letter-spacing:.04em;padding:1.5px 5px;border-radius:4px;
-    background:var(--green-bg);color:var(--green)}
-  .lg.miss{background:var(--line-soft);color:var(--faint)}
   .it .pr{font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0}
 
   /* service window chips */
@@ -283,10 +301,6 @@
     </button>
     <div class="clock" id="clock"></div>
   </div>
-  <div class="tabs">
-    <button class="tb on" onclick="tab(this,'items')">Items</button>
-    <button class="tb" onclick="tab(this,'lang')">Languages</button>
-  </div>
   <div class="body" id="list"></div>
   <div class="pub">
     <button class="cta cta-green" id="pubbtn" onclick="publish()" disabled>Everything is live</button>
@@ -340,6 +354,12 @@
       <button class="cta cta-gold" id="ed-confbtn" style="margin-top:10px;display:none" onclick="confirmDish()">
         Confirm — put this dish in guest filters
       </button>
+
+      <div class="fld">
+        <div class="lb">Options <span class="tag">GUESTS CHOOSE &middot; PRICE CAN CHANGE</span></div>
+        <div id="ed-opts"></div>
+        <button class="optadd" onclick="addOptGroup()">+ Add option group &mdash; milk, size, extras&hellip;</button>
+      </div>
 
       <div class="aibar" id="ed-ai">
         <span>Missing translations can be <b>drafted automatically</b> — you review before publishing,
@@ -419,7 +439,7 @@
   the guest's menu at all. Repricing stays at the top because it is the feature nobody else in
   Lebanon has.
 </div>
-<script src="aalayna-store.js?v=3"></script>
+<script src="aalayna-store.js?v=4"></script>
 <script>
 /* Service windows. Restaurants think in dayparts ("we stop serving breakfast at 11:30"),
    so the window lives on the SECTION, not the item. */
@@ -438,7 +458,8 @@ function pull(){
     return {id:x.id, s:x.sec, n:x.name, d:x.desc, p:x.price, fr:x.fr, ar:x.ar,
             ing:(x.ing||[]).slice(), al:(x.al||[]).slice(),
             tr: x.tr ? JSON.parse(JSON.stringify(x.tr)) : {fr:{n:'',d:''},ar:{n:'',d:''}},
-            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf};
+            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
+            opts: x.opts ? JSON.parse(JSON.stringify(x.opts)) : []};
   });
 }
 function push(){
@@ -448,7 +469,8 @@ function push(){
     var prev = (Aalayna.published().items.filter(function(o){ return o.id === x.id; })[0]) || {};
     return Object.assign({}, prev, {
       id:x.id, sec:x.s, name:x.n, desc:x.d, price:x.p,
-      ing:x.ing, al:x.al, tr:x.tr, kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf
+      ing:x.ing, al:x.al, tr:x.tr, kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
+      opts:x.opts || []
     });
   });
   Aalayna.saveDraft(d);
@@ -461,7 +483,7 @@ function fmtNow(){
 function win(id){ return WINDOWS.filter(function(w){ return w.id === id; })[0]; }
 function isNow(wid){ var w = win(wid), n = nowMin(); return n >= w.from && n < w.to; }
 pull();
-var collapsed = {}, isDirty = false, editing = -1, pct = 5, fxScope = 'all', view = 'items';
+var collapsed = {}, isDirty = false, editing = -1, pct = 5, fxScope = 'all';
 function $(id){ return document.getElementById(id); }
 function usd(v){ return '$' + v.toFixed(2); }
 function openOv(id){ if(id==='ov-fx') paintPrev(); $(id).classList.add('on'); }
@@ -534,11 +556,7 @@ function render(){
       var row = document.createElement('div');
       row.className = 'it';
       row.dataset.id = it.id;
-      var langs = view === 'lang'
-        ? '<span class="lang"><span class="lg">EN</span>' +
-          '<span class="lg' + (it.fr ? '' : ' miss') + '">FR</span>' +
-          '<span class="lg' + (it.ar ? '' : ' miss') + '">AR</span></span>'
-        : '<span>' + (it.d ? it.d.split(',')[0] : 'No description yet') + '</span>';
+      var langs = '<span>' + (it.d ? it.d.split(',')[0] : 'No description yet') + '</span>';
       row.innerHTML =
         '<span class="grip">&#8942;&#8942;</span>' +
         '<span class="tx"><div class="nm">' + it.n + '</div>' +
@@ -603,6 +621,7 @@ function editItem(i){
   }
   chipInput('ed-ingin', function(){ return cur().ing; }, function(){ redrawIng(true); });
   redrawIng(false);
+  paintOpts();
   openOv('ov-item');
 }
 /* Ingredients are typed. Allergens are TICKED from a fixed list — free text is how
@@ -649,6 +668,53 @@ function chipInput(inputId, getList, after){
   };
 }
 function cur(){ return ITEMS[editing]; }
+
+/* ---- option groups ----
+   'one' = the guest picks exactly one (milk, sweetness) — first choice is the
+   default and usually costs nothing. 'many' = independent add-ons.
+   Text edits mutate the model without repainting so focus is never lost. */
+function escA(v){ return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function paintOpts(){
+  var box = $('ed-opts'); box.innerHTML = '';
+  (cur().opts || []).forEach(function(g, gi){
+    var el = document.createElement('div');
+    el.className = 'og';
+    var rows = g.choices.map(function(c, ci){
+      return '<div class="oc">' +
+        '<input class="cn" value="' + escA(c.n) + '" placeholder="Choice — e.g. Oat milk"' +
+          ' oninput="optC(' + gi + ',' + ci + ',\'n\',this.value)">' +
+        '<input class="cp" value="' + (c.p ? c.p.toFixed(2) : '') + '" placeholder="+ 0.00"' +
+          ' inputmode="decimal" onchange="optC(' + gi + ',' + ci + ',\'p\',this.value)">' +
+        '<button class="og-x" onclick="optDelC(' + gi + ',' + ci + ')">&times;</button></div>';
+    }).join('');
+    el.innerHTML =
+      '<div class="og-h">' +
+        '<input value="' + escA(g.name) + '" placeholder="Group — e.g. Milk"' +
+          ' oninput="optG(' + gi + ',this.value)">' +
+        '<span class="og-seg">' +
+          '<button class="' + (g.type === 'one' ? 'on' : '') + '" onclick="optType(' + gi + ',\'one\')">Pick one</button>' +
+          '<button class="' + (g.type !== 'one' ? 'on' : '') + '" onclick="optType(' + gi + ',\'many\')">Add any</button>' +
+        '</span>' +
+        '<button class="og-x" onclick="optDelG(' + gi + ')">&times;</button>' +
+      '</div>' + rows +
+      '<button class="oc-add" onclick="optAddC(' + gi + ')">+ Add choice</button>';
+    box.appendChild(el);
+  });
+}
+function optG(gi, v){ cur().opts[gi].name = v; dirty(); }
+function optType(gi, t){ cur().opts[gi].type = t; dirty(); paintOpts(); }
+function optC(gi, ci, k, v){
+  var c = cur().opts[gi].choices[ci];
+  if (k === 'p') c.p = parseFloat(v) || 0; else c.n = v;
+  dirty();
+}
+function optDelC(gi, ci){ cur().opts[gi].choices.splice(ci, 1); dirty(); paintOpts(); }
+function optDelG(gi){ cur().opts.splice(gi, 1); dirty(); paintOpts(); }
+function optAddC(gi){ cur().opts[gi].choices.push({n:'', p:0}); dirty(); paintOpts(); }
+function addOptGroup(){
+  cur().opts.push({name:'', type:'many', choices:[{n:'', p:0}]});
+  dirty(); paintOpts();
+}
 
 /* ---- per-language editing ----
    Edits go into a buffer per language; everything commits on Save. The fr/ar
@@ -805,7 +871,7 @@ function newDish(secIdx){
   var sec = SECTIONS[secIdx || 0] || SECTIONS[0];
   ITEMS.push({ id: 'i' + Date.now().toString(36), s: sec.id, n: '', d: '', p: 0,
                fr: 0, ar: 0, tr: { fr: { n:'', d:'' }, ar: { n:'', d:'' } },
-               ing: [], al: [], kcal: null, pr: null, ft: null, cb: null, conf: 0 });
+               ing: [], al: [], kcal: null, pr: null, ft: null, cb: null, conf: 0, opts: [] });
   addingNew = true;
   editItem(ITEMS.length - 1);
 }
@@ -964,12 +1030,6 @@ function endDrag(){
 }
 
 /* ---------- tabs ---------- */
-function tab(el, v){
-  view = v;
-  document.querySelectorAll('.tb').forEach(function(b){ b.classList.remove('on'); });
-  el.classList.add('on');
-  render();
-}
 function reset(){
   Aalayna.reset();
   pull();
@@ -979,8 +1039,6 @@ function reset(){
   $('pubbtn').disabled = true;
   $('pubbtn').textContent = 'Everything is live';
   $('fx-sub').textContent = 'Last changed 23 days ago · dollar moved 6% since';
-  document.querySelectorAll('.tb').forEach(function(b, i){ b.classList.toggle('on', i === 0); });
-  view = 'items';
   render(); paintClock();
 }
 (function(){ var v = Aalayna.venue();
@@ -988,7 +1046,13 @@ function reset(){
 render();
 paintClock();
 // another tab published or reset — reload from the store
-Aalayna.on(function(){ pull(); render(); paintClock(); });
+Aalayna.on(function(){
+  /* While the item editor is open, local ITEMS is the source of truth — a pull
+     would round-trip the dish through normalise(), which drops option groups
+     whose choices haven't been named yet, orphaning the fields being typed in. */
+  if (document.getElementById('ov-item').classList.contains('on')){ paintClock(); return; }
+  pull(); render(); paintClock();
+});
 setInterval(function(){ render(); paintClock(); }, 60000);   // sections open and close on their own
 </script>
 </body>
