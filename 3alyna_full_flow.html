@@ -496,7 +496,6 @@
         <div class="r-total"><div class="l">TOTAL</div><div class="a" id="r-tot">$152.50</div></div>
         <div class="r-ll" id="r-ll">&asymp; LL 13,633,500</div>
       </div>
-      <div class="hint">Anything you add from the menu appears here in a few seconds.</div>
     </div>
     <div class="dock">
       <button class="cta cta-green" onclick="go('v-settle')"><span class="sheen"></span>Settle my share</button>
@@ -1180,7 +1179,7 @@ function buildBill(){
   var rem = remaining();
   $('r-tot').textContent = usd(rem);
   document.querySelector('.r-total .l').textContent = PREPAID ? 'REMAINING' : 'TOTAL';
-  $('r-ll').textContent = ll(rem) + (PREPAID ? ' · of ' + usd(TOTAL) + ' total' : '');
+  $('r-ll').textContent = ll(rem);
   $('land-tot').textContent = price(rem);
   $('pill-tot').textContent = price(rem);
 }
