@@ -48,7 +48,38 @@
   .btn.line:hover{background:var(--surface);border-color:#D8CEC2}
   .btn.line{background:var(--surface);color:var(--ink);border-color:var(--line)}
   .btn.big{padding:13px 24px;font-size:14px}
-  @media(max-width:640px){.nav-links a:not(.btn){display:none}}
+  .burger{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--surface);
+    cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    transition:border-color .15s ease}
+  .burger:hover{border-color:#D8CEC2}
+  .burger span{width:16px;height:2px;background:var(--ink);border-radius:2px;
+    transition:transform .25s var(--ease),opacity .2s ease}
+  .scrim{position:fixed;inset:0;background:rgba(33,27,22,.35);opacity:0;pointer-events:none;
+    transition:opacity .25s ease;z-index:98}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(320px,86vw);background:var(--surface);
+    border-left:1px solid var(--line);z-index:99;display:flex;flex-direction:column;
+    padding:20px 24px;transform:translateX(100%);
+    transition:transform .35s cubic-bezier(0.32,0.72,0,1)}
+  .drawer.on{transform:none}
+  .dr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .dr-logo{font-family:'Amiri',serif;font-size:22px;font-weight:700}
+  .dr-logo b{color:var(--brand)}
+  .dr-x{border:none;background:none;font-size:26px;color:var(--faint);cursor:pointer;
+    line-height:1;padding:4px}
+  .dr-links{display:flex;flex-direction:column}
+  .dr-links a{font-size:15px;font-weight:500;color:var(--ink);text-decoration:none;
+    padding:14px 2px;border-bottom:1px solid var(--line-soft);
+    transition:color .15s ease,padding-left .2s var(--ease)}
+  .dr-links a:hover{color:var(--brand);padding-left:8px}
+  .dr-cta{margin-top:auto;text-align:center}
+  @media (prefers-reduced-motion:reduce){
+    .drawer{transition:opacity .2s ease;transform:none;opacity:0;pointer-events:none}
+    .drawer.on{opacity:1;pointer-events:auto}
+  }
+  /* pages fade in so moving between them feels continuous */
+  @keyframes pageIn{from{opacity:0}to{opacity:1}}
+  body{animation:pageIn .35s ease}
 
   /* ─── hero ─── */
   .hero,section.wrap,.final{
@@ -176,13 +207,29 @@
   <div class="nav-in">
     <a class="logo" href="#">3alay<b>na</b></a>
     <div class="nav-links">
-      <a href="#product">Product</a>
-      <a href="#pricing">Pricing</a>
-      <a href="#faq">FAQ</a>
       <a class="btn" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20see%203alayna%20at%20my%20restaurant">WhatsApp us</a>
+      <button class="burger" id="burger" aria-label="Open menu" onclick="drawer(true)">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </nav>
+
+<div class="scrim" id="scrim" onclick="drawer(false)"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dr-head">
+    <span class="dr-logo">3alay<b>na</b></span>
+    <button class="dr-x" aria-label="Close menu" onclick="drawer(false)">&times;</button>
+  </div>
+  <nav class="dr-links">
+    <a href="#product" onclick="drawer(false)">What changes for you</a>
+    <a href="#proof" onclick="drawer(false)">The proven model</a>
+    <a href="#pricing" onclick="drawer(false)">Pricing</a>
+    <a href="#faq" onclick="drawer(false)">Questions owners ask</a>
+    <a href="book.html">Book a demo</a>
+  </nav>
+  <a class="btn big dr-cta" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20see%203alayna%20at%20my%20restaurant">WhatsApp us</a>
+</aside>
 
 <header class="hero wrap">
   <div class="hero-grid">
@@ -334,6 +381,13 @@
 </footer>
 
 <script>
+  function drawer(open){
+    document.getElementById('drawer').classList.toggle('on', open);
+    document.getElementById('scrim').classList.toggle('on', open);
+    document.getElementById('drawer').setAttribute('aria-hidden', String(!open));
+  }
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') drawer(false); });
+
   // each full-page panel choreographs its content: a staggered cascade on every
   // entry, reset on exit, so snapping between sections always animates
   var panels = document.querySelectorAll('.hero, section.wrap, .final');
