@@ -813,7 +813,7 @@
   cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
   with a visible Google link kept inside the private sheet.
 </div>
-<script src="aalayna-store.js?v=9"></script>
+<script src="aalayna-store.js?v=10"></script>
 <script>
 /* ---------------- data ---------------- */
 function RATE(){ return Aalayna.rate(); }
@@ -1515,6 +1515,48 @@ function restart(){
 /* ---------------- boot ---------------- */
 /* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
 var TABLE = 12, SERVER = 'Abou Karim';
+/* ---- per-venue theming ----
+   One brand hex re-skins the whole app: light washes and hairlines are derived
+   by mixing toward white, the celebratory accent by shading the brand. A venue's
+   PDF becomes a demo link: ?venue=X&brand=%23EA312B&bg=%23F0EFEA&font=Montserrat */
+function hexMix(hex, towardWhite){
+  var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  var f = function(c){ return Math.round(c + (255 - c) * towardWhite); };
+  return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+}
+function hexShade(hex, amt){
+  var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  var f = function(c){ return Math.max(0, Math.round(c * (1 - amt))); };
+  return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+}
+function applyTheme(v){
+  if (!v.brand && !v.font && !v.bg) return;
+  var r = document.documentElement.style;
+  if (v.brand){
+    var brand = v.brand;
+    // contrast guard: a too-light brand can't carry text or buttons
+    var n = parseInt(brand.slice(1), 16);
+    var lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+    if (lum > 0.62) brand = hexShade(brand, 0.35);
+    r.setProperty('--green', brand);
+    r.setProperty('--green-bg', hexMix(brand, 0.92));
+    r.setProperty('--green-line', hexMix(brand, 0.78));
+    r.setProperty('--gold', hexShade(brand, 0.25));
+    r.setProperty('--gold-lt', hexMix(brand, 0.72));
+  }
+  if (v.bg) r.setProperty('--bg', v.bg);
+  if (v.font && !document.getElementById('venue-font')){
+    var link = document.createElement('link');
+    link.id = 'venue-font'; link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=' +
+      encodeURIComponent(v.font).replace(/%20/g, '+') + ':wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(link);
+    var st = document.createElement('style');
+    st.textContent = "body,button,input,textarea{font-family:'" + v.font +
+      "','IBM Plex Sans Arabic',system-ui,sans-serif !important}";
+    document.head.appendChild(st);
+  }
+}
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paintServer(){
   SERVER = Aalayna.serverFor(TABLE);
@@ -1524,6 +1566,7 @@ function paintServer(){
 }
 function paintVenue(){
   paintServer();
+  applyTheme(Aalayna.venue());
   var v = Aalayna.venue();
   var short = v.name.split(/[ ·]/)[0];
   var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };

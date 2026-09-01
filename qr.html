@@ -82,6 +82,12 @@
       <input class="in" id="f-gplace" value="" oninput="paint()" placeholder="ChIJ&hellip; (from Google's Place ID Finder)">
       <div class="hint">With it, the 5-star flow opens their exact review box. Without it,
         it opens their Google Maps listing by name &mdash; still real.</div>
+      <div class="lb">Brand color <span style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; optional hex</span></div>
+      <input class="in" id="f-brand" value="" oninput="paint()" placeholder="#EA312B">
+      <div class="lb">Font <span style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; optional, Google Fonts name</span></div>
+      <input class="in" id="f-font" value="" oninput="paint()" placeholder="Montserrat">
+      <div class="hint">One hex from their logo re-skins the whole demo; the font swaps the
+        typography. Pull both from their menu PDF or Instagram.</div>
       <div class="lb">Demo base URL</div>
       <input class="in" id="f-base" value="" oninput="paint()">
       <div class="hint">Where the system is deployed. The QR points at the guest app with the
@@ -108,9 +114,13 @@ function demoURL(){
   var u = base + '3alyna_full_flow.html';
   var q = [];
   var g = document.getElementById('f-gplace').value.trim();
+  var br = document.getElementById('f-brand').value.trim();
+  var ft = document.getElementById('f-font').value.trim();
   if (n && n !== 'Hallab 1881') q.push('venue=' + encodeURIComponent(n));
   if (p && n !== 'Hallab 1881') q.push('place=' + encodeURIComponent(p));
   if (g) q.push('gplace=' + encodeURIComponent(g));
+  if (br) q.push('brand=' + encodeURIComponent(br));
+  if (ft) q.push('font=' + encodeURIComponent(ft));
   return q.length ? u + '?' + q.join('&') : u;
 }
 function tent(url, name, place){

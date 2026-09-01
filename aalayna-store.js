@@ -23,14 +23,22 @@
      the whole system rebrands to that restaurant on this device. The QR card
      generator writes these params so an owner scans straight into "their" demo. */
   var DEFAULT_VENUE = { name: 'Hallab 1881', place: 'Kasr El Helou',
-                        est: 'EST. 1881 · TRIPOLI', heritage: 1, gplace: '' };
+                        est: 'EST. 1881 · TRIPOLI', heritage: 1, gplace: '',
+                        brand: '', bg: '', font: '' };
   function venueFromURL() {
     try {
       var q = new URLSearchParams(global.location.search);
       var n = (q.get('venue') || '').trim();
       if (!n) return null;
+      var hex = function (v) {
+        v = (v || '').trim().replace(/^#/, '');
+        return /^[0-9A-Fa-f]{6}$/.test(v) ? '#' + v : '';
+      };
+      var font = (q.get('font') || '').trim().slice(0, 40);
+      if (!/^[A-Za-z0-9 +]*$/.test(font)) font = '';
       return { name: n.slice(0, 40), place: (q.get('place') || '').trim().slice(0, 40),
-               est: '', heritage: 0, gplace: (q.get('gplace') || '').trim().slice(0, 60) };
+               est: '', heritage: 0, gplace: (q.get('gplace') || '').trim().slice(0, 60),
+               brand: hex(q.get('brand')), bg: hex(q.get('bg')), font: font };
     } catch (e) { return null; }
   }
 
