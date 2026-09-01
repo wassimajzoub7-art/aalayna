@@ -94,10 +94,13 @@
   </div>
 </div>
 <script>
-  var BOOKING_URL = "";  /* paste the calendar.app.google link here to embed the scheduler */
+  var BOOKING_URL = "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0NcKYhJRRyuGvsjV48HQc_7BVPT30Nr5x0XZIil-GsI7Jr2tBJ76mSKIwhDx-IPQwv7fRqAIGi?gv=true";
   if (BOOKING_URL) {
     var box = document.getElementById('sched');
-    box.innerHTML = '<iframe src="' + BOOKING_URL + '" title="Book a 3alayna demo"></iframe>';
+    box.innerHTML = '<iframe src="' + BOOKING_URL + '" title="Book a 3alayna demo"></iframe>' +
+      '<div style="padding:12px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)">' +
+      'Prefer WhatsApp? <a href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20book%20a%203alayna%20demo" ' +
+      'style="color:var(--brand);font-weight:600;text-decoration:none">Message us instead</a></div>';
   }
 </script>
 </body>
