@@ -48,10 +48,35 @@
   .btn.line:hover{background:var(--surface);border-color:#D8CEC2}
   .btn.line{background:var(--surface);color:var(--ink);border-color:var(--line)}
   .btn.big{padding:13px 24px;font-size:14px}
-  .burger{width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--surface);
+  .rail{position:fixed;left:26px;top:50%;transform:translateY(-50%);z-index:60;
+    display:flex;flex-direction:column;gap:4px}
+  .rail::before{content:'';position:absolute;left:5px;top:14px;bottom:14px;width:2px;
+    background:var(--line);border-radius:2px}
+  .rail a{display:flex;align-items:center;gap:14px;padding:7px 0;text-decoration:none;
+    position:relative}
+  .rail .dot{width:12px;height:12px;border-radius:50%;background:var(--surface);
+    border:2px solid var(--line);flex-shrink:0;position:relative;z-index:1;
+    transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .2s ease,border-color .2s ease}
+  .rail .lbl{font-size:12px;font-weight:600;color:var(--faint);letter-spacing:.02em;
+    transition:color .2s ease,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
+  .rail a:hover .dot{transform:scale(1.3);border-color:var(--brand)}
+  .rail a:hover .lbl{color:var(--ink);transform:translateX(3px)}
+  .rail a.on .dot{background:var(--brand);border-color:var(--brand);transform:scale(1.45)}
+  .rail a.on .lbl{color:var(--brand);transform:translateX(4px)}
+  @media(max-width:1180px){.rail .lbl{opacity:0;pointer-events:none;position:absolute;left:26px;
+    background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 10px;
+    transition:opacity .2s ease}
+    .rail a:hover .lbl,.rail a.on:hover .lbl{opacity:1}}
+  @media(max-width:880px){.rail{display:none}}
+  @media (prefers-reduced-motion:reduce){
+    .rail .dot,.rail .lbl{transition:color .2s ease,background .2s ease}
+    .rail a.on .dot,.rail a:hover .dot{transform:none}
+  }
+  .burger{display:none;width:38px;height:38px;border:1px solid var(--line);border-radius:9px;background:var(--surface);
     cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
     transition:border-color .15s ease}
   .burger:hover{border-color:#D8CEC2}
+  @media(max-width:880px){.burger{display:flex}}
   .burger span{width:16px;height:2px;background:var(--ink);border-radius:2px;
     transition:transform .25s var(--ease),opacity .2s ease}
   .scrim{position:fixed;inset:0;background:rgba(33,27,22,.35);opacity:0;pointer-events:none;
@@ -215,6 +240,8 @@
   </div>
 </nav>
 
+<nav class="rail" id="rail" aria-label="Sections"></nav>
+
 <div class="scrim" id="scrim" onclick="drawer(false)"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
   <div class="dr-head">
@@ -316,7 +343,7 @@
   </div>
 </section>
 
-<section class="wrap">
+<section id="how" class="wrap">
   <div class="sec-k rv">How it works</div>
   <h2 class="rv">Nothing to install. For anyone.</h2>
   <div class="steps">
@@ -362,7 +389,7 @@
   </div>
 </section>
 
-<div class="final">
+<div class="final" id="contact">
   <div class="sec-k rv">See it on your own menu</div>
   <h2 class="rv">Ahla w sahla.</h2>
   <p class="sec-sub rv" style="margin:14px auto 0">Two minutes on WhatsApp and you
@@ -396,9 +423,26 @@
       el.style.transitionDelay = Math.min(i, 9) * 70 + 'ms';
     });
   });
+  var RAIL = [
+    ['hero-top', 'Ahla'], ['product', 'What you get'], ['proof', 'Proof'],
+    ['pricing', 'Pricing'], ['how', 'How it works'], ['faq', 'FAQ'], ['contact', 'Say hi']
+  ];
+  document.querySelector('.hero').id = 'hero-top';
+  var railEl = document.getElementById('rail');
+  RAIL.forEach(function(r){
+    var a = document.createElement('a');
+    a.href = '#' + r[0];
+    a.innerHTML = '<span class="dot"></span><span class="lbl">' + r[1] + '</span>';
+    railEl.appendChild(a);
+  });
+  function railMark(id){
+    railEl.querySelectorAll('a').forEach(function(a){
+      a.classList.toggle('on', a.getAttribute('href') === '#' + id);
+    });
+  }
   var pio = new IntersectionObserver(function(es){
     es.forEach(function(e){
-      if (e.isIntersecting) e.target.classList.add('act');
+      if (e.isIntersecting){ e.target.classList.add('act'); if (e.target.id) railMark(e.target.id); }
       else e.target.classList.remove('act');
     });
   }, {threshold:.25});
