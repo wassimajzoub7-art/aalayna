@@ -22,9 +22,9 @@
     --ease:cubic-bezier(0.23,1,0.32,1);
   }
   *{margin:0;padding:0;box-sizing:border-box}
+  /* snap on both html and body: Chrome reads it from html, Safari from body */
   html{scroll-behavior:smooth;scroll-snap-type:y mandatory;scroll-padding-top:57px}
-  /* long sections must never trap the scroll on small screens */
-  @media(max-width:880px){html{scroll-snap-type:y proximity}}
+  body{scroll-snap-type:y mandatory;scroll-padding-top:57px}
   body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
     color:var(--ink);-webkit-font-smoothing:antialiased;font-feature-settings:'tnum'}
 
