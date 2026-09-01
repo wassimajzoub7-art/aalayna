@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3alayna. Pay at the table.</title>
-<meta name="description" content="QR menu and bill settlement built for Lebanese restaurants. Whish, card and cash. English, français and عربي, in dollars and lira. $150 a month flat. No commission, ever.">
+<meta name="description" content="QR menu and bill settlement built for Lebanese restaurants. Whish, card and cash. English, français and عربي, in dollars and lira. $150 a month flat, no commission on your sales.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
@@ -74,7 +74,14 @@
   .sec-sub{font-size:15.5px;color:var(--sub);line-height:1.65;margin-top:12px;max-width:560px}
 
   .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
-  @media(max-width:880px){.cards{grid-template-columns:1fr}}
+  @media(max-width:880px){
+    /* on phones the six cards become a swipe row, one-and-a-bit visible at a time */
+    .cards{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
+      margin:28px -18px 0;padding:4px 18px 10px;scrollbar-width:none;
+      -webkit-overflow-scrolling:touch}
+    .cards::-webkit-scrollbar{display:none}
+    .cards .card{flex:0 0 76%;scroll-snap-align:center}
+  }
   .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;
     transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s ease}
   @media (hover:hover) and (pointer:fine){
@@ -218,14 +225,14 @@
 
 <section id="pricing" class="wrap">
   <div class="sec-k rv">Pricing</div>
-  <h2 class="rv">One flat fee. Never a cut.</h2>
-  <p class="sec-sub rv">Others take a percentage of every check. We never touch your
-    money, so there is nothing to take a percentage of. And the math is short: if faster
-    turns win you one extra table a week, 3alayna has already paid for itself.</p>
+  <h2 class="rv">One flat fee. Everything included.</h2>
+  <p class="sec-sub rv">A flat monthly fee, no commission on your sales. The math is
+    short: if faster turns win you one extra table a week, 3alayna has already paid
+    for itself.</p>
   <div class="price-card rv">
       <div class="price-tag">Everything included</div>
       <div class="price-n">$150<span> / month</span></div>
-      <div class="price-no">No commission on your sales. Ever.</div>
+      <div class="price-no">No commission on your sales.</div>
       <ul>
         <li>QR menu in 3 languages, 2 currencies</li>
         <li>Bill splitting and settlement: Whish, card, cash</li>
