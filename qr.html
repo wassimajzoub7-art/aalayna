@@ -33,6 +33,14 @@
     font-family:inherit;background:var(--surface);color:var(--ink)}
   .in:focus{outline:none;border-color:var(--green)}
   .hint{font-size:11px;color:var(--faint);margin-top:6px;line-height:1.5}
+  .swatches{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+  .sw{aspect-ratio:1;border-radius:8px;cursor:pointer;border:2px solid transparent;
+    transition:transform .12s cubic-bezier(0.23,1,0.32,1),border-color .15s ease}
+  .sw:hover{transform:scale(1.08)}
+  .sw.on{border-color:var(--ink);transform:scale(1.08)}
+  .sw.none{background:var(--surface);border:1px dashed var(--line);position:relative}
+  .sw.none::after{content:'\2715';position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;font-size:10px;color:var(--faint)}
   .btn{border:1px solid transparent;background:var(--green);color:#fff;border-radius:9px;
     padding:11px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;width:100%;margin-top:16px}
   .btn.line{background:var(--surface);color:var(--ink);border-color:var(--line);margin-top:8px}
@@ -82,8 +90,9 @@
       <input class="in" id="f-gplace" value="" oninput="paint()" placeholder="ChIJ&hellip; (from Google's Place ID Finder)">
       <div class="hint">With it, the 5-star flow opens their exact review box. Without it,
         it opens their Google Maps listing by name &mdash; still real.</div>
-      <div class="lb">Brand color <span style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; optional hex</span></div>
-      <input class="in" id="f-brand" value="" oninput="paint()" placeholder="#EA312B">
+      <div class="lb">Brand color</div>
+      <div class="swatches" id="swatches"></div>
+      <input class="in" id="f-brand" value="" oninput="paint(); markSwatch()" placeholder="or exact hex, e.g. #EA312B" style="margin-top:8px">
       <div class="lb">Font <span style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; optional, Google Fonts name</span></div>
       <input class="in" id="f-font" value="" oninput="paint()" placeholder="Montserrat">
       <div class="hint">One hex from their logo re-skins the whole demo; the font swaps the
@@ -150,7 +159,29 @@ function copyLink(){
   navigator.clipboard && navigator.clipboard.writeText(demoURL());
   document.getElementById('linkout').textContent = 'Copied: ' + demoURL();
 }
+var SWATCHES = ['#EA312B','#B4423A','#E8555B','#E07B39','#D9962E','#6B4A2F',
+                '#0F4B3A','#3E7C4F','#6B7A3A','#173E43','#26327A','#5B3E82','#1A1A1A'];
+(function(){
+  var box = document.getElementById('swatches');
+  var none = document.createElement('div');
+  none.className = 'sw none'; none.title = 'No brand color';
+  none.onclick = function(){ document.getElementById('f-brand').value = ''; paint(); markSwatch(); };
+  box.appendChild(none);
+  SWATCHES.forEach(function(hex){
+    var d = document.createElement('div');
+    d.className = 'sw'; d.style.background = hex; d.title = hex;
+    d.onclick = function(){ document.getElementById('f-brand').value = hex; paint(); markSwatch(); };
+    box.appendChild(d);
+  });
+})();
+function markSwatch(){
+  var v = document.getElementById('f-brand').value.trim().toLowerCase();
+  document.querySelectorAll('.sw').forEach(function(el, i){
+    el.classList.toggle('on', i === 0 ? v === '' : (SWATCHES[i-1]||'').toLowerCase() === v);
+  });
+}
 document.getElementById('f-base').value = DEFAULT_BASE;
+markSwatch();
 paint();
 </script>
 </body>
