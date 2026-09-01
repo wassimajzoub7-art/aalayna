@@ -419,6 +419,7 @@
     /* ---- plumbing ---- */
     on: function (fn) { subs.push(fn); },
     reset: function () {
+      try { localStorage.removeItem('aal.pack'); } catch (e) {}
       [K.draft, K.live, K.settle, K.tips].forEach(function (k) {
         try { localStorage.removeItem(k); } catch (e) {}
       });

@@ -813,7 +813,7 @@
   cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
   with a visible Google link kept inside the private sheet.
 </div>
-<script src="aalayna-store.js?v=10"></script>
+<script src="aalayna-store.js?v=11"></script>
 <script>
 /* ---------------- data ---------------- */
 function RATE(){ return Aalayna.rate(); }
@@ -1514,6 +1514,28 @@ function restart(){
 }
 /* ---------------- boot ---------------- */
 /* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
+/* ---- venue menu packs ----
+   ?menu=<slug> loads venues/<slug>.json into the store once (marker-guarded),
+   then reloads so the whole system - menu, filters, bill names - is that venue's.
+   A restaurant's PDF becomes a complete themed demo: content + colors + type. */
+(function(){
+  try{
+    var q = new URLSearchParams(location.search);
+    var pack = (q.get('menu') || '').replace(/[^a-z0-9-]/g, '');
+    if (!pack || localStorage.getItem('aal.pack') === pack) return;
+    fetch('venues/' + pack + '.json').then(function(r){
+      if (!r.ok) throw 0;
+      return r.json();
+    }).then(function(m){
+      var d = Aalayna.draft();
+      d.sections = m.sections; d.items = m.items;
+      Aalayna.saveDraft(d);
+      Aalayna.publish();
+      localStorage.setItem('aal.pack', pack);
+      location.reload();
+    }).catch(function(){});
+  }catch(e){}
+})();
 var TABLE = 12, SERVER = 'Abou Karim';
 /* ---- per-venue theming ----
    One brand hex re-skins the whole app: light washes and hairlines are derived

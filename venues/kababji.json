@@ -1,0 +1,3173 @@
+{
+ "name": "Kababji",
+ "sections": [
+  {
+   "id": "sal",
+   "name": "Salads",
+   "win": "all"
+  },
+  {
+   "id": "app",
+   "name": "Appetizers",
+   "win": "all"
+  },
+  {
+   "id": "brk",
+   "name": "All Day Breakfast",
+   "win": "all"
+  },
+  {
+   "id": "grl",
+   "name": "Charcoal Grills",
+   "win": "all"
+  },
+  {
+   "id": "ong",
+   "name": "On The Grill",
+   "win": "all"
+  },
+  {
+   "id": "nay",
+   "name": "Rare Cuts & Nayyeh",
+   "win": "all"
+  },
+  {
+   "id": "lgt",
+   "name": "Light Menu",
+   "win": "all"
+  },
+  {
+   "id": "des",
+   "name": "Desserts",
+   "win": "all"
+  },
+  {
+   "id": "bev",
+   "name": "Beverages",
+   "win": "all"
+  }
+ ],
+ "items": [
+  {
+   "id": "i05",
+   "sec": "sal",
+   "name": "Fattoush",
+   "desc": "Rocca, lettuce, tomatoes, cucumbers, purslane, radish, lemon juice, olive oil, garlic, pomegranate syrup",
+   "price": 4.75,
+   "ing": [
+    "rocca",
+    "lettuce",
+    "tomato",
+    "cucumber",
+    "radish",
+    "lemon",
+    "olive oil",
+    "garlic",
+    "pomegranate syrup",
+    "bread"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فتوش",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Portion",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Half portion",
+       "p": 0
+      },
+      {
+       "n": "Full portion",
+       "p": 3.25
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k02",
+   "sec": "sal",
+   "name": "Tabbouleh",
+   "desc": "Fresh parsley, tomatoes, cracked wheat, onions, lemon juice and virgin olive oil",
+   "price": 5,
+   "ing": [
+    "parsley",
+    "tomato",
+    "cracked wheat",
+    "onion",
+    "lemon",
+    "olive oil"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "تبولة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Portion",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Half portion",
+       "p": 0
+      },
+      {
+       "n": "Full portion",
+       "p": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k03",
+   "sec": "sal",
+   "name": "Raheb Salad",
+   "desc": "Charcoal-grilled eggplant with diced tomatoes, bell peppers, parsley, garlic, onions, lemon and olive oil",
+   "price": 7,
+   "ing": [
+    "eggplant",
+    "tomato",
+    "bell pepper",
+    "parsley",
+    "garlic",
+    "onion",
+    "lemon",
+    "olive oil"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "سلطة راهب",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "i06",
+   "sec": "app",
+   "name": "Hummus",
+   "desc": "Blended chickpeas, tahini and lemon juice topped with virgin olive oil",
+   "price": 4,
+   "ing": [
+    "chickpeas",
+    "tahini",
+    "lemon",
+    "olive oil"
+   ],
+   "al": [
+    "sesame"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "حمص",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Portion",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Half portion",
+       "p": 0
+      },
+      {
+       "n": "Full portion",
+       "p": 3.5
+      },
+      {
+       "n": "As a sandwich",
+       "p": 1.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k05",
+   "sec": "app",
+   "name": "Hummus Meat and Almond",
+   "desc": "Hummus topped with sauteed minced meat, almonds and virgin olive oil",
+   "price": 13,
+   "ing": [
+    "chickpeas",
+    "tahini",
+    "minced meat",
+    "almonds",
+    "olive oil"
+   ],
+   "al": [
+    "sesame",
+    "nuts"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "حمص مع لحمة ولوز",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "i10",
+   "sec": "app",
+   "name": "Moutabal Eggplant",
+   "desc": "Charcoal-grilled eggplant mashed with tahini and lemon, topped with olive oil",
+   "price": 4,
+   "ing": [
+    "eggplant",
+    "tahini",
+    "lemon",
+    "olive oil"
+   ],
+   "al": [
+    "sesame"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "متبل باذنجان",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Portion",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Half portion",
+       "p": 0
+      },
+      {
+       "n": "Full portion",
+       "p": 3.5
+      },
+      {
+       "n": "As a sandwich",
+       "p": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "i09",
+   "sec": "app",
+   "name": "Warak Enab",
+   "desc": "Hand-rolled stuffed grape leaves flavored with pomegranate syrup",
+   "price": 4.5,
+   "ing": [
+    "grape leaves",
+    "rice",
+    "pomegranate syrup"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "ورق عنب",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Portion",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Half portion",
+       "p": 0
+      },
+      {
+       "n": "Full portion",
+       "p": 4
+      },
+      {
+       "n": "As a sandwich",
+       "p": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "i11",
+   "sec": "app",
+   "name": "Mouhamara",
+   "desc": "Bread crumbs, hot pepper paste and spices with walnuts",
+   "price": 7.5,
+   "ing": [
+    "bread crumbs",
+    "hot pepper paste",
+    "walnuts",
+    "spices"
+   ],
+   "al": [
+    "gluten",
+    "nuts"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "محمرة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k09",
+   "sec": "app",
+   "name": "Hindbeh",
+   "desc": "Chicory topped with sauteed onions",
+   "price": 5,
+   "ing": [
+    "chicory",
+    "onion",
+    "olive oil"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "هندبة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Portion",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Half portion",
+       "p": 0
+      },
+      {
+       "n": "Full portion",
+       "p": 3.5
+      },
+      {
+       "n": "As a sandwich",
+       "p": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "i04",
+   "sec": "app",
+   "name": "Batata w Kezbara",
+   "desc": "Fried potato cubes with herbs, coriander, spices and olive oil",
+   "price": 6.5,
+   "ing": [
+    "potato",
+    "coriander",
+    "spices",
+    "olive oil"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "بطاطا وكزبرة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k11",
+   "sec": "app",
+   "name": "Grilled Potatoes",
+   "desc": "Diced potatoes grilled over charcoal",
+   "price": 3.5,
+   "ing": [
+    "potato"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "بطاطا مشوية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Portion",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Half portion",
+       "p": 0
+      },
+      {
+       "n": "Full portion",
+       "p": 2.5
+      },
+      {
+       "n": "As a sandwich",
+       "p": 1.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k12",
+   "sec": "app",
+   "name": "French Fries",
+   "desc": "Golden fries",
+   "price": 6,
+   "ing": [
+    "potato"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "بطاطا مقلية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Portion",
+       "p": 0
+      },
+      {
+       "n": "As a sandwich",
+       "p": -0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k13",
+   "sec": "app",
+   "name": "Fried Stuffed Kebbeh",
+   "desc": "Cracked wheat with meat, stuffed with sauteed ground meat, onions, walnuts and spices. Per piece",
+   "price": 2.75,
+   "ing": [
+    "cracked wheat",
+    "ground meat",
+    "onion",
+    "walnuts",
+    "spices"
+   ],
+   "al": [
+    "gluten",
+    "nuts"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كبة قراص مقلية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k14",
+   "sec": "app",
+   "name": "Cheese Rkakat",
+   "desc": "House-made dough filled with a special mix of cheeses, herbs and spices. Per piece",
+   "price": 2.25,
+   "ing": [
+    "dough",
+    "cheese",
+    "herbs"
+   ],
+   "al": [
+    "gluten",
+    "dairy"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "رقاقات جبنة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Preparation",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Fried",
+       "p": 0
+      },
+      {
+       "n": "Grilled",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k15",
+   "sec": "app",
+   "name": "Sambusek",
+   "desc": "House-made dough stuffed with seasoned meat and pomegranate syrup. Per piece",
+   "price": 2.25,
+   "ing": [
+    "dough",
+    "minced meat",
+    "pomegranate syrup"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "سمبوسك",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k16",
+   "sec": "app",
+   "name": "Fatayer Mouhamara",
+   "desc": "House-made dough topped with bread crumbs, hot pepper paste and spices. Per piece",
+   "price": 1,
+   "ing": [
+    "dough",
+    "bread crumbs",
+    "hot pepper paste"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فطاير محمرة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k17",
+   "sec": "app",
+   "name": "Fatayer Spinach",
+   "desc": "House-made dough stuffed with spinach, diced onions and spices. Per piece",
+   "price": 1.5,
+   "ing": [
+    "dough",
+    "spinach",
+    "onion"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فطاير بسبانخ",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k18",
+   "sec": "app",
+   "name": "Chicken Wings",
+   "desc": "8 pieces marinated in house-blend herbs, served with garlic-sumac dip",
+   "price": 10,
+   "ing": [
+    "chicken",
+    "herbs",
+    "garlic",
+    "sumac"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "جوانح دجاج",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k19",
+   "sec": "app",
+   "name": "Crispy Chicken Tenders",
+   "desc": "4 pieces of crispy chicken breast served with BBQ sauce",
+   "price": 8,
+   "ing": [
+    "chicken",
+    "flour",
+    "bbq sauce"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "دجاج كريسبي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k20",
+   "sec": "app",
+   "name": "Mehche Selek",
+   "desc": "Stuffed chard topped with fresh pomegranate",
+   "price": 6,
+   "ing": [
+    "chard",
+    "rice",
+    "pomegranate"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "محشي سلق",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k21",
+   "sec": "app",
+   "name": "Selek With Tahini",
+   "desc": "Chard with tahini, olive oil and fresh pomegranate",
+   "price": 6,
+   "ing": [
+    "chard",
+    "tahini",
+    "olive oil",
+    "pomegranate"
+   ],
+   "al": [
+    "sesame"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "سلق مع طحيني",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k22",
+   "sec": "app",
+   "name": "Falafel",
+   "desc": "6 pieces with mint, parsley, tomato, radish, pickles, tarator and bread",
+   "price": 7.5,
+   "ing": [
+    "chickpeas",
+    "fava beans",
+    "herbs",
+    "tahini",
+    "bread"
+   ],
+   "al": [
+    "sesame",
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فلافل",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Portion",
+       "p": 0
+      },
+      {
+       "n": "As a sandwich",
+       "p": -2
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k23",
+   "sec": "brk",
+   "name": "Fattet Hummus",
+   "desc": "Chickpeas with yogurt-tahini sauce, pine seeds, pomegranate, garlic and cayenne, served with fried bread",
+   "price": 9.5,
+   "ing": [
+    "chickpeas",
+    "yogurt",
+    "tahini",
+    "pine nuts",
+    "bread",
+    "garlic"
+   ],
+   "al": [
+    "dairy",
+    "sesame",
+    "nuts",
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فتة حمص",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k24",
+   "sec": "brk",
+   "name": "Fattet Eggplant",
+   "desc": "Fried eggplant, yogurt-tahini sauce, chickpeas, roasted pine nuts, pomegranate molasses, fried bread",
+   "price": 9.5,
+   "ing": [
+    "eggplant",
+    "yogurt",
+    "tahini",
+    "chickpeas",
+    "pine nuts",
+    "bread"
+   ],
+   "al": [
+    "dairy",
+    "sesame",
+    "nuts",
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فتة باذنجان",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k25",
+   "sec": "brk",
+   "name": "Fattet Eggplant and Kabab",
+   "desc": "Fattet eggplant topped with kabab, served with fried bread",
+   "price": 13,
+   "ing": [
+    "eggplant",
+    "yogurt",
+    "tahini",
+    "kabab",
+    "pine nuts",
+    "bread"
+   ],
+   "al": [
+    "dairy",
+    "sesame",
+    "nuts",
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فتة باذنجان وكباب",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k26",
+   "sec": "brk",
+   "name": "Balila",
+   "desc": "Whole chickpeas with spices, garlic and virgin olive oil",
+   "price": 7,
+   "ing": [
+    "chickpeas",
+    "garlic",
+    "olive oil"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "بليلة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Extras",
+     "type": "many",
+     "choices": [
+      {
+       "n": "Add almonds",
+       "p": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k27",
+   "sec": "brk",
+   "name": "Foul Kababji",
+   "desc": "Fava beans with tomatoes, onions, spices, lemon and olive oil",
+   "price": 8,
+   "ing": [
+    "fava beans",
+    "tomato",
+    "onion",
+    "lemon",
+    "olive oil"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فول كبابجي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "i03",
+   "sec": "brk",
+   "name": "Lahme Ba'ajine Lebanese",
+   "desc": "House-made dough topped with seasoned meat, tomatoes and parsley. Mini per piece",
+   "price": 1.25,
+   "ing": [
+    "dough",
+    "minced meat",
+    "tomato",
+    "parsley"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "لحم بعجين لبناني",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Size",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Mini, per piece",
+       "p": 0
+      },
+      {
+       "n": "Portion",
+       "p": 2.25
+      }
+     ]
+    },
+    {
+     "name": "Extras",
+     "type": "many",
+     "choices": [
+      {
+       "n": "Make it a sandwich: rocca, tomatoes, pickles",
+       "p": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k29",
+   "sec": "brk",
+   "name": "Lahme Ba'ajine Kababji",
+   "desc": "Dough topped with seasoned meat, fresh tomatoes, green chili and hot pepper paste",
+   "price": 1.25,
+   "ing": [
+    "dough",
+    "minced meat",
+    "tomato",
+    "green chili",
+    "hot pepper paste"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "لحم بعجين كبابجي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Size",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Mini, per piece",
+       "p": 0
+      },
+      {
+       "n": "Portion",
+       "p": 2.25
+      }
+     ]
+    },
+    {
+     "name": "Extras",
+     "type": "many",
+     "choices": [
+      {
+       "n": "Make it a sandwich: rocca, tomatoes, pickles",
+       "p": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k30",
+   "sec": "brk",
+   "name": "Lahme Ba'ajine Halabi",
+   "desc": "Dough topped with seasoned meat mixed with pomegranate syrup and spices",
+   "price": 1.5,
+   "ing": [
+    "dough",
+    "minced meat",
+    "pomegranate syrup"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "لحم بعجين حلبي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Size",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Mini, per piece",
+       "p": 0
+      },
+      {
+       "n": "Portion",
+       "p": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "i07",
+   "sec": "grl",
+   "name": "Shish Taouk",
+   "desc": "Skinless boneless chicken breast cubes marinated in a special blend of spices",
+   "price": 7,
+   "ing": [
+    "chicken",
+    "spices"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "شيش طاووق",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 8
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k32",
+   "sec": "grl",
+   "name": "Kabab Halabi",
+   "desc": "Ground meat kneaded with house-blend spices and parsley",
+   "price": 8.5,
+   "ing": [
+    "ground meat",
+    "spices",
+    "parsley"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كباب حلبي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k33",
+   "sec": "grl",
+   "name": "Kabab Intabli",
+   "desc": "Ground meat with spices, green chili, parsley and hot pepper paste",
+   "price": 8.5,
+   "ing": [
+    "ground meat",
+    "green chili",
+    "parsley",
+    "hot pepper paste"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كباب عنتبلي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k34",
+   "sec": "grl",
+   "name": "Kabab Orfali",
+   "desc": "Ground meat with grilled onions, tomatoes, eggplant and chili peppers",
+   "price": 8.5,
+   "ing": [
+    "ground meat",
+    "onion",
+    "tomato",
+    "eggplant",
+    "chili"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كباب أورفلي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k35",
+   "sec": "grl",
+   "name": "Kabab Khachkhach",
+   "desc": "Ground meat with house-blend spices over a bed of mashed tomatoes",
+   "price": 8.5,
+   "ing": [
+    "ground meat",
+    "tomato",
+    "spices"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كباب خشخاش",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k36",
+   "sec": "grl",
+   "name": "Kabab Eggplant",
+   "desc": "Ground meat served with eggplant cubes",
+   "price": 8.5,
+   "ing": [
+    "ground meat",
+    "eggplant"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كباب باذنجان",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k37",
+   "sec": "grl",
+   "name": "Grilled Veal Filet",
+   "desc": "Grilled veal tenderloin cubes and grilled onions in a special marinade",
+   "price": 10,
+   "ing": [
+    "veal",
+    "onion",
+    "spices"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "ڤيل فيلة مشوي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 15
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k38",
+   "sec": "grl",
+   "name": "Makanek",
+   "desc": "Lamb sausages made with a special blend of spices",
+   "price": 8,
+   "ing": [
+    "lamb",
+    "spices"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "مقانق",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 8
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k39",
+   "sec": "grl",
+   "name": "Grilled Sujuk",
+   "desc": "House-made sausages with a special blend of spices",
+   "price": 8,
+   "ing": [
+    "beef",
+    "spices"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "سجق مشوي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 7.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k40",
+   "sec": "grl",
+   "name": "Skewered Kebbeh",
+   "desc": "Ground meat with cracked wheat and roasted pistachio",
+   "price": 8.5,
+   "ing": [
+    "ground meat",
+    "cracked wheat",
+    "pistachio"
+   ],
+   "al": [
+    "gluten",
+    "nuts"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كبة مشوية على السيخ",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k41",
+   "sec": "grl",
+   "name": "Mixed Grill",
+   "desc": "1 skewer veal filet, 1 taouk, 2 kabab halabi, with grilled potatoes and vegetables",
+   "price": 27,
+   "ing": [
+    "veal",
+    "chicken",
+    "ground meat",
+    "potato",
+    "vegetables"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "مشاوي مشكل",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "i08",
+   "sec": "grl",
+   "name": "Arayess Kafta",
+   "desc": "House-made bread stuffed with ground meat, herbs, tomatoes and hot pepper paste. 8 pieces",
+   "price": 15,
+   "ing": [
+    "bread",
+    "ground meat",
+    "herbs",
+    "tomato",
+    "hot pepper paste"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "عرايس كفتة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k43",
+   "sec": "grl",
+   "name": "Crispy Chicken Sandwich",
+   "desc": "Crispy chicken, fries, coleslaw, eggless mayo, pickles and garlic in Arabic bread. Regular or spicy",
+   "price": 9.5,
+   "ing": [
+    "chicken",
+    "flour",
+    "potato",
+    "cabbage",
+    "garlic",
+    "bread"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "دجاج كريسبي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Heat",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Regular",
+       "p": 0
+      },
+      {
+       "n": "Spicy",
+       "p": 0
+      }
+     ]
+    },
+    {
+     "name": "Extras",
+     "type": "many",
+     "choices": [
+      {
+       "n": "French bread instead of Arabic",
+       "p": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k44",
+   "sec": "grl",
+   "name": "Young Lamb Brochette",
+   "desc": "Lamb with hummus, pickles, grilled onions and biwaz in a loaf and a half of Arabic bread",
+   "price": 21,
+   "ing": [
+    "lamb",
+    "hummus",
+    "onion",
+    "bread"
+   ],
+   "al": [
+    "gluten",
+    "sesame"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "لحم غنم بلدي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k45",
+   "sec": "grl",
+   "name": "Pulled Chicken",
+   "desc": "Pulled chicken with garlic and pickles, charcoal toasted",
+   "price": 7.5,
+   "ing": [
+    "chicken",
+    "garlic",
+    "pickles",
+    "bread"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "دجاج مشوي مسحب",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k46",
+   "sec": "grl",
+   "name": "Grilled Habra",
+   "desc": "Lean grilled meat",
+   "price": 8.5,
+   "ing": [
+    "veal"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "هبرة مشوية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 8.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k47",
+   "sec": "ong",
+   "name": "Grilled Chicken",
+   "desc": "Half chicken in house herbs and seasoning, with French fries or grilled potatoes",
+   "price": 15,
+   "ing": [
+    "chicken",
+    "herbs",
+    "potato"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "دجاج مشوي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Side",
+     "type": "one",
+     "choices": [
+      {
+       "n": "French fries",
+       "p": 0
+      },
+      {
+       "n": "Grilled potatoes",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k48",
+   "sec": "ong",
+   "name": "Lamb Cutlets",
+   "desc": "Lean lamb chops in house marinade, served with grilled potatoes",
+   "price": 24,
+   "ing": [
+    "lamb",
+    "potato"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كستالتة غنم",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k49",
+   "sec": "ong",
+   "name": "Kababji Platter",
+   "desc": "3 skewers veal filet, 3 taouk, 2 kabab eggplant, 4 kabab halabi, plus 2 kabab frangali or 2 makanek",
+   "price": 75,
+   "ing": [
+    "veal",
+    "chicken",
+    "ground meat",
+    "lamb"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "جاط كبابجي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Your choice of",
+     "type": "one",
+     "choices": [
+      {
+       "n": "2 skewers Kabab Frangali",
+       "p": 0
+      },
+      {
+       "n": "2 skewers Makanek",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k50",
+   "sec": "nay",
+   "name": "Kebbeh Lebanese Nayyeh",
+   "desc": "Raw ground meat with cracked wheat and spices, topped with fresh mint",
+   "price": 8,
+   "ing": [
+    "raw meat",
+    "cracked wheat",
+    "mint"
+   ],
+   "al": [
+    "gluten"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كبة لبنانية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k51",
+   "sec": "nay",
+   "name": "Kebbeh Orfali Nayyeh",
+   "desc": "Raw kebbeh with green chili, hot pepper paste, onions, pistachio and mint",
+   "price": 8,
+   "ing": [
+    "raw meat",
+    "cracked wheat",
+    "green chili",
+    "pistachio",
+    "mint"
+   ],
+   "al": [
+    "gluten",
+    "nuts"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كبة أورفلي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k52",
+   "sec": "nay",
+   "name": "Tebleh",
+   "desc": "Raw ground meat mixed with onions and fresh mint",
+   "price": 9,
+   "ing": [
+    "raw meat",
+    "onion",
+    "mint"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "تابلة نعنع و بصل",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k53",
+   "sec": "nay",
+   "name": "Habra Nayyeh",
+   "desc": "Raw lean meat topped with fresh mint",
+   "price": 16,
+   "ing": [
+    "raw meat",
+    "mint"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "هبرة نية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k54",
+   "sec": "nay",
+   "name": "Lamb Filet Nayyeh",
+   "desc": "Raw lamb tenderloin",
+   "price": 17,
+   "ing": [
+    "raw lamb"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فتيلة نية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k55",
+   "sec": "lgt",
+   "name": "Quinoa Tabbouleh",
+   "desc": "Parsley, tomatoes, quinoa, diced onions, lemon and olive oil. 255 cal",
+   "price": 7,
+   "ing": [
+    "parsley",
+    "tomato",
+    "quinoa",
+    "onion",
+    "lemon",
+    "olive oil"
+   ],
+   "al": [],
+   "kcal": 255,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كينوا تبولة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k56",
+   "sec": "lgt",
+   "name": "Oriental Chicken Salad",
+   "desc": "Mixed greens, tomatoes, cucumbers, lemon and olive oil with marinated taouk cubes",
+   "price": 10,
+   "ing": [
+    "greens",
+    "tomato",
+    "cucumber",
+    "chicken",
+    "lemon",
+    "olive oil"
+   ],
+   "al": [],
+   "kcal": 369,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "سلطة طاووق شرقية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k57",
+   "sec": "lgt",
+   "name": "Kabab Light",
+   "desc": "Lean ground meat with house-blend spices, onions and parsley. 298-340 cal",
+   "price": 8.5,
+   "ing": [
+    "lean meat",
+    "onion",
+    "parsley"
+   ],
+   "al": [],
+   "kcal": 340,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كباب لايت",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k58",
+   "sec": "lgt",
+   "name": "Kabab Light Spicy",
+   "desc": "Lean ground meat with green chili and hot pepper paste",
+   "price": 9,
+   "ing": [
+    "lean meat",
+    "green chili",
+    "hot pepper paste"
+   ],
+   "al": [],
+   "kcal": 340,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "كباب لايت حر",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k59",
+   "sec": "lgt",
+   "name": "Shish Taouk Light",
+   "desc": "Chicken breast cubes in a special marinade. 309-410 cal",
+   "price": 8.5,
+   "ing": [
+    "chicken",
+    "spices"
+   ],
+   "al": [],
+   "kcal": 380,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "شيش طاووق",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 9.5
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k60",
+   "sec": "lgt",
+   "name": "Grilled Veal Filet Light",
+   "desc": "Marinated veal tenderloin cubes with grilled onions",
+   "price": 10,
+   "ing": [
+    "veal",
+    "onion"
+   ],
+   "al": [],
+   "kcal": 390,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "ڤيل فيلة مشوي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Serve it",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Sandwich",
+       "p": 0
+      },
+      {
+       "n": "Platter",
+       "p": 8
+      }
+     ]
+    },
+    {
+     "name": "Bread",
+     "type": "one",
+     "choices": [
+      {
+       "n": "White bread",
+       "p": 0
+      },
+      {
+       "n": "Brown bread",
+       "p": 0
+      },
+      {
+       "n": "Oat bread",
+       "p": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k61",
+   "sec": "des",
+   "name": "Tamrieh",
+   "desc": "Phyllo pastry filled with semolina, milk and rose water",
+   "price": 7,
+   "ing": [
+    "phyllo",
+    "semolina",
+    "milk",
+    "rose water"
+   ],
+   "al": [
+    "gluten",
+    "dairy"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "تمرية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k62",
+   "sec": "des",
+   "name": "Chocolate Fondant",
+   "desc": "With vanilla ice cream",
+   "price": 9,
+   "ing": [
+    "chocolate",
+    "flour",
+    "eggs",
+    "milk"
+   ],
+   "al": [
+    "gluten",
+    "dairy",
+    "egg"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "فوندان بالشوكولا",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k63",
+   "sec": "des",
+   "name": "Mouhalabieh",
+   "desc": "Milk pudding with rose water",
+   "price": 3.5,
+   "ing": [
+    "milk",
+    "rose water"
+   ],
+   "al": [
+    "dairy"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "مهلبية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k64",
+   "sec": "des",
+   "name": "Lazy Cake",
+   "desc": "Chocolate biscuit cake. Per piece",
+   "price": 7.5,
+   "ing": [
+    "chocolate",
+    "biscuits",
+    "butter"
+   ],
+   "al": [
+    "gluten",
+    "dairy"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "بسكويت بالشوكولا",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "i14",
+   "sec": "bev",
+   "name": "Laban Ayran Kababji",
+   "desc": "House yogurt drink",
+   "price": 3,
+   "ing": [
+    "yogurt"
+   ],
+   "al": [
+    "dairy"
+   ],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "لبن عيران كبابجي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k66",
+   "sec": "bev",
+   "name": "Fresh Orange Juice",
+   "desc": "Squeezed to order",
+   "price": 4,
+   "ing": [
+    "orange"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "عصير برتقال طازج",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "i16",
+   "sec": "bev",
+   "name": "Soft Drinks",
+   "desc": "Assorted",
+   "price": 3,
+   "ing": [],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "مشروبات غازية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "i15",
+   "sec": "bev",
+   "name": "Fresh Lemonade",
+   "desc": "Squeezed to order",
+   "price": 4,
+   "ing": [
+    "lemon",
+    "sugar"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "عصير الليموناضة",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k69",
+   "sec": "bev",
+   "name": "Ice Tea",
+   "desc": "Chilled",
+   "price": 3,
+   "ing": [
+    "tea"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "آيس تي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k70",
+   "sec": "bev",
+   "name": "Mineral Water",
+   "desc": "Large 2$, small 1$",
+   "price": 1,
+   "ing": [],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "مياه معدنية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": [
+    {
+     "name": "Size",
+     "type": "one",
+     "choices": [
+      {
+       "n": "Small",
+       "p": 0
+      },
+      {
+       "n": "Large",
+       "p": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k71",
+   "sec": "bev",
+   "name": "San Pellegrino",
+   "desc": "Sparkling",
+   "price": 3,
+   "ing": [],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "سان بيليغرينو",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k72",
+   "sec": "bev",
+   "name": "Lebanese Coffee",
+   "desc": "Rakweh",
+   "price": 3,
+   "ing": [
+    "coffee"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "قهوة لبنانية",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k73",
+   "sec": "bev",
+   "name": "Tea",
+   "desc": "Fresh brew",
+   "price": 2.5,
+   "ing": [
+    "tea"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "شاي",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k74",
+   "sec": "bev",
+   "name": "Espresso",
+   "desc": "Double shot",
+   "price": 3,
+   "ing": [
+    "coffee"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "اسبرسو",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  },
+  {
+   "id": "k75",
+   "sec": "bev",
+   "name": "White Coffee",
+   "desc": "Orange blossom infusion",
+   "price": 3,
+   "ing": [
+    "orange blossom water"
+   ],
+   "al": [],
+   "kcal": null,
+   "pr": null,
+   "ft": null,
+   "cb": null,
+   "tr": {
+    "fr": {
+     "n": "",
+     "d": ""
+    },
+    "ar": {
+     "n": "قهوة بيضاء",
+     "d": ""
+    }
+   },
+   "conf": 1,
+   "opts": []
+  }
+ ]
+}
