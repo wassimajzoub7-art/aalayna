@@ -826,11 +826,12 @@ function serving(win){
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
 /* demo: another guest already settled part of the bill */
 var PREPAID = false;
-/* units already paid per line — someone can pay for 1 of the 2 grills */
-var PREPAID_LINES = { 'Mixed Grill platter': 1, 'Knefeh b\'Jebne + kaakeh': 4 };
+/* units already paid per line, keyed by check-line ID so the demo survives
+   venue menu packs (names change per venue; the seeded check ids do not) */
+var PREPAID_LINES = { i07: 1, i09: 4 };
 function paidUnits(l){
   if (!PREPAID) return 0;
-  return Math.min(l.q, PREPAID_LINES[l.n] || 0);
+  return Math.min(l.q, PREPAID_LINES[l.id] || 0);
 }
 function linePaid(l){ return paidUnits(l) >= l.q; }
 function remaining(){
@@ -849,7 +850,7 @@ function loadMenu(){
             kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
             opts:x.opts||[], tr:x.tr};
   });
-  BILL = Aalayna.check().map(function(l){ return {n:l.name, q:l.q, p:l.p}; });
+  BILL = Aalayna.check().map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
   TOTAL = Aalayna.checkTotal();
 }
 loadMenu();
