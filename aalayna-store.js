@@ -431,4 +431,63 @@
   seedIfEmpty();
   migrate();
   global.Aalayna = A;
+
+  /* ---------- venue theme + menu pack, applied on every page ----------
+     One link re-skins and re-menus the whole system: guest, editor, dashboard.
+     ?venue=&brand=&bg=&font= theme the app; ?menu=<slug> imports venues/<slug>.json
+     into the store once (marker-guarded) and reloads. */
+  (function () {
+    if (!global.document) return;
+    function mix(hex, t) {
+      var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+      var f = function (c) { return Math.round(c + (255 - c) * t); };
+      return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+    }
+    function shade(hex, t) {
+      var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+      var f = function (c) { return Math.max(0, Math.round(c * (1 - t))); };
+      return '#' + ((1 << 24) + (f(r) << 16) + (f(g) << 8) + f(b)).toString(16).slice(1);
+    }
+    try {
+      var v = A.venue(), r = global.document.documentElement.style;
+      if (v.brand) {
+        var brand = v.brand, n = parseInt(brand.slice(1), 16);
+        var lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+        if (lum > 0.62) brand = shade(brand, 0.35);
+        r.setProperty('--green', brand);
+        r.setProperty('--green-bg', mix(brand, 0.92));
+        r.setProperty('--green-line', mix(brand, 0.78));
+        r.setProperty('--gold', shade(brand, 0.25));
+        r.setProperty('--gold-lt', mix(brand, 0.72));
+        r.setProperty('--side', shade(brand, 0.55));
+      }
+      if (v.bg) r.setProperty('--bg', v.bg);
+      if (v.font && !global.document.getElementById('venue-font')) {
+        var link = global.document.createElement('link');
+        link.id = 'venue-font'; link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=' +
+          encodeURIComponent(v.font).replace(/%20/g, '+') + ':wght@400;500;600;700;800&display=swap';
+        global.document.head.appendChild(link);
+        var st = global.document.createElement('style');
+        st.textContent = "body,button,input,textarea{font-family:'" + v.font +
+          "','IBM Plex Sans Arabic',system-ui,sans-serif !important}";
+        global.document.head.appendChild(st);
+      }
+      var q = new URLSearchParams(global.location.search);
+      var pack = (q.get('menu') || '').replace(/[^a-z0-9-]/g, '');
+      if (pack && localStorage.getItem('aal.pack') !== pack) {
+        fetch('venues/' + pack + '.json').then(function (res) {
+          if (!res.ok) throw 0;
+          return res.json();
+        }).then(function (m) {
+          var d = A.draft();
+          d.sections = m.sections; d.items = m.items;
+          A.saveDraft(d);
+          A.publish();
+          localStorage.setItem('aal.pack', pack);
+          global.location.reload();
+        }).catch(function () {});
+      }
+    } catch (e) {}
+  })();
 })(window);
