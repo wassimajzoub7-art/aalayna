@@ -102,6 +102,21 @@
   .step h3{font-size:16px;font-weight:600;margin-top:6px}
   .step p{font-size:13.5px;color:var(--sub);line-height:1.65;margin-top:8px}
 
+  /* ─── product tour ─── */
+  .tour{display:flex;flex-direction:column;align-items:center;margin-top:30px}
+  .tour-phone{width:250px;height:470px;border-radius:30px;padding:8px;background:#151210;
+    box-shadow:0 22px 50px rgba(33,27,22,.16);position:relative;overflow:hidden}
+  .tour-phone img{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);
+    object-fit:cover;object-position:top;border-radius:23px;opacity:0;
+    transition:opacity .6s var(--ease)}
+  .tour-phone img.on{opacity:1}
+  .tour-cap{margin-top:18px;font-size:14.5px;font-weight:600;text-align:center;min-height:22px;
+    transition:opacity .3s ease}
+  .tour-dots{display:flex;gap:8px;margin-top:12px}
+  .tour-dots button{width:8px;height:8px;border-radius:50%;border:none;background:var(--line);
+    cursor:pointer;padding:0;transition:background .2s ease,transform .2s var(--ease)}
+  .tour-dots button.on{background:var(--brand);transform:scale(1.25)}
+
   /* ─── pricing ─── */
   .price-card{width:100%;margin-top:36px}
   .price-card{background:var(--petrol);color:#fff;border-radius:18px;padding:36px 34px;position:relative;overflow:hidden}
@@ -220,6 +235,22 @@
 </section>
 
 
+<section id="tour" class="wrap">
+  <div class="sec-k rv" style="text-align:center">See it work</div>
+  <h2 class="rv" style="text-align:center">From the editor to the table, live.</h2>
+  <div class="tour rv">
+    <div class="tour-phone">
+      <img src="shots/1-editor.jpg" class="tf on" alt="The 3alayna menu editor">
+      <img src="shots/2-reprice.jpg" class="tf" alt="Repricing the whole menu at once">
+      <img src="shots/3-menu.jpg" class="tf" alt="The guest menu, updated instantly">
+      <img src="shots/4-options.jpg" class="tf" alt="Dish options priced live">
+      <img src="shots/5-split.jpg" class="tf" alt="Guests splitting the bill">
+    </div>
+    <div class="tour-cap" id="tour-cap">Your menu, edited like a document</div>
+    <div class="tour-dots" id="tour-dots"></div>
+  </div>
+</section>
+
 <section id="pricing" class="wrap">
   <div class="sec-k rv">Pricing</div>
   <h2 class="rv">One flat fee. Everything included.</h2>
@@ -307,6 +338,37 @@
 </footer>
 
 <script>
+  // product tour: crossfade through real screenshots, pausable by touch/hover
+  (function(){
+    var frames = document.querySelectorAll('.tour-phone img');
+    var caps = ['Your menu, edited like a document',
+                'Costs moved? Reprice 17 dishes in one tap',
+                'Publish, and every table sees it instantly',
+                'Options priced live, filters that understand swaps',
+                'Guests split the bill and settle it themselves'];
+    var dots = document.getElementById('tour-dots'), cap = document.getElementById('tour-cap');
+    var i = 0, timer = null, paused = false;
+    frames.forEach(function(_, k){
+      var d = document.createElement('button');
+      d.setAttribute('aria-label', 'Frame ' + (k + 1));
+      if (k === 0) d.className = 'on';
+      d.onclick = function(){ show(k); };
+      dots.appendChild(d);
+    });
+    function show(k){
+      i = k;
+      frames.forEach(function(f, j){ f.classList.toggle('on', j === k); });
+      dots.querySelectorAll('button').forEach(function(b, j){ b.classList.toggle('on', j === k); });
+      cap.textContent = caps[k];
+    }
+    function tick(){ if (!paused) show((i + 1) % frames.length); }
+    timer = setInterval(tick, 3200);
+    var stage = document.querySelector('.tour-phone');
+    stage.addEventListener('pointerenter', function(){ paused = true; });
+    stage.addEventListener('pointerleave', function(){ paused = false; });
+    stage.addEventListener('pointerdown', function(){ paused = true; setTimeout(function(){ paused = false; }, 6000); });
+  })();
+
   // each full-page panel choreographs its content: a staggered cascade on every
   // entry, reset on exit, so snapping between sections always animates
   var panels = document.querySelectorAll('.hero, section.wrap, .final');

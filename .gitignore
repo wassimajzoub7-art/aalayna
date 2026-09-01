@@ -2,6 +2,8 @@
 *
 !.gitignore
 !index.html
+!shots/
+!shots/*
 !book.html
 !system.html
 !3alyna_full_flow.html
