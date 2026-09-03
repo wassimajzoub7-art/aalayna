@@ -16,7 +16,8 @@
   'use strict';
 
   var K = { draft: 'aal.draft', live: 'aal.live', settle: 'aal.settle', tips: 'aal.tips',
-            venue: 'aal.venue', rate: 'aal.rate', floor: 'aal.floor' };
+            venue: 'aal.venue', rate: 'aal.rate', floor: 'aal.floor',
+            guests: 'aal.guests', campaigns: 'aal.campaigns' };
 
   /* ---------- venue identity -------------------------------------------
      The walk-in trick: open any app with ?venue=Roadster's&place=Dbayeh and
@@ -375,6 +376,41 @@
       return read(K.venue, null) || DEFAULT_VENUE;
     },
     setVenue: function (v) { write(K.venue, v); },
+    /* ---- guests: the venue's own list, built at the receipt moment ----
+       Two separate consents, both explicit. Lists are per venue and are never
+       joined across venues. Marketing sends require an active marketing consent. */
+    guests: function () { return read(K.guests, []); },
+    optIn: function (g) {
+      var all = read(K.guests, []);
+      var contact = String(g.contact || '').trim();
+      var existing = all.filter(function (x) { return x.contact === contact && x.venue === g.venue; })[0];
+      if (existing) {
+        existing.visits += 1; existing.last = new Date().toISOString();
+        existing.receipt = existing.receipt || !!g.receipt;
+        existing.marketing = existing.marketing || !!g.marketing;
+      } else {
+        all.push({ id: 'g' + Date.now().toString(36), venue: g.venue, contact: contact,
+                   channel: /@/.test(contact) ? 'email' : 'whatsapp',
+                   receipt: !!g.receipt, marketing: !!g.marketing,
+                   visits: 1, first: new Date().toISOString(), last: new Date().toISOString() });
+      }
+      write(K.guests, all);
+    },
+    campaigns: function () { return read(K.campaigns, []); },
+    sendCampaign: function (c) {
+      var all = read(K.campaigns, []);
+      var audience = A.guests().filter(function (g) { return g.marketing && g.venue === c.venue; });
+      if (c.audience === 'lapsed') {
+        var cutoff = Date.now() - 30 * 86400000;
+        audience = audience.filter(function (g) { return new Date(g.last).getTime() < cutoff; });
+      }
+      var rec = { id: 'c' + Date.now().toString(36), venue: c.venue, name: c.name, audience: c.audience,
+                  message: c.message, channel: 'whatsapp', sent: audience.length,
+                  ts: new Date().toISOString(), simulated: true };
+      all.push(rec);
+      write(K.campaigns, all);
+      return rec;
+    },
     /* ---- floor: which server has which table tonight ----
        Set by the manager at service start (sections, not per-order); replaced by
        the POS employee-on-check field once integration exists. Pooled mode is for
@@ -420,6 +456,7 @@
     on: function (fn) { subs.push(fn); },
     reset: function () {
       try { localStorage.removeItem('aal.pack'); } catch (e) {}
+      try { localStorage.removeItem(K.guests); localStorage.removeItem(K.campaigns); } catch (e) {}
       [K.draft, K.live, K.settle, K.tips].forEach(function (k) {
         try { localStorage.removeItem(k); } catch (e) {}
       });
