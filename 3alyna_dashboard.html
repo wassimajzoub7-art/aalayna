@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=13"></script>
+<script src="aalayna-store.js?v=14"></script>
 <style>
   :root{
     --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
@@ -102,12 +102,12 @@
   .cpr{padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;display:flex;gap:10px;align-items:center}
   .cpr b{flex:1}
   .cpr .n{color:var(--sub);font-feature-settings:'tnum'}
-  .setr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);
+  .setr{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);
     font-size:12.5px}
   .setr:last-child{border-bottom:none}
   .setr .tm{color:var(--sub);width:44px;font-feature-settings:'tnum'}
   .setr .tb2{width:56px;color:var(--sub)}
-  .setr .rl{width:86px;font-weight:500}
+  .setr .rl{min-width:86px;font-weight:500}
   .setr .am{margin-left:auto;font-weight:600;font-feature-settings:'tnum'}
   .setr .tp2{color:var(--sub);width:70px;text-align:right;font-feature-settings:'tnum'}
   .setr.refunded .am,.setr.refunded .tp2,.setr.refunded .rl,.setr.refunded .tb2{
@@ -251,10 +251,11 @@
     <button class="ni" onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
     <button class="ni" onclick="go(this,'team')">Team</button>
   </nav>
-  <div class="side-f">Weekly summary is emailed every Monday, 08:00.</div>
+  <div class="side-f">Sample weekly reporting. Email delivery is not connected in this demo.</div>
 </aside>
 
 <main>
+  <div style="font-size:14px;padding:12px 0 20px;color:var(--sub)">Interactive demo · sample data · no real payments or messages. <a href="index.html">Back to website</a></div>
 
   <!-- ═══════════ TONIGHT ═══════════ -->
   <div class="view on" id="v-tonight">
@@ -271,8 +272,8 @@
     <div class="grid g4">
       <div class="card"><div class="k">Settled in-app</div><div class="v" id="k-tot">$0.00</div>
         <div class="d">including tips</div></div>
-      <div class="card"><div class="k">Tables</div><div class="v" id="t-scan">0</div>
-        <div class="d">settled through 3alayna</div></div>
+      <div class="card"><div class="k">Tables with confirmed payments</div><div class="v" id="t-scan">0</div>
+        <div class="d">may include partially paid tables</div></div>
       <div class="card"><div class="k">Average per table</div><div class="v" id="k-avg">—</div>
         <div class="d">in-app tables only</div></div>
       <div class="card"><div class="k">Tip rate</div><div class="v" id="k-tip">—</div>
@@ -286,7 +287,7 @@
         <div style="margin-top:12px">
           <div class="sr"><span class="rail"><span class="dot" style="background:#C4283C"></span>Whish Money</span><span class="amt" id="r-whish">$0.00</span></div>
           <div class="sr"><span class="rail"><span class="dot" style="background:#26327A"></span>Card</span><span class="amt" id="r-card">$0.00</span></div>
-          <div class="sr"><span class="rail"><span class="dot" style="background:#0F4B3A"></span>Cash, declared</span><span class="amt" id="r-cash">$0.00</span></div>
+          <div class="sr"><span class="rail"><span class="dot" style="background:#0F4B3A"></span>Cash collected</span><span class="amt" id="r-cash">$0.00</span></div>
           <div class="sr tot"><span class="rail">Total settled in-app</span><span class="amt" id="r-tot">$0.00</span></div>
         </div>
         <div class="note warn" id="shortbox" style="display:none"></div>
@@ -295,7 +296,7 @@
 
       <div class="card">
         <h3>Tips payable</h3>
-        <div class="cs">Digital tips collected this service. Pay out at close and record each payment.</div>
+        <div class="cs">Confirmed digital tips. Distribute under your restaurant’s policy and record each payout.</div>
         <div id="tips" style="margin-top:8px"></div>
         <div class="note" id="tipdone" style="display:none"><span>✓</span><span>All tip payments recorded.</span></div>
       </div>
@@ -507,7 +508,7 @@
     <div class="top">
       <div>
         <h1>Team</h1>
-        <div class="sub">Digital tips are payable to the named server, in full, at close of the same service</div>
+        <div class="sub">Tip attribution and payouts are managed under the restaurant’s policy</div>
       </div>
     </div>
 
@@ -521,8 +522,8 @@
         <h3>Payout record</h3>
         <div class="cs">Payments recorded at close of each service.</div>
         <div style="margin-top:8px" id="hist"></div>
-        <div class="note"><span>ⓘ</span><span>The guest-facing application states that tips reach the
-          named server in full, the same night. This record is the audit trail for that commitment.</span></div>
+        <div class="note"><span>ⓘ</span><span>The restaurant decides how and when tips are distributed. These records acknowledge
+          payouts; they do not transfer money to staff.</span></div>
       </div>
     </div>
   </div>
@@ -578,8 +579,9 @@ function go(el, v){
 
 /* ───────── Tonight — live from the store ───────── */
 function paintTonight(){
-  var r = Aalayna.byRail(), s = Aalayna.settlements();
-  var tot = Aalayna.settledTotal(), n = s.length;
+  var r = Aalayna.byRail(), s = Aalayna.settlements().filter(Aalayna.isConfirmed);
+  var tables = {}; s.forEach(function(x){ tables[x.table] = true; });
+  var tot = Aalayna.settledTotal(), n = Object.keys(tables).length;
   var tips = s.reduce(function(a,b){ return a + (b.tip||0); }, 0);
   var net = tot - tips;
 
@@ -597,7 +599,7 @@ function paintTonight(){
   $('t-date').textContent = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) +
     ' · settlement activity, current service';
 
-  $('t-note').innerHTML = '3alayna records only bills settled through the QR — <b>' + money(tot) +
+  $('t-note').innerHTML = 'Confirmed payments through 3alayna — <b>' + money(tot) +
     '</b> across <b>' + n + (n===1?' table':' tables') + '</b> this service. The POS remains the ' +
     'system of record; treat this statement as an input to the close, not the close itself.';
 
@@ -605,10 +607,10 @@ function paintTonight(){
   paintFloor();
   paintGuests();
   var box = $('shortbox');
-  if (r.cash > 0){
+  var pending = Aalayna.pendingCash().reduce(function(total,x){ return total + x.amount; },0);
+  if (pending > 0){
     box.style.display = 'flex';
-    box.innerHTML = '<span>⚠</span><span><b>' + money(r.cash) + '</b> declared as cash is pending ' +
-      'drawer verification. Declared amounts are guest claims until counted.</span>';
+    box.innerHTML = '<span>ⓘ</span><span><b>' + money(pending) + '</b> cash awaiting collection. Excluded from confirmed totals. Confirm collection in the rows below after receiving the cash.</span>';
   } else box.style.display = 'none';
 }
 
@@ -750,7 +752,7 @@ function sendCampaign(){
                  : 'No guests match that audience yet');
   $('cp-name').value = '';
 }
-var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash, declared' };
+var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function paintRows(){
   var box = $('setrows'); box.innerHTML = '';
   var all = Aalayna.settlements().slice().reverse();
@@ -767,12 +769,31 @@ function paintRows(){
     d.innerHTML =
       '<span class="tm">' + hh + '</span>' +
       '<span class="tb2">Table ' + x.table + '</span>' +
-      '<span class="rl">' + (RAIL_LABEL[x.rail] || x.rail) + '</span>' +
+      '<span class="rl">' + ((RAIL_LABEL[x.rail] || x.rail) + (x.rail === 'cash' ? (Aalayna.isConfirmed(x) ? ', collected' : ', ' + Aalayna.settlementStatus(x)) : '')) + '</span>' +
       '<span class="am">' + money(x.amount) + '</span>' +
       '<span class="tp2">' + (x.tip ? '+' + money(x.tip) + ' tip' : '') + '</span>' +
-      (x.refunded
-        ? '<span class="rftag">REFUNDED</span>'
-        : '<button class="rfb" onclick="refundRow(this, \'' + x.id + '\')">Refund</button>');
+      (x.refunded ? '<span class="rftag">REFUNDED</span>'
+        : x.cancelled ? '<span class="rftag">CANCELLED</span>'
+        : '');
+    if (Aalayna.settlementStatus(x) === 'pending') {
+      var collect = document.createElement('button'); collect.className = 'rfb'; collect.textContent = 'Confirm collection';
+      collect.onclick = function(){
+        if (!collect.classList.contains('arm')) { collect.classList.add('arm'); collect.textContent = 'Cash received — confirm'; return; }
+        if (Aalayna.confirmCash(x.id)) toast('Cash collection recorded (demo)');
+      };
+      d.appendChild(collect);
+      var cancel = document.createElement('button'); cancel.className = 'rfb'; cancel.textContent = 'Cancel request';
+      cancel.onclick = function(){ Aalayna.cancelCash(x.id); toast('Cash request cancelled'); };
+      d.appendChild(cancel);
+    } else if (Aalayna.isConfirmed(x)) {
+      var refund = document.createElement('button'); refund.className = 'rfb'; refund.textContent = 'Refund';
+      refund.onclick = function(){ refundRow(refund,x.id); }; d.appendChild(refund);
+    }
+    if (x.rail === 'cash' && Aalayna.settlementStatus(x) === 'pending') {
+      var change = document.createElement('span'); change.style.cssText = 'font-size:12px;flex-basis:100%;color:var(--sub)';
+      change.textContent = x.note ? 'Guest declares ' + money(x.note) + ' · change ' + money(x.change) : 'Guest declares exact cash';
+      d.appendChild(change);
+    }
     box.appendChild(d);
   });
 }
@@ -824,9 +845,9 @@ function payTip(server, amount){
 function exportCSV(){
   var s = Aalayna.settlements();
   if (!s.length){ toast('No settlements to export'); return; }
-  var rows = [['id','timestamp','table','method','amount','tip','server','refunded']];
-  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server, x.refunded || '']); });
-  var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+  var rows = [['id','timestamp','table','method','amount','tip','server','status','confirmed_at','refunded','cancelled']];
+  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server, Aalayna.settlementStatus(x), x.confirmedAt || '', x.refunded || '', x.cancelled || '']); });
+  var csv = rows.map(function(r){ return r.map(function(v){ var text = String(v); if (/^[=+@-]/.test(text)) text = "'" + text; return '"' + text.replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
   try{
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));

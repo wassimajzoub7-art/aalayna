@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Book a 3alayna demo</title>
-<meta name="description" content="Fifteen minutes, on your phone: see your own restaurant's menu running on 3alayna and how guests split and settle the bill.">
+<title>Discuss a 3alayna pilot</title>
+<meta name="description" content="Book a 15-minute conversation about the 3alayna demo, POS compatibility and a free two-service restaurant pilot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<script src="analytics-config.js" defer></script>
+<script src="analytics.js" defer></script>
 <style>
   :root{
     --bg:#FAF6F1; --surface:#FFFFFF; --line:#EAE2D8; --line-soft:#F2ECE4;
@@ -36,10 +38,10 @@
   .what{background:var(--petrol);color:#fff;border-radius:16px;padding:28px 26px}
   .what h2{font-size:16px;font-weight:600;color:var(--peach)}
   .what ul{list-style:none;margin-top:14px}
-  .what li{font-size:13.5px;line-height:1.6;padding:6px 0;display:flex;gap:10px;color:#D9E2E0}
+  .what li{font-size:16px;line-height:1.6;padding:6px 0;display:flex;gap:10px;color:#D9E2E0}
   .what li::before{content:'—';color:var(--peach)}
   .what .dur{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.16);
-    font-size:12.5px;color:#B9C7C4}
+    font-size:14px;color:#D9E2E0}
   .sched{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;min-height:420px}
   .sched iframe{width:100%;height:640px;border:none;display:block}
   .fallback{padding:34px 30px}
@@ -52,6 +54,8 @@
   .btn:hover{background:var(--brand-deep)}
   .btn.line{background:var(--surface);color:var(--ink);border-color:var(--line);margin-left:8px}
   .note{font-size:12px;color:var(--faint);margin-top:16px}
+  a:focus-visible{outline:3px solid var(--brand-deep);outline-offset:4px}
+  @media(prefers-reduced-motion:reduce){body{animation:none}.btn{transition:none}}
 </style>
 </head>
 <body>
@@ -60,37 +64,31 @@
   <a class="back" href="index.html">Back to site</a>
 </div></nav>
 <div class="wrap">
-  <div class="kicker">Book a demo</div>
-  <h1>Fifteen minutes, on your own phone.</h1>
-  <p class="lead">Pick a slot and we will call you on WhatsApp. You open a link, and your
-    own restaurant's menu is running: guests splitting the bill, paying, tipping your
-    servers by name. Nothing to install, nothing to prepare.</p>
+  <div class="kicker">Let’s check the fit</div>
+  <h1>Fifteen minutes to talk about your floor.</h1>
+  <p class="lead">Choose a time to explore the guest flow and discuss your restaurant’s POS and payment setup. We’ll check compatibility before agreeing a live pilot.</p>
+  <a class="btn line" style="margin-left:0" data-track="demo_start" data-placement="booking" href="3alyna_full_flow.html?venue=Your%20restaurant&amp;place=Sample%20menu">Try the demo first</a>
   <div class="grid">
     <div class="what">
       <h2>What we cover</h2>
       <ul>
-        <li>Your menu on the QR, in three languages and both currencies</li>
-        <li>How guests split and settle: Whish, card, cash with change ahead</li>
-        <li>Tips routed to your servers, reviews routed to your Google page</li>
-        <li>The owner dashboard and instant repricing</li>
-        <li>The free two-service pilot, if you want it</li>
+        <li>Your current bill settlement process and POS compatibility</li>
+        <li>Guest demo: menu, splitting and simulated payment</li>
+        <li>Cash collection, tip records and staff workflow</li>
+        <li>Two free dinner services once integration setup is ready</li>
+        <li>Then $150/month per location; the first 10 founding restaurants lock in $100/month per location</li>
       </ul>
-      <div class="dur">15 minutes on WhatsApp or Google Meet. In English, français or عربي.</div>
+      <div class="dur">Menu setup and staff onboarding included. Payment-provider fees may apply separately; integration scope and any additional setup costs are agreed before the pilot.</div>
+      <div class="dur">15 minutes on WhatsApp or Google Meet. In English, français or عربي. The demo uses sample data; no money moves.</div>
     </div>
     <div class="sched" id="sched">
-      <!-- GOOGLE CALENDAR BOOKING:
-           1. calendar.google.com (wassimajzoub7@gmail.com) -> Create -> Appointment schedule
-           2. Name it "3alayna demo", 15 min slots, add your available hours
-           3. Open the schedule -> Share -> copy the booking page link
-           4. Paste it below as BOOKING_URL (it looks like
-              https://calendar.app.google/XXXXXXXX) and the scheduler appears embedded. -->
       <div class="fallback" id="fallback">
         <h2>Pick a time that suits you</h2>
         <p>Message us on WhatsApp with a day and time that works, or send an email, and
-          you will get a confirmation within a few hours.</p>
-        <a class="btn" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20book%20a%203alayna%20demo.%20A%20good%20time%20for%20me%20is%3A%20">Book via WhatsApp</a>
+          we will confirm availability with you.</p>
+        <a class="btn" data-track="whatsapp_click" data-placement="booking_fallback" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20book%20a%203alayna%20demo.%20A%20good%20time%20for%20me%20is%3A%20">Book via WhatsApp</a>
         <a class="btn line" href="mailto:wassimajzoub7@gmail.com?subject=3alayna%20demo%20request&body=A%20good%20time%20for%20me%20is%3A%20">Book by email</a>
-        <div class="note">Replies within a few hours, same day.</div>
+        <div class="note">Choose a time, or contact us to arrange another slot.</div>
       </div>
     </div>
   </div>
@@ -99,10 +97,14 @@
   var BOOKING_URL = "https://calendar.google.com/calendar/appointments/schedules/AcZssZ0NcKYhJRRyuGvsjV48HQc_7BVPT30Nr5x0XZIil-GsI7Jr2tBJ76mSKIwhDx-IPQwv7fRqAIGi?gv=true";
   if (BOOKING_URL) {
     var box = document.getElementById('sched');
-    box.innerHTML = '<iframe src="' + BOOKING_URL + '" title="Book a 3alayna demo"></iframe>' +
-      '<div style="padding:12px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--faint)">' +
-      'Prefer WhatsApp? <a href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20book%20a%203alayna%20demo" ' +
-      'style="color:var(--brand);font-weight:600;text-decoration:none">Message us instead</a></div>';
+    var frame = document.createElement('iframe');
+    frame.src = BOOKING_URL; frame.title = 'Book a 3alayna conversation'; frame.loading = 'lazy';
+    box.insertBefore(frame, box.firstChild);
+    var direct = document.createElement('a');
+    direct.href = BOOKING_URL; direct.target = '_blank'; direct.rel = 'noopener';
+    direct.className = 'btn line'; direct.textContent = 'Open booking calendar';
+    direct.dataset.track = 'booking_calendar_click'; direct.dataset.placement = 'booking_fallback';
+    document.getElementById('fallback').appendChild(direct);
   }
 </script>
 </body>

@@ -3,401 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3alayna. Pay at the table.</title>
-<meta name="description" content="QR menu and bill settlement built for Lebanese restaurants. Whish, card and cash. English, français and عربي, in dollars and lira. $150 a month flat, no commission on your sales.">
+<title>3alayna — scan, split, settle.</title>
+<meta name="description" content="Explore the 3alayna restaurant demo: QR menus, bill splitting and settlement designed for Lebanon. Ask about a free two-service pilot and POS compatibility.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<!-- ANALYTICS (F2): register at goatcounter.com, then uncomment and set your code:
-<script data-goatcounter="https://YOURCODE.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
--->
-<style>
-  :root{
-    /* 3alayna signature palette — the product wears the venue's colors;
-       this site wears ours. Coral on warm sand, petrol for depth. */
-    --bg:#FAF6F1; --surface:#FFFFFF; --line:#EAE2D8; --line-soft:#F2ECE4;
-    --ink:#211B16; --sub:#6E635B; --faint:#A69C92;
-    --brand:#E8555B; --brand-deep:#C9414B; --brand-bg:#FBECE8; --brand-line:#F3D3CD;
-    --petrol:#173E43; --sand:#E9B664; --peach:#F6C39F;
-    --ease:cubic-bezier(0.23,1,0.32,1);
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  /* snap on both html and body: Chrome reads it from html, Safari from body */
-  html{scroll-behavior:smooth;scroll-snap-type:y mandatory;scroll-padding-top:57px}
-  body{scroll-snap-type:y mandatory;scroll-padding-top:57px}
-  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
-    color:var(--ink);-webkit-font-smoothing:antialiased;font-feature-settings:'tnum'}
-
-  .wrap{max-width:1060px;margin:0 auto;padding:0 22px}
-
-  /* ─── nav ─── */
-  nav{position:sticky;top:0;background:rgba(250,246,241,.92);backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--line);z-index:50}
-  .nav-in{max-width:1060px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:22px}
-  .logo{font-family:'Amiri',serif;font-size:24px;font-weight:700;text-decoration:none;color:var(--ink)}
-  .logo b{color:var(--brand)}
-  .nav-links{display:flex;gap:20px;margin-left:auto;align-items:center}
-  .nav-links a{font-size:13px;font-weight:500;color:var(--sub);text-decoration:none;transition:color .15s ease}
-  .nav-links a:hover{color:var(--ink)}
-  .nav-links a.btn,.nav-links a.btn:hover{color:#fff}
-  .btn{display:inline-block;border:1px solid transparent;background:var(--brand);color:#fff;
-    border-radius:9px;padding:10px 18px;font-size:13px;font-weight:600;text-decoration:none;
-    cursor:pointer;font-family:inherit;transition:transform .12s var(--ease),opacity .15s ease}
-  .btn:active{transform:scale(.97)}
-  .btn:hover{background:var(--brand-deep);opacity:1}
-  .btn.line:hover{background:var(--surface);border-color:#D8CEC2}
-  .btn.line{background:var(--surface);color:var(--ink);border-color:var(--line)}
-  .btn.big{padding:13px 24px;font-size:14px}
-  .rail{position:fixed;left:22px;top:50%;transform:translateY(-50%);z-index:60;
-    display:flex;flex-direction:column;gap:2px;padding:14px 16px 14px 12px;
-    background:rgba(255,255,255,.72);backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-    border:1px solid var(--line);border-radius:16px;
-    box-shadow:0 8px 28px rgba(33,27,22,.06)}
-  .rail::before{content:'';position:absolute;left:17px;top:28px;bottom:28px;width:2px;
-    background:var(--line);border-radius:2px}
-  .rail a{display:flex;align-items:center;gap:14px;padding:7px 0;text-decoration:none;
-    position:relative}
-  .rail .dot{width:12px;height:12px;border-radius:50%;background:var(--surface);
-    border:2px solid var(--line);flex-shrink:0;position:relative;z-index:1;
-    transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .2s ease,border-color .2s ease}
-  .rail .lbl{font-size:12px;font-weight:600;color:var(--faint);letter-spacing:.02em;
-    transition:color .2s ease,transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap}
-  .rail a:hover .dot{transform:scale(1.3);border-color:var(--brand)}
-  .rail a:hover .lbl{color:var(--ink);transform:translateX(3px)}
-  .rail a.on .dot{background:var(--brand);border-color:var(--brand);transform:scale(1.45)}
-  .rail a.on .lbl{color:var(--brand);transform:translateX(4px)}
-  @media(max-width:1180px){.rail .lbl{opacity:0;pointer-events:none;position:absolute;left:26px;
-    background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:4px 10px;
-    transition:opacity .2s ease}
-    .rail a:hover .lbl,.rail a.on:hover .lbl{opacity:1}}
-  @media(max-width:880px){.rail{display:none}}
-  @media (prefers-reduced-motion:reduce){
-    .rail .dot,.rail .lbl{transition:color .2s ease,background .2s ease}
-    .rail a.on .dot,.rail a:hover .dot{transform:none}
-  }
-  @media (prefers-reduced-motion:reduce){
-      }
-  /* pages fade in so moving between them feels continuous */
-  @keyframes pageIn{from{opacity:0}to{opacity:1}}
-  body{animation:pageIn .35s ease}
-
-  /* ─── hero ─── */
-  .hero,section.wrap,.final{
-    min-height:calc(100vh - 57px);min-height:calc(100svh - 57px);
-    display:flex;flex-direction:column;justify-content:center;
-    scroll-snap-align:start}
-  footer{scroll-snap-align:end}
-  .hero{padding:32px 22px}
-  .hero-grid{display:flex;flex-direction:column;align-items:center;text-align:center}
-  .hero-grid .lead{margin-left:auto;margin-right:auto;max-width:540px}
-  .hero-grid .hero-ctas{justify-content:center}
-  .kicker{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
-  h1{font-size:clamp(32px,4.6vw,50px);font-weight:700;letter-spacing:-.025em;line-height:1.08;margin-top:14px}
-  h1 em{font-style:normal;color:var(--brand)}
-  .lead{font-size:17px;color:var(--sub);line-height:1.65;margin-top:18px;max-width:480px}
-  .hero-ctas{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
-
-  /* ─── sections ─── */
-  section.wrap{padding:48px 22px}
-  @media(max-width:640px){section.wrap{padding:40px 18px}}
-  .sec-k{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
-  h2{font-size:clamp(24px,3vw,32px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-top:10px}
-  .sec-sub{font-size:15.5px;color:var(--sub);line-height:1.65;margin-top:12px;max-width:560px}
-
-  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
-  @media(max-width:880px){
-    /* on phones the six cards become a swipe row, one-and-a-bit visible at a time */
-    .cards{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;
-      margin:28px -18px 0;padding:4px 18px 10px;scrollbar-width:none;
-      -webkit-overflow-scrolling:touch}
-    .cards::-webkit-scrollbar{display:none}
-    .cards .card{flex:0 0 76%;scroll-snap-align:center}
-  }
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;
-    transition:transform .22s var(--ease),box-shadow .22s var(--ease),border-color .22s ease}
-  @media (hover:hover) and (pointer:fine){
-    .card:hover{transform:translateY(-4px);border-color:#DED4C8;
-      box-shadow:0 12px 28px rgba(33,27,22,.08)}
-  }
-  .card .ic{width:38px;height:38px;border-radius:11px;background:var(--brand-bg);color:var(--brand);
-    display:flex;align-items:center;justify-content:center;margin-bottom:14px}
-  .card .ic svg{width:19px;height:19px}
-  .card h3{font-size:15.5px;font-weight:600;letter-spacing:-.01em}
-  .card p{font-size:13.5px;color:var(--sub);line-height:1.65;margin-top:8px}
-
-  /* how it works */
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:36px}
-  @media(max-width:880px){.steps{grid-template-columns:1fr}}
-  .step{border-top:2px solid var(--brand);padding-top:18px}
-  .step .n{font-size:12px;font-weight:700;color:var(--brand)}
-  .step h3{font-size:16px;font-weight:600;margin-top:6px}
-  .step p{font-size:13.5px;color:var(--sub);line-height:1.65;margin-top:8px}
-
-  /* ─── proof stats ─── */
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:38px}
-  @media(max-width:880px){.stats{grid-template-columns:repeat(2,1fr)}}
-  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;
-    padding:26px 18px;text-align:center}
-  .sv{font-size:clamp(28px,3.4vw,40px);font-weight:700;letter-spacing:-.02em;color:var(--brand);
-    font-feature-settings:'tnum'}
-  .sl{font-size:12.5px;color:var(--sub);margin-top:8px;line-height:1.5}
-  .foot-note{font-size:11px;color:var(--faint);text-align:center;margin-top:22px;
-    max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6}
-
-  /* ─── pricing ─── */
-  .price-card{width:100%;margin-top:36px}
-  .price-card{background:var(--petrol);color:#fff;border-radius:18px;padding:36px 34px;position:relative;overflow:hidden}
-  .price-card::after{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;
-    border-radius:50%;background:rgba(255,255,255,.05)}
-  .price-n{font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1}
-  .price-n span{font-size:16px;font-weight:500;opacity:.75;letter-spacing:0}
-  .price-tag{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--peach);margin-bottom:14px}
-  .price-no{font-size:15px;font-weight:600;margin-top:12px;color:var(--peach)}
-  .price-card ul{list-style:none;margin-top:22px;border-top:1px solid rgba(255,255,255,.16);
-    padding-top:18px;display:grid;grid-template-columns:1fr 1fr;column-gap:32px}
-  @media(max-width:880px){.price-card ul{grid-template-columns:1fr}}
-  .price-card li{font-size:13.5px;line-height:1.5;padding:5px 0;display:flex;gap:10px;color:#D9E2E0;
-    opacity:0;transform:translateX(-8px);
-    transition:opacity .4s var(--ease),transform .4s var(--ease)}
-  .act .price-card li{opacity:1;transform:none}
-  .act .price-card li:nth-child(1){transition-delay:.25s}.act .price-card li:nth-child(2){transition-delay:.31s}
-  .act .price-card li:nth-child(3){transition-delay:.37s}.act .price-card li:nth-child(4){transition-delay:.43s}
-  .act .price-card li:nth-child(5){transition-delay:.49s}.act .price-card li:nth-child(6){transition-delay:.55s}
-  .act .price-card li:nth-child(7){transition-delay:.61s}
-  .price-card li::before{content:'✓';color:var(--sand);font-weight:700}
-
-  /* ─── faq ─── */
-  .faq{margin:36px 0 0}
-  details{background:var(--surface);border:1px solid var(--line);border-radius:12px;
-    padding:0 20px;margin-bottom:10px}
-  summary{font-size:15.5px;font-weight:600;padding:18px 0;cursor:pointer;list-style:none;
-    display:flex;justify-content:space-between;align-items:center}
-  summary::-webkit-details-marker{display:none}
-  summary::after{content:'+';font-size:18px;color:var(--faint);transition:transform .2s var(--ease)}
-  details[open] summary::after{transform:rotate(45deg)}
-  details p{font-size:14.5px;color:var(--sub);line-height:1.7;padding-bottom:18px}
-  @keyframes faqIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
-  details[open] p{animation:faqIn .28s var(--ease)}
-
-  /* ─── final cta + footer ─── */
-  .final{background:var(--surface);border-top:1px solid var(--line);text-align:center;
-    padding:48px 22px;align-items:center}
-  .final h2{margin-top:0}
-  .final .hero-ctas{justify-content:center}
-  footer{border-top:1px solid var(--line);padding:28px 22px;font-size:12px;color:var(--faint)}
-  .foot-in{max-width:1060px;margin:0 auto;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
-  footer a{color:var(--sub);text-decoration:none}
-
-  /* entrance motion — gentle, once, honest to reduced-motion */
-  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
-  .act .rv{opacity:1;transform:none}
-  @media (prefers-reduced-motion:reduce){
-    .rv{transform:none;transition:opacity .3s ease}
-    .btn:active{transform:none}
-    .card,.card:hover{transform:none;box-shadow:none}
-    .price-card li{transform:none;transition:opacity .3s ease}
-    details[open] p{animation:faqIn .2s ease}
-  }
-</style>
+<link rel="stylesheet" href="website.css">
+<script src="analytics-config.js" defer></script>
+<script src="analytics.js" defer></script>
+<script src="website.js" defer></script>
 </head>
 <body>
-
-<nav>
-  <div class="nav-in">
-    <a class="logo" href="#">3alay<b>na</b></a>
-    <div class="nav-links">
-      <a class="btn" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20see%203alayna%20at%20my%20restaurant">WhatsApp us</a>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-nav">
+  <nav class="wrap nav-in" aria-label="Main navigation">
+    <a class="logo" href="index.html" aria-label="3alayna home">3alay<b>na</b></a>
+    <div class="nav-links"><a href="#how">How it works</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
+    <a class="btn compact" data-track="demo_start" data-placement="navigation" href="3alyna_full_flow.html?venue=Your%20restaurant&amp;place=Sample%20menu">Try the demo</a>
+  </nav>
+</header>
+<main id="main">
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow">For restaurants in Lebanon</p>
+      <h1 id="hero-title">The bill.<br>The split.<br><em>3alayna.</em></h1>
+      <p class="lead">Let guests view, split and settle their bill from the table. One QR, in their language, with the way they want to pay.</p>
+      <p class="supporting">English · Français · العربية<br>Designed for Whish, card and cash · USD &amp; LBP</p>
+      <div class="actions">
+        <a class="btn" data-track="demo_start" data-placement="hero" href="3alyna_full_flow.html?venue=Your%20restaurant&amp;place=Sample%20menu">Try the demo</a>
+        <a class="btn outline" data-track="whatsapp_click" data-placement="hero" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%203alayna%20for%20my%20restaurant">WhatsApp us</a>
+      </div>
+      <p class="fine">No sign-up to explore. Demo payments are simulated; no money moves.</p>
     </div>
-  </div>
-</nav>
-
-<nav class="rail" id="rail" aria-label="Sections"></nav>
-
-
-<header class="hero wrap">
-  <div class="hero-grid">
-    <div>
-      <div class="kicker rv">Built in Lebanon, for Lebanon</div>
-      <h1 class="rv">Your guests settle the bill.<br><em>Your tables turn faster.</em></h1>
-      <p class="lead rv">Faster table turns, bigger tips for your floor, more Google
-        reviews, and a menu you can reprice in seconds. It starts with a QR on the
-        table: guests split the bill and pay it themselves, in their language, in
-        dollars or lira. No app, no waiting for the card machine.</p>
-      <div class="hero-ctas rv">
-          <a class="btn big" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20see%203alayna%20at%20my%20restaurant">WhatsApp us</a>
-        <a class="btn big line" href="book.html">Book a demo</a>
+    <div class="product-preview" aria-label="Interactive bill splitting example">
+      <div class="preview-heading"><span>THE GUEST EXPERIENCE</span><span>Sample bill</span></div>
+      <div class="bill-preview">
+        <div class="bill-top"><span>Ahla w sahla</span><span>Table 12</span></div>
+        <h2>Your restaurant</h2><p class="muted">A meal shared. A bill made simple.</p>
+        <div class="sample-items"><div><span>Mixed grill × 2</span><b>$64.00</b></div><div><span>Mezze for the table</span><b>$48.50</b></div><div><span>Desserts &amp; drinks</span><b>$40.00</b></div></div>
+        <div class="bill-total"><span>Table total</span><strong>$152.50</strong></div>
+        <div class="split-picker"><span id="party-label">Split evenly</span><div class="stepper"><button id="fewer" type="button" aria-label="One fewer guest">−</button><output id="party" aria-live="polite">4 guests</output><button id="more" type="button" aria-label="One more guest">+</button></div></div>
+        <div class="share-result" aria-live="polite"><span>Your share</span><strong id="share">$38.13</strong><span id="remainder">$114.37 left for the other guests</span></div>
+        <a class="btn full" data-track="demo_start" data-placement="bill_preview" href="3alyna_full_flow.html?venue=Your%20restaurant&amp;place=Sample%20menu">Explore splitting &amp; payment</a>
+        <p class="fine center">Interactive example · payment methods are simulated</p>
       </div>
     </div>
-  </div>
-</header>
+  </section>
 
-<section id="product" class="wrap">
-  <div class="sec-k rv">What changes for you</div>
-  <h2 class="rv">Six outcomes. One QR.</h2>
-  <div class="cards">
-    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/><path d="M10 2h4"/></svg></div><h3>Seat the next party sooner</h3>
-      <p>Your busiest nights stop losing tables to the wait for the check. Parties settle
-      the moment they decide to leave, and cash tables tell the floor which note is
-      coming, so change arrives in one trip.</p></div>
-    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="12" rx="2"/><circle cx="12" cy="13" r="2.6"/><path d="M5.5 10v.01M18.5 16v.01"/></svg></div><h3>A floor that sells it for you</h3>
-      <p>Servers earn more the moment guests can tip in one tap, and every tip lands on
-      the right name with a payout record you sign nightly. Staff who profit from the
-      QR promote the QR.</p></div>
-    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z"/></svg></div><h3>Your Google page fills itself</h3>
-      <p>The best moment to ask for a review is the minute after a good meal is paid
-      for, and that is exactly when guests are asked. Complaints detour to your phone,
-      not your rating.</p></div>
-    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg></div><h3>Decide with numbers, not gut feel</h3>
-      <p>Which nights drag, who earns the tips, how guests pay, and a nightly statement
-      that shortens your close. Your floor, in numbers, on your phone.</p></div>
-    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l3 3-3 3"/><path d="M20 6H9a5 5 0 0 0-5 5"/><path d="M7 21l-3-3 3-3"/><path d="M4 18h11a5 5 0 0 0 5-5"/></svg></div><h3>Never sell at yesterday's prices</h3>
-      <p>When costs move, your margins should not absorb the lag. Reprice the whole menu
-      by percentage in seconds and every table sees it instantly. No designer, no
-      reprints.</p></div>
-    <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5L12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg></div><h3>Your money never detours</h3>
-      <p>Payments land in your own Whish and bank accounts, the same day, the same as
-      always. 3alayna never holds your funds and never touches card data.</p></div>
-  </div>
-</section>
+  <section class="wrap section" id="how" aria-labelledby="how-title">
+    <p class="eyebrow">From the first scan to the last payment</p><h2 id="how-title">Three steps. At their own pace.</h2>
+    <div class="steps">
+      <article><span class="number">01</span><h3>Scan &amp; browse</h3><p>Open the restaurant’s menu from the table QR. Choose a language and view prices in dollars or lira.</p></article>
+      <article><span class="number">02</span><h3>View &amp; split</h3><p>See the bill. Pay for the whole table, split evenly, select items or choose an amount.</p></article>
+      <article><span class="number">03</span><h3>Settle your way</h3><p>Use a supported digital payment method, or request cash collection with the change needed. Staff confirm cash when it is collected.</p></article>
+    </div>
+  </section>
 
+  <section class="benefits-band">
+    <div class="wrap section" aria-labelledby="benefits-title">
+      <p class="eyebrow">For the people running the floor</p><h2 id="benefits-title">Less back-and-forth at the end of a meal.</h2>
+      <div class="benefits">
+        <article><h3>Easier bill settlement</h3><p>Give guests a way to split and pay without waiting for a card machine. Measure the time saved during your pilot.</p></article>
+        <article><h3>A simpler staff workflow</h3><p>See cash requests and change amounts together. Attribute tips to a server or a team pool, with payout records managed by the restaurant.</p></article>
+        <article><h3>Clear payment records</h3><p>Separate confirmed payments from cash still awaiting collection. Review the payment mix and export a statement for your close.</p></article>
+      </div>
+    </div>
+  </section>
 
-<section id="proof" class="wrap">
-  <div class="sec-k rv" style="text-align:center">The model is proven</div>
-  <h2 class="rv" style="text-align:center">Pay-at-table works. Worldwide.</h2>
-  <div class="stats rv">
-    <div class="stat"><div class="sv">15 min</div><div class="sl">saved per table, on average</div></div>
-    <div class="stat"><div class="sv">+19%</div><div class="sl">more covers at peak hours</div></div>
-    <div class="stat"><div class="sv">5&times;</div><div class="sl">more Google reviews</div></div>
-    <div class="stat"><div class="sv">3&times;</div><div class="sl">higher tips for the floor</div></div>
-  </div>
-  <p class="sec-sub rv" style="text-align:center;margin:34px auto 0;max-width:620px">
-    Over 5,000 restaurants worldwide run on pay-at-table. 3alayna is the proven model,
-    built for how Lebanon actually pays.</p>
-  <div class="foot-note rv">Results reported publicly by leading international
-    pay-at-table platforms across Europe, Asia and the Gulf.</div>
-</section>
+  <section class="wrap section" id="experience" aria-labelledby="experience-title">
+    <p class="eyebrow">Both sides of the table</p><h2 id="experience-title">Try the guest flow. Explore the owner’s view.</h2>
+    <div class="experience-grid">
+      <div>
+        <h3>Your menu, in your restaurant’s style.</h3>
+        <p>Guests browse dishes, explore options and choose how to split. The menu editor lets your team update dishes, prices and service hours before publishing.</p>
+        <div class="actions"><a class="text-link" data-track="demo_start" data-placement="experience" href="3alyna_full_flow.html?venue=Your%20restaurant&amp;place=Sample%20menu">Open the guest demo →</a><a class="text-link" href="3alyna_menu_editor.html?venue=Your%20restaurant&amp;place=Sample%20menu">Explore the menu editor →</a></div>
+        <h3 class="subheading">Customer connection, with permission.</h3>
+        <p>Offer receipts and an optional sign-up for restaurant offers. Let every guest choose a public review or private feedback, regardless of their rating.</p>
+      </div>
+      <div class="owner-preview">
+        <div class="preview-heading"><span>THE OWNER’S VIEW</span><span>Illustrative data</span></div>
+        <h3>Tonight, at a glance.</h3>
+        <div class="owner-stat"><span>Confirmed payments</span><strong>$486.00</strong></div>
+        <div class="owner-line"><span>Whish</span><b>$240.00</b></div><div class="owner-line"><span>Card</span><b>$186.00</b></div><div class="owner-line"><span>Cash collected</span><b>$60.00</b></div>
+        <div class="cash-pending"><span>Cash awaiting collection</span><b>$42.00</b><small>Excluded from confirmed payments</small></div>
+        <a class="btn outline full" href="3alyna_dashboard.html?venue=Your%20restaurant&amp;place=Sample%20menu">Explore the dashboard</a>
+        <p class="fine">Sample figures show the intended workflow, not measured restaurant results.</p>
+      </div>
+    </div>
+  </section>
 
-<section id="pricing" class="wrap">
-  <div class="sec-k rv">Pricing</div>
-  <h2 class="rv">One flat fee. Everything included.</h2>
-  <p class="sec-sub rv">A flat monthly fee, no commission on your sales. The math is
-    short: if faster turns win you one extra table a week, 3alayna has already paid
-    for itself.</p>
-  <div class="price-card rv">
-      <div class="price-tag">Everything included</div>
-      <div class="price-n">$150<span> / month</span></div>
-      <div class="price-no">No commission on your sales.</div>
-      <ul>
-        <li>QR menu in 3 languages, 2 currencies</li>
-        <li>Bill splitting and settlement: Whish, card, cash</li>
-        <li>Tips by server, with payout records</li>
-        <li>Google reviews &amp; private feedback</li>
-        <li>Owner dashboard &amp; nightly statement</li>
-        <li>Menu editor with instant repricing</li>
-        <li>Staff onboarding and floor training</li>
-      </ul>
-  </div>
-</section>
+  <section class="wrap section" id="pricing" aria-labelledby="pricing-title">
+    <p class="eyebrow">Start with your own floor</p><h2 id="pricing-title">Two services to see what changes.</h2>
+    <p class="section-intro">First, we check your POS and payment-provider compatibility. Once setup is ready, we run two dinner services with your team, free, and review what happened together.</p>
+    <div class="pricing-grid">
+      <div class="pilot">
+        <span class="pill">Free two-service pilot</span><h3>A practical test with your team.</h3>
+        <ol><li><b>Check the fit.</b> Share your menu, POS and payment setup. We agree the supported workflow before scheduling.</li><li><b>Prepare your floor.</b> Menu setup, table QR cards and staff onboarding are included.</li><li><b>Look at the evidence.</b> Review guest usage, settlement time, staff workload and payment reconciliation.</li></ol>
+        <a class="btn" data-track="booking_click" data-placement="pilot" href="book.html">Discuss a pilot</a>
+        <p class="fine">You decide whether to continue after the pilot. The online demo is available now; live pilot dates depend on integration readiness.</p>
+      </div>
+      <div class="price-card">
+        <p class="eyebrow">After the pilot</p><p class="price">$150 <span>/ month / location</span></p>
+        <p class="founder">First 10 founding restaurants lock in <strong>$100/month per location.</strong></p>
+        <ul><li>QR menu, bill splitting &amp; supported settlement methods</li><li>Menu editor &amp; service hours</li><li>Payment records, cash requests &amp; tip attribution</li><li>Guest feedback &amp; optional contact collection</li><li>Menu setup &amp; staff onboarding</li></ul>
+        <p class="price-note">No 3alayna commission on restaurant sales. Payment-provider fees may apply separately. Supported integrations and any additional setup costs are agreed before the pilot.</p>
+        <a class="btn light full" data-track="whatsapp_click" data-placement="pricing" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20check%20POS%20compatibility%20and%20pilot%20pricing.%20My%20restaurant%20is%3A%20">Check compatibility with us</a>
+      </div>
+    </div>
+  </section>
 
-<section id="how" class="wrap">
-  <div class="sec-k rv">How it works</div>
-  <h2 class="rv">Nothing to install. For anyone.</h2>
-  <div class="steps">
-    <div class="step rv"><div class="n">01</div><h3>Scan</h3>
-      <p>The guest points their camera at the table QR. Your menu opens instantly.
-      No app, no signup, any phone.</p></div>
-    <div class="step rv"><div class="n">02</div><h3>Explore the menu</h3>
-      <p>English, français or عربي, in dollars or lira. Dietary filters that know a
-      latte can be made dairy free. Options and extras priced live as guests choose.</p></div>
-    <div class="step rv"><div class="n">03</div><h3>Split &amp; pay</h3>
-      <p>Evenly, by item, a custom amount, or the whole bill. Whish, card, or cash with
-      change requested ahead. Tips reach the server by name, receipts arrive by email,
-      and happy guests are one tap from your Google page.</p></div>
-  </div>
-</section>
-
-<section id="faq" class="wrap">
-  <div class="sec-k rv" style="text-align:center">Questions owners ask</div>
-  <h2 class="rv" style="text-align:center">The honest answers</h2>
-  <div class="faq rv">
-    <details><summary>What do I need to provide?</summary>
-      <p>Very little. Your menu in any form, even a PDF or photos. Ingredient details per
-      dish so the dietary filters work, which your kitchen confirms in about twenty
-      minutes with our editor. Your Whish or bank merchant account details so payments
-      land with you. Your Google listing. A table count, and one hour with your floor
-      staff for training. No hardware, no POS change.</p></details>
-    <details><summary>Do I need to change my POS?</summary>
-      <p>No. 3alayna runs alongside whatever you have. Your POS stays the system of
-      record; our statement is an input to your close, not a replacement for it.</p></details>
-    <details><summary>Most of my guests pay cash. Does this still help?</summary>
-      <p>Cash is a first-class flow, not an afterthought. Guests declare they're paying
-      cash, tell the floor which note they're handing over, and your server makes one trip
-      with the right change. The table turns faster even when no money moves digitally.</p></details>
-    <details><summary>Where does the money go?</summary>
-      <p>Straight to you. Whish payments go to your Whish account, card payments through
-      your own bank's gateway. 3alayna never holds funds and never sees card numbers.</p></details>
-    <details><summary>Will my staff fight it?</summary>
-      <p>Tips are assigned to servers by name, with a payout record. The floor gains
-      from every table that uses the QR.</p></details>
-    <details><summary>What do guests need to install?</summary>
-      <p>Nothing. It's a web page that opens from the camera. Works on any phone,
-      in English, French or Arabic, in dollars or lira.</p></details>
-  </div>
-</section>
-
-<div class="final" id="contact">
-  <div class="sec-k rv">See it on your own menu</div>
-  <h2 class="rv">Ahla w sahla.</h2>
-  <p class="sec-sub rv" style="margin:14px auto 0">Two minutes on WhatsApp and you
-    will be looking at your own restaurant's menu, on your own phone, working.</p>
-  <div class="hero-ctas rv" style="margin-top:24px">
-    <a class="btn big" href="https://wa.me/33665745963?text=Hi%2C%20can%20you%20send%20me%20a%20demo%20branded%20as%20my%20restaurant%3F">WhatsApp us</a>
-    <a class="btn big line" href="book.html">Book a demo</a>
-  </div>
-</div>
-
-<footer>
-  <div class="foot-in">
-    <span>© 2026 3alayna · Beirut, Lebanon</span>
-    <span>Payments processed by your own licensed providers</span>
-  </div>
-</footer>
-
-<script>
-  // each full-page panel choreographs its content: a staggered cascade on every
-  // entry, reset on exit, so snapping between sections always animates
-  var panels = document.querySelectorAll('.hero, section.wrap, .final');
-  panels.forEach(function(panel){
-    panel.querySelectorAll('.rv').forEach(function(el, i){
-      el.style.transitionDelay = Math.min(i, 9) * 70 + 'ms';
-    });
-  });
-  var RAIL = [
-    ['hero-top', 'Ahla'], ['product', 'What you get'], ['proof', 'Proof'],
-    ['pricing', 'Pricing'], ['how', 'How it works'], ['faq', 'FAQ'], ['contact', 'Say hi']
-  ];
-  document.querySelector('.hero').id = 'hero-top';
-  var railEl = document.getElementById('rail');
-  RAIL.forEach(function(r){
-    var a = document.createElement('a');
-    a.href = '#' + r[0];
-    a.innerHTML = '<span class="dot"></span><span class="lbl">' + r[1] + '</span>';
-    railEl.appendChild(a);
-  });
-  function railMark(id){
-    railEl.querySelectorAll('a').forEach(function(a){
-      a.classList.toggle('on', a.getAttribute('href') === '#' + id);
-    });
-  }
-  var pio = new IntersectionObserver(function(es){
-    es.forEach(function(e){
-      if (e.isIntersecting){ e.target.classList.add('act'); if (e.target.id) railMark(e.target.id); }
-      else e.target.classList.remove('act');
-    });
-  }, {threshold:.25});
-  panels.forEach(function(p){ pio.observe(p); });
-</script>
+  <section class="wrap section faq-section" id="faq" aria-labelledby="faq-title">
+    <div><p class="eyebrow">Before you get started</p><h2 id="faq-title">Practical questions.<br>Clear answers.</h2></div>
+    <div class="faq">
+      <details><summary>Is this ready to take real payments?</summary><p>The website currently demonstrates the guest and owner experiences with sample data and simulated payments. No money moves in the demo. A live pilot requires a working POS connection and payment-provider setup, which we confirm with you first.</p></details>
+      <details><summary>Will it work with my POS?</summary><p>Tell us the name and version of your POS. We need to check access to your live bills and how confirmed payments return to your records. Your POS remains the system of record; we confirm compatibility before agreeing a pilot.</p></details>
+      <details><summary>What if a guest wants to pay cash?</summary><p>They can request cash collection and tell the floor which note they will hand over. The request remains pending until staff confirm collection. Guests can also ask their server for help as usual.</p></details>
+      <details><summary>Where do payments and tips go?</summary><p>The intended setup uses the restaurant’s own supported merchant accounts. Settlement timing and processing charges depend on the provider and agreement. The restaurant manages tip distribution under its own policy; 3alayna records attribution and payout acknowledgements.</p></details>
+      <details><summary>What is included in the price?</summary><p>The subscription is per location and includes the listed software features, menu setup and staff onboarding. The first ten founding restaurants receive the $100 monthly rate; the standard rate is $150. Payment-provider charges are separate. We agree integration scope and any additional setup costs in advance.</p></details>
+      <details><summary>What do you need from our team?</summary><p>Your menu, table count, POS details and supported merchant-account setup. Your kitchen reviews ingredient and dietary information before it appears to guests. We arrange staff training around your service hours.</p></details>
+      <details><summary>Does every guest need an app or an account?</summary><p>No 3alayna download or account is needed to browse the menu or explore the guest flow. Paying with a wallet may require that provider’s app and account. Receipt and marketing sign-ups are optional and separate.</p></details>
+      <details><summary>What happens if the connection drops?</summary><p>Guests can return to the usual staff-assisted payment process. A payment should only be marked confirmed after verification; the pilot will test the fallback and reconciliation process with your team.</p></details>
+    </div>
+  </section>
+  <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>See how it feels at your table.</h2><p>Explore the demo, then tell us about your restaurant.</p><div class="actions"><a class="btn" data-track="demo_start" data-placement="footer" href="3alyna_full_flow.html?venue=Your%20restaurant&amp;place=Sample%20menu">Try the demo</a><a class="btn outline" data-track="booking_click" data-placement="footer" href="book.html">Book a conversation</a></div></div></section>
+</main>
+<footer class="wrap footer"><a class="logo" href="index.html">3alay<b>na</b></a><p>© 2026 3alayna · For restaurants in Lebanon</p><a data-track="whatsapp_click" data-placement="footer_contact" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%203alayna">Contact us on WhatsApp</a></footer>
 </body>
 </html>

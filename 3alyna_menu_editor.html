@@ -310,7 +310,7 @@
       <span class="ic">%</span>
       <span>
         <div class="t1">Reprice the whole menu</div>
-        <div class="t2" id="fx-sub">Last changed 23 days ago · dollar moved 6% since</div>
+        <div class="t2" id="fx-sub">Draft price changes, then publish when ready</div>
       </span>
       <span class="ch">&#8250;</span>
     </button>
@@ -453,10 +453,9 @@
 <div class="note-out">
   <b>Sections carry service hours, not items.</b> Restaurants think in dayparts — "we stop serving
   breakfast at 11:30" — so the window sits on the section. Outside its hours a section is not on
-  the guest's menu at all. Repricing stays at the top because it is the feature nobody else in
-  Lebanon has.
+  the guest's menu at all. Bulk repricing keeps menu updates quick when ingredient costs change.
 </div>
-<script src="aalayna-store.js?v=13"></script>
+<script src="aalayna-store.js?v=14"></script>
 <script>
 /* Service windows. Restaurants think in dayparts ("we stop serving breakfast at 11:30"),
    so the window lives on the SECTION, not the item. */
@@ -1084,7 +1083,7 @@ function reset(){
   $('state-t').textContent = 'LIVE';
   $('pubbtn').disabled = true;
   $('pubbtn').textContent = 'Everything is live';
-  $('fx-sub').textContent = 'Last changed 23 days ago · dollar moved 6% since';
+  $('fx-sub').textContent = 'Draft price changes, then publish when ready';
   render(); paintClock();
 }
 (function(){ var v = Aalayna.venue();

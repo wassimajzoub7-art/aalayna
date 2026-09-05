@@ -355,7 +355,8 @@
   .go .burst i{animation:none}
   .done-body{position:relative;z-index:3;flex:1;overflow-y:auto;scrollbar-width:none;
     padding:40px 24px 14px;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;text-align:center}
+    justify-content:flex-start;text-align:center;min-height:0}
+  .done-body>*{flex-shrink:0}
   .done-body::-webkit-scrollbar{display:none}
   .seal{width:74px;height:74px;flex:0 0 74px;border-radius:50%;background:#fff;color:var(--green);
     display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:18px}
@@ -450,6 +451,11 @@
   .note-out{color:var(--sub);font-size:11.5px;text-align:center;margin-top:16px;max-width:600px;line-height:1.7}
   .note-out b{color:var(--ink);font-weight:600}
 
+  #dstars button.star{background:none;border:0;padding:4px;min-width:44px;min-height:44px;font:inherit;font-size:28px;cursor:pointer}
+  .review-choices{width:100%;display:grid;gap:8px;margin-top:12px}
+  .rate-wrap>p{color:#d7e3e2}
+  .review-choices .cta{font-size:14px;min-height:44px}
+  button:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:3px}
   /* legacy keyframes kept as no-ops for JS-toggled classes */
   @keyframes pop{from{opacity:0}to{opacity:0}}
   @keyframes stamp{from{opacity:1}to{opacity:1}}
@@ -458,7 +464,8 @@
 <body>
 <div class="stage">
   <div class="t">3alay<b>na</b> &times; <span id="v-name-stage">Hallab 1881</span></div>
-  <div class="s">landing &middot; menu &middot; bill &middot; split &middot; pay &middot; thanks</div>
+  <div class="s">Interactive demo · sample data · no money moves</div>
+  <p style="font-size:14px;margin:12px 0"><a href="index.html">Back to website</a> · <a id="staff-demo" href="3alyna_dashboard.html" target="_blank" rel="noopener">Open staff demo</a></p>
 </div>
 <div class="phone"><div class="screen">
   <!-- ================= 1. LANDING ================= -->
@@ -474,7 +481,7 @@
     </div>
     <div class="land-body">
       <div class="greet">Ahla w sahla</div>
-      <div class="tbl"><span class="dot"></span>Table 12 &middot; bill syncs live</div>
+      <div class="tbl"><span class="dot"></span>Table 12 &middot; sample bill</div>
       <div class="note">
         Have a look at the menu, take your time. When you're done, open the bill,
         split it however you like, and settle it without waiting for anyone.
@@ -614,7 +621,7 @@
         </div>
         <div class="pm" onclick="pick(this,'cash')">
           <div class="mark" style="background:#3F8F6B">CASH</div>
-          <div><div class="pn">Paying cash</div><div class="pd">Comes off the table's total</div></div>
+          <div><div class="pn">Paying cash</div><div class="pd">Staff confirm after collection</div></div>
           <div class="radio"></div>
         </div>
       </div>
@@ -629,8 +636,7 @@
         <div class="chg-out" id="chgout">Your server comes <b>once</b>, with your change already counted.</div>
       </div>
       <div class="cashnote" id="cashnote">
-        Marked <b>paid in cash</b> and taken off the table total automatically. No accounts, no downloads
-        &mdash; nobody's making Teta install anything.
+        Your cash request stays <b>awaiting collection</b> until staff confirm it. Please wait for your server before leaving.
       </div>
     </div>
     <div class="dock">
@@ -643,23 +649,23 @@
     <div class="done-inner" id="inner">
       <div class="pat2"></div><div class="burst" id="burst"></div><div class="vig"></div>
       <div class="done-body">
-        <div class="seal">&#10003;</div>
+        <div class="seal" id="result-seal">&#10003;</div>
         <div class="est2" id="v-est2">Est. 1881 &middot; Tripoli</div>
-        <h2 class="display shukran">Shukran.</h2>
+        <h2 class="display shukran" id="result-title">Shukran.</h2>
         <div class="ar">&#1588;&#1603;&#1585;&#1575;&#1611;</div>
         <div class="rule2"></div>
         <div class="rcpt">
           <div class="rc-amt" id="rc-amt">$41.94</div>
           <div class="rc-rows">
-            <div class="rc-r"><span>Paid via</span><b id="rc-method">Whish Money</b></div>
+            <div class="rc-r"><span id="method-label">Paid via</span><b id="rc-method">Whish Money</b></div>
             <div class="rc-r"><span>Table</span><b>12</b></div>
           </div>
-          <div class="rc-note">Payment confirmed &middot; recorded on the table's bill</div>
+          <div class="rc-note" id="payment-status" role="status" aria-live="polite">Demo payment confirmed</div>
         </div>
 
         <div class="mailrc" id="mailrc">
           <input class="mailin" id="mail-in" type="text" inputmode="email"
-            placeholder="WhatsApp number or email (optional)">
+            placeholder="Sample number or email (demo only)">
           <button class="mailbtn" onclick="sendReceipt()" aria-label="Send">&#10148;</button>
         </div>
         <div class="consents" id="consents">
@@ -668,13 +674,17 @@
         </div>
 
 
-        <div class="rate-wrap">
+        <div class="rate-wrap" id="feedback-options">
           <div class="rate-q">How was <span class="v-short">Hallab</span> tonight?</div>
-          <div class="dstars" id="dstars">
-            <span class="star" onclick="rate(1)">&#9733;</span><span class="star" onclick="rate(2)">&#9733;</span>
-            <span class="star" onclick="rate(3)">&#9733;</span><span class="star" onclick="rate(4)">&#9733;</span>
-            <span class="star" onclick="rate(5)">&#9733;</span>
+          <div class="dstars" id="dstars" role="group" aria-label="Your rating">
+            <button type="button" class="star" aria-label="1 star" aria-pressed="false" onclick="rate(1)">&#9733;</button><button type="button" class="star" aria-label="2 stars" aria-pressed="false" onclick="rate(2)">&#9733;</button>
+            <button type="button" class="star" aria-label="3 stars" aria-pressed="false" onclick="rate(3)">&#9733;</button><button type="button" class="star" aria-label="4 stars" aria-pressed="false" onclick="rate(4)">&#9733;</button><button type="button" class="star" aria-label="5 stars" aria-pressed="false" onclick="rate(5)">&#9733;</button>
           </div>
+          <div class="review-choices">
+            <button class="cta cta-line" onclick="setStar(rating); openOv('ov-google')">Public Google review</button>
+            <button class="cta cta-line" onclick="openOv('ov-priv')">Private feedback</button>
+          </div>
+          <p style="font-size:12px;line-height:1.5;margin-top:10px">Either choice is available with any rating. Demo feedback is not sent.</p>
         </div>
       </div>
       <div class="dock-dk">
@@ -702,7 +712,7 @@
     <div class="sheet">
       <div class="grab"></div>
       <div class="sh-t">How was it?</div>
-      <div class="sh-s">Goes straight to <span class="v-short">Hallab</span>'s Google page, in your own words.</div>
+      <div class="sh-s">Public review example. A live restaurant would link to its Google page; this demo does not publish a review.</div>
       <div class="stars" id="gstars">
         <span class="star" onclick="setStar(1)">&#9733;</span><span class="star" onclick="setStar(2)">&#9733;</span>
         <span class="star" onclick="setStar(3)">&#9733;</span><span class="star" onclick="setStar(4)">&#9733;</span>
@@ -727,7 +737,7 @@
     <div class="sheet">
       <div class="grab"></div>
       <div class="sh-t">Just between us</div>
-      <div class="sh-s">Goes to the owner's phone. Never published anywhere.</div>
+      <div class="sh-s">Private feedback example. Nothing is sent in this demo.</div>
       <div class="opts" style="margin-top:16px">
         <button class="opt" onclick="togOpt(this)">Took too long</button>
         <button class="opt" onclick="togOpt(this)">Food was cold</button>
@@ -735,8 +745,8 @@
         <button class="opt" onclick="togOpt(this)">Something else</button>
       </div>
       <textarea class="ta" placeholder="Tell them what happened..."></textarea>
-      <button class="cta cta-green" style="margin-top:14px" onclick="closeOv('ov-priv')">
-        <span class="sheen"></span>Send to the owner
+      <button class="cta cta-green" style="margin-top:14px" onclick="this.textContent='Demo feedback recorded — not sent'; this.disabled=true">
+        <span class="sheen"></span>Try private feedback
       </button>
       <button class="cta cta-ghost" onclick="closeOv('ov-priv')">Maybe later</button>
       <div class="linky" onclick="closeOv('ov-priv'); openOv('ov-google')">Prefer to post on Google instead?</div>
@@ -794,12 +804,12 @@
       <div class="cardhead"><span class="lock">&#128274;</span> Secure checkout
         <span class="cardby">areeba &middot; simulated</span></div>
       <div class="sh-s">This page is hosted by the venue's payment provider.
-        Card details never touch 3alayna.</div>
+        This is a simulated provider page. Use the sample details below.</div>
       <div class="fldc"><div class="lbc">Card number</div>
-        <input class="inc" placeholder="4242 4242 4242 4242" inputmode="numeric"></div>
+        <input class="inc" value="4242 4242 4242 4242" readonly aria-label="Sample card number"></div>
       <div class="rowc">
-        <div class="fldc"><div class="lbc">Expiry</div><input class="inc" placeholder="MM / YY"></div>
-        <div class="fldc"><div class="lbc">CVC</div><input class="inc" placeholder="123"></div>
+        <div class="fldc"><div class="lbc">Expiry</div><input class="inc" value="12 / 30" readonly aria-label="Sample expiry"></div>
+        <div class="fldc"><div class="lbc">CVC</div><input class="inc" value="123" readonly aria-label="Sample security code"></div>
       </div>
       <button class="cta cta-green" id="card-btn" style="margin-top:20px" onclick="cardConfirm()">Pay $41.94</button>
       <button class="cta cta-ghost" onclick="closeOv('ov-card')">Cancel</button>
@@ -819,10 +829,12 @@
 </div>
 <div class="note-out">
   The venue owns every surface; 3alayna is the footer credit. <b>Change-ahead</b> lives under the
-  cash option. Ratings route Sunday-style: 4&ndash;5 stars to Google, 1&ndash;3 to private feedback
-  with a visible Google link kept inside the private sheet.
+  cash option. Public reviews and private feedback are offered equally, for every rating. Cash
+  requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=13"></script>
+<script src="aalayna-store.js?v=14"></script>
+<script src="analytics-config.js" defer></script>
+<script src="analytics.js" defer></script>
 <script>
 /* ---------------- data ---------------- */
 function RATE(){ return Aalayna.rate(); }
@@ -1364,7 +1376,7 @@ function paintChange(due){
     out.innerHTML = '<b>$' + note + '</b> doesn’t cover ' + usd(due) + '. Pick a bigger note, or split it with the table.';
     return;
   }
-  out.innerHTML = esc(SERVER) + ' comes <b>once</b>, with <b>' + usd(back) + '</b> already counted.';
+  out.innerHTML = 'Change requested from ' + esc(SERVER) + ': <b>' + usd(back) + '</b>. Please wait for collection.';
 }
 function paintPay(){
   var t = tipAmt(), tot = share + t, isCash = (kind === 'cash');
@@ -1374,7 +1386,7 @@ function paintPay(){
   $('tv10').textContent = usd(share * .10);
   $('tv15').textContent = usd(share * .15);
   $('paybtn').innerHTML = '<span class="sheen"></span>' +
-    (isCash ? 'Tell the floor — paying cash' : 'Pay ' + usd(tot));
+    (isCash ? 'Request cash collection' : 'Pay ' + usd(tot));
   if (isCash) paintChange(tot);   // tot, not share — the change must account for the tip
 }
 /* ---------------- success ---------------- */
@@ -1393,7 +1405,9 @@ function makeBurst(){
     b.appendChild(s);
   }
 }
+var paymentBusy = false, lastSettlementId = null;
 function settle(){
+  if (paymentBusy) return;
   paintPay();
   var t = tipAmt(), tot = share + t;
   if (kind === 'whish'){
@@ -1407,14 +1421,19 @@ function settle(){
     openOv('ov-card');
     return;
   }
+  paymentBusy = true;
   finishSettle('cash');
 }
 function whishConfirm(){
+  if (paymentBusy) return;
+  paymentBusy = true;
   var b = $('wh-btn');
   b.textContent = 'Confirming with Whish…';
   setTimeout(function(){ closeOv('ov-whish'); finishSettle('whish'); }, 900);
 }
 function cardConfirm(){
+  if (paymentBusy) return;
+  paymentBusy = true;
   var b = $('card-btn');
   b.textContent = 'Processing…';
   setTimeout(function(){ closeOv('ov-card'); finishSettle('card'); }, 900);
@@ -1422,11 +1441,12 @@ function cardConfirm(){
 var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function finishSettle(rail){
   var t = tipAmt(), tot = share + t;
-  Aalayna.settle({
-    table: 12, rail: rail, amount: tot, tip: t, server: SERVER,
+  var record = Aalayna.settle({
+    table: TABLE, rail: rail, amount: tot, tip: t, server: SERVER,
     note: (rail === 'cash' ? note : 0),
     change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
   });
+  lastSettlementId = record.id;
   $('rc-amt').textContent = usd(tot);
   $('rc-method').textContent = RAIL_NAMES[rail] + (rail === 'cash' && note > 0 && note - tot > 0
     ? ' · ' + usd(note - tot) + ' change' : '');
@@ -1434,19 +1454,31 @@ function finishSettle(rail){
   go('v-done');
   var w = $('inner');
   w.classList.remove('go');
-  makeBurst();
+  paintSettlementResult();
+  if (rail !== 'cash') makeBurst();
+  if (window.AalaynaAnalytics) AalaynaAnalytics.track(rail === 'cash' ? 'demo_cash_requested' : 'demo_complete', rail === 'cash' ? 'cash_requested' : rail);
   void w.offsetWidth;
   w.classList.add('go');
 }
-/* Sunday-style routing: 4-5 stars → Google; 1-3 → private feedback,
-   with a visible link to Google kept inside the private sheet. */
+function paintSettlementResult(){
+  if (!lastSettlementId) return;
+  var record = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
+  if (!record) return;
+  var status = Aalayna.settlementStatus(record), confirmed = status === 'confirmed';
+  $('result-title').textContent = confirmed ? 'Shukran.' : status === 'pending' ? 'One moment.' : 'Request updated.';
+  $('result-seal').textContent = confirmed ? '✓' : '…';
+  $('method-label').textContent = confirmed ? 'Paid via' : 'Requested via';
+  $('payment-status').textContent = status === 'pending'
+    ? 'Cash collection requested (demo). Please wait for staff to collect and confirm. Your bill is not marked paid.'
+    : confirmed ? 'Demo payment confirmed · no money moved.' : 'This request was ' + status + '. Please speak with your server.';
+  ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
+}
+/* Rating never changes the available feedback channels. */
 function rate(n){
   rating = n;
-  document.querySelectorAll('#dstars .star').forEach(function(st, i){ st.classList.toggle('on', i < n); });
-  setTimeout(function(){
-    if (n >= 4){ setStar(n); openOv('ov-google'); }
-    else openOv('ov-priv');
-  }, 350);
+  document.querySelectorAll('#dstars .star').forEach(function(st,i){
+    st.classList.toggle('on',i<n); st.setAttribute('aria-pressed',String(i<n));
+  });
 }
 /* optional, after payment — never a gate. Simulated like the payments. */
 function sendReceipt(){
@@ -1472,19 +1504,10 @@ function setStar(n){
      success screen. Routing low ratings away from Google is review gating. */
 }
 function togOpt(el){ el.classList.toggle('on'); }
-/* REAL integration: opens the venue's actual Google review page. Google has no
-   API for submitting reviews (by design), so anything typed here rides along on
-   the clipboard for the guest to paste. */
+/* Demonstrate the review action without publishing to a real restaurant. */
 function postGoogle(btn){
-  var ta = document.querySelector('#ov-google .ta');
-  var words = ta ? ta.value.trim() : '';
-  if (words && navigator.clipboard){
-    try { navigator.clipboard.writeText(words); } catch(e){}
-  }
-  window.open(Aalayna.reviewURL(), '_blank');
-  btn.innerHTML = '<span class="sheen"></span>' +
-    (words ? 'Opened — your words are copied, just paste' : 'Opened Google');
-  setTimeout(function(){ closeOv('ov-google'); }, 1600);
+  btn.textContent = 'Demo only — no review was published';
+  btn.disabled = true;
 }
 /* demo only: flip between a venue that has finished confirming its menu and one that
    hasn't. Note what the second state does NOT contain — no warnings, no badges, no
@@ -1505,6 +1528,7 @@ function togglePrepaid(){
   go('v-bill');
 }
 function restart(){
+  paymentBusy = false; lastSettlementId = null;
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
   kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
   $('tip-in').value = ''; $('tipcw').style.display = 'none';
@@ -1519,7 +1543,7 @@ function restart(){
   clearF();
   $('chg').classList.remove('on');
   $('cashnote').style.display = 'none';
-  document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); });
+  document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); st.setAttribute('aria-pressed','false'); });
   $('mail-in').value = ''; $('mail-in').disabled = false;
   $('consents').classList.remove('done'); $('c-receipt').checked = true; $('c-mkt').checked = false;
   var mb = document.querySelector('.mailbtn');
@@ -1556,8 +1580,15 @@ function paintVenue(){
   if (ms && LANG === 'en') ms.textContent = 'Table 12 · ' + (v.place || v.name);
 }
 buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue();
+$('staff-demo').href = '3alyna_dashboard.html' + window.location.search;
 staggered = true;
 Aalayna.on(function(){
+  var wasPending = lastSettlementId && $('payment-status').textContent.indexOf('Cash collection requested') === 0;
+  paintSettlementResult();
+  if (wasPending && lastSettlementId) {
+    var current = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
+    if (current && Aalayna.isConfirmed(current) && window.AalaynaAnalytics) AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
+  }
   var before = MENU_V;
   loadMenu();
   if (MENU_V !== before){          // a new version was published
