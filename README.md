@@ -2,6 +2,8 @@
 
 Static restaurant product demo and marketing website. No package installation or build is required. Serve this directory with any static HTTP server. Open `index.html` for the public website, `3alyna_full_flow.html` for the guest demo, or `system.html` for the full demo index.
 
+The public homepage and booking page show only a generic bill-splitting preview and offer a guided walkthrough. They do not link into the full guest app, menu editor or dashboard. Those existing demo pages are still accessible by their direct URLs; removing navigation links is not access control.
+
 ## Demo limits
 
 Payments, receipts, campaigns, and feedback delivery are simulated. Weekly dashboard data is illustrative. No payment provider, POS backend, shared database, or staff authentication is connected. The pages share `localStorage` between tabs on one browser and origin; they do not synchronize across guest devices. Do not use the demo to collect real payments, real card details, or guest contact data.
