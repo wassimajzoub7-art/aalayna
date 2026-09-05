@@ -2,7 +2,7 @@
 
 Static restaurant product demo and marketing website. No package installation or build is required. Serve this directory with any static HTTP server. Open `index.html` for the public website, `3alyna_full_flow.html` for the guest demo, or `system.html` for the full demo index.
 
-The public homepage and booking page show only a generic bill-splitting preview and offer a guided walkthrough. They do not link into the full guest app, menu editor or dashboard. Those existing demo pages are still accessible by their direct URLs; removing navigation links is not access control.
+The public homepage and booking page contain no interactive demos or app previews; calls to action lead to a pilot conversation or direct contact. They do not link into the full guest app, menu editor or dashboard. Those existing demo pages are still accessible by their direct URLs; removing navigation links is not access control.
 
 ## Demo limits
 
@@ -24,7 +24,7 @@ Events do not contain contact information, query strings, bill amounts, or persi
 
 ## Validation
 
-Run `node --test tests/*.test.cjs` for the cash-state and measurement regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript; its preview defaults to a four-way split until scripting loads.
+Run `node --test tests/*.test.cjs` for the cash-state and measurement regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
 
 ## Live pilot prerequisites
 

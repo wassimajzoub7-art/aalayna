@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3alayna — scan, split, settle.</title>
-<meta name="description" content="QR menus, bill splitting and settlement designed for restaurants in Lebanon. See a quick preview, then book a walkthrough for your restaurant.">
+<meta name="description" content="QR menus, bill splitting and settlement designed for restaurants in Lebanon. Discuss your restaurant’s needs, POS compatibility and a free two-service pilot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="website.css">
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
-<script src="website.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -19,7 +18,7 @@
   <nav class="wrap nav-in" aria-label="Main navigation">
     <a class="logo" href="index.html" aria-label="3alayna home">3alay<b>na</b></a>
     <div class="nav-links"><a href="#how">How it works</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
-    <a class="btn compact" data-track="booking_click" data-placement="navigation" href="book.html">Book a demo</a>
+    <a class="btn compact" data-track="booking_click" data-placement="navigation" href="book.html">Let’s talk</a>
   </nav>
 </header>
 <main id="main">
@@ -30,23 +29,10 @@
       <p class="lead">Let guests view, split and settle their bill from the table. One QR, in their language, with the way they want to pay.</p>
       <p class="supporting">English · Français · العربية<br>Designed for Whish, card and cash · USD &amp; LBP</p>
       <div class="actions">
-        <a class="btn" data-track="demo_start" data-placement="hero" href="#preview">See a quick preview</a>
+        <a class="btn" data-track="booking_click" data-placement="hero" href="book.html">Discuss a pilot</a>
         <a class="btn outline" data-track="whatsapp_click" data-placement="hero" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%203alayna%20for%20my%20restaurant">WhatsApp us</a>
       </div>
-      <p class="fine">A quick look at bill splitting. Book a demo for a walkthrough tailored to your restaurant.</p>
-    </div>
-    <div class="product-preview" id="preview" tabindex="-1" aria-label="Quick bill splitting preview">
-      <div class="preview-heading"><span>A QUICK LOOK</span><span>Sample bill</span></div>
-      <div class="bill-preview">
-        <div class="bill-top"><span>Ahla w sahla</span><span>Table 12</span></div>
-        <h2>Your restaurant</h2><p class="muted">A meal shared. A bill made simple.</p>
-        <div class="sample-items"><div><span>Mixed grill × 2</span><b>$64.00</b></div><div><span>Mezze for the table</span><b>$48.50</b></div><div><span>Desserts &amp; drinks</span><b>$40.00</b></div></div>
-        <div class="bill-total"><span>Table total</span><strong>$152.50</strong></div>
-        <div class="split-picker"><span id="party-label">Split evenly</span><div class="stepper"><button id="fewer" type="button" aria-label="One fewer guest">−</button><output id="party" aria-live="polite">4 guests</output><button id="more" type="button" aria-label="One more guest">+</button></div></div>
-        <div class="share-result" aria-live="polite"><span>Your share</span><strong id="share">$38.13</strong><span id="remainder">$114.37 left for the other guests</span></div>
-        <a class="btn full" data-track="booking_click" data-placement="bill_preview" href="book.html">See it for your restaurant</a>
-        <p class="fine center">Illustrative bill · no payment required</p>
-      </div>
+      <p class="fine">Two free dinner services once your POS and payment setup are ready.</p>
     </div>
   </section>
 
@@ -79,12 +65,12 @@
         <h3 class="subheading">Customer connection, with permission.</h3>
         <p>Offer receipts and an optional sign-up for restaurant offers. Let every guest choose a public review or private feedback, regardless of their rating.</p>
       </div>
-      <div class="owner-preview">
+      <div class="conversation-card">
         <p class="eyebrow">Let’s make it relevant to you</p>
-        <h3>A walkthrough around your tables.</h3>
-        <p>Tell us how your restaurant runs. We’ll walk through the guest experience, what your team sees and how it could fit your POS and payment setup.</p>
+        <h3>Let’s talk about your floor.</h3>
+        <p>Tell us how your restaurant runs. We’ll discuss your team’s needs, POS compatibility and payment setup, then agree whether a pilot makes sense.</p>
         <p>Bring your questions. We’ll focus on the parts that matter to your floor.</p>
-        <div class="actions"><a class="btn full" data-track="booking_click" data-placement="experience" href="book.html">Book a 15-minute demo</a></div>
+        <div class="actions"><a class="btn full" data-track="booking_click" data-placement="experience" href="book.html">Book a conversation</a></div>
       </div>
     </div>
   </section>
@@ -97,7 +83,7 @@
         <span class="pill">Free two-service pilot</span><h3>A practical test with your team.</h3>
         <ol><li><b>Check the fit.</b> Share your menu, POS and payment setup. We agree the supported workflow before scheduling.</li><li><b>Prepare your floor.</b> Menu setup, table QR cards and staff onboarding are included.</li><li><b>Look at the evidence.</b> Review guest usage, settlement time, staff workload and payment reconciliation.</li></ol>
         <a class="btn" data-track="booking_click" data-placement="pilot" href="book.html">Discuss a pilot</a>
-        <p class="fine">You decide whether to continue after the pilot. Book a walkthrough now; live pilot dates depend on integration readiness.</p>
+        <p class="fine">You decide whether to continue after the pilot. Live pilot dates depend on integration readiness.</p>
       </div>
       <div class="price-card">
         <p class="eyebrow">After the pilot</p><p class="price">$150 <span>/ month / location</span></p>
@@ -112,7 +98,7 @@
   <section class="wrap section faq-section" id="faq" aria-labelledby="faq-title">
     <div><p class="eyebrow">Before you get started</p><h2 id="faq-title">Practical questions.<br>Clear answers.</h2></div>
     <div class="faq">
-      <details><summary>Is this ready to take real payments?</summary><p>The preview uses an illustrative bill. Our walkthrough demonstrates the product with sample data and simulated payments. A live pilot requires a working POS connection and payment-provider setup, which we confirm with you first.</p></details>
+      <details><summary>Is this ready to take real payments?</summary><p>3alayna is currently in development. A live pilot requires a working POS connection and payment-provider setup, which we confirm with you before accepting real payments.</p></details>
       <details><summary>Will it work with my POS?</summary><p>Tell us the name and version of your POS. We need to check access to your live bills and how confirmed payments return to your records. Your POS remains the system of record; we confirm compatibility before agreeing a pilot.</p></details>
       <details><summary>What if a guest wants to pay cash?</summary><p>They can request cash collection and tell the floor which note they will hand over. The request remains pending until staff confirm collection. Guests can also ask their server for help as usual.</p></details>
       <details><summary>Where do payments and tips go?</summary><p>The intended setup uses the restaurant’s own supported merchant accounts. Settlement timing and processing charges depend on the provider and agreement. The restaurant manages tip distribution under its own policy; 3alayna records attribution and payout acknowledgements.</p></details>
@@ -122,7 +108,7 @@
       <details><summary>What happens if the connection drops?</summary><p>Guests can return to the usual staff-assisted payment process. A payment should only be marked confirmed after verification; the pilot will test the fallback and reconciliation process with your team.</p></details>
     </div>
   </section>
-  <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>See how it feels at your table.</h2><p>Tell us about your restaurant. We’ll take you through what matters to your team.</p><div class="actions"><a class="btn" data-track="booking_click" data-placement="footer" href="book.html">Book a demo</a></div></div></section>
+  <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>Let’s talk about your restaurant.</h2><p>Share what your team needs. We’ll help you plan the next step.</p><div class="actions"><a class="btn" data-track="booking_click" data-placement="footer" href="book.html">Book a conversation</a></div></div></section>
 </main>
 <footer class="wrap footer"><a class="logo" href="index.html">3alay<b>na</b></a><p>© 2026 3alayna · For restaurants in Lebanon</p><a data-track="whatsapp_click" data-placement="footer_contact" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%203alayna">Contact us on WhatsApp</a></footer>
 </body>
