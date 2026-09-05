@@ -13,3 +13,10 @@
 !qr.html
 !qr-lib.js
 !pitch.html
+!website.css
+!website.js
+!analytics-config.js
+!analytics.js
+!README.md
+!tests/
+!tests/*.test.cjs

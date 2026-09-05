@@ -328,36 +328,63 @@
         table: s.table || 12, rail: s.rail, amount: +(s.amount || 0),
         tip: +(s.tip || 0), server: s.server || 'Abou Karim',
         note: s.note || 0, change: +(s.change || 0),
+        status: s.rail === 'cash' ? 'pending' : 'confirmed',
         ts: new Date().toISOString()
       });
       write(K.settle, all);
       return all[all.length - 1];
     },
     settlements: function () { seedIfEmpty(); return read(K.settle, []); },
+    settlementStatus: function (s) {
+      if (s.refunded) return 'refunded';
+      if (s.cancelled) return 'cancelled';
+      return s.status || (s.rail === 'cash' ? 'pending' : 'confirmed');
+    },
+    isConfirmed: function (s) { return A.settlementStatus(s) === 'confirmed'; },
+    pendingCash: function () {
+      return A.settlements().filter(function (s) { return s.rail === 'cash' && A.settlementStatus(s) === 'pending'; });
+    },
+    confirmCash: function (id) {
+      var all = A.settlements(), changed = false;
+      all.forEach(function (s) {
+        if (s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') {
+          s.status = 'confirmed'; s.confirmedAt = new Date().toISOString(); changed = true;
+        }
+      });
+      if (changed) write(K.settle, all);
+      return changed;
+    },
+    cancelCash: function (id) {
+      var all = A.settlements();
+      all.forEach(function (s) {
+        if (s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') s.cancelled = new Date().toISOString();
+      });
+      write(K.settle, all);
+    },
     /* refunds MARK, they never delete — the ledger stays append-only and the
        refunded row stays visible, it just leaves every total. Operator action,
        same rule as the rest of settlement state. */
     refund: function (id) {
       var all = read(K.settle, []);
-      all.forEach(function (s) { if (s.id === id && !s.refunded) s.refunded = new Date().toISOString(); });
+      all.forEach(function (s) { if (s.id === id && A.isConfirmed(s)) s.refunded = new Date().toISOString(); });
       write(K.settle, all);
     },
     byRail: function () {
       var t = { whish: 0, card: 0, cash: 0 };
       A.settlements().forEach(function (s) {
-        if (!s.refunded && t[s.rail] !== undefined) t[s.rail] += s.amount;
+        if (A.isConfirmed(s) && t[s.rail] !== undefined) t[s.rail] += s.amount;
       });
       return t;
     },
     settledTotal: function () {
-      return A.settlements().reduce(function (a, b) { return a + (b.refunded ? 0 : b.amount); }, 0);
+      return A.settlements().reduce(function (a, b) { return a + (A.isConfirmed(b) ? b.amount : 0); }, 0);
     },
 
     /* ---- tips ---- */
     tipsOwed: function () {
       var paid = read(K.tips, {}), by = {};
       A.settlements().forEach(function (s) {
-        if (s.tip > 0 && !s.refunded) by[s.server] = (by[s.server] || 0) + s.tip;
+        if (s.tip > 0 && A.isConfirmed(s) && s.rail !== 'cash') by[s.server] = (by[s.server] || 0) + s.tip;
       });
       return Object.keys(by).map(function (n) {
         return { server: n, amount: by[n], paid: !!paid[n] };
