@@ -8,7 +8,7 @@ The public homepage and booking page contain no interactive demos or app preview
 
 Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider, POS backend, shared database, or staff authentication is connected. The pages share `localStorage` between tabs on one browser and origin; they do not synchronize across guest devices. Do not use the demo to collect real payments, real card details, or guest contact data.
 
-Cash selection creates a pending collection request. It is excluded from confirmed revenue and digital tips. In the dashboard, click **Confirm collection**, then **Cash received — confirm** after collection to demonstrate the staff step. The guest tab updates when the same-browser storage event arrives. Requests can be cancelled; confirmed payments can be marked refunded. These are simulation records, not actual financial operations.
+Cash selection creates a pending collection request. It is excluded from confirmed revenue and digital tips. After receiving the cash, tap **Confirm cash received** once in the dashboard. The guest tab refreshes on storage updates and when returning to the tab; its own receipt also survives a reload in that tab. Both pages must use the same browser profile and origin. Guests can close the screen while awaiting collection; this does not mark a request paid. Requests can be cancelled; confirmed payments can be marked refunded. These are simulation records, not actual financial operations.
 
 Tapping any receipt star opens one compact review panel with a comment field and a public/private destination selector. Both destinations are available at every rating; neither prototype action sends a real review or message. The receipt uses the visual viewport, with compact styling for short screens and the on-screen keyboard; overflow remains available for exceptional accessibility sizes.
 
@@ -42,7 +42,7 @@ See [INTEGRATIONS.md](INTEGRATIONS.md) for definitions, report format and the ex
 
 The guest app uses an edge-to-edge viewport with scrollable menu, split and payment content. Only the receipt is designed to fit one screen, with compact sizing for short viewports and an accessible overflow fallback. Payment totals show bill share and tip separately. Restaurant-owned HTTPS dish photos can be added in the menu editor; missing or failed images leave text-only rows.
 
-Operations open on Live floor with pending cash, open bills and confirmed totals. Cash collection controls remain two-step confirmations. Completed payment history and accounting live under Settlement report. Customers and Campaigns have separate tabs; customer history and campaign drafting use accessible dialogs. All existing prototype boundaries still apply.
+Operations open on Live floor with pending cash, open bills and confirmed totals. Cash collection uses one explicit **Confirm cash received** action; refunds retain two-step confirmation. Completed payment history and accounting live under Settlement report. Customers and Campaigns have separate tabs; customer history and campaign drafting use accessible dialogs. All existing prototype boundaries still apply.
 
 ### Commercial pilot offer
 

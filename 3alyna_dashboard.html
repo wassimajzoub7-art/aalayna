@@ -659,11 +659,8 @@ function paintRows(){
         : x.cancelled ? '<span class="rftag">CANCELLED</span>'
         : '');
     if (Aalayna.settlementStatus(x) === 'pending') {
-      var collect = document.createElement('button'); collect.className = 'rfb'; collect.textContent = 'Confirm collection';
-      collect.onclick = function(){
-        if (!collect.classList.contains('arm')) { collect.classList.add('arm'); collect.textContent = 'Cash received — confirm'; return; }
-        if (Aalayna.confirmCash(x.id)) toast('Cash collection recorded (demo)');
-      };
+      var collect = document.createElement('button'); collect.className = 'rfb'; collect.textContent = 'Confirm cash received';
+      collect.onclick = function(){ confirmCashReceived(x.id); };
       d.appendChild(collect);
       var cancel = document.createElement('button'); cancel.className = 'rfb'; cancel.textContent = 'Cancel request';
       cancel.onclick = function(){ Aalayna.cancelCash(x.id); toast('Cash request cancelled'); };
@@ -680,7 +677,11 @@ function paintRows(){
     (Aalayna.settlementStatus(x)==='pending'?cashbox:box).appendChild(d);
   });
 }
-/* two taps, no dialog: first arms the button, second executes */
+function confirmCashReceived(id){
+  if (Aalayna.confirmCash(id)) toast('Cash collection recorded (demo)');
+  else { paintRows(); toast('Request changed. Check its current status.'); }
+}
+/* Refunds retain two taps: first arms the button, second executes. */
 function refundRow(btn, id){
   if (!btn.classList.contains('arm')){
     btn.classList.add('arm');

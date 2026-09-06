@@ -1479,7 +1479,39 @@ function makeBurst(){
     b.appendChild(s);
   }
 }
-var paymentBusy = false, lastSettlementId = null, paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+var paymentBusy = false, lastSettlementId = null, lastSettlementStatus = null, paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+/* Keep this guest's receipt through a tab reload, without choosing another guest's payment. */
+function receiptSessionKey(){ return 'aal.guest-receipt:' + JSON.stringify([Aalayna.venueId(), TABLE]); }
+function rememberReceipt(){
+  try { sessionStorage.setItem(receiptSessionKey(), JSON.stringify({id:lastSettlementId,status:lastSettlementStatus})); } catch(error) {}
+}
+function restoreReceipt(){
+  var saved;
+  try { saved = JSON.parse(sessionStorage.getItem(receiptSessionKey())); } catch(error) { return; }
+  if (!saved || !saved.id) return;
+  var record = Aalayna.settlements().filter(function(s){ return s.id === saved.id && s.venueId === Aalayna.venueId() && s.table === TABLE; })[0];
+  if (!record) return;
+  lastSettlementId = record.id;
+  lastSettlementStatus = saved.status;
+  paymentBusy = true;
+  paintSettlementResult();
+  go('v-done');
+}
+function refreshGuest(){
+  paintSettlementResult();
+  var before = MENU_V;
+  loadMenu();
+  if (MENU_V !== before){ buildCats(true); buildMenu(); renderMenu(); }
+  buildBill(); buildPick(); calcShare();
+}
+function watchGuestChanges(){
+  Aalayna.on(refreshGuest);
+  window.addEventListener('pageshow', refreshGuest);
+  window.addEventListener('focus', refreshGuest);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible') refreshGuest();
+  });
+}
 function settle(){
   if (paymentBusy) return;
   paintPay();
@@ -1524,10 +1556,7 @@ function finishSettle(rail){
     change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
   }); } catch(error) { paymentBusy = false; buildBill(); buildPick(); calcShare(); alert(error.message); return; }
   lastSettlementId = record.id;
-  $('rc-amt').textContent = usd(tot);
-  $('rc-method').textContent = RAIL_NAMES[rail] + (rail === 'cash' && note > 0 && note - tot > 0
-    ? ' · ' + usd(note - tot) + ' change' : '');
-  var d = new Date();
+  lastSettlementStatus = null;
   go('v-done');
   var w = $('inner');
   w.classList.remove('go');
@@ -1542,13 +1571,20 @@ function paintSettlementResult(){
   var record = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
   if (!record) return;
   var status = Aalayna.settlementStatus(record), confirmed = status === 'confirmed';
-  $('result-title').textContent = confirmed ? 'Shukran.' : status === 'pending' ? 'One moment.' : 'Request updated.';
+  $('rc-amt').textContent = usd(record.amount);
+  $('rc-method').textContent = RAIL_NAMES[record.rail] + (record.rail === 'cash' && record.change > 0 ? ' · ' + usd(record.change) + ' change' : '');
+  $('result-title').textContent = confirmed ? 'Shukran.' : status === 'pending' ? 'Cash requested.' : 'Request updated.';
   $('result-seal').textContent = confirmed ? '✓' : '…';
   $('method-label').textContent = confirmed ? 'Paid via' : 'Requested via';
   $('payment-status').textContent = status === 'pending'
-    ? 'Cash requested. Wait for staff confirmation; not marked paid.'
+    ? 'Your server will collect the cash. You can close this screen; not marked paid until collection is confirmed.'
     : confirmed ? 'Demo payment confirmed · no money moved.' : 'This request was ' + status + '. Please speak with your server.';
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
+  if (record.rail === 'cash' && lastSettlementStatus === 'pending' && confirmed && window.AalaynaAnalytics) {
+    AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
+  }
+  lastSettlementStatus = status;
+  rememberReceipt();
 }
 /* Every rating opens the same single review panel. */
 function rate(n){
@@ -1622,7 +1658,8 @@ function toggleCoverage(){
   buildMenu();
 }
 function restart(){
-  paymentBusy = false; lastSettlementId = null; paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  try { sessionStorage.removeItem(receiptSessionKey()); } catch(error) {}
+  paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null; paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
   CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check()});
   $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
@@ -1688,20 +1725,8 @@ function paintVenue(){
 buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue();
 $('staff-demo').href = '3alyna_dashboard.html' + window.location.search;
 staggered = true;
-Aalayna.on(function(){
-  var wasPending = lastSettlementId && $('payment-status').textContent.indexOf('Cash collection requested') === 0;
-  paintSettlementResult();
-  if (wasPending && lastSettlementId) {
-    var current = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
-    if (current && Aalayna.isConfirmed(current) && window.AalaynaAnalytics) AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
-  }
-  buildBill(); buildPick(); calcShare();
-  var before = MENU_V;
-  loadMenu();
-  if (MENU_V !== before){          // a new version was published
-    buildCats(true); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu();
-  }
-});
+restoreReceipt();
+watchGuestChanges();
 </script>
 </body>
 </html>

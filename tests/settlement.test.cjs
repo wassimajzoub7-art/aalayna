@@ -76,8 +76,8 @@ test('guest receipt stays pending until staff confirmation, and hides receipt an
   const a = setup(), cash = a.settle({rail:'cash',amount:42,tip:2});
   const html = fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
   const code = html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Every rating opens'));
-  const nodes = Object.fromEntries(['result-title','result-seal','method-label','payment-status','mailrc','consents','feedback-options'].map(id => [id,{textContent:'',style:{}}]));
-  const ctx = { lastSettlementId:cash.id,Aalayna:a,$:id=>nodes[id] };
+  const nodes = Object.fromEntries(['rc-amt','rc-method','result-title','result-seal','method-label','payment-status','mailrc','consents','feedback-options'].map(id => [id,{textContent:'',style:{}}]));
+  const ctx = { lastSettlementId:cash.id,lastSettlementStatus:null,Aalayna:a,$:id=>nodes[id],usd:n=>'$'+n.toFixed(2),RAIL_NAMES:{cash:'Cash'},window:{},rememberReceipt(){} };
   vm.createContext(ctx);vm.runInContext(code,ctx);
   ctx.paintSettlementResult();
   assert.match(nodes['payment-status'].textContent,/not marked paid/);
@@ -87,6 +87,60 @@ test('guest receipt stays pending until staff confirmation, and hides receipt an
   assert.match(nodes['payment-status'].textContent,/confirmed/);
   assert.equal(nodes.mailrc.style.display,'');
   assert.equal(nodes['feedback-options'].style.display,'');
+});
+function guestSession(a, storage = new Map()) {
+  const html = fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
+  const nodes = Object.fromEntries(['rc-amt','rc-method','result-title','result-seal','method-label','payment-status','mailrc','consents','feedback-options'].map(id=>[id,{textContent:'',style:{}}]));
+  const events = {}, tracked = [], views = [];
+  a.venueId = a.venueId || (()=>a.venue().name);
+  const analytics = {track:(...args)=>tracked.push(args)};
+  const context = {Aalayna:a,TABLE:12,MENU_V:1,$:id=>nodes[id],usd:n=>'$'+n.toFixed(2),RAIL_NAMES:{cash:'Cash',card:'Card'},
+    sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},
+    window:{addEventListener:(name,fn)=>events[name]=fn,AalaynaAnalytics:analytics},AalaynaAnalytics:analytics,
+    document:{visibilityState:'visible',addEventListener:(name,fn)=>events[name]=fn},go:id=>views.push(id),
+    loadMenu(){},buildCats(){},buildMenu(){},renderMenu(){},buildBill(){},buildPick(){},calcShare(){}};
+  vm.createContext(context);
+  vm.runInContext(html.slice(html.indexOf('var paymentBusy ='),html.indexOf('function settle(){'))+
+    html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Every rating opens')),context);
+  return {context,nodes,events,tracked,views,storage};
+}
+test('returning to the guest tab catches confirmation without a storage event and counts it once',()=>{
+  for(const event of ['focus','pageshow','visibilitychange']){
+    const a=setup(),cash=a.settle({rail:'cash',amount:42,tip:2});
+    const g=guestSession(a);g.context.lastSettlementId=cash.id;g.context.paintSettlementResult();
+    // The store callback is deliberately disconnected to model a missed notification.
+    a.on=()=>{};g.context.watchGuestChanges();
+    g.events[event]();assert.equal(g.nodes['method-label'].textContent,'Requested via');
+    a.confirmCash(cash.id);assert.equal(g.nodes['method-label'].textContent,'Requested via');
+    g.events[event]();assert.equal(g.nodes['method-label'].textContent,'Paid via');
+    g.events[event]();assert.equal(g.tracked.length,1);
+    assert.deepEqual(g.tracked[0],['demo_complete','cash_confirmed']);
+  }
+});
+test('reload restores this tab’s exact receipt, including confirmation received while away',()=>{
+  const a=setup(),cash=a.settle({rail:'cash',amount:42,tip:2,note:50});
+  const g=guestSession(a);g.context.lastSettlementId=cash.id;g.context.paintSettlementResult();
+  a.settle({rail:'card',amount:90}); // A different guest must never replace the saved receipt.
+  let reload=guestSession(a,g.storage);reload.context.restoreReceipt();
+  assert.equal(reload.context.lastSettlementId,cash.id);assert.equal(reload.nodes['result-title'].textContent,'Cash requested.');
+  a.confirmCash(cash.id);
+  reload=guestSession(a,g.storage);reload.context.restoreReceipt();
+  assert.equal(reload.nodes['rc-amt'].textContent,'$42.00');assert.equal(reload.nodes['rc-method'].textContent,'Cash · $8.00 change');
+  assert.equal(reload.nodes['method-label'].textContent,'Paid via');assert.deepEqual(reload.views,['v-done']);
+  const fresh=guestSession(a);fresh.context.restoreReceipt();assert.equal(fresh.context.lastSettlementId,null);
+  const otherTable=guestSession(a,g.storage);otherTable.context.TABLE=13;otherTable.context.restoreReceipt();assert.equal(otherTable.context.lastSettlementId,null);
+  a.setVenue({name:'Other restaurant',place:'Beirut'});
+  const otherVenue=guestSession(a,g.storage);otherVenue.context.restoreReceipt();assert.equal(otherVenue.context.lastSettlementId,null);
+});
+test('one explicit staff action confirms cash and stale actions show feedback',()=>{
+  const a=setup(),cash=a.settle({rail:'cash',amount:42});
+  const html=fs.readFileSync(path.join(__dirname,'../3alyna_dashboard.html'),'utf8');
+  const code=html.slice(html.indexOf('function confirmCashReceived(id){'),html.indexOf('/* Refunds retain'));
+  const messages=[];let refreshed=0;
+  const ctx={Aalayna:a,toast:message=>messages.push(message),paintRows:()=>refreshed++};
+  vm.createContext(ctx);vm.runInContext(code,ctx);ctx.confirmCashReceived(cash.id);
+  assert.equal(a.pendingCash().length,0);assert.equal(a.settledTotal(),42);assert.match(messages[0],/recorded/);
+  ctx.confirmCashReceived(cash.id);assert.equal(a.settledTotal(),42);assert.equal(refreshed,1);assert.match(messages[1],/Request changed/);
 });
 test('payment breakdown updates with tips and keeps cash coverage validation', () => {
   const html=fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
