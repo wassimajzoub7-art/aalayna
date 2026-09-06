@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=15"></script>
+<script src="aalayna-store.js?v=16"></script>
 <script src="restaurant-growth.js?v=1"></script>
-<link rel="stylesheet" href="restaurant-ops.css?v=1">
+
 <style>
   :root{
     --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
@@ -238,6 +238,7 @@
     .btn:active{transform:none}
   }
 </style>
+<link rel="stylesheet" href="restaurant-ops.css?v=2">
 </head>
 <body>
 
@@ -249,7 +250,7 @@
   <nav>
     <button class="ni on" onclick="go(this,'tonight')">Tonight</button>
     <button class="ni" onclick="go(this,'week')">This week</button>
-    <button class="ni" onclick="go(this,'guests')">Guests</button>
+    <button class="ni" onclick="go(this,'guests')">Customers</button>
     <button class="ni" onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
     <button class="ni" onclick="go(this,'team')">Team</button>
   </nav>
@@ -271,7 +272,28 @@
       </div>
     </div>
 
-    <div class="grid g4">
+    <nav class="ops-tabs" aria-label="Tonight views"><button type="button" aria-pressed="true" data-group="service" data-panel="service-live" onclick="opsPanel('service','service-live')">Live floor</button><button type="button" aria-pressed="false" data-group="service" data-panel="service-report" onclick="opsPanel('service','service-report')">Settlement report</button></nav>
+    <section id="service-live" data-panel-group="service">
+      <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Confirmed payments</span><strong id="live-paid">$0.00</strong></div></div>
+      <div class="card attention-card"><div class="ops-heading"><div><h3>Needs attention</h3><p class="cs">Confirm cash only after it reaches your hands.</p></div><span class="status-badge pending" id="cash-count">0 waiting</span></div><div id="cash-queue" aria-live="polite"></div></div>
+      <div class="grid live-grid mt">    <div class="card"><h3>Balances by bill</h3><div class="cs">Bill amounts exclude tips. Pending cash reserves a share but does not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
+    <div class="card">
+      <h3>Floor tonight</h3>
+      <details class="ops-help"><summary>Assign servers &amp; arrange tables</summary><p>Select a server, then tap their tables. Drag tables to match your room. Assignments determine who receives tips; a connected POS will supply these later.</p></details>
+      <div class="fl-row" id="fl-servers"></div>
+      <div class="fl-map" id="fl-tables">
+        <span class="fl-lbl" style="left:12px;top:10px">Window</span>
+        <span class="fl-lbl" style="right:12px;top:10px">Bar</span>
+        <span class="fl-lbl" style="left:12px;bottom:10px">Entrance</span>
+        <span class="fl-lbl" style="right:12px;bottom:10px">Terrace</span>
+      </div>
+      <label class="fl-pool"><input type="checkbox" id="fl-pooled" onchange="floorPool(this.checked)">
+        This venue pools tips (one house pool, no per-table assignment)</label>
+    </div>
+
+</div>
+    </section>
+    <section id="service-report" data-panel-group="service" hidden>    <div class="grid g4">
       <div class="card"><div class="k">Settled in-app</div><div class="v" id="k-tot">$0.00</div>
         <div class="d">including tips</div></div>
       <div class="card"><div class="k">Tables with confirmed payments</div><div class="v" id="t-scan">0</div>
@@ -293,7 +315,7 @@
           <div class="sr tot"><span class="rail">Total settled in-app</span><span class="amt" id="r-tot">$0.00</span></div>
         </div>
         <div class="note warn" id="shortbox" style="display:none"></div>
-        <div class="note"><span>ⓘ</span><span id="t-note"></span></div>
+        <details class="ops-help"><summary>About this statement</summary><p id="t-note"></p></details>
       </div>
 
       <div class="card">
@@ -305,28 +327,11 @@
     </div>
 
     <div class="card mt">
-      <h3>Floor tonight</h3>
-      <div class="cs">Pick a server, then tap their tables on the plan. Drag tables to match
-        your room. Guests tipping at those tables tip that server by name. Replaced by the
-        POS employee-on-check once integrated.</div>
-      <div class="fl-row" id="fl-servers"></div>
-      <div class="fl-map" id="fl-tables">
-        <span class="fl-lbl" style="left:12px;top:10px">Window</span>
-        <span class="fl-lbl" style="right:12px;top:10px">Bar</span>
-        <span class="fl-lbl" style="left:12px;bottom:10px">Entrance</span>
-        <span class="fl-lbl" style="right:12px;bottom:10px">Terrace</span>
-      </div>
-      <label class="fl-pool"><input type="checkbox" id="fl-pooled" onchange="floorPool(this.checked)">
-        This venue pools tips (one house pool, no per-table assignment)</label>
-    </div>
-
-    <div class="card mt"><h3>Balances by bill</h3><div class="cs">Bill amounts exclude tips. Pending cash reserves a share but does not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
-    <div class="card mt">
-      <h3>Settlements</h3>
-      <div class="cs">Every payment recorded for this restaurant. Refunds mark the row and leave the
-        statement &mdash; nothing is ever deleted.</div>
+      <h3>Payment history</h3>
+      <div class="cs">Confirmed, cancelled and refunded payments. Pending cash is on the Live floor.</div>
       <div id="setrows" style="margin-top:10px"></div>
     </div>
+</section>
   </div>
 
   <div class="view" id="v-week">
@@ -348,13 +353,20 @@
       <div class="card"><div class="k">Marketing permission</div><div class="v" id="gl-mkt">0</div></div>
       <div class="card"><div class="k">More than one recorded visit</div><div class="v" id="gl-ret">0</div></div>
     </div>
-    <div class="card mb"><h3>Customer history</h3><div class="cs">Each bill counts once per contact. Spending is their linked share, excluding tips and refunds. A phone number must include its country code.</div>
+    <nav class="ops-tabs" aria-label="Customer views"><button type="button" aria-pressed="true" data-group="growth" data-panel="growth-customers" onclick="opsPanel('growth','growth-customers')">Customers</button><button type="button" aria-pressed="false" data-group="growth" data-panel="growth-campaigns" onclick="opsPanel('growth','growth-campaigns')">Campaigns</button></nav>
+    <section id="growth-customers" data-panel-group="growth">    <div class="card mb"><h3>Customer history</h3><details class="ops-help"><summary>How visits and spending are counted</summary><p>Each bill counts once per contact. Spending is their linked share, excluding tips and refunds. Phone numbers include their country code.</p></details>
       <label class="ops-label" for="guest-search">Find a contact</label><input class="in" id="guest-search" type="search" placeholder="Email or phone number" oninput="paintGrowthCustomers()">
-      <div id="gl-rows" class="ops-list"></div><div id="customer-detail" class="mt" aria-live="polite"></div>
+      <div id="gl-rows" class="ops-list"></div>
       <p class="cs" id="legacy-guests"></p>
     </div>
-    <div class="grid g2">
-      <div class="card"><h3>Prepare a return-visit campaign</h3>
+</section>
+    <section id="growth-campaigns" data-panel-group="growth" hidden>
+      <div class="card"><div class="ops-heading"><div><h3>Campaigns &amp; outcomes</h3><p class="cs">Invite guests back, then follow their return visits.</p></div><button class="btn primary" onclick="openCampaign()">New campaign</button></div>
+      <details class="ops-help"><summary>How campaign results work</summary><p>Returns are measured for 30 days after approval. Delivery counts come only from an imported provider report. Approval and export do not send messages.</p></details><div id="cp-rows" class="ops-list"></div></div>
+    </section>
+    <details class="ops-help mt"><summary>Customer permissions &amp; privacy</summary><p>Customer details and permissions stay with this restaurant. Dietary selections are not added to profiles. Marketing opt-outs remove contacts from subsequent audience exports.</p></details>
+  </div>
+  <dialog id="campaign-compose" class="ops-dialog" aria-labelledby="compose-title"><div class="ops-heading"><h2 id="compose-title">New return-visit campaign</h2><button class="btn icon-btn" type="button" aria-label="Close campaign" onclick="closeCampaign()">×</button></div>
         <div class="cs">Draft, review and approve an audience. Messaging is not connected: approval and export do not send a message.</div>
         <div class="cf">
           <label class="ops-label" for="cp-name">Campaign name</label><input class="in" id="cp-name" maxlength="100" placeholder="Invite first-time guests back">
@@ -367,11 +379,8 @@
           <label class="ops-label"><input id="cp-holdout" type="checkbox" checked> Reserve 20% as a comparison group (minimum five contacts)</label>
           <button class="btn primary" onclick="saveGrowthCampaign()">Save draft for review</button>
         </div>
-      </div>
-      <div class="card"><h3>Campaigns &amp; outcomes</h3><div class="cs">Returns are measured for 30 days after approval. Delivery counts come only from an imported provider report.</div><div id="cp-rows" class="ops-list"></div></div>
-    </div>
-    <div class="note mt"><span>ⓘ</span><span>Customer data and permissions stay with this restaurant. Dietary selections are not added to customer profiles. Withdrawing marketing permission removes the contact from subsequent audience exports.</span></div>
-  </div>
+      </dialog>
+  <dialog id="customer-dialog" class="ops-dialog" aria-label="Customer history"><div class="ops-heading"><h2>Customer history</h2><button class="btn icon-btn" aria-label="Close customer history" onclick="document.getElementById('customer-dialog').close()">×</button></div><div id="customer-detail" aria-live="polite"></div></dialog>
 
   <!-- ═══════════ REVIEWS ═══════════ -->
   <div class="view" id="v-reviews">
@@ -443,7 +452,7 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=1"></script>
+<script src="restaurant-ops.js?v=2"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var DWELL = [
@@ -625,7 +634,10 @@ function floorPool(on){
 function paintGuests(){ paintGrowth(); }
 var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function paintRows(){
-  var box = $('setrows'); box.innerHTML = '';
+  var box = $('setrows'), cashbox=$('cash-queue'); box.innerHTML = '';cashbox.replaceChildren();
+  var pendingRows=Aalayna.pendingCash();$('cash-count').textContent=pendingRows.length+' waiting';
+  if(!pendingRows.length)cashbox.appendChild(opsEl('p','All clear. No cash requests are waiting for collection.','ops-empty'));
+  if(!Aalayna.settlements().some(function(x){return Aalayna.settlementStatus(x)!=='pending';}))box.appendChild(opsEl('p','No completed payments yet. Pending cash appears on the Live floor.','ops-empty'));
   var all = Aalayna.settlements().slice().reverse();
   if (!all.length){
     box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:12px 0">No settlements yet ' +
@@ -665,7 +677,7 @@ function paintRows(){
       change.textContent = x.note ? 'Guest declares ' + money(x.note) + ' · change ' + money(x.change) : 'Guest declares exact cash';
       d.appendChild(change);
     }
-    box.appendChild(d);
+    (Aalayna.settlementStatus(x)==='pending'?cashbox:box).appendChild(d);
   });
 }
 /* two taps, no dialog: first arms the button, second executes */

@@ -88,3 +88,23 @@ test('guest receipt stays pending until staff confirmation, and hides receipt an
   assert.equal(nodes.mailrc.style.display,'');
   assert.equal(nodes['feedback-options'].style.display,'');
 });
+test('payment breakdown updates with tips and keeps cash coverage validation', () => {
+  const html=fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
+  const code=html.slice(html.indexOf('function paintPay(){'),html.indexOf('/* ---------------- success'));
+  const nodes=Object.fromEntries(['bigamt','bigll','pay-share','pay-tip','tv5','tv10','tv15','paybtn'].map(id=>[id,{}]));
+  let tip=3.81,changeDue;
+  const context={share:38.13,kind:'whish',note:0,tipAmt:()=>tip,$:id=>nodes[id],usd:x=>'$'+x.toFixed(2),ll:x=>'LL '+Math.round(x*89500),paintChange:x=>changeDue=x};
+  vm.createContext(context);vm.runInContext(code,context);context.paintPay();
+  assert.equal(nodes['pay-share'].textContent,'$38.13');assert.equal(nodes['pay-tip'].textContent,'$3.81');assert.equal(nodes.bigamt.textContent,'$41.94');
+  tip=0;context.paintPay();assert.equal(nodes.bigamt.textContent,'$38.13');assert.equal(nodes['pay-tip'].textContent,'$0.00');
+  context.kind='cash';context.note=20;context.paintPay();assert.equal(nodes.paybtn.disabled,true);assert.equal(changeDue,38.13);
+  context.note=50;context.paintPay();assert.equal(nodes.paybtn.disabled,false);
+});
+test('optional dish photos survive publication and reject non-HTTPS image sources',()=>{
+  const a=setup(),d=a.draft();d.items[0].imageUrl='https://restaurant.example/dish.jpg';a.saveDraft(d);a.publish();
+  assert.equal(a.published().items[0].imageUrl,'https://restaurant.example/dish.jpg');
+  for(const url of ['javascript:alert(1)','data:image/svg+xml,test','http://restaurant.example/dish.jpg']){
+    const next=a.draft();next.items[0].imageUrl=url;a.saveDraft(next);assert.equal(a.draft().items[0].imageUrl,'');
+  }
+  assert.equal(a.published().items[0].imageUrl,'https://restaurant.example/dish.jpg');
+});

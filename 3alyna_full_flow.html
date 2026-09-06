@@ -454,7 +454,7 @@
   #dstars button.star{background:none;border:0;padding:4px;min-width:44px;min-height:44px;font:inherit;font-size:28px;cursor:pointer}
   body.receipt-mode{height:100vh;height:var(--app-height,100dvh);min-height:0;padding:0;overflow:hidden;justify-content:center;background:var(--green-deep)}
   body.receipt-mode>.stage,body.receipt-mode>.switcher,body.receipt-mode>.note-out{display:none}
-  body.receipt-mode .phone{width:410px;max-width:100%;height:100%;min-height:0;max-height:none;border:0;border-radius:0;box-shadow:none;container-type:size;container-name:receipt}
+  body.receipt-mode .phone{width:480px;max-width:100%;height:100%;min-height:0;max-height:none;border:0;border-radius:0;box-shadow:none;container-type:size;container-name:receipt}
   .receipt-mode .done-body{padding:18px 20px 8px;justify-content:center;gap:8px;overflow-y:auto}
   .receipt-mode .seal{width:36px;height:36px;flex:0 0 36px;font-size:21px;margin:0}
   .receipt-mode .seal::after,.receipt-mode .est2,.receipt-mode .ar,.receipt-mode .rule2{display:none}
@@ -505,6 +505,66 @@
   /* legacy keyframes kept as no-ops for JS-toggled classes */
   @keyframes pop{from{opacity:0}to{opacity:0}}
   @keyframes stamp{from{opacity:1}to{opacity:1}}
+
+  /* Guest visual system: full-height app; scrolling stays within each task. */
+  :root{--sub:#58655E;--faint:#66736B}
+  body{padding:0;background:#EEF1EC}
+  .stage,.switcher,.note-out{display:none}
+  .phone{width:480px;max-width:100%;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:0 0 60px #173D2510}
+  .screen::before{content:'Preview · no money moves';position:absolute;inset:0 0 auto;height:28px;display:flex;align-items:center;justify-content:center;background:#EEF3ED;color:#43594D;font-size:12px;z-index:60}
+  .view{top:28px}
+  .scroll{min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
+  .back{width:44px;height:44px;font-size:20px;top:12px}
+  .cta{font-size:16px;min-height:48px}
+  .dock{padding:12px 20px max(16px,env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--surface) 16%)}
+  .hero{height:154px}
+  .crest{border:0;padding:12px}
+  .crest .est{font-size:11px;letter-spacing:.16em}
+  .crest .name{font-size:32px}
+  .crest .place{font-size:14px;color:#BDD0C4}
+  .crest .rule{margin-top:8px}
+  .land-body{flex:0 1 auto;padding:28px 24px 20px;overflow:visible}
+  #v-land{overflow-y:auto}
+  #v-land .dock{position:static;margin-top:12px;padding:0 24px 24px;background:none}
+  .greet{font-size:32px}.tbl{font-size:14px;padding:7px 12px}
+  .note{font-size:16px;line-height:1.6}
+  .powered{font-size:12px}
+  .m-head{padding:16px 170px 0 68px;min-height:72px}
+  .m-head .vn{font-size:23px;line-height:1.2}.m-head .vs{font-size:13px;line-height:1.4;margin-top:4px}
+  .sels{top:12px;gap:6px}.sel select{min-height:44px;font-size:14px;padding:8px 23px 8px 10px}
+  .sel::after{font-size:11px}
+  .ftrig{padding:12px 20px 0}.fbtn,.fc{font-size:14px;min-height:40px}.fbtn .fi{font-size:15px}
+  .cats{padding:8px 20px 0;gap:20px}.cat{min-height:44px;font-size:14px;padding:8px 0}
+  .sect-h{font-size:12px;color:var(--green);padding:24px 20px 10px;letter-spacing:.06em}
+  .mi{padding:18px 20px;gap:12px;align-items:flex-start;position:relative}
+  .mi .tx{min-width:0;flex:1}.mi .mn{font-size:16px;line-height:1.35;font-weight:600}
+  .mi .md{font-size:14px;line-height:1.5;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .mi .mp{font-size:16px;white-space:nowrap}.mi .more{display:none}
+  .mi .item-end{display:flex;align-items:center;gap:10px}.details-arrow{font-size:22px;color:var(--green);line-height:1}
+  .menu-photo{width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;background:var(--green-bg)}
+  .mi:focus-visible,.pm:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--green);outline-offset:-3px}
+  .seg button{font-size:14px;min-height:48px}.ppl .lab{font-size:15px}
+  .stp button,.sb{min-width:44px;width:44px;height:44px;font-size:18px}.sn{font-size:13px;min-width:36px}
+  .pl{font-size:15px;flex-wrap:wrap}.pl .st{gap:6px}.share .k{font-size:13px}.share .ll{font-size:14px;opacity:1}
+  .hint{font-size:14px;line-height:1.55}.amt .who{font-size:14px;color:var(--green);font-weight:600}
+  .amt .big{font-size:44px}.amt .ll{font-size:14px}
+  #v-pay>.scroll{padding:76px 20px 128px!important}
+  .pay-breakdown{margin:18px auto 0;padding:12px 16px;border-radius:12px;background:var(--green-bg);display:flex;justify-content:space-between;gap:12px;text-align:start;font-size:14px}
+  .pay-breakdown span{display:flex;flex-direction:column;gap:4px;color:var(--sub)}.pay-breakdown b{color:var(--ink);font-size:16px}
+  .tiphead .l{font-size:15px}.tipb{min-height:58px}.tipb .tp{font-size:15px}.tipb .tv{font-size:12px}
+  .pm{min-height:72px}.pm .pn{font-size:16px}.pm .pd{font-size:13px;line-height:1.4;margin-top:3px}
+  .chg-q,.cashnote,.chg-out{font-size:14px;line-height:1.5}.chip{min-height:44px;font-size:15px}
+  .sheet .ss,.sim-note,.wh-s,.hint,.inc{font-size:14px}.inc{font-size:16px;min-height:44px}
+  .receipt-mode .screen::before{display:none}.receipt-mode .view{top:0}
+  .receipt-mode .mailin{border-color:#789C88;background:#204F3E;padding-inline:10px}
+  .receipt-mode .mailin::placeholder{color:#CEE0D4;opacity:1}
+  .receipt-mode .mailbtn{width:auto;padding:0 13px;min-width:60px;font-size:14px;font-weight:600;border-color:#789C88}
+  .receipt-mode .consents{gap:8px}.receipt-mode .consents label{align-items:flex-start;text-align:start;gap:9px}
+  .receipt-mode .consents input{margin-top:1px}.receipt-mode .rc-r,.receipt-mode .rc-note{color:#C5D8CB}
+  .receipt-mode .mailin:focus-visible,.receipt-mode .mailbtn:focus-visible,.receipt-mode .star:focus-visible{outline:2px solid #F0DFA8;outline-offset:2px}
+  @media(max-width:380px){.m-head{padding-inline-end:20px;padding-top:66px}.sels{inset-inline-end:16px}.mi{gap:8px;padding-inline:16px}.menu-photo{width:48px;height:48px}.mi .item-end{gap:5px}.seg button{font-size:13px}}
+  @container receipt (max-height:600px){.receipt-mode .consents{gap:6px}}
+
 </style>
 </head>
 <body>
@@ -529,8 +589,7 @@
       <div class="greet">Ahla w sahla</div>
       <div class="tbl"><span class="dot"></span>Table 12 &middot; sample bill</div>
       <div class="note">
-        Have a look at the menu, take your time. When you're done, open the bill,
-        split it however you like, and settle it without waiting for anyone.
+        Explore the menu. When you’re ready, split the bill your way and pay from your table.
       </div>
     </div>
     <div class="dock">
@@ -633,16 +692,17 @@
     <button class="back" onclick="go('v-settle')">&#8592;</button>
     <div class="scroll" style="padding:88px 20px 130px">
       <div class="amt">
-        <div class="who">Your share &middot; Table 12</div>
+        <div class="who">Total to pay &middot; Table 12</div>
         <div class="display big" id="bigamt">$38.13</div>
         <div class="ll" id="bigll">&asymp; LL 3,408,522</div>
+        <div class="pay-breakdown"><span>Bill share<b id="pay-share">$38.13</b></span><span>Tip<b id="pay-tip">$3.81</b></span></div>
       </div>
       <div class="tipwrap">
         <div class="tiphead">
           <div class="l" id="tip-who">Something for Abou Karim?</div>
         </div>
         <div class="tips">
-          <button class="tipb" onclick="setTip(this,0)"><div class="tp">Nope</div><div class="tv">&nbsp;</div></button>
+          <button class="tipb" onclick="setTip(this,0)"><div class="tp">No tip</div><div class="tv">&nbsp;</div></button>
           <button class="tipb" onclick="setTip(this,.05)"><div class="tp">5%</div><div class="tv" id="tv5">$1.91</div></button>
           <button class="tipb on" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
           <button class="tipb" onclick="setTip(this,.15)"><div class="tp">15%</div><div class="tv" id="tv15">$5.72</div></button>
@@ -655,17 +715,17 @@
         </div>
       </div>
       <div class="pays">
-        <div class="pm on" onclick="pick(this,'whish')">
+        <div class="pm on" role="button" tabindex="0" aria-pressed="true" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'whish')">
           <div class="mark" style="background:#E4002B">whish</div>
           <div><div class="pn">Whish Money</div><div class="pd">Opens with the amount filled in</div></div>
           <div class="radio"></div>
         </div>
-        <div class="pm" onclick="pick(this,'card')">
+        <div class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'card')">
           <div class="mark" style="background:#1A1F71">VISA</div>
           <div><div class="pn">Card</div><div class="pd">Visa, Mastercard, Amex</div></div>
           <div class="radio"></div>
         </div>
-        <div class="pm" onclick="pick(this,'cash')">
+        <div class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'cash')">
           <div class="mark" style="background:#3F8F6B">CASH</div>
           <div><div class="pn">Paying cash</div><div class="pd">Staff confirm after collection</div></div>
           <div class="radio"></div>
@@ -711,12 +771,12 @@
 
         <div class="mailrc" id="mailrc">
           <input class="mailin" id="mail-in" type="text" inputmode="text"
-            placeholder="Sample +961 number or email" aria-label="Optional receipt or offers contact">
-          <button class="mailbtn" onclick="sendReceipt()" aria-label="Send">&#10148;</button>
+            placeholder="+961 number or email" aria-label="Optional receipt or offers contact">
+          <button class="mailbtn" onclick="sendReceipt()" aria-label="Send">Send</button>
         </div>
         <div class="consents" id="consents">
-          <label><input type="checkbox" id="c-receipt" checked> Send me my receipt</label>
-          <label><input type="checkbox" id="c-mkt"> Send me <span class="v-short">Hallab</span>'s offers and specials</label>
+          <label><input type="checkbox" id="c-receipt" checked><span>Send me my receipt</span></label>
+          <label><input type="checkbox" id="c-mkt"><span>Send me <span class="v-short">Hallab</span>'s offers and specials</span></label>
         </div>
 
 
@@ -843,7 +903,7 @@
   cash option. Public reviews and private feedback are offered equally, for every rating. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=15"></script>
+<script src="aalayna-store.js?v=16"></script>
 <script src="restaurant-growth.js?v=1"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
@@ -870,7 +930,7 @@ function loadMenu(){
   var live = {};
   CATS.forEach(function(c){ live[c.id] = 1; });
   MENU = m.items.filter(function(x){ return live[x.sec]; }).map(function(x){
-    return {id:x.id, c:x.sec, n:x.name, d:x.desc, p:x.price, ing:x.ing, al:x.al,
+    return {id:x.id, c:x.sec, n:x.name, d:x.desc, p:x.price, imageUrl:x.imageUrl, ing:x.ing, al:x.al,
             kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
             opts:x.opts||[], tr:x.tr};
   });
@@ -1078,18 +1138,20 @@ function buildMenu(){
       var d = document.createElement('div');
       d.className = 'mi';
       d.onclick = function(){ openItem(m); };
+      d.tabIndex=0;d.setAttribute('role','button');d.setAttribute('aria-label',nameOf(m)+' · '+price(m.p));
+      d.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openItem(m);}};
       if (!staggered){
         d.style.animation = 'rowIn .25s var(--ease) both';
         d.style.animationDelay = Math.min(MENU.indexOf(m), 8) * 35 + 'ms';
       }
       d.innerHTML =
         '<div class="tx">' +
-          '<div class="mn">' + nameOf(m) + '</div>' +
-          '<div class="md">' + descOf(m) + '</div>' +
+          '<div class="mn">' + esc(nameOf(m)) + '</div>' +
+          '<div class="md">' + esc(descOf(m)) + '</div>' +
           '<div class="why"><span class="x">&#10005;</span><span class="wt"></span></div>' +
-          '<div class="more">' + t('more') + '<span class="ch">&#8250;</span></div>' +
         '</div>' +
-        '<div class="mp">' + price(m.p) + '</div>';
+        '<div class="item-end"><div class="mp">' + price(m.p) + '</div><span class="details-arrow" aria-hidden="true">&#8250;</span></div>';
+      if(m.imageUrl){var img=document.createElement('img');img.className='menu-photo';img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=m.imageUrl;img.onerror=function(){this.remove();};d.prepend(img);}
       d._m = m;
       s.appendChild(d);
     });
@@ -1360,8 +1422,8 @@ function tipTyped(){
 }
 function pick(el, k){
   kind = k;
-  document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on'); });
-  el.classList.add('on');
+  document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on');p.setAttribute('aria-pressed','false'); });
+  el.classList.add('on');el.setAttribute('aria-pressed','true');
   $('cashnote').style.display = (k === 'cash') ? 'block' : 'none';
   $('chg').classList.toggle('on', k === 'cash');
   paintPay();
@@ -1389,6 +1451,8 @@ function paintChange(due){
 function paintPay(){
   var t = tipAmt(), tot = share + t, isCash = (kind === 'cash');
   $('bigamt').textContent = usd(tot);
+  $('pay-share').textContent = usd(share);
+  $('pay-tip').textContent = usd(t);
   $('bigll').textContent = ll(tot);
   $('tv5').textContent  = usd(share * .05);
   $('tv10').textContent = usd(share * .10);
@@ -1578,7 +1642,7 @@ function restart(){
   $('mail-in').value = ''; $('mail-in').disabled = false;
   $('consents').classList.remove('done'); $('c-receipt').checked = true; $('c-mkt').checked = false;
   var mb = document.querySelector('.mailbtn');
-  mb.innerHTML = '&#10148;'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
+  mb.textContent = 'Send'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
   buildBill(); buildPick(); calcShare();
   go('v-land');
 }

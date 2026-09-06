@@ -37,3 +37,9 @@ The owner dashboard now includes customer profiles with confirmed visit history 
 The guest flow uses a persistent check ID; restarting lets another payer use the same bill. Close a fully settled bill in the owner dashboard before starting the next table session. Contact capture attaches to a confirmed payment, including staff-confirmed cash. Repeated receipt submissions do not create visits.
 
 See [INTEGRATIONS.md](INTEGRATIONS.md) for definitions, report format and the exact live POS, payment, authentication and messaging prerequisites. These features remain local prototype workflows, not a connected production service.
+
+### Product visual update
+
+The guest app uses an edge-to-edge viewport with scrollable menu, split and payment content. Only the receipt is designed to fit one screen, with compact sizing for short viewports and an accessible overflow fallback. Payment totals show bill share and tip separately. Restaurant-owned HTTPS dish photos can be added in the menu editor; missing or failed images leave text-only rows.
+
+Operations open on Live floor with pending cash, open bills and confirmed totals. Cash collection controls remain two-step confirmations. Completed payment history and accounting live under Settlement report. Customers and Campaigns have separate tabs; customer history and campaign drafting use accessible dialogs. All existing prototype boundaries still apply.

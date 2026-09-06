@@ -340,6 +340,7 @@
         <div class="lb"><span id="ed-desc-lb">What's in it</span> <span class="tag" id="ed-lang-tag2">EN</span></div>
         <textarea class="in" id="ed-desc" oninput="edStash()"></textarea>
       </div>
+      <div class="fld"><label class="lb" for="ed-photo">Dish photo (optional)</label><input class="in" id="ed-photo" type="url" placeholder="https://…" oninput="cur().imageUrl=this.value.trim();dirty()"><div class="hint">Use a photo of this dish that your restaurant owns. Leave blank for a text-only menu.</div></div>
       <button class="cta cta-gold" id="ed-draft-one" style="margin-top:10px;display:none" onclick="draftLang()">
         Auto-draft this language from English
       </button>
@@ -471,7 +472,7 @@ function pull(){
   var d = Aalayna.draft();
   SECTIONS = d.sections.map(function(x){ return {id:x.id, name:x.name, w:x.win}; });
   ITEMS    = d.items.map(function(x){
-    return {id:x.id, s:x.sec, n:x.name, d:x.desc, p:x.price, fr:x.fr, ar:x.ar,
+    return {id:x.id, s:x.sec, n:x.name, d:x.desc, p:x.price, imageUrl:x.imageUrl||'', fr:x.fr, ar:x.ar,
             ing:(x.ing||[]).slice(), al:(x.al||[]).slice(),
             tr: x.tr ? JSON.parse(JSON.stringify(x.tr)) : {fr:{n:'',d:''},ar:{n:'',d:''}},
             kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
@@ -484,7 +485,7 @@ function push(){
   d.items = ITEMS.map(function(x){
     var prev = (Aalayna.published().items.filter(function(o){ return o.id === x.id; })[0]) || {};
     return Object.assign({}, prev, {
-      id:x.id, sec:x.s, name:x.n, desc:x.d, price:x.p,
+      id:x.id, sec:x.s, name:x.n, desc:x.d, price:x.p, imageUrl:x.imageUrl||'',
       ing:x.ing, al:x.al, tr:x.tr, kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
       opts:x.opts || []
     });
@@ -771,6 +772,7 @@ function edPaint(){
   var b = edBuf[edLang];
   $('ed-name').value = b.n;
   $('ed-desc').value = b.d;
+  $('ed-photo').value = cur().imageUrl || '';
   var rtl = edLang === 'ar';
   $('ed-name').setAttribute('dir', rtl ? 'rtl' : 'ltr');
   $('ed-desc').setAttribute('dir', rtl ? 'rtl' : 'ltr');
@@ -860,6 +862,7 @@ function draft(){
   toast('Both languages drafted — review them in the tabs');
 }
 function saveItem(){
+  if(cur().imageUrl && !/^https:\/\/[^\s]+$/i.test(cur().imageUrl)){toast('Use a full https:// photo URL, or leave the photo blank.');$('ed-photo').focus();return;}
   edStash();
   var it = ITEMS[editing];
   if (addingNew && !edBuf.en.n.trim()){

@@ -16,7 +16,7 @@ function paintGrowthCustomers() {
     var row=opsEl('div',null,'ops-row'),body=opsEl('div');body.appendChild(opsEl('strong',opsMask(g.contact)));
     body.appendChild(opsEl('p',g.channel+' · '+g.visits+' recorded visit'+(g.visits===1?'':'s')+' · '+money(g.spendCents/100)+' linked spending','cs'));
     body.appendChild(opsEl('p','Last visit: '+opsDate(g.last)+' · '+(g.marketing?'Offers permitted':'Marketing off'),'cs'));
-    row.append(body,opsButton('View history',function(){selectedGrowthCustomer=g.id;paintGrowthCustomers();$('customer-detail').scrollIntoView({block:'nearest'});}));box.appendChild(row);
+    row.append(body,opsButton('View history',function(){selectedGrowthCustomer=g.id;paintGrowthCustomers();$('customer-dialog').showModal();}));box.appendChild(row);
   });
   var detail=$('customer-detail');detail.replaceChildren();
   var g=profiles.find(function(x){return x.id===selectedGrowthCustomer;});
@@ -37,6 +37,8 @@ function paintAudience() {
 function saveGrowthCampaign() {
   try {
     Aalayna.prepareCampaign({name:$('cp-name').value,message:$('cp-msg').value,audience:$('cp-aud').value,channel:$('cp-channel').value,useHoldout:$('cp-holdout').checked});
+    closeCampaign();opsPanel('growth','growth-campaigns');
+    $('cp-name').value='';$('cp-msg').value='';
     toast('Draft saved. Review it before approving an audience.');
   }catch(e){toast(e.message);}
 }
@@ -52,7 +54,8 @@ function paintGrowthCampaigns() {
   if(!campaigns.length)box.appendChild(opsEl('p','No campaigns yet. Start with an invitation to make a second visit.','ops-empty'));
   campaigns.forEach(function(c){
     var card=opsEl('article',null,'ops-campaign');card.appendChild(opsEl('h3',c.name));
-    card.appendChild(opsEl('p',c.channel+' · '+c.status+' · '+opsDate(c.ts),'cs'));
+    card.appendChild(opsEl('span',c.status==='draft'?'Draft':'Audience approved','status-badge '+(c.status==='draft'?'draft':'approved')));
+    card.appendChild(opsEl('p',c.channel+' · '+opsDate(c.ts),'cs'));
     card.appendChild(opsEl('p',c.message,'ops-message'));
     if(c.status==='draft'){
       var current=Aalayna.campaignAudience(c.audience,c.channel).length;
@@ -78,20 +81,35 @@ function paintGrowthWeek() {
   var box=$('weekly-actions');box.replaceChildren();
   Aalayna.recommendations().forEach(function(r){var row=opsEl('article',null,'ops-row'),body=opsEl('div');body.append(opsEl('h3',r.title),opsEl('p',r.detail,'cs'));row.appendChild(body);
     if(r.action)row.appendChild(opsButton(r.action,function(){
-      if(r.kind==='cash'){opsGo('tonight');$('setrows').scrollIntoView({block:'start'});return;}
+      if(r.kind==='cash'){opsGo('tonight');opsPanel('service','service-live');$('cash-queue').scrollIntoView({block:'center'});return;}
       opsGo('guests');
-      if(r.kind==='second_visit'||r.kind==='lapsed'){$('cp-aud').value=r.kind;if(!Aalayna.campaignAudience(r.kind,$('cp-channel').value).length)$('cp-channel').value=$('cp-channel').value==='email'?'whatsapp':'email';paintAudience();$('cp-name').focus();}
+      if(r.kind==='second_visit'||r.kind==='lapsed'){$('cp-aud').value=r.kind;if(!Aalayna.campaignAudience(r.kind,$('cp-channel').value).length)$('cp-channel').value=$('cp-channel').value==='email'?'whatsapp':'email';paintAudience();openCampaign();}
     }));box.appendChild(row);
   });
 }
 function paintCheckBalances() {
-  var box=$('check-balances');box.replaceChildren();var checks=Aalayna.serviceChecks().slice().reverse();
+  var box=$('check-balances');box.replaceChildren();var checks=Aalayna.serviceChecks().slice().sort(function(a,b){return Number(!!a.closedAt)-Number(!!b.closedAt)||(b.openedAt||'').localeCompare(a.openedAt||'');});
+  $('live-open').textContent=checks.filter(function(c){return !c.closedAt;}).length;
+  $('live-cash').textContent=money(Aalayna.pendingCash().reduce(function(sum,x){return sum+x.amount;},0));
+  $('live-paid').textContent=money(Aalayna.settledTotal());
   if(!checks.length)box.appendChild(opsEl('p','No bills recorded yet. Opening the guest experience creates a sample bill; a live POS connection will supply real checks.','ops-empty'));
   checks.forEach(function(c){var b=Aalayna.checkBalance(c.id),row=opsEl('article',null,'ops-row'),body=opsEl('div');
-    body.appendChild(opsEl('h3','Table '+c.table+' · bill '+c.id.slice(-8)+(c.closedAt?(b.remainingCents?' · refund needs review':' · closed'):'')));
-    body.appendChild(opsEl('p','Opened '+opsDate(c.openedAt)+' · Total '+money(c.totalCents/100)+' · Collected '+money(b.confirmedCents/100)+' · Outstanding '+money(b.remainingCents/100),'cs'));
-    body.appendChild(opsEl('p','Cash '+money(b.methods.cash/100)+' · Whish '+money(b.methods.whish/100)+' · Card '+money(b.methods.card/100)+' · Tips '+money(b.tipCents/100),'cs'));
-    body.appendChild(opsEl('p','Pending cash '+money(b.pendingCents/100)+' · Available for another payment '+money(b.availableCents/100),'cs'));row.appendChild(body);
+    var head=opsEl('div',null,'ops-heading');head.appendChild(opsEl('h3','Table '+c.table));
+    var state=c.closedAt?(b.remainingCents?'Review refund':'Closed'):(b.pendingCents?'Cash pending':(b.remainingCents?'Open':'Ready to close'));
+    head.appendChild(opsEl('span',state,'status-badge '+(b.pendingCents?'pending':c.closedAt?'draft':'approved')));body.appendChild(head);
+    var balance=opsEl('p',null,'bill-balance');balance.append(opsEl('strong',money(b.remainingCents/100)),opsEl('span',' outstanding'));body.appendChild(balance);
+    body.appendChild(opsEl('p','Collected '+money(b.confirmedCents/100)+' of '+money(c.totalCents/100),'cs'));
+    if(b.pendingCents)body.appendChild(opsEl('p',money(b.pendingCents/100)+' awaiting cash · '+money(b.availableCents/100)+' available to pay','cs'));
+    var detail=opsEl('details',null,'ops-help');detail.appendChild(opsEl('summary','Bill details'));detail.appendChild(opsEl('p','Opened '+opsDate(c.openedAt)+' · bill '+c.id.slice(-8)+' · Cash '+money(b.methods.cash/100)+' · Whish '+money(b.methods.whish/100)+' · Card '+money(b.methods.card/100)+' · Tips '+money(b.tipCents/100),'cs'));body.appendChild(detail);row.appendChild(body);
     if(!c.closedAt&&!b.remainingCents&&!b.pendingCents)row.appendChild(opsButton('Close settled bill',function(){Aalayna.closeServiceCheck(c.id);toast('Bill closed. The next guest session can open a new bill.');}));box.appendChild(row);
   });
 }
+
+/* Focused sections retain their form values when switching views. Native dialogs
+   provide Escape dismissal and focus containment without a second modal system. */
+function opsPanel(group,id){
+  document.querySelectorAll('[data-panel-group="'+group+'"]').forEach(function(p){p.hidden=p.id!==id;});
+  document.querySelectorAll('button[data-group="'+group+'"]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.panel===id));});
+}
+function openCampaign(){opsPanel('growth','growth-campaigns');$('campaign-compose').showModal();$('cp-name').focus();}
+function closeCampaign(){$('campaign-compose').close();}

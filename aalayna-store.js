@@ -174,6 +174,7 @@
       sec:  x.sec  || 'mez',
       name: x.name || '(untitled)',
       desc: x.desc || '',
+      imageUrl: typeof x.imageUrl === 'string' && /^https:\/\/[^\s]+$/i.test(x.imageUrl) ? x.imageUrl : '',
       price: typeof x.price === 'number' ? x.price : 0,
       ing:  Array.isArray(x.ing) ? x.ing : [],
       al:   Array.isArray(x.al)  ? x.al.filter(function (a) { return ALLERGENS.indexOf(a) > -1; }) : [],
