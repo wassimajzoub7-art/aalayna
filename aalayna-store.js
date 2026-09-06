@@ -161,6 +161,7 @@
   // storage events only fire in OTHER tabs, which is exactly the cross-app case
   global.addEventListener('storage', function (e) { if (e.key && e.key.indexOf('aal.') === 0) fire(e.key); });
 
+  function centsEqual(value, amount) { return Math.round(Number(value) * 100) === amount; }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
 
   /* Nothing downstream should ever receive a half-built item. A dish added in the
@@ -323,18 +324,34 @@
        A diner returning to the page is NOT confirmation. */
     settle: function (s) {
       var all = read(K.settle, []);
+      var amount = Math.round(Number(s.amount) * 100), tip = Math.round(Number(s.tip || 0) * 100);
+      if (!Number.isSafeInteger(amount) || amount <= 0 || !Number.isSafeInteger(tip) || tip < 0 || tip >= amount || ['cash','card','whish'].indexOf(s.rail) < 0) throw new Error('Enter a valid payment and tip.');
+      var scope = A.venueId ? A.venueId() : A.venue().name;
+      var previous = s.requestId && all.filter(function(x){ return x.requestId === s.requestId && x.venueId === scope; })[0];
+      if (previous) {
+        if (centsEqual(previous.amount, amount) && centsEqual(previous.tip || 0, tip) && previous.rail === s.rail && previous.checkId === (s.checkId || null) && Number(previous.table) === Number(s.table || 12) && JSON.stringify(previous.items || {}) === JSON.stringify(s.items || {})) return previous;
+        throw new Error('This payment reference was already used for a different request.');
+      }
+      var cashNote = Math.round(Number(s.note || 0) * 100);
+      if (s.rail === 'cash' && (!Number.isSafeInteger(cashNote) || cashNote < 0 || (cashNote > 0 && cashNote < amount))) throw new Error('Choose enough cash to cover your share and tip.');
+      if (s.checkId && A.validateCheckPayment) A.validateCheckPayment(s, amount - tip);
       all.push({
-        id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
-        table: s.table || 12, rail: s.rail, amount: +(s.amount || 0),
-        tip: +(s.tip || 0), server: s.server || 'Abou Karim',
-        note: s.note || 0, change: +(s.change || 0),
+        id: 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2),
+        venueId: scope, venue: A.venue().name, checkId: s.checkId || null,
+        requestId: s.requestId || null, items: s.items || {},
+        table: s.table || 12, rail: s.rail, amount: amount / 100,
+        tip: tip / 100, server: s.server || 'Abou Karim',
+        note: s.rail === 'cash' ? cashNote / 100 : 0, change: s.rail === 'cash' && cashNote > 0 ? (cashNote - amount) / 100 : 0,
         status: s.rail === 'cash' ? 'pending' : 'confirmed',
         ts: new Date().toISOString()
       });
       write(K.settle, all);
       return all[all.length - 1];
     },
-    settlements: function () { seedIfEmpty(); return read(K.settle, []); },
+    settlements: function () {
+      seedIfEmpty(); var scope = A.venueId ? A.venueId() : A.venue().name;
+      return read(K.settle, []).filter(function(s){ return !s.venueId || s.venueId === scope; });
+    },
     settlementStatus: function (s) {
       if (s.refunded) return 'refunded';
       if (s.cancelled) return 'cancelled';
@@ -345,9 +362,10 @@
       return A.settlements().filter(function (s) { return s.rail === 'cash' && A.settlementStatus(s) === 'pending'; });
     },
     confirmCash: function (id) {
-      var all = A.settlements(), changed = false;
+      var all = read(K.settle, []), changed = false;
+      var allowed = A.settlements().some(function(s){ return s.id === id; });
       all.forEach(function (s) {
-        if (s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') {
+        if (allowed && s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') {
           s.status = 'confirmed'; s.confirmedAt = new Date().toISOString(); changed = true;
         }
       });
@@ -355,9 +373,10 @@
       return changed;
     },
     cancelCash: function (id) {
-      var all = A.settlements();
+      var all = read(K.settle, []);
+      var allowed = A.settlements().some(function(s){ return s.id === id; });
       all.forEach(function (s) {
-        if (s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') s.cancelled = new Date().toISOString();
+        if (allowed && s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') s.cancelled = new Date().toISOString();
       });
       write(K.settle, all);
     },
@@ -366,7 +385,7 @@
        same rule as the rest of settlement state. */
     refund: function (id) {
       var all = read(K.settle, []);
-      all.forEach(function (s) { if (s.id === id && A.isConfirmed(s)) s.refunded = new Date().toISOString(); });
+      all.forEach(function (s) { if (s.id === id && A.settlements().some(function(x){ return x.id === id; }) && A.isConfirmed(s)) s.refunded = new Date().toISOString(); });
       write(K.settle, all);
     },
     byRail: function () {
@@ -399,7 +418,7 @@
     /* ---- venue ---- */
     venue: function () {
       var u = venueFromURL();
-      if (u) { write(K.venue, u); return u; }
+      if (u) { if (JSON.stringify(read(K.venue, null)) !== JSON.stringify(u)) write(K.venue, u); return u; }
       return read(K.venue, null) || DEFAULT_VENUE;
     },
     setVenue: function (v) { write(K.venue, v); },
@@ -407,37 +426,6 @@
        Two separate consents, both explicit. Lists are per venue and are never
        joined across venues. Marketing sends require an active marketing consent. */
     guests: function () { return read(K.guests, []); },
-    optIn: function (g) {
-      var all = read(K.guests, []);
-      var contact = String(g.contact || '').trim();
-      var existing = all.filter(function (x) { return x.contact === contact && x.venue === g.venue; })[0];
-      if (existing) {
-        existing.visits += 1; existing.last = new Date().toISOString();
-        existing.receipt = existing.receipt || !!g.receipt;
-        existing.marketing = existing.marketing || !!g.marketing;
-      } else {
-        all.push({ id: 'g' + Date.now().toString(36), venue: g.venue, contact: contact,
-                   channel: /@/.test(contact) ? 'email' : 'whatsapp',
-                   receipt: !!g.receipt, marketing: !!g.marketing,
-                   visits: 1, first: new Date().toISOString(), last: new Date().toISOString() });
-      }
-      write(K.guests, all);
-    },
-    campaigns: function () { return read(K.campaigns, []); },
-    sendCampaign: function (c) {
-      var all = read(K.campaigns, []);
-      var audience = A.guests().filter(function (g) { return g.marketing && g.venue === c.venue; });
-      if (c.audience === 'lapsed') {
-        var cutoff = Date.now() - 30 * 86400000;
-        audience = audience.filter(function (g) { return new Date(g.last).getTime() < cutoff; });
-      }
-      var rec = { id: 'c' + Date.now().toString(36), venue: c.venue, name: c.name, audience: c.audience,
-                  message: c.message, channel: 'whatsapp', sent: audience.length,
-                  ts: new Date().toISOString(), simulated: true };
-      all.push(rec);
-      write(K.campaigns, all);
-      return rec;
-    },
     /* ---- floor: which server has which table tonight ----
        Set by the manager at service start (sections, not per-order); replaced by
        the POS employee-on-check field once integration exists. Pooled mode is for
@@ -481,10 +469,11 @@
 
     /* ---- plumbing ---- */
     on: function (fn) { subs.push(fn); },
+    notify: function (key) { fire(key); },
     reset: function () {
       try { localStorage.removeItem('aal.pack'); } catch (e) {}
       try { localStorage.removeItem(K.guests); localStorage.removeItem(K.campaigns); } catch (e) {}
-      [K.draft, K.live, K.settle, K.tips].forEach(function (k) {
+      [K.draft, K.live, K.settle, K.tips, 'aal.checks'].forEach(function (k) {
         try { localStorage.removeItem(k); } catch (e) {}
       });
       seedIfEmpty();

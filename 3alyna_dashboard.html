@@ -7,7 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=14"></script>
+<script src="aalayna-store.js?v=15"></script>
+<script src="restaurant-growth.js?v=1"></script>
+<link rel="stylesheet" href="restaurant-ops.css?v=1">
 <style>
   :root{
     --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
@@ -251,7 +253,7 @@
     <button class="ni" onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
     <button class="ni" onclick="go(this,'team')">Team</button>
   </nav>
-  <div class="side-f">Sample weekly reporting. Email delivery is not connected in this demo.</div>
+  <div class="side-f">Weekly actions use recorded activity. Messaging and POS connections are not configured.</div>
 </aside>
 
 <main>
@@ -283,7 +285,7 @@
     <div class="grid g2 mt">
       <div class="card">
         <h3>Settlement statement</h3>
-        <div class="cs">Amounts settled through 3alayna this service, by payment method.</div>
+        <div class="cs">Recorded settled amounts by payment method.</div>
         <div style="margin-top:12px">
           <div class="sr"><span class="rail"><span class="dot" style="background:#C4283C"></span>Whish Money</span><span class="amt" id="r-whish">$0.00</span></div>
           <div class="sr"><span class="rail"><span class="dot" style="background:#26327A"></span>Card</span><span class="amt" id="r-card">$0.00</span></div>
@@ -318,148 +320,57 @@
         This venue pools tips (one house pool, no per-table assignment)</label>
     </div>
 
+    <div class="card mt"><h3>Balances by bill</h3><div class="cs">Bill amounts exclude tips. Pending cash reserves a share but does not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
     <div class="card mt">
       <h3>Settlements</h3>
-      <div class="cs">Every payment recorded this service. Refunds mark the row and leave the
+      <div class="cs">Every payment recorded for this restaurant. Refunds mark the row and leave the
         statement &mdash; nothing is ever deleted.</div>
       <div id="setrows" style="margin-top:10px"></div>
     </div>
   </div>
 
-  <!-- ═══════════ WEEK ═══════════ -->
   <div class="view" id="v-week">
-    <div class="top">
-      <div>
-        <h1>This week</h1>
-        <div class="sub">Mon 12 – Sun 18 Aug · 71 of 210 checks settled in-app (33.8%)</div>
-      </div>
-      <div class="actions"><button class="btn">Week</button><button class="btn primary">Month</button></div>
-    </div>
-
+    <div class="top"><div><h1>This week</h1><div class="sub">Last seven days · recorded activity for this restaurant</div></div></div>
     <div class="grid g4">
-      <div class="card"><div class="k">Settled in-app</div><div class="v">$4,860.00</div>
-        <div class="d"><span class="pill up">▲ 18%</span> vs prior week</div></div>
-      <div class="card"><div class="k">In-app adoption</div><div class="v">33.8%</div>
-        <div class="d"><span class="pill up">▲ 6.2 pts</span> from week 1</div></div>
-      <div class="card"><div class="k">Avg per table</div><div class="v">$68.45</div>
-        <div class="d"><span class="pill up">▲ 4%</span> vs prior week</div></div>
-      <div class="card"><div class="k">Tip rate</div><div class="v">9.4%</div>
-        <div class="d"><span class="pill up">▲ 1.1 pts</span> vs prior week</div></div>
+      <div class="card"><div class="k">Confirmed bill payments</div><div class="v" id="week-net">$0.00</div><div class="d">Excludes tips, pending cash and refunds</div></div>
+      <div class="card"><div class="k">Confirmed tips</div><div class="v" id="week-tips">$0.00</div></div>
+      <div class="card"><div class="k">Bills with a payment</div><div class="v" id="week-checks">0</div></div>
+      <div class="card"><div class="k">Bills with an identified payer</div><div class="v" id="week-identified">0</div><div class="d">Optional contact details, including cash payers</div></div>
     </div>
-
-    <div class="grid g2 mt">
-      <div class="card">
-        <h3>Table turnaround</h3>
-        <div class="cs">Median minutes, seating to next seating. In-app tables vs all other tables.</div>
-        <div class="bars" id="dwell"></div>
-        <div class="axis" id="dwell-ax"></div>
-        <div class="vals" id="dwell-v"></div>
-        <div class="legend">
-          <span><i style="background:var(--green)"></i>Settled in-app</span>
-          <span><i style="background:#CFCCC5"></i>Other tables</span>
-        </div>
-        <div class="note"><span>ⓘ</span><span>Sample: 71 in-app vs 139 other tables. In-app tables
-          self-select and may differ systematically. Directional indicator, not a controlled comparison.</span></div>
-      </div>
-
-      <div class="card">
-        <h3>Settlement funnel</h3>
-        <div class="cs">Weekly progression from scan to settled bill.</div>
-        <div style="margin-top:12px" id="funnel"></div>
-        <div class="note"><span>ⓘ</span><span>Adoption denominator is the weekly check count from
-          the POS Z-report, entered manually until POS integration.</span></div>
-        <h3 style="margin-top:20px">Available with POS integration</h3>
-        <div style="margin-top:6px">
-          <div class="lock"><span><b>Covers</b> — total guests served</span><span class="tag">POS</span></div>
-          <div class="lock"><span><b>Table turnover rate</b> — parties ÷ tables ÷ duration</span><span class="tag">POS</span></div>
-          <div class="lock"><span><b>RevPASH</b> — revenue per available seat-hour</span><span class="tag">POS</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid g2e mt">
-      <div class="card">
-        <h3>Payment mix</h3>
-        <div class="cs">Share of in-app settled volume.</div>
-        <div class="mix" id="mixbar"></div>
-        <table class="mtab" id="mixtab"></table>
-      </div>
-      <div class="card">
-        <h3>Top items</h3>
-        <div class="cs">By order count, items on in-app checks.</div>
-        <div style="margin-top:10px" id="top"></div>
-      </div>
-    </div>
+    <div class="card mt"><h3>Recommended next actions</h3><div class="cs">Based on recorded visits and settlement activity. Campaigns always need your approval.</div><div id="weekly-actions"></div></div>
+    <div class="note mt"><span>ⓘ</span><span>These figures cover this browser’s records. POS-wide revenue, table turnover and cross-device customer history require a connected backend.</span></div>
   </div>
 
-  <!-- ═══════════ GUESTS ═══════════ -->
   <div class="view" id="v-guests">
-    <div class="top">
-      <div>
-        <h1>Guests</h1>
-        <div class="sub">Derived from returning devices and payment instruments · 71 in-app tables this week</div>
-      </div>
+    <div class="top"><div><h1>Customers &amp; return visits</h1><div class="sub">Known payers with linked confirmed bills · not a count of all diners</div></div></div>
+    <div class="grid g3 mb">
+      <div class="card"><div class="k">Known contacts</div><div class="v" id="gl-total">0</div></div>
+      <div class="card"><div class="k">Marketing permission</div><div class="v" id="gl-mkt">0</div></div>
+      <div class="card"><div class="k">More than one recorded visit</div><div class="v" id="gl-ret">0</div></div>
     </div>
-
-    <div class="grid g2 mb">
-      <div class="card">
-        <h3>Your guest list</h3>
-        <div class="cs">Guests who left a WhatsApp number or email at the receipt. Two consents,
-          both explicit; the list belongs to this venue only.</div>
-        <div class="grid g3" style="margin-top:12px">
-          <div class="mini"><div class="k">Opted in</div><div class="v" id="gl-total">0</div></div>
-          <div class="mini"><div class="k">Marketing consent</div><div class="v" id="gl-mkt">0</div></div>
-          <div class="mini"><div class="k">Returned</div><div class="v" id="gl-ret">0</div></div>
-        </div>
-        <div id="gl-rows" style="margin-top:12px"></div>
-      </div>
-      <div class="card">
-        <h3>Campaigns</h3>
-        <div class="cs">Message your opted-in guests on WhatsApp. Offers carry a code guests apply
-          at the table, so you see who came back.</div>
+    <div class="card mb"><h3>Customer history</h3><div class="cs">Each bill counts once per contact. Spending is their linked share, excluding tips and refunds. A phone number must include its country code.</div>
+      <label class="ops-label" for="guest-search">Find a contact</label><input class="in" id="guest-search" type="search" placeholder="Email or phone number" oninput="paintGrowthCustomers()">
+      <div id="gl-rows" class="ops-list"></div><div id="customer-detail" class="mt" aria-live="polite"></div>
+      <p class="cs" id="legacy-guests"></p>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Prepare a return-visit campaign</h3>
+        <div class="cs">Draft, review and approve an audience. Messaging is not connected: approval and export do not send a message.</div>
         <div class="cf">
-          <input class="in" id="cp-name" placeholder="Campaign name, e.g. Ramadan iftar menu">
-          <select class="in" id="cp-aud">
-            <option value="all">Everyone with marketing consent</option>
-            <option value="lapsed">Not seen in 30 days</option>
+          <label class="ops-label" for="cp-name">Campaign name</label><input class="in" id="cp-name" maxlength="100" placeholder="Invite first-time guests back">
+          <label class="ops-label" for="cp-channel">Channel</label><select class="in" id="cp-channel" onchange="paintAudience()"><option value="whatsapp">WhatsApp</option><option value="email">Email</option></select>
+          <label class="ops-label" for="cp-aud">Audience</label><select class="in" id="cp-aud" onchange="paintAudience()">
+            <option value="second_visit">One visit, 7–29 days ago</option><option value="lapsed">Last visit at least 30 days ago</option><option value="regulars">Three or more visits, seen in last 30 days</option><option value="all">All eligible contacts in this channel</option>
           </select>
-          <textarea class="in" id="cp-msg" rows="3">Ramadan Kareem from us. Our iftar menu is ready, and tables with this message get a free jallab for the group. Show code RAMADAN at the table. Reserve on WhatsApp.</textarea>
-          <button class="btn primary" onclick="sendCampaign()">Send on WhatsApp</button>
+          <p class="cs" id="audience-count" aria-live="polite"></p>
+          <label class="ops-label" for="cp-msg">Message</label><textarea class="in" id="cp-msg" rows="5" maxlength="2000" placeholder="Write a relevant invitation from your restaurant. Include how to opt out."></textarea>
+          <label class="ops-label"><input id="cp-holdout" type="checkbox" checked> Reserve 20% as a comparison group (minimum five contacts)</label>
+          <button class="btn primary" onclick="saveGrowthCampaign()">Save draft for review</button>
         </div>
-        <div id="cp-rows" style="margin-top:12px"></div>
       </div>
+      <div class="card"><h3>Campaigns &amp; outcomes</h3><div class="cs">Returns are measured for 30 days after approval. Delivery counts come only from an imported provider report.</div><div id="cp-rows" class="ops-list"></div></div>
     </div>
-
-    <div class="grid g4">
-      <div class="card"><div class="k">Returning</div><div class="v">28.2%</div>
-        <div class="d">20 of 71 devices or cards seen before</div></div>
-      <div class="card"><div class="k">First seen</div><div class="v">71.8%</div>
-        <div class="d">51 tables</div></div>
-      <div class="card"><div class="k">Foreign-issued cards</div><div class="v">19.0%</div>
-        <div class="d">of in-app card and wallet volume</div></div>
-      <div class="card"><div class="k">Median payers per table</div><div class="v">3</div>
-        <div class="d">from bill splits</div></div>
-    </div>
-
-    <div class="grid g2e mt">
-      <div class="card">
-        <h3>Card and wallet issuing region</h3>
-        <div class="cs">In-app payments only. Cash-declared tables carry no identifying signal.</div>
-        <div class="mix" id="origbar"></div>
-        <table class="mtab" id="origtab"></table>
-      </div>
-      <div class="card">
-        <h3>Bill split size</h3>
-        <div class="cs">Number of payers per in-app table.</div>
-        <div class="bars" id="party"></div>
-        <div class="axis" id="party-ax"></div>
-        <div class="vals" id="party-v"></div>
-      </div>
-    </div>
-
-    <div class="note mt"><span>ⓘ</span><span><b>Measurement basis.</b> These figures count devices and
-      payment instruments, not individuals. One payer represents a full table; a replaced phone registers
-      as new; a shared card registers as one guest. Interpret as trend, not census.</span></div>
+    <div class="note mt"><span>ⓘ</span><span>Customer data and permissions stay with this restaurant. Dietary selections are not added to customer profiles. Withdrawing marketing permission removes the contact from subsequent audience exports.</span></div>
   </div>
 
   <!-- ═══════════ REVIEWS ═══════════ -->
@@ -532,6 +443,7 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
+<script src="restaurant-ops.js?v=1"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var DWELL = [
@@ -597,10 +509,10 @@ function paintTonight(){
 
   var d = new Date();
   $('t-date').textContent = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) +
-    ' · settlement activity, current service';
+    ' · all recorded settlement activity';
 
   $('t-note').innerHTML = 'Confirmed payments through 3alayna — <b>' + money(tot) +
-    '</b> across <b>' + n + (n===1?' table':' tables') + '</b> this service. The POS remains the ' +
+    '</b> across <b>' + n + (n===1?' table':' tables') + '</b> in these records. The POS remains the ' +
     'system of record; treat this statement as an input to the close, not the close itself.';
 
   paintRows();
@@ -710,48 +622,7 @@ function floorPool(on){
   f.pooled = on;
   Aalayna.setFloor(f);
 }
-/* ---- guests + campaigns ---- */
-function mask(c){
-  if (c.indexOf('@') > -1){ var p = c.split('@'); return p[0].slice(0,2) + '***@' + p[1]; }
-  var d = c.replace(/\s/g,''); return d.slice(0, d.length - 4).replace(/[0-9]/g, '*').slice(-6) + ' ' + d.slice(-4);
-}
-function paintGuests(){
-  var venue = Aalayna.venue().name;
-  var gs = Aalayna.guests().filter(function(g){ return g.venue === venue; });
-  $('gl-total').textContent = gs.length;
-  $('gl-mkt').textContent = gs.filter(function(g){ return g.marketing; }).length;
-  $('gl-ret').textContent = gs.filter(function(g){ return g.visits > 1; }).length;
-  var box = $('gl-rows'); box.innerHTML = '';
-  if (!gs.length){
-    box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:8px 0">No guests yet. The list fills ' +
-      'as guests leave a number at the receipt.</div>';
-  }
-  gs.slice().reverse().slice(0, 8).forEach(function(g){
-    var d = document.createElement('div');
-    d.className = 'glr';
-    d.innerHTML = '<span class="ct">' + mask(g.contact) + '</span>' +
-      '<span class="tg' + (g.marketing ? '' : ' off') + '">' + (g.marketing ? 'OFFERS OK' : 'RECEIPT ONLY') + '</span>' +
-      '<span class="vs">' + g.visits + (g.visits === 1 ? ' visit' : ' visits') + '</span>';
-    box.appendChild(d);
-  });
-  var cs = Aalayna.campaigns().filter(function(c){ return c.venue === venue; });
-  var cb = $('cp-rows'); cb.innerHTML = '';
-  cs.slice().reverse().slice(0, 5).forEach(function(c){
-    var d = document.createElement('div');
-    d.className = 'cpr';
-    d.innerHTML = '<b>' + c.name + '</b><span class="n">' + c.sent + ' sent · ' +
-      new Date(c.ts).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) + '</span>';
-    cb.appendChild(d);
-  });
-}
-function sendCampaign(){
-  var name = $('cp-name').value.trim() || 'Untitled campaign';
-  var rec = Aalayna.sendCampaign({ venue: Aalayna.venue().name, name: name,
-    audience: $('cp-aud').value, message: $('cp-msg').value.trim() });
-  toast(rec.sent ? 'Sent to ' + rec.sent + ' guest' + (rec.sent === 1 ? '' : 's') + ' on WhatsApp (simulated)'
-                 : 'No guests match that audience yet');
-  $('cp-name').value = '';
-}
+function paintGuests(){ paintGrowth(); }
 var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function paintRows(){
   var box = $('setrows'); box.innerHTML = '';
@@ -956,12 +827,12 @@ paintTonight();
 paintTips();
 Aalayna.on(function(){ paintTonight(); paintTips(); });
 
-groupedBars('dwell','dwell-ax','dwell-v', DWELL, 92);
-funnel();
-stacked('mixbar','mixtab', MIX, true);
-hbars('top', TOP, '');
-stacked('origbar','origtab', ORIG, false);
-simpleBars('party','party-ax','party-v', PARTY);
+
+
+
+
+
+
 simpleBars('rtrend','rtrend-ax','rtrend-v', RTREND.map(function(r){return {d:r.d,v:r.v};}), function(v){ return v.toFixed(1); });
 paintReviews();
 paintTeam();

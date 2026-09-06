@@ -6,7 +6,7 @@ The public homepage and booking page contain no interactive demos or app preview
 
 ## Demo limits
 
-Payments, receipts, campaigns, and feedback delivery are simulated. Weekly dashboard data is illustrative. No payment provider, POS backend, shared database, or staff authentication is connected. The pages share `localStorage` between tabs on one browser and origin; they do not synchronize across guest devices. Do not use the demo to collect real payments, real card details, or guest contact data.
+Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider, POS backend, shared database, or staff authentication is connected. The pages share `localStorage` between tabs on one browser and origin; they do not synchronize across guest devices. Do not use the demo to collect real payments, real card details, or guest contact data.
 
 Cash selection creates a pending collection request. It is excluded from confirmed revenue and digital tips. In the dashboard, click **Confirm collection**, then **Cash received — confirm** after collection to demonstrate the staff step. The guest tab updates when the same-browser storage event arrives. Requests can be cancelled; confirmed payments can be marked refunded. These are simulation records, not actual financial operations.
 
@@ -29,3 +29,11 @@ Run `node --test tests/*.test.cjs` for the cash-state and measurement regression
 ## Live pilot prerequisites
 
 Confirm supported POS access, verified payment callbacks, server-side payment state, operator authentication, cross-device updates, reconciliation, refunds, and operational fallback before accepting real transactions. Confirm provider fees and settlement timing in merchant agreements. The restaurant manages tip distribution.
+
+## Customer retention and operations
+
+The owner dashboard now includes customer profiles with confirmed visit history and linked spending, searchable contacts, permission history and marketing opt-outs. Campaigns support channel-specific audiences, explicit approval, an optional 20% comparison group, JSON audience export, provider delivery report import and 30-day return reporting. Weekly actions use recorded cash requests, visits and contact coverage. Bill balances separate collected principal, tips, pending cash and the amount available for another payment.
+
+The guest flow uses a persistent check ID; restarting lets another payer use the same bill. Close a fully settled bill in the owner dashboard before starting the next table session. Contact capture attaches to a confirmed payment, including staff-confirmed cash. Repeated receipt submissions do not create visits.
+
+See [INTEGRATIONS.md](INTEGRATIONS.md) for definitions, report format and the exact live POS, payment, authentication and messaging prerequisites. These features remain local prototype workflows, not a connected production service.

@@ -664,8 +664,8 @@
         </div>
 
         <div class="mailrc" id="mailrc">
-          <input class="mailin" id="mail-in" type="text" inputmode="email"
-            placeholder="Sample number or email (demo only)">
+          <input class="mailin" id="mail-in" type="text" inputmode="text"
+            placeholder="Sample +961 number or email" aria-label="Optional receipt or offers contact">
           <button class="mailbtn" onclick="sendReceipt()" aria-label="Send">&#10148;</button>
         </div>
         <div class="consents" id="consents">
@@ -824,7 +824,6 @@
   <button class="sw" onclick="go('v-settle')">Split</button>
   <button class="sw" onclick="go('v-pay')">Pay</button>
   <button class="sw" onclick="settle()">Thanks</button>
-  <button class="sw" id="ppsw" onclick="togglePrepaid()">Someone already paid &rarr;</button>
   <button class="sw" id="covsw" onclick="toggleCoverage()">Menu not fully confirmed &rarr;</button>
 </div>
 <div class="note-out">
@@ -832,7 +831,8 @@
   cash option. Public reviews and private feedback are offered equally, for every rating. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=14"></script>
+<script src="aalayna-store.js?v=15"></script>
+<script src="restaurant-growth.js?v=1"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -845,19 +845,10 @@ function serving(win){
   return n >= w[0] && n < w[1];
 }
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
-/* demo: another guest already settled part of the bill */
-var PREPAID = false;
-/* units already paid per line, keyed by check-line ID so the demo survives
-   venue menu packs (names change per venue; the seeded check ids do not) */
-var PREPAID_LINES = { i07: 1, i09: 4 };
-function paidUnits(l){
-  if (!PREPAID) return 0;
-  return Math.min(l.q, PREPAID_LINES[l.id] || 0);
-}
+var CHECK = null;
+function paidUnits(l){ return CHECK ? (Aalayna.checkBalance(CHECK.id).items[l.id] || 0) : 0; }
 function linePaid(l){ return paidUnits(l) >= l.q; }
-function remaining(){
-  return BILL.reduce(function(a, l){ return a + (l.p / l.q) * (l.q - paidUnits(l)); }, 0);
-}
+function remaining(){ return CHECK ? Aalayna.checkBalance(CHECK.id).availableCents / 100 : TOTAL; }
 function loadMenu(){
   var m = Aalayna.published();
   MENU_V = m.version;
@@ -969,7 +960,7 @@ function renderMenu(){
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
 var tipRate = .10, tipFlat = null, kind = 'whish', note = 0;
-function tipAmt(){ return tipFlat != null ? tipFlat : share * tipRate; }
+function tipAmt(){ return Math.round((tipFlat != null ? tipFlat : share * tipRate) * 100) / 100; }
 var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -1234,15 +1225,15 @@ function buildBill(){
     var d = document.createElement('div');
     var paid = paidUnits(b), full = paid >= b.q;
     d.className = 'r-item' + (full ? ' r-paid' : '');
-    var tag = full ? '<span class="paidtag">PAID</span>'
-            : paid ? '<span class="paidtag">' + paid + ' OF ' + b.q + ' PAID</span>' : '';
+    var tag = full ? '<span class="paidtag">COVERED</span>'
+            : paid ? '<span class="paidtag">' + paid + ' OF ' + b.q + ' COVERED</span>' : '';
     d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n + tag + '</div>' +
                   '<div class="p">' + usd(full ? b.p : (b.p / b.q) * (b.q - paid)) + '</div>';
     box.appendChild(d);
   });
   var rem = remaining();
   $('r-tot').textContent = usd(rem);
-  document.querySelector('.r-total .l').textContent = PREPAID ? 'REMAINING' : 'TOTAL';
+  document.querySelector('.r-total .l').textContent = 'AVAILABLE TO SETTLE';
   $('r-ll').textContent = ll(rem);
   $('land-tot').textContent = price(rem);
   $('pill-tot').textContent = price(rem);
@@ -1257,7 +1248,7 @@ function buildPick(){
     if (avail === 0){
       d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
         '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
-        '<span class="paidtag">PAID</span></span><span class="pr">' + usd(b.p) + '</span>';
+        '<span class="paidtag">COVERED</span></span><span class="pr">' + usd(b.p) + '</span>';
       box.appendChild(d);
       return;
     }
@@ -1278,7 +1269,7 @@ function buildPick(){
     };
     d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
                   '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
-                  (paid ? '<span class="paidtag">' + paid + ' PAID</span>' : '') +
+                  (paid ? '<span class="paidtag">' + paid + ' COVERED</span>' : '') +
                   (avail > 1 ? '<span class="st">' +
                     '<button class="sb" data-d="-1">&minus;</button><span class="sn"></span>' +
                     '<button class="sb" data-d="1">+</button></span>' : '') +
@@ -1320,14 +1311,16 @@ function calcShare(){
   else { share = 0; BILL.forEach(function(b, i){
     var avail = b.q - paidUnits(b);
     if (picked[i] && avail > 0) share += (b.p / b.q) * Math.min(picked[i], avail); }); }
+  share = Math.min(rem, Math.round(share * 100) / 100);
   $('sh-v').textContent = usd(share);
   $('sh-ll').textContent = ll(share);
   var cb = $('continue-btn');
+  if (cb) cb.disabled = share <= 0;
   if (cb) cb.innerHTML = '<span class="sheen"></span>Continue · ' + usd(share);
   var rest = rem - share;
   $('restnote').textContent = rest > 0.01
-    ? usd(rest) + ' left for the rest of the table. They see it update live.'
-    : 'That covers the whole table. Everyone else is done.';
+    ? usd(rest) + ' available for other guests. Pending cash is held until staff confirm or cancel it.'
+    : rem <= 0 ? 'No balance is available for another payment. Check any pending cash request with your server.' : 'That covers the available balance. Staff still need to confirm any pending cash.';
   paintPay();
 }
 /* ---------------- pay ---------------- */
@@ -1385,6 +1378,7 @@ function paintPay(){
   $('tv5').textContent  = usd(share * .05);
   $('tv10').textContent = usd(share * .10);
   $('tv15').textContent = usd(share * .15);
+  $('paybtn').disabled = share <= 0 || (isCash && note > 0 && note < tot);
   $('paybtn').innerHTML = '<span class="sheen"></span>' +
     (isCash ? 'Request cash collection' : 'Pay ' + usd(tot));
   if (isCash) paintChange(tot);   // tot, not share — the change must account for the tip
@@ -1405,7 +1399,7 @@ function makeBurst(){
     b.appendChild(s);
   }
 }
-var paymentBusy = false, lastSettlementId = null;
+var paymentBusy = false, lastSettlementId = null, paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
 function settle(){
   if (paymentBusy) return;
   paintPay();
@@ -1441,11 +1435,14 @@ function cardConfirm(){
 var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function finishSettle(rail){
   var t = tipAmt(), tot = share + t;
-  var record = Aalayna.settle({
+  var record;
+  try { record = Aalayna.settle({
+    checkId: CHECK.id, requestId: paymentRequestId,
+    items: splitMode === 'item' ? BILL.reduce(function(out,b,i){ if(picked[i]) out[b.id]=picked[i]; return out; },{}) : {},
     table: TABLE, rail: rail, amount: tot, tip: t, server: SERVER,
     note: (rail === 'cash' ? note : 0),
     change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
-  });
+  }); } catch(error) { paymentBusy = false; buildBill(); buildPick(); calcShare(); alert(error.message); return; }
   lastSettlementId = record.id;
   $('rc-amt').textContent = usd(tot);
   $('rc-method').textContent = RAIL_NAMES[rail] + (rail === 'cash' && note > 0 && note - tot > 0
@@ -1484,18 +1481,20 @@ function rate(n){
 function sendReceipt(){
   var v = $('mail-in').value.trim();
   var isMail = /^\S+@\S+\.\S+$/.test(v);
-  var isPhone = /^\+?[0-9 ]{7,16}$/.test(v);
-  if (!isMail && !isPhone){ $('mail-in').focus(); return; }
+  var isPhone = /^(\+|00)[0-9 ().-]{8,22}$/.test(v);
+  if (!isMail && !isPhone){ alert('Enter an email or a phone number including its country code.'); $('mail-in').focus(); return; }
   var receipt = $('c-receipt').checked, mkt = $('c-mkt').checked;
   if (!receipt && !mkt){ $('c-receipt').focus(); return; }
   /* the venue's list, two explicit consents, captured at the one moment guests want to give it */
-  Aalayna.optIn({ venue: Aalayna.venue().name, contact: v, receipt: receipt, marketing: mkt });
+  try { Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:receipt, marketing:mkt }); }
+  catch(error) { alert(error.message); return; }
   $('consents').classList.add('done');
   var btn = document.querySelector('.mailbtn');
   btn.innerHTML = '&#10003;';
   btn.classList.add('sent');
   btn.onclick = null;
   $('mail-in').disabled = true;
+  $('payment-status').textContent += ' Contact preferences saved locally; no receipt or message was sent.';
 }
 function setStar(n){
   rating = n;
@@ -1519,16 +1518,9 @@ function toggleCoverage(){
     : 'Menu not fully confirmed \u2192';
   buildMenu();
 }
-function togglePrepaid(){
-  PREPAID = !PREPAID;
-  document.getElementById('ppsw').innerHTML = PREPAID
-    ? 'Reset: nobody paid yet &rarr;' : 'Someone already paid &rarr;';
-  picked = {};
-  buildBill(); buildPick(); calcShare();
-  go('v-bill');
-}
 function restart(){
-  paymentBusy = false; lastSettlementId = null;
+  paymentBusy = false; lastSettlementId = null; paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check()});
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
   kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
   $('tip-in').value = ''; $('tipcw').style.display = 'none';
@@ -1548,15 +1540,13 @@ function restart(){
   $('consents').classList.remove('done'); $('c-receipt').checked = true; $('c-mkt').checked = false;
   var mb = document.querySelector('.mailbtn');
   mb.innerHTML = '&#10148;'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
-  PREPAID = false;
-  var pp = document.getElementById('ppsw');
-  if (pp) pp.innerHTML = 'Someone already paid &rarr;';
   buildBill(); buildPick(); calcShare();
   go('v-land');
 }
 /* ---------------- boot ---------------- */
 /* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
 var TABLE = 12, SERVER = 'Abou Karim';
+CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check()});
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paintServer(){
   SERVER = Aalayna.serverFor(TABLE);
@@ -1589,6 +1579,7 @@ Aalayna.on(function(){
     var current = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
     if (current && Aalayna.isConfirmed(current) && window.AalaynaAnalytics) AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
   }
+  buildBill(); buildPick(); calcShare();
   var before = MENU_V;
   loadMenu();
   if (MENU_V !== before){          // a new version was published

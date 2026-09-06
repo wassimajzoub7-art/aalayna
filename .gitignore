@@ -19,3 +19,8 @@
 !README.md
 !tests/
 !tests/*.test.cjs
+
+!restaurant-growth.js
+!restaurant-ops.js
+!restaurant-ops.css
+!INTEGRATIONS.md
