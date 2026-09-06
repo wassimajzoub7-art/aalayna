@@ -52,18 +52,30 @@ test('mixed payment totals and tips exclude refunds and pending cash', () => {
   assert.equal(a.byRail().card, 0);
   assert.equal(a.tipsOwed()[0].amount, 2);
 });
-test('all guest ratings keep feedback channel choice unchanged', () => {
+test('every rating opens one review panel with both destinations and restores focus on close', () => {
   const html = fs.readFileSync(path.join(__dirname, '../3alyna_full_flow.html'), 'utf8');
-  const rate = html.slice(html.indexOf('function rate(n){'), html.indexOf('/* optional, after payment'));
-  const nodes = Array.from({ length: 5 }, () => ({ classList: { toggle() {} }, setAttribute() {} }));
-  const context = { document: { querySelectorAll: () => nodes }, openOv: () => { throw Error('Rating must not route feedback'); }, setTimeout: fn => fn() };
-  vm.createContext(context); vm.runInContext(rate, context);
-  for (let n=1;n<=5;n++) { context.rate(n); assert.equal(context.rating,n); }
+  const code = html.slice(html.indexOf('function rate(n){'), html.indexOf('/* optional, after payment'));
+  const stars = Array.from({length:5}, () => ({classList:{toggle(){}},setAttribute(){}}));
+  const fields = Object.fromEntries(['review-title','review-destination','review-submit','review-status','v-done'].map(id=>[id,{textContent:'',value:'',disabled:false}]));
+  const opened=[];let focused=false;
+  const trigger={isConnected:true,focus(){focused=true;}};
+  fields['ov-review']={classList:{remove(){}},querySelector(){return {focus(){}};}};
+  const context={document:{activeElement:trigger,querySelectorAll:()=>stars},$:id=>fields[id],openOv:id=>opened.push(id)};
+  vm.createContext(context);vm.runInContext(code,context);
+  for(let n=1;n<=5;n++){
+    context.rate(n);assert.equal(context.rating,n);assert.equal(opened.at(-1),'ov-review');assert.equal(fields['v-done'].inert,true);
+    for(const destination of ['google','private']){
+      fields['review-destination'].value=destination;context.paintReviewDestination();assert.equal(fields['review-submit'].disabled,false);
+      context.submitReview();assert.equal(fields['review-submit'].disabled,true);assert.match(fields['review-status'].textContent,/not connected/);
+    }
+    context.closeReview();assert.equal(fields['v-done'].inert,false);assert.equal(focused,true);
+  }
+  assert.ok(!html.includes('id="ov-google"'));assert.ok(!html.includes('id="ov-priv"'));
 });
 test('guest receipt stays pending until staff confirmation, and hides receipt and review actions', () => {
   const a = setup(), cash = a.settle({rail:'cash',amount:42,tip:2});
   const html = fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
-  const code = html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Rating never changes'));
+  const code = html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Every rating opens'));
   const nodes = Object.fromEntries(['result-title','result-seal','method-label','payment-status','mailrc','consents','feedback-options'].map(id => [id,{textContent:'',style:{}}]));
   const ctx = { lastSettlementId:cash.id,Aalayna:a,$:id=>nodes[id] };
   vm.createContext(ctx);vm.runInContext(code,ctx);

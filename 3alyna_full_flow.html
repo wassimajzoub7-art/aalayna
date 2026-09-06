@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <title>3alayna × Hallab 1881 — full flow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -452,9 +452,55 @@
   .note-out b{color:var(--ink);font-weight:600}
 
   #dstars button.star{background:none;border:0;padding:4px;min-width:44px;min-height:44px;font:inherit;font-size:28px;cursor:pointer}
-  .review-choices{width:100%;display:grid;gap:8px;margin-top:12px}
-  .rate-wrap>p{color:#d7e3e2}
-  .review-choices .cta{font-size:14px;min-height:44px}
+  body.receipt-mode{height:100vh;height:var(--app-height,100dvh);min-height:0;padding:0;overflow:hidden;justify-content:center;background:var(--green-deep)}
+  body.receipt-mode>.stage,body.receipt-mode>.switcher,body.receipt-mode>.note-out{display:none}
+  body.receipt-mode .phone{width:410px;max-width:100%;height:100%;min-height:0;max-height:none;border:0;border-radius:0;box-shadow:none;container-type:size;container-name:receipt}
+  .receipt-mode .done-body{padding:18px 20px 8px;justify-content:center;gap:8px;overflow-y:auto}
+  .receipt-mode .seal{width:36px;height:36px;flex:0 0 36px;font-size:21px;margin:0}
+  .receipt-mode .seal::after,.receipt-mode .est2,.receipt-mode .ar,.receipt-mode .rule2{display:none}
+  .receipt-mode .shukran{font-size:34px;line-height:1.1;margin:0}
+  .receipt-mode .rcpt{max-width:320px;margin:0;padding:10px 14px}
+  .receipt-mode .rc-amt{font-size:28px;line-height:1.2}
+  .receipt-mode .rc-rows{margin-top:6px;padding-top:3px}
+  .receipt-mode .rc-r{padding:3px 0;font-size:14px;gap:8px}
+  .receipt-mode .rc-note{font-size:12px;line-height:1.4;margin-top:5px}
+  .receipt-mode .mailrc{margin:2px 0 0;max-width:320px}
+  .receipt-mode .mailin{min-height:44px;padding:10px 12px;font-size:16px}
+  .receipt-mode .consents{max-width:320px;margin:0;gap:6px}
+  .receipt-mode .consents label{font-size:14px;line-height:1.35;min-height:24px}
+  .receipt-mode .consents input{width:18px;height:18px;flex-shrink:0}
+  .receipt-mode .rate-wrap{margin:4px 0 0}
+  .receipt-mode .rate-q{font-size:14px}
+  .receipt-mode .dstars{margin-top:3px;gap:6px}
+  .receipt-mode .dock-dk{padding:0 16px max(8px,env(safe-area-inset-bottom))}
+  .receipt-mode .powered{padding:0;font-size:12px}
+  .feedback-sheet{display:flex;flex-direction:column;gap:8px;padding:16px;max-height:100%;overflow-y:auto;border-radius:0}
+  .feedback-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .feedback-head .sh-t{font-size:18px;line-height:1.3}
+  .review-close{width:44px;height:44px;background:none;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:24px;cursor:pointer;flex-shrink:0}
+  .feedback-sheet .stars{margin:0;gap:4px}
+  .feedback-sheet .star{background:none;border:0;width:44px;height:44px;font-size:28px}
+  .feedback-label{font-size:14px;line-height:1.4;font-weight:600}
+  .feedback-label span{font-weight:400;color:var(--sub)}
+  .feedback-sheet .ta{margin:0;height:88px;min-height:48px;font-size:16px;flex-shrink:1}
+  .feedback-sheet select{width:100%;min-height:44px;padding:8px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+  .feedback-sheet .sh-s{margin:0;font-size:12px;line-height:1.4}
+  .feedback-sheet .cta{min-height:44px;padding:10px;font-size:16px;flex-shrink:0}
+  @container receipt (max-height:600px){
+    .receipt-mode .seal{display:none}
+    .receipt-mode .done-body{padding-top:12px;gap:6px}
+  }
+  @container receipt (max-height:500px){
+    .receipt-mode .done-body{padding:10px 16px 6px;gap:6px}
+    .receipt-mode .seal,.receipt-mode .rc-rows{display:none}
+    .receipt-mode .shukran{font-size:28px}
+    .feedback-sheet{padding:12px;gap:5px}
+    .feedback-sheet .stars,.feedback-sheet .feedback-label{display:none}
+    .feedback-sheet .ta{height:56px}
+  }
+  @container receipt (max-height:380px){
+    .receipt-mode .done-inner:has(.mailin:focus) .rate-wrap,.receipt-mode .done-inner:has(.mailin:focus) .shukran{display:none}
+  }
   button:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:3px}
   /* legacy keyframes kept as no-ops for JS-toggled classes */
   @keyframes pop{from{opacity:0}to{opacity:0}}
@@ -680,11 +726,7 @@
             <button type="button" class="star" aria-label="1 star" aria-pressed="false" onclick="rate(1)">&#9733;</button><button type="button" class="star" aria-label="2 stars" aria-pressed="false" onclick="rate(2)">&#9733;</button>
             <button type="button" class="star" aria-label="3 stars" aria-pressed="false" onclick="rate(3)">&#9733;</button><button type="button" class="star" aria-label="4 stars" aria-pressed="false" onclick="rate(4)">&#9733;</button><button type="button" class="star" aria-label="5 stars" aria-pressed="false" onclick="rate(5)">&#9733;</button>
           </div>
-          <div class="review-choices">
-            <button class="cta cta-line" onclick="setStar(rating); openOv('ov-google')">Public Google review</button>
-            <button class="cta cta-line" onclick="openOv('ov-priv')">Private feedback</button>
-          </div>
-          <p style="font-size:12px;line-height:1.5;margin-top:10px">Either choice is available with any rating. Demo feedback is not sent.</p>
+
         </div>
       </div>
       <div class="dock-dk">
@@ -706,50 +748,20 @@
       <button class="cta cta-ghost" style="margin-top:10px" onclick="closeOv('ov-item')">Close</button>
     </div>
   </div>
-  <!-- ============ OVERLAY: Google review ============ -->
-  <div class="ov" id="ov-google">
-    <div class="scrim" onclick="closeOv('ov-google')"></div>
-    <div class="sheet">
-      <div class="grab"></div>
-      <div class="sh-t">How was it?</div>
-      <div class="sh-s">Public review example. A live restaurant would link to its Google page; this demo does not publish a review.</div>
-      <div class="stars" id="gstars">
-        <span class="star" onclick="setStar(1)">&#9733;</span><span class="star" onclick="setStar(2)">&#9733;</span>
-        <span class="star" onclick="setStar(3)">&#9733;</span><span class="star" onclick="setStar(4)">&#9733;</span>
-        <span class="star" onclick="setStar(5)">&#9733;</span>
+  <!-- One review panel for every rating. No rating-based destination routing. -->
+  <div class="ov" id="ov-review" role="dialog" aria-modal="true" aria-labelledby="review-title">
+    <div class="scrim" onclick="closeReview()"></div>
+    <div class="sheet feedback-sheet">
+      <div class="feedback-head"><h3 class="sh-t" id="review-title">Your review</h3><button class="review-close" type="button" aria-label="Close review" onclick="closeReview()">×</button></div>
+      <div class="stars" id="gstars" role="group" aria-label="Review rating">
+        <button type="button" class="star" aria-label="1 star" aria-pressed="false" onclick="setStar(1)">&#9733;</button><button type="button" class="star" aria-label="2 stars" aria-pressed="false" onclick="setStar(2)">&#9733;</button><button type="button" class="star" aria-label="3 stars" aria-pressed="false" onclick="setStar(3)">&#9733;</button><button type="button" class="star" aria-label="4 stars" aria-pressed="false" onclick="setStar(4)">&#9733;</button><button type="button" class="star" aria-label="5 stars" aria-pressed="false" onclick="setStar(5)">&#9733;</button>
       </div>
-      <div class="opts">
-        <button class="opt" onclick="togOpt(this)">The knefeh</button>
-        <button class="opt" onclick="togOpt(this)">Abou Karim</button>
-        <button class="opt" onclick="togOpt(this)">Fast service</button>
-        <button class="opt" onclick="togOpt(this)">Worth the drive</button>
-      </div>
-      <textarea class="ta" placeholder="Anything you'd tell a friend..."></textarea>
-      <button class="cta cta-green" style="margin-top:14px" onclick="postGoogle(this)">
-        <span class="sheen"></span>Post to Google
-      </button>
-      <button class="cta cta-ghost" onclick="closeOv('ov-google')">Maybe later</button>
-    </div>
-  </div>
-  <!-- ============ OVERLAY: private feedback ============ -->
-  <div class="ov" id="ov-priv">
-    <div class="scrim" onclick="closeOv('ov-priv')"></div>
-    <div class="sheet">
-      <div class="grab"></div>
-      <div class="sh-t">Just between us</div>
-      <div class="sh-s">Private feedback example. Nothing is sent in this demo.</div>
-      <div class="opts" style="margin-top:16px">
-        <button class="opt" onclick="togOpt(this)">Took too long</button>
-        <button class="opt" onclick="togOpt(this)">Food was cold</button>
-        <button class="opt" onclick="togOpt(this)">Bill was wrong</button>
-        <button class="opt" onclick="togOpt(this)">Something else</button>
-      </div>
-      <textarea class="ta" placeholder="Tell them what happened..."></textarea>
-      <button class="cta cta-green" style="margin-top:14px" onclick="this.textContent='Demo feedback recorded — not sent'; this.disabled=true">
-        <span class="sheen"></span>Try private feedback
-      </button>
-      <button class="cta cta-ghost" onclick="closeOv('ov-priv')">Maybe later</button>
-      <div class="linky" onclick="closeOv('ov-priv'); openOv('ov-google')">Prefer to post on Google instead?</div>
+      <label class="feedback-label" for="review-text">Your feedback <span>(optional)</span></label>
+      <textarea class="ta" id="review-text" aria-label="Your feedback (optional)" maxlength="1000" placeholder="How was your visit?"></textarea>
+      <label class="feedback-label" for="review-destination">Share with</label>
+      <select id="review-destination" aria-label="Share feedback with" onchange="paintReviewDestination()"><option value="google">Google · public review</option><option value="private">Restaurant · private feedback</option></select>
+      <p class="sh-s" id="review-status" role="status" aria-live="polite">Prototype only — no review or feedback is sent.</p>
+      <button class="cta cta-green" id="review-submit" type="button" onclick="submitReview()">Continue to Google</button>
     </div>
   </div>
 
@@ -967,6 +979,9 @@ function $(id){ return document.getElementById(id); }
 function usd(n){ return '$' + n.toFixed(2); }
 function ll(n){ return '≈ LL ' + Math.round(n * RATE()).toLocaleString('en-US'); }
 function go(id){
+  if ($('ov-review').classList.contains('on')) closeReview();
+  document.body.classList.toggle('receipt-mode', id === 'v-done');
+  syncReceiptViewport();
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
   $(id).classList.add('on');
   if (id === 'v-pay') paintPay();
@@ -1466,16 +1481,51 @@ function paintSettlementResult(){
   $('result-seal').textContent = confirmed ? '✓' : '…';
   $('method-label').textContent = confirmed ? 'Paid via' : 'Requested via';
   $('payment-status').textContent = status === 'pending'
-    ? 'Cash collection requested (demo). Please wait for staff to collect and confirm. Your bill is not marked paid.'
+    ? 'Cash requested. Wait for staff confirmation; not marked paid.'
     : confirmed ? 'Demo payment confirmed · no money moved.' : 'This request was ' + status + '. Please speak with your server.';
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
 }
-/* Rating never changes the available feedback channels. */
+/* Every rating opens the same single review panel. */
 function rate(n){
-  rating = n;
-  document.querySelectorAll('#dstars .star').forEach(function(st,i){
-    st.classList.toggle('on',i<n); st.setAttribute('aria-pressed',String(i<n));
+  setStar(n);
+  openReview();
+}
+function setStar(n){
+  rating = Math.max(1, Math.min(5, Number(n) || 1));
+  ['dstars','gstars'].forEach(function(id){
+    document.querySelectorAll('#' + id + ' .star').forEach(function(st,i){
+      st.classList.toggle('on',i<rating); st.setAttribute('aria-pressed',String(i<rating));
+    });
   });
+  $('review-title').textContent = 'Your review · ' + rating + '/5';
+}
+var reviewReturnFocus = null;
+function openReview(){
+  reviewReturnFocus = document.activeElement;
+  $('review-destination').value = 'google';
+  paintReviewDestination();
+  $('v-done').inert = true;
+  openOv('ov-review');
+  $('ov-review').querySelector('.review-close').focus();
+}
+function closeReview(){
+  $('ov-review').classList.remove('on','closing');
+  $('v-done').inert = false;
+  if (reviewReturnFocus && reviewReturnFocus.isConnected) reviewReturnFocus.focus();
+}
+function paintReviewDestination(){
+  $('review-submit').textContent = $('review-destination').value === 'google' ? 'Continue to Google' : 'Send privately';
+  $('review-submit').disabled = false;
+  $('review-status').textContent = 'Prototype only — no review or feedback is sent.';
+}
+function submitReview(){
+  $('review-status').textContent = $('review-destination').value === 'google'
+    ? 'Google posting is not connected. No review was published.'
+    : 'Private feedback delivery is not connected. Nothing was sent.';
+  $('review-submit').disabled = true;
+}
+function syncReceiptViewport(){
+  if (window.visualViewport) document.documentElement.style.setProperty('--app-height',window.visualViewport.height+'px');
 }
 /* optional, after payment — never a gate. Simulated like the payments. */
 function sendReceipt(){
@@ -1494,19 +1544,7 @@ function sendReceipt(){
   btn.classList.add('sent');
   btn.onclick = null;
   $('mail-in').disabled = true;
-  $('payment-status').textContent += ' Contact preferences saved locally; no receipt or message was sent.';
-}
-function setStar(n){
-  rating = n;
-  document.querySelectorAll('#gstars .star').forEach(function(s, i){ s.classList.toggle('on', i < n); });
-  /* deliberately no branching on rating — both offers are shown to everyone on the
-     success screen. Routing low ratings away from Google is review gating. */
-}
-function togOpt(el){ el.classList.toggle('on'); }
-/* Demonstrate the review action without publishing to a real restaurant. */
-function postGoogle(btn){
-  btn.textContent = 'Demo only — no review was published';
-  btn.disabled = true;
+  $('payment-status').textContent = 'Preferences saved locally. No receipt or message sent.';
 }
 /* demo only: flip between a venue that has finished confirming its menu and one that
    hasn't. Note what the second state does NOT contain — no warnings, no badges, no
@@ -1521,6 +1559,7 @@ function toggleCoverage(){
 function restart(){
   paymentBusy = false; lastSettlementId = null; paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
   CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check()});
+  $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
   kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
   $('tip-in').value = ''; $('tipcw').style.display = 'none';
@@ -1543,6 +1582,18 @@ function restart(){
   buildBill(); buildPick(); calcShare();
   go('v-land');
 }
+/* Keyboard access stays inside the review panel and returns to the selected star. */
+document.addEventListener('keydown',function(e){
+  if (!$('ov-review').classList.contains('on')) return;
+  if(e.key === 'Escape'){e.preventDefault();closeReview();return;}
+  if(e.key !== 'Tab') return;
+  var nodes=Array.from($('ov-review').querySelectorAll('button,textarea,select')).filter(function(n){return !n.disabled && n.getClientRects().length;});
+  var first=nodes[0],last=nodes[nodes.length-1];
+  if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+});
+if(window.visualViewport)window.visualViewport.addEventListener('resize',syncReceiptViewport);
+syncReceiptViewport();
 /* ---------------- boot ---------------- */
 /* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
 var TABLE = 12, SERVER = 'Abou Karim';

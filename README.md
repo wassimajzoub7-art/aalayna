@@ -10,7 +10,7 @@ Payments, receipts and feedback delivery are simulated. Campaigns are saved as d
 
 Cash selection creates a pending collection request. It is excluded from confirmed revenue and digital tips. In the dashboard, click **Confirm collection**, then **Cash received — confirm** after collection to demonstrate the staff step. The guest tab updates when the same-browser storage event arrives. Requests can be cancelled; confirmed payments can be marked refunded. These are simulation records, not actual financial operations.
 
-Public review and private feedback options have equal prominence at all ratings. Neither demo option sends a real review or message.
+Tapping any receipt star opens one compact review panel with a comment field and a public/private destination selector. Both destinations are available at every rating; neither prototype action sends a real review or message. The receipt uses the visual viewport, with compact styling for short screens and the on-screen keyboard; overflow remains available for exceptional accessibility sizes.
 
 ## Website event measurement
 
