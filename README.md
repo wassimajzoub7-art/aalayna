@@ -43,3 +43,7 @@ See [INTEGRATIONS.md](INTEGRATIONS.md) for definitions, report format and the ex
 The guest app uses an edge-to-edge viewport with scrollable menu, split and payment content. Only the receipt is designed to fit one screen, with compact sizing for short viewports and an accessible overflow fallback. Payment totals show bill share and tip separately. Restaurant-owned HTTPS dish photos can be added in the menu editor; missing or failed images leave text-only rows.
 
 Operations open on Live floor with pending cash, open bills and confirmed totals. Cash collection controls remain two-step confirmations. Completed payment history and accounting live under Settlement report. Customers and Campaigns have separate tabs; customer history and campaign drafting use accessible dialogs. All existing prototype boundaries still apply.
+
+### Commercial pilot offer
+
+Two months with no 3alayna subscription fee, starting at restaurant go-live after POS and payment readiness. No automatic paid renewal. Restaurants choose whether to continue at $150/month/location; the first ten founding restaurants retain the existing $100/month/location offer. Menu setup and onboarding are included. Third-party payment charges, any additional integration setup costs and future messaging costs are disclosed separately before agreement.
