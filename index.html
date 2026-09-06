@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3alayna — scan, split, settle.</title>
-<meta name="description" content="QR menus, bill splitting and settlement designed for restaurants in Lebanon. Discuss your restaurant’s needs, POS compatibility and a free two-service pilot.">
+<meta name="description" content="QR menus, bill splitting and settlement designed for restaurants in Lebanon. Explore optional customer opt-ins, return-visit insights and a free two-service pilot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="website.css">
+<link rel="stylesheet" href="website.css?v=2">
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 </head>
@@ -17,7 +17,7 @@
 <header class="site-nav">
   <nav class="wrap nav-in" aria-label="Main navigation">
     <a class="logo" href="index.html" aria-label="3alayna home">3alay<b>na</b></a>
-    <div class="nav-links"><a href="#how">How it works</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
+    <div class="nav-links"><a href="#how">How it works</a><a href="#return-visits">Bring guests back</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
     <a class="btn compact" data-track="booking_click" data-placement="navigation" href="book.html">Let’s talk</a>
   </nav>
 </header>
@@ -26,7 +26,7 @@
     <div class="hero-copy">
       <p class="eyebrow">For restaurants in Lebanon</p>
       <h1 id="hero-title">The bill.<br>The split.<br><em>3alayna.</em></h1>
-      <p class="lead">Let guests view, split and settle their bill from the table. One QR, in their language, with the way they want to pay.</p>
+      <p class="lead">Let guests view, split and settle their bill from the table. One QR, in their language, with the way they want to pay. Then build a connection with guests who choose to hear from you.</p>
       <p class="supporting">English · Français · العربية<br>Designed for Whish, card and cash · USD &amp; LBP</p>
       <div class="actions">
         <a class="btn" data-track="booking_click" data-placement="hero" href="book.html">Discuss a pilot</a>
@@ -56,14 +56,28 @@
     </div>
   </section>
 
+  <section class="wrap section retention-section" id="return-visits" aria-labelledby="retention-title">
+    <div class="retention-heading">
+      <div><p class="eyebrow">Beyond the bill</p><h2 id="retention-title">Bring guests back.</h2></div>
+      <p>A good visit can be the start of a lasting relationship. Give guests an optional way to stay in touch, understand their recorded visits and prepare a relevant invitation to return.</p>
+    </div>
+    <div class="retention-steps">
+      <article><span class="number">01 · Connect</span><h3>Build your own customer list.</h3><p>Guests can leave an email or WhatsApp number after a confirmed payment. Permission for offers is separate from their receipt, and always optional.</p></article>
+      <article><span class="number">02 · Understand</span><h3>See who comes back.</h3><p>Link opted-in customers to confirmed bills. Recognise first-time guests, regulars and customers who haven’t visited recently.</p></article>
+      <article><span class="number">03 · Invite</span><h3>Make the next visit relevant.</h3><p>Prepare an invitation for a specific group, review the audience and follow recorded return visits. Your team stays in control of each campaign.</p></article>
+    </div>
+    <div class="retention-status"><span class="retention-badge">In development</span><p>Customer history and campaign planning are available in the prototype. <strong>WhatsApp and email sending are upcoming</strong>—no messages are sent today.</p></div>
+    <div class="retention-footer"><p>Start with a simple question: how do we encourage a first-time guest to visit again?</p><a class="text-link" data-track="booking_click" data-placement="retention" href="book.html">Discuss repeat visits for your restaurant →</a></div>
+  </section>
+
   <section class="wrap section" id="experience" aria-labelledby="experience-title">
     <p class="eyebrow">Both sides of the table</p><h2 id="experience-title">Your restaurant. Your way of serving.</h2>
     <div class="experience-grid">
       <div>
         <h3>Your menu, in your restaurant’s style.</h3>
         <p>Guests browse dishes, explore options and choose how to split. The menu editor lets your team update dishes, prices and service hours before publishing.</p>
-        <h3 class="subheading">Give guests a reason to return.</h3>
-        <p>Understand who returns and prepare relevant invitations for guests who opt in to restaurant offers. Review visit history and practical weekly actions alongside your payment records.</p>
+        <h3 class="subheading">Make it easy to share feedback.</h3>
+        <p>After payment, guests can rate their visit and choose public review or private feedback in one simple flow. Feedback stays optional.</p>
       </div>
       <div class="conversation-card">
         <p class="eyebrow">Let’s make it relevant to you</p>
@@ -88,8 +102,8 @@
       <div class="price-card">
         <p class="eyebrow">After the pilot</p><p class="price">$150 <span>/ month / location</span></p>
         <p class="founder">First 10 founding restaurants lock in <strong>$100/month per location.</strong></p>
-        <ul><li>QR menu, bill splitting &amp; supported settlement methods</li><li>Menu editor &amp; service hours</li><li>Payment records, cash requests &amp; tip attribution</li><li>Customer history &amp; optional contact collection</li><li>Campaign planning &amp; weekly recommendations</li><li>Guest feedback</li><li>Menu setup &amp; staff onboarding</li></ul>
-        <p class="price-note">No 3alayna commission on restaurant sales. Payment-provider fees may apply separately. Supported integrations and any additional setup costs are agreed before the pilot.</p>
+        <ul><li>QR menu, bill splitting &amp; supported settlement methods</li><li>Menu editor &amp; service hours</li><li>Payment records, cash requests &amp; tip attribution</li><li>Optional customer opt-ins &amp; recorded visit history</li><li>Return-visit campaign planning &amp; weekly recommendations</li><li>Guest feedback</li><li>Menu setup &amp; staff onboarding</li></ul>
+        <p class="price-note">No 3alayna commission on restaurant sales. WhatsApp and email sending are upcoming; messaging-provider charges will be confirmed before activation. Payment-provider fees may apply separately. Supported integrations and any additional setup costs are agreed before the pilot.</p>
         <a class="btn light full" data-track="whatsapp_click" data-placement="pricing" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20check%20POS%20compatibility%20and%20pilot%20pricing.%20My%20restaurant%20is%3A%20">Check compatibility with us</a>
       </div>
     </div>
@@ -105,6 +119,8 @@
       <details><summary>What is included in the price?</summary><p>The subscription is per location and includes the listed software features, menu setup and staff onboarding. The first ten founding restaurants receive the $100 monthly rate; the standard rate is $150. Payment-provider charges are separate. We agree integration scope and any additional setup costs in advance.</p></details>
       <details><summary>What do you need from our team?</summary><p>Your menu, table count, POS details and supported merchant-account setup. Your kitchen reviews ingredient and dietary information before it appears to guests. We arrange staff training around your service hours.</p></details>
       <details><summary>Does every guest need an app or an account?</summary><p>No 3alayna download or account is needed to browse the menu or explore the guest flow. Paying with a wallet may require that provider’s app and account. Receipt and marketing sign-ups are optional and separate.</p></details>
+      <details><summary>Can 3alayna help us bring customers back?</summary><p>That is the goal of the retention tools: collect optional contact details with separate marketing permission, link them to confirmed visits and prepare relevant invitations. The prototype supports customer history, audience planning and recorded return visits. WhatsApp and email sending are upcoming. We do not promise additional revenue; once messaging is connected, we can measure delivery and subsequent visits with your team over time.</p></details>
+      <details><summary>Do guests have to share their contact details?</summary><p>No. Paying and leaving a review do not require an email or phone number. Guests can request a receipt without agreeing to restaurant offers. Visit insights cover identified payers with linked bills, not everyone seated at the table.</p></details>
       <details><summary>What happens if the connection drops?</summary><p>Guests can return to the usual staff-assisted payment process. A payment should only be marked confirmed after verification; the pilot will test the fallback and reconciliation process with your team.</p></details>
     </div>
   </section>

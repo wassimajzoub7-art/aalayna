@@ -6,3 +6,17 @@
 
 /* Public homepage: a text-led introduction without app previews. */
 .hero{display:block;text-align:center}.hero-copy{max-width:48rem;margin-inline:auto}.hero .lead{max-width:38rem;margin-inline:auto}.hero .actions{justify-content:center}
+
+/* Retention is the second product benefit, without adding an app demo. */
+.retention-section{border-bottom:1px solid var(--line)}
+.retention-heading{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:end}
+.retention-heading>p{font-size:1.125rem;line-height:1.65;max-width:34rem}
+.retention-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2.5rem;margin-top:2.75rem}
+.retention-steps article{border-top:2px solid var(--line);padding-top:1.25rem}
+.retention-steps h3{margin-top:.75rem}.retention-steps p{margin-top:.8rem}
+.retention-status{display:flex;align-items:flex-start;gap:1.2rem;margin-top:2.5rem;padding:1.25rem 1.5rem;border-radius:.75rem;background:var(--surface);border:1px solid var(--line)}
+.retention-status p{font-size:.9375rem}.retention-status strong{color:var(--ink);font-weight:600}
+.retention-badge{flex-shrink:0;display:inline-block;background:var(--brand-bg);color:var(--brand);font-size:.8125rem;font-weight:600;line-height:1.5;padding:.3rem .65rem;border-radius:.4rem}
+.retention-footer{display:flex;align-items:center;justify-content:space-between;gap:2rem;margin-top:1.5rem}.retention-footer p{max-width:35rem}.retention-footer a{flex-shrink:0}
+@media(max-width:960px){.retention-heading{gap:2rem}.retention-steps{gap:1.5rem}.retention-footer{align-items:flex-start;flex-direction:column;gap:1rem}.nav-links{flex-wrap:wrap}}
+@media(max-width:720px){.retention-heading,.retention-steps{grid-template-columns:1fr;gap:1.5rem}.retention-steps{margin-top:2rem}.retention-status{flex-direction:column;gap:.75rem;padding:1.25rem}.retention-heading>p{font-size:1rem}.nav-links{gap:.5rem 1.2rem}.retention-footer a{flex-shrink:1}}
