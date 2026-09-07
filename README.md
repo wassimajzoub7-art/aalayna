@@ -32,6 +32,14 @@ Confirm supported POS access, verified payment callbacks, server-side payment st
 
 ## Customer retention and operations
 
+### Owner reporting
+
+Service and Overview share Today / Last 7 days / Last 30 days reporting. Today begins at the first instant of the date in Beirut; 7/30-day windows are rolling. Comparisons use the immediately preceding equal-length interval. The live cash queue and open balances remain visible irrespective of the reporting window. Payment history and CSV exports follow the selected window using confirmation date (request date when unconfirmed), with current refund/cancellation status.
+
+Overview contains four headline metrics: confirmed bill principal, bills linked to an identified payer, receipt-contact marketing sign-up rate, and a mature 30-day return rate. Receipt submissions are deduplicated per contact using the last receipt choice in the period. Return cohorts use first observed visits in the reporting interval shifted back 30 days, so every included guest has a full follow-up; they do not represent all restaurant customers. No eligible denominator displays a dash. Historical results reflect current payment/refund records, not an immutable accounting ledger.
+
+Completed-bill count and average use distinct fully paid checks closed in the period, excluding tips and any now-refunded balance. Campaigns surface reported deliveries, returning contacts and linked spending without claiming incremental revenue. Reviews and Team prominently label their illustrative data. POS adoption, payment timing/failures and provider delivery/unsubscribe rates remain unavailable until their source data is connected.
+
 The owner dashboard now includes customer profiles with confirmed visit history and linked spending, searchable contacts, permission history and marketing opt-outs. Campaigns support channel-specific audiences, explicit approval, an optional 20% comparison group, JSON audience export, provider delivery report import and 30-day return reporting. Weekly actions use recorded cash requests, visits and contact coverage. Bill balances separate collected principal, tips, pending cash and the amount available for another payment.
 
 The guest flow uses a persistent check ID; restarting lets another payer use the same bill. Close a fully settled bill in the owner dashboard before starting the next table session. Contact capture attaches to a confirmed payment, including staff-confirmed cash. Repeated receipt submissions do not create visits.

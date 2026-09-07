@@ -1,5 +1,22 @@
 /* Owner UI. Data writes are local; nothing in this file sends messages. */
 var selectedGrowthCustomer = null;
+var ownerReportSnapshot = null;
+function opsReport(){return ownerReportSnapshot || Aalayna.ownerReport($('report-period').value);}
+function opsPercent(value){return value==null?'—':(value*100).toFixed(1)+'%';}
+function opsRateChange(current,previous){
+  if(current==null || previous==null)return 'Comparison needs more history';
+  var delta=(current-previous)*100;
+  return (delta>0?'+':'')+delta.toFixed(1)+' percentage points vs previous period';
+}
+function opsMoneyChange(current,previous){
+  if(!previous)return current?'No collected payments in previous period':'No collected payments in either period';
+  var delta=(current/previous-1)*100;
+  return (delta>0?'+':'')+delta.toFixed(1)+'% vs previous period';
+}
+function opsReportDates(w){
+  var format=function(t){return new Date(t).toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});};
+  return format(w.start)+' – '+format(w.end-1);
+}
 function opsEl(tag, text, cls) { var n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n; }
 function opsButton(label, fn) { var b=opsEl('button',label,'btn');b.type='button';b.onclick=function(){try{fn();}catch(e){toast(e.message);}};return b; }
 function opsDate(value) { return value ? new Date(value).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'No confirmed visit'; }
@@ -64,7 +81,10 @@ function paintGrowthCampaigns() {
     }else{
       var report=Aalayna.campaignReport(c.id),eligible=Aalayna.exportCampaignAudience(c.id).length;
       card.appendChild(opsEl('p',c.recipients.length+' assigned recipients · '+c.holdout.length+' comparison contacts · '+eligible+' still eligible to export','cs'));
-      card.appendChild(opsEl('p',report.delivered.size+' reported deliveries · '+report.delivered.returners+' contacts returned after delivery · '+money(report.delivered.spendCents/100)+' linked return spending','ops-history'));
+      var outcomes=opsEl('div',null,'campaign-outcomes');
+      [['Reported deliveries',report.delivered.size],['Guests who returned',report.delivered.returners],['Linked return spending',money(report.delivered.spendCents/100)]].forEach(function(pair){var metric=opsEl('div');metric.append(opsEl('span',pair[0]),opsEl('strong',String(pair[1])));outcomes.appendChild(metric);});
+      card.appendChild(outcomes);
+      card.appendChild(opsEl('p','After reported delivery · spending excludes tips and refunded payments.','cs'));
       var rate=function(g){return g.rate==null?'—':(g.rate*100).toFixed(1)+'%';};
       card.appendChild(opsEl('p','Return rate by original assignment: recipients '+rate(report.assigned)+' ('+report.assigned.returners+'/'+report.assigned.size+'), comparison '+rate(report.comparison)+' ('+report.comparison.returners+'/'+report.comparison.size+').','cs'));
       card.appendChild(opsEl('p',(report.windowComplete?'30-day observation window ended. ':'30-day observation window still open. ')+'Observed returns are not proof of additional sales. Small groups are directional; return visits may overlap campaigns. Delivery reports are owner-imported, not independently verified.','cs'));
@@ -77,7 +97,20 @@ function paintGrowthCampaigns() {
   });
 }
 function paintGrowthWeek() {
-  var w=Aalayna.weeklySummary();$('week-net').textContent=money(w.netCents/100);$('week-tips').textContent=money(w.tipCents/100);$('week-checks').textContent=w.checks;$('week-identified').textContent=w.identifiedChecks;
+  var report=opsReport(),w=report.current,p=report.previous;
+  $('overview-period').textContent=report.window.label+' · recorded payments and customer growth';
+  $('week-net').textContent=money(w.netCents/100);
+  $('overview-money-detail').textContent=w.completedBills+' completed bills · '+money(w.tipCents/100)+' tips separately';
+  $('overview-money-change').textContent=opsMoneyChange(w.netCents,p.netCents);
+  $('capture-rate').textContent=opsPercent(w.captureRate);$('capture-detail').textContent=w.identifiedBills+' of '+w.bills+' paid bills linked to a contact';
+  $('capture-change').textContent=opsRateChange(w.captureRate,p.captureRate);
+  $('optin-rate').textContent=opsPercent(w.optInRate);$('optin-detail').textContent=w.marketingContacts+' of '+w.receiptContacts+' receipt contacts chose offers';
+  $('optin-change').textContent=opsRateChange(w.optInRate,p.optInRate);
+  $('return-rate').textContent=opsPercent(w.returnRate);$('return-detail').textContent=w.eligibleReturners?w.returners+' of '+w.eligibleReturners+' eligible guests returned':'Waiting for a full 30-day follow-up';
+  $('return-change').textContent=opsRateChange(w.returnRate,p.returnRate);
+  $('overview-period-detail').textContent='Reporting: '+opsReportDates(report.window)+'. Previous equal-length period: '+opsReportDates(report.previousWindow)+'. Beirut time.';
+  $('return-cohort-detail').textContent='Return-rate group: first observed visits '+opsReportDates(w.cohort)+'. The group is shifted back 30 days so every guest has a complete follow-up. '+(w.eligibleReturners<30?'Small or empty samples are directional.':'');
+  $('withdrawal-detail').textContent=w.withdrawals+' contacts withdrew marketing permission in this period. This is an account-level count, not a campaign unsubscribe rate.';
   var box=$('weekly-actions');box.replaceChildren();
   Aalayna.recommendations().forEach(function(r){var row=opsEl('article',null,'ops-row'),body=opsEl('div');body.append(opsEl('h3',r.title),opsEl('p',r.detail,'cs'));row.appendChild(body);
     if(r.action)row.appendChild(opsButton(r.action,function(){
@@ -91,9 +124,10 @@ function paintCheckBalances() {
   var box=$('check-balances');box.replaceChildren();var checks=Aalayna.serviceChecks().slice().sort(function(a,b){return Number(!!a.closedAt)-Number(!!b.closedAt)||(b.openedAt||'').localeCompare(a.openedAt||'');});
   $('live-open').textContent=checks.filter(function(c){return !c.closedAt;}).length;
   $('live-cash').textContent=money(Aalayna.pendingCash().reduce(function(sum,x){return sum+x.amount;},0));
-  $('live-paid').textContent=money(Aalayna.settledTotal());
-  if(!checks.length)box.appendChild(opsEl('p','No bills recorded yet. Opening the guest experience creates a sample bill; a live POS connection will supply real checks.','ops-empty'));
-  checks.forEach(function(c){var b=Aalayna.checkBalance(c.id),row=opsEl('article',null,'ops-row'),body=opsEl('div');
+  $('live-paid').textContent=money(opsReport().current.grossCents/100);
+  var active=checks.filter(function(c){return !c.closedAt || Aalayna.checkBalance(c.id).remainingCents>0;});
+  if(!active.length)box.appendChild(opsEl('p',checks.length?'All recorded bills are closed. No outstanding balances.':'No bills recorded yet. Opening the guest experience creates a sample bill; a live POS connection will supply real checks.','ops-empty'));
+  active.forEach(function(c){var b=Aalayna.checkBalance(c.id),row=opsEl('article',null,'ops-row'),body=opsEl('div');
     var head=opsEl('div',null,'ops-heading');head.appendChild(opsEl('h3','Table '+c.table));
     var state=c.closedAt?(b.remainingCents?'Review refund':'Closed'):(b.pendingCents?'Cash pending':(b.remainingCents?'Open':'Ready to close'));
     head.appendChild(opsEl('span',state,'status-badge '+(b.pendingCents?'pending':c.closedAt?'draft':'approved')));body.appendChild(head);

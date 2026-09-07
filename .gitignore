@@ -21,6 +21,7 @@
 !tests/*.test.cjs
 
 !restaurant-growth.js
+!owner-metrics.js
 !restaurant-ops.js
 !restaurant-ops.css
 !INTEGRATIONS.md

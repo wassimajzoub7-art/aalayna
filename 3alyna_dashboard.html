@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <script src="aalayna-store.js?v=16"></script>
 <script src="restaurant-growth.js?v=1"></script>
+<script src="owner-metrics.js?v=1"></script>
 
 <style>
   :root{
@@ -238,7 +239,7 @@
     .btn:active{transform:none}
   }
 </style>
-<link rel="stylesheet" href="restaurant-ops.css?v=2">
+<link rel="stylesheet" href="restaurant-ops.css?v=3">
 </head>
 <body>
 
@@ -248,23 +249,27 @@
     <div class="s" id="v-sub">Hallab 1881 · Kasr El Helou</div>
   </div>
   <nav>
-    <button class="ni on" onclick="go(this,'tonight')">Tonight</button>
-    <button class="ni" onclick="go(this,'week')">This week</button>
+    <button class="ni on" onclick="go(this,'tonight')">Service</button>
+    <button class="ni" onclick="go(this,'week')">Overview</button>
     <button class="ni" onclick="go(this,'guests')">Customers</button>
     <button class="ni" onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
     <button class="ni" onclick="go(this,'team')">Team</button>
   </nav>
-  <div class="side-f">Weekly actions use recorded activity. Messaging and POS connections are not configured.</div>
+  <div class="side-f">Insights use recorded activity. Messaging and POS connections are not configured.</div>
 </aside>
 
 <main>
   <div style="font-size:14px;padding:12px 0 20px;color:var(--sub)">Interactive demo · sample data · no real payments or messages. <a href="index.html">Back to website</a></div>
 
+  <div class="report-toolbar" id="report-toolbar">
+    <label for="report-period">Reporting period <select id="report-period" onchange="paintTonight()"><option value="today">Today</option><option value="7" selected>Last 7 days</option><option value="30">Last 30 days</option></select></label>
+    <p id="report-period-note">Reports use Beirut time. Open bills and pending cash always show the live queue.</p>
+  </div>
   <!-- ═══════════ TONIGHT ═══════════ -->
   <div class="view on" id="v-tonight">
     <div class="top">
       <div>
-        <h1>Tonight</h1>
+        <h1>Service</h1>
         <div class="sub" id="t-date">Settlement activity, current service</div>
       </div>
       <div class="actions">
@@ -272,9 +277,9 @@
       </div>
     </div>
 
-    <nav class="ops-tabs" aria-label="Tonight views"><button type="button" aria-pressed="true" data-group="service" data-panel="service-live" onclick="opsPanel('service','service-live')">Live floor</button><button type="button" aria-pressed="false" data-group="service" data-panel="service-report" onclick="opsPanel('service','service-report')">Settlement report</button></nav>
+    <nav class="ops-tabs" aria-label="Service views"><button type="button" aria-pressed="true" data-group="service" data-panel="service-live" onclick="opsPanel('service','service-live')">Live floor</button><button type="button" aria-pressed="false" data-group="service" data-panel="service-report" onclick="opsPanel('service','service-report')">Settlement report</button></nav>
     <section id="service-live" data-panel-group="service">
-      <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Confirmed payments</span><strong id="live-paid">$0.00</strong></div></div>
+      <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Collected in period · incl. tips</span><strong id="live-paid">$0.00</strong></div></div>
       <div class="card attention-card"><div class="ops-heading"><div><h3>Needs attention</h3><p class="cs">Confirm cash only after it reaches your hands.</p></div><span class="status-badge pending" id="cash-count">0 waiting</span></div><div id="cash-queue" aria-live="polite"></div></div>
       <div class="grid live-grid mt">    <div class="card"><h3>Balances by bill</h3><div class="cs">Bill amounts exclude tips. Pending cash reserves a share but does not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
     <div class="card">
@@ -294,12 +299,12 @@
 </div>
     </section>
     <section id="service-report" data-panel-group="service" hidden>    <div class="grid g4">
-      <div class="card"><div class="k">Settled in-app</div><div class="v" id="k-tot">$0.00</div>
-        <div class="d">including tips</div></div>
-      <div class="card"><div class="k">Tables with confirmed payments</div><div class="v" id="t-scan">0</div>
-        <div class="d">may include partially paid tables</div></div>
-      <div class="card"><div class="k">Average per table</div><div class="v" id="k-avg">—</div>
-        <div class="d">in-app tables only</div></div>
+      <div class="card"><div class="k">Bill payments collected</div><div class="v" id="k-tot">$0.00</div>
+        <div class="d" id="settlement-change">Excluding tips</div></div>
+      <div class="card"><div class="k">Completed bills</div><div class="v" id="t-scan">0</div>
+        <div class="d">Fully paid and closed in this period</div></div>
+      <div class="card"><div class="k">Average completed bill</div><div class="v" id="k-avg">—</div>
+        <div class="d">Per bill, excluding tips</div></div>
       <div class="card"><div class="k">Tip rate</div><div class="v" id="k-tip">—</div>
         <div class="d">tips ÷ net settled</div></div>
     </div>
@@ -307,7 +312,7 @@
     <div class="grid g2 mt">
       <div class="card">
         <h3>Settlement statement</h3>
-        <div class="cs">Recorded settled amounts by payment method.</div>
+        <div class="cs">Confirmed amounts in the selected period, including tips.</div>
         <div style="margin-top:12px">
           <div class="sr"><span class="rail"><span class="dot" style="background:#C4283C"></span>Whish Money</span><span class="amt" id="r-whish">$0.00</span></div>
           <div class="sr"><span class="rail"><span class="dot" style="background:#26327A"></span>Card</span><span class="amt" id="r-card">$0.00</span></div>
@@ -328,26 +333,34 @@
 
     <div class="card mt">
       <h3>Payment history</h3>
-      <div class="cs">Confirmed, cancelled and refunded payments. Pending cash is on the Live floor.</div>
+      <div class="cs">Selected period, by confirmation or request date. Refunded and cancelled rows show their current status. Pending cash stays on the Live floor.</div>
       <div id="setrows" style="margin-top:10px"></div>
     </div>
 </section>
   </div>
 
   <div class="view" id="v-week">
-    <div class="top"><div><h1>This week</h1><div class="sub">Last seven days · recorded activity for this restaurant</div></div></div>
-    <div class="grid g4">
-      <div class="card"><div class="k">Confirmed bill payments</div><div class="v" id="week-net">$0.00</div><div class="d">Excludes tips, pending cash and refunds</div></div>
-      <div class="card"><div class="k">Confirmed tips</div><div class="v" id="week-tips">$0.00</div></div>
-      <div class="card"><div class="k">Bills with a payment</div><div class="v" id="week-checks">0</div></div>
-      <div class="card"><div class="k">Bills with an identified payer</div><div class="v" id="week-identified">0</div><div class="d">Optional contact details, including cash payers</div></div>
+    <div class="top"><div><h1>Business overview</h1><div class="sub" id="overview-period">Collected payments and customer growth</div></div></div>
+    <div class="grid g4 owner-kpis">
+      <div class="card"><div class="k">Bill payments collected</div><div class="v" id="week-net">$0.00</div><div class="d" id="overview-money-detail"></div><p class="metric-change" id="overview-money-change"></p></div>
+      <div class="card"><div class="k">Contact capture</div><div class="v" id="capture-rate">—</div><div class="d" id="capture-detail"></div><p class="metric-change" id="capture-change"></p></div>
+      <div class="card"><div class="k">Marketing sign-ups</div><div class="v" id="optin-rate">—</div><div class="d" id="optin-detail"></div><p class="metric-change" id="optin-change"></p></div>
+      <div class="card"><div class="k">Return within 30 days</div><div class="v" id="return-rate">—</div><div class="d" id="return-detail"></div><p class="metric-change" id="return-change"></p></div>
     </div>
+    <details class="ops-help metric-definitions"><summary>What these numbers mean</summary>
+      <p id="overview-period-detail"></p>
+      <p>Collected payments exclude tips, pending cash and payments now refunded. Contact capture counts bills with an identified payer, not every diner. Marketing sign-ups use each contact’s last receipt choice in the period; repeated submissions count once.</p>
+      <p id="return-cohort-detail"></p>
+      <p>Return visits cover known payers and their first observed visit, not every customer or necessarily their first-ever visit. Comparisons use the previous equal-length period; a dash means there is no eligible data. Historical figures reflect current payment and refund status.</p>
+      <p id="withdrawal-detail"></p>
+    </details>
     <div class="card mt"><h3>Recommended next actions</h3><div class="cs">Based on recorded visits and settlement activity. Campaigns always need your approval.</div><div id="weekly-actions"></div></div>
-    <div class="note mt"><span>ⓘ</span><span>These figures cover this browser’s records. POS-wide revenue, table turnover and cross-device customer history require a connected backend.</span></div>
+    <details class="ops-help"><summary>Metrics available after connection</summary><p>POS data will unlock the share of eligible bills using 3alayna. Payment-provider events will unlock completion times and failed payments, with cash measured separately. Messaging-provider events will unlock delivery, failure and unsubscribe rates. Missing connections are not shown as zero performance.</p></details>
+    <div class="note mt"><span>ⓘ</span><span>These figures cover this browser’s recorded activity. They are not total restaurant revenue.</span></div>
   </div>
 
   <div class="view" id="v-guests">
-    <div class="top"><div><h1>Customers &amp; return visits</h1><div class="sub">Known payers with linked confirmed bills · not a count of all diners</div></div></div>
+    <div class="top"><div><h1>Customers &amp; return visits</h1><div class="sub">All recorded customer history · known payers, not every diner</div></div></div>
     <div class="grid g3 mb">
       <div class="card"><div class="k">Known contacts</div><div class="v" id="gl-total">0</div></div>
       <div class="card"><div class="k">Marketing permission</div><div class="v" id="gl-mkt">0</div></div>
@@ -388,6 +401,7 @@
       <div>
         <h1>Reviews &amp; feedback</h1>
         <div class="sub">Both channels are offered to every guest after settlement, independent of rating</div>
+        <p class="sample-notice">Sample data · illustrative ratings, reviews and conversion figures. No Google connection.</p>
       </div>
     </div>
 
@@ -429,6 +443,7 @@
       <div>
         <h1>Team</h1>
         <div class="sub">Tip attribution and payouts are managed under the restaurant’s policy</div>
+        <p class="sample-notice">Sample data · illustrative team charts and payout history. Recorded tips are under Service.</p>
       </div>
     </div>
 
@@ -452,7 +467,7 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=2"></script>
+<script src="restaurant-ops.js?v=3"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var DWELL = [
@@ -496,33 +511,21 @@ function go(el, v){
   el.classList.add('on');
   document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('on'); });
   $('v-' + v).classList.add('on');
+  $('report-toolbar').hidden = v !== 'tonight' && v !== 'week';
 }
 
 /* ───────── Tonight — live from the store ───────── */
 function paintTonight(){
-  var r = Aalayna.byRail(), s = Aalayna.settlements().filter(Aalayna.isConfirmed);
-  var tables = {}; s.forEach(function(x){ tables[x.table] = true; });
-  var tot = Aalayna.settledTotal(), n = Object.keys(tables).length;
-  var tips = s.reduce(function(a,b){ return a + (b.tip||0); }, 0);
-  var net = tot - tips;
-
-  $('r-whish').textContent = money(r.whish);
-  $('r-card').textContent  = money(r.card);
-  $('r-cash').textContent  = money(r.cash);
-  $('r-tot').textContent   = money(tot);
-
-  $('k-tot').textContent  = money(tot);
-  $('t-scan').textContent = n;
-  $('k-avg').textContent  = n ? money(tot/n) : '—';
-  $('k-tip').textContent  = net > 0 ? (100*tips/net).toFixed(1) + '%' : '—';
-
-  var d = new Date();
-  $('t-date').textContent = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}) +
-    ' · all recorded settlement activity';
-
-  $('t-note').innerHTML = 'Confirmed payments through 3alayna — <b>' + money(tot) +
-    '</b> across <b>' + n + (n===1?' table':' tables') + '</b> in these records. The POS remains the ' +
-    'system of record; treat this statement as an input to the close, not the close itself.';
+  ownerReportSnapshot = Aalayna.ownerReport($('report-period').value);
+  var report=opsReport(), m=report.current, r=m.rails;
+  $('r-whish').textContent=money(r.whish/100);$('r-card').textContent=money(r.card/100);$('r-cash').textContent=money(r.cash/100);
+  $('r-tot').textContent=money(m.grossCents/100);$('k-tot').textContent=money(m.netCents/100);
+  $('t-scan').textContent=m.completedBills;$('k-avg').textContent=m.averageBillCents==null?'—':money(m.averageBillCents/100);
+  $('k-tip').textContent=m.netCents>0?opsPercent(m.tipCents/m.netCents):'—';
+  $('settlement-change').textContent=opsMoneyChange(m.netCents,report.previous.netCents);
+  $('t-date').textContent='Open bills and collection requests · live now';
+  $('report-period-note').textContent=report.window.label+' · Beirut time. Open bills and pending cash always stay live.';
+  $('t-note').textContent=money(m.grossCents/100)+' confirmed, including '+money(m.tipCents/100)+' in tips, across '+m.bills+' bills with a payment in this period. This is recorded 3alayna activity, not a POS closing statement.';
 
   paintRows();
   paintFloor();
@@ -531,7 +534,7 @@ function paintTonight(){
   var pending = Aalayna.pendingCash().reduce(function(total,x){ return total + x.amount; },0);
   if (pending > 0){
     box.style.display = 'flex';
-    box.innerHTML = '<span>ⓘ</span><span><b>' + money(pending) + '</b> cash awaiting collection. Excluded from confirmed totals. Confirm collection in the rows below after receiving the cash.</span>';
+    box.innerHTML = '<span>ⓘ</span><span><b>' + money(pending) + '</b> cash awaiting collection. Excluded from confirmed totals. Use the Live floor to confirm after receiving the cash.</span>';
   } else box.style.display = 'none';
 }
 
@@ -637,8 +640,9 @@ function paintRows(){
   var box = $('setrows'), cashbox=$('cash-queue'); box.innerHTML = '';cashbox.replaceChildren();
   var pendingRows=Aalayna.pendingCash();$('cash-count').textContent=pendingRows.length+' waiting';
   if(!pendingRows.length)cashbox.appendChild(opsEl('p','All clear. No cash requests are waiting for collection.','ops-empty'));
-  if(!Aalayna.settlements().some(function(x){return Aalayna.settlementStatus(x)!=='pending';}))box.appendChild(opsEl('p','No completed payments yet. Pending cash appears on the Live floor.','ops-empty'));
-  var all = Aalayna.settlements().slice().reverse();
+  var history=Aalayna.ownerPaymentHistory($('report-period').value);
+  if(!history.length)box.appendChild(opsEl('p','No payment history in this period. Pending cash appears on the Live floor.','ops-empty'));
+  var all = history.concat(Aalayna.pendingCash()).slice().reverse();
   if (!all.length){
     box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:12px 0">No settlements yet ' +
       'this service. Rows appear as guests pay.</div>';
@@ -648,7 +652,7 @@ function paintRows(){
     var d = document.createElement('div');
     d.className = 'setr' + (x.refunded ? ' refunded' : '');
     var t = new Date(x.ts);
-    var hh = ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2);
+    var hh = t.toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     d.innerHTML =
       '<span class="tm">' + hh + '</span>' +
       '<span class="tb2">Table ' + x.table + '</span>' +
@@ -727,8 +731,8 @@ function payTip(server, amount){
 }
 
 function exportCSV(){
-  var s = Aalayna.settlements();
-  if (!s.length){ toast('No settlements to export'); return; }
+  var s = Aalayna.ownerPaymentHistory($('report-period').value);
+  if (!s.length){ toast('No payment history in this period to export'); return; }
   var rows = [['id','timestamp','table','method','amount','tip','server','status','confirmed_at','refunded','cancelled']];
   s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server, Aalayna.settlementStatus(x), x.confirmedAt || '', x.refunded || '', x.cancelled || '']); });
   var csv = rows.map(function(r){ return r.map(function(v){ var text = String(v); if (/^[=+@-]/.test(text)) text = "'" + text; return '"' + text.replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
