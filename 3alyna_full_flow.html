@@ -558,7 +558,7 @@
   .receipt-mode .screen::before{display:none}.receipt-mode .view{top:0}
   .receipt-mode .mailin{border-color:#789C88;background:#204F3E;padding-inline:10px}
   .receipt-mode .mailin::placeholder{color:#CEE0D4;opacity:1}
-  .receipt-mode .mailbtn{width:auto;padding:0 13px;min-width:60px;font-size:14px;font-weight:600;border-color:#789C88}
+  .receipt-mode .mailbtn{width:96px;padding:6px 10px;min-width:96px;font-size:14px;line-height:1.2;font-weight:600;border-color:#789C88}
   .receipt-mode .consents{gap:8px}.receipt-mode .consents label{align-items:flex-start;text-align:start;gap:9px}
   .receipt-mode .consents input{margin-top:1px}.receipt-mode .rc-r,.receipt-mode .rc-note{color:#C5D8CB}
   .receipt-mode .mailin:focus-visible,.receipt-mode .mailbtn:focus-visible,.receipt-mode .star:focus-visible{outline:2px solid #F0DFA8;outline-offset:2px}
@@ -773,10 +773,9 @@
         <div class="mailrc" id="mailrc">
           <input class="mailin" id="mail-in" type="text" inputmode="text"
             placeholder="WhatsApp (+code) or email" aria-label="Optional WhatsApp number with any country code, or email">
-          <button class="mailbtn" onclick="sendReceipt()" aria-label="Send">Send</button>
+          <button class="mailbtn" onclick="sendReceipt()">Send my receipt</button>
         </div>
         <div class="consents" id="consents">
-          <label><input type="checkbox" id="c-receipt" checked><span>Send me my receipt</span></label>
           <label><input type="checkbox" id="c-mkt"><span>Send me offers from <span id="offers-venue">Hallab 1881</span></span></label>
         </div>
 
@@ -1634,14 +1633,13 @@ function sendReceipt(){
   var isMail = /^\S+@\S+\.\S+$/.test(v);
   var isPhone = /^(\+|00)[0-9 ().-]{8,22}$/.test(v);
   if (!isMail && !isPhone){ alert('Enter an email or a WhatsApp number with its country code. Numbers from any country are welcome.'); $('mail-in').focus(); return; }
-  var receipt = $('c-receipt').checked, mkt = $('c-mkt').checked;
-  if (!receipt && !mkt){ $('c-receipt').focus(); return; }
-  /* the venue's list, two explicit consents, captured at the one moment guests want to give it */
-  try { Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:receipt, marketing:mkt }); }
+  var mkt = $('c-mkt').checked;
+  /* The button requests a receipt; restaurant offers remain a separate, optional choice. */
+  try { Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:true, marketing:mkt }); }
   catch(error) { alert(error.message); return; }
   $('consents').classList.add('done');
   var btn = document.querySelector('.mailbtn');
-  btn.innerHTML = '&#10003;';
+  btn.textContent = 'Saved';
   btn.classList.add('sent');
   btn.onclick = null;
   $('mail-in').disabled = true;
@@ -1678,9 +1676,9 @@ function restart(){
   $('cashnote').style.display = 'none';
   document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); st.setAttribute('aria-pressed','false'); });
   $('mail-in').value = ''; $('mail-in').disabled = false;
-  $('consents').classList.remove('done'); $('c-receipt').checked = true; $('c-mkt').checked = false;
+  $('consents').classList.remove('done'); $('c-mkt').checked = false;
   var mb = document.querySelector('.mailbtn');
-  mb.textContent = 'Send'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
+  mb.textContent = 'Send my receipt'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
   buildBill(); buildPick(); calcShare();
   go('v-land');
 }
