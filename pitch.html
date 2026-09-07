@@ -3,95 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3alayna — one-pager</title>
+<meta name="description" content="3alayna's restaurant pitch: easier settlement, clearer operations, customer relationships and a roadmap for measurable retention. Two months free from go-live.">
+<title>3alayna — restaurant partner pitch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    /* 3alayna signature palette: coral on warm sand, petrol for depth */
-    --bg:#FAF6F1; --surface:#FFFFFF; --line:#EAE2D8; --line-soft:#F2ECE4;
-    --ink:#211B16; --sub:#6E635B; --faint:#A69C92;
-    --green:#E8555B; --green-bg:#FBECE8; --green-line:#F3D3CD; --gold:#173E43;
-    --amber:#8A6A1F; --amber-bg:#F8F1DF;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
-    color:var(--ink);padding:38px 20px 64px;-webkit-font-smoothing:antialiased}
-  .page{max-width:760px;margin:0 auto;background:var(--surface);border:1px solid var(--line);
-    border-radius:12px;padding:40px 44px}
-  .brand{font-family:'Amiri',serif;font-size:26px;font-weight:700}
-  .brand b{color:var(--green)}
-  .tag{font-size:11px;color:var(--sub);letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
-  h1{font-size:23px;font-weight:600;letter-spacing:-.015em;line-height:1.3;margin-top:26px}
-  h1 em{font-style:normal;color:var(--green)}
-  .lead{font-size:13.5px;color:var(--sub);line-height:1.7;margin-top:10px;max-width:600px}
-
-  h2{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sub);
-    margin:30px 0 12px;padding-top:22px;border-top:1px solid var(--line)}
-  .props{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
-  @media(max-width:640px){.props{grid-template-columns:1fr}}
-  .prop{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.6;color:var(--sub)}
-  .prop b{color:var(--ink);font-weight:600}
-  .prop .n{width:18px;height:18px;border-radius:6px;background:var(--green-bg);color:var(--green);
-    font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;
-    flex-shrink:0;margin-top:2px}
-
-  .ask{background:#173E43;border:1px solid #173E43;border-radius:10px;
-    padding:16px 18px;font-size:13px;line-height:1.7;color:#F6C39F;margin-top:6px}
-  .ask b{font-weight:600}
-
-  .qs{columns:2;column-gap:26px;font-size:12px;color:var(--sub);line-height:1.65}
-  @media(max-width:640px){.qs{columns:1}}
-  .qs li{margin:0 0 8px 16px;break-inside:avoid}
-  .note{font-size:11px;color:var(--faint);line-height:1.65;margin-top:26px;padding-top:16px;
-    border-top:1px solid var(--line)}
-  .noprint-bar{max-width:760px;margin:0 auto 14px;display:flex;justify-content:flex-end}
-  .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;
-    font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--ink)}
-  @media print{
-    body{background:#fff;padding:0}
-    .page{border:none;border-radius:0;padding:10mm 6mm}
-    .noprint-bar{display:none}
-  }
+:root{--bg:#FAF6F1;--surface:#fff;--line:#EAE2D8;--ink:#211B16;--sub:#6E635B;--coral:#E8555B;--tint:#FBECE8;--petrol:#173E43}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:28px 20px 48px;-webkit-font-smoothing:antialiased}
+a{color:var(--petrol);text-underline-offset:3px}
+.page{max-width:840px;margin:0 auto 22px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:36px 44px}
+.topline,.footer{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.brand{font-family:'Amiri',serif;font-size:28px;font-weight:700}.brand b{color:var(--coral)}
+.eyebrow{font-size:10px;font-weight:600;color:var(--sub);letter-spacing:.1em;text-transform:uppercase}
+h1{font-size:34px;line-height:1.16;letter-spacing:-.035em;margin:24px 0 14px;max-width:650px}h1 em{font-style:normal;color:var(--coral)}
+.lead{font-size:14px;line-height:1.65;color:var(--sub);max-width:690px}
+h2{font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin:24px 0 12px;color:var(--petrol)}
+h3{font-size:15px;line-height:1.35;margin-bottom:6px}
+p,li{font-size:12.5px;line-height:1.65;color:var(--sub)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{padding:16px;border:1px solid var(--line);border-radius:10px;break-inside:avoid}
+.number{display:block;font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--coral);margin-bottom:8px}
+.callout{background:var(--tint);border-radius:10px;padding:15px 18px;margin-top:18px}.callout strong{color:var(--ink)}
+.strip{display:flex;flex-wrap:wrap;gap:6px;margin:17px 0}.strip span{font-size:11px;color:var(--petrol);background:var(--bg);border-radius:5px;padding:5px 8px}
+.status{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.03em;color:var(--petrol);background:#EAF1EF;padding:4px 7px;border-radius:4px;margin-bottom:8px}
+.status.future{color:#7B5B18;background:#FBF1DB}
+.steps{list-style:none;counter-reset:step}.steps li{counter-increment:step;position:relative;padding:0 0 12px 31px}.steps li:before{content:counter(step);position:absolute;left:0;top:2px;width:20px;height:20px;display:grid;place-items:center;background:var(--tint);color:var(--coral);border-radius:6px;font-size:11px;font-weight:600}.steps b{color:var(--ink)}
+.ask{background:var(--petrol);border-radius:12px;padding:21px 24px;margin-top:20px}.ask h2{color:#F6C39F;margin:0 0 8px;font-size:23px;letter-spacing:-.02em;text-transform:none}.ask p{color:#F4EDE5}.prices{display:flex;gap:28px;flex-wrap:wrap;margin:14px 0}.prices strong{font-size:25px;color:#fff}.prices span{display:block;font-size:11px;color:#F6C39F}
+.small{font-size:11px;line-height:1.6}.footer{font-size:10px;color:var(--sub);border-top:1px solid var(--line);margin-top:24px;padding-top:12px}.footer a{font-weight:600}
+.noprint-bar{max-width:840px;margin:0 auto 12px;display:flex;justify-content:flex-end}.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 14px;font:500 12px inherit;cursor:pointer;color:var(--ink)}
+.qs{padding-left:17px}.qs li{margin-bottom:6px}.metric{font-weight:600;color:var(--ink)}
+@media(max-width:600px){body{padding:14px 10px 24px}.page{padding:25px 22px}.grid{grid-template-columns:1fr}h1{font-size:29px}.topline{align-items:flex-start}.topline .eyebrow{text-align:right;max-width:140px}.footer{align-items:flex-start}.prices{gap:15px}}
+@page{size:A4;margin:12mm}
+@media print{body{padding:0;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}.noprint-bar{display:none}.page{max-width:none;border:0;border-radius:0;margin:0;padding:3mm 2mm;break-after:page}.page:last-child{break-after:auto}h1{font-size:29px;margin-top:18px}.grid{gap:10px}.card{padding:13px}h2{margin-top:19px}.footer{margin-top:19px}.callout{margin-top:14px}.ask{margin-top:16px}}
 </style>
 </head>
 <body>
-<div class="noprint-bar"><button class="btn" onclick="window.print()">Print</button></div>
-<div class="page">
-
-  <div class="brand">3alay<b>na</b></div>
-  <div class="tag">Restaurant settlement · Lebanon</div>
-
-  <h1>Let guests view, split and settle their bill.<br><em>Right at the table.</em></h1>
-  <div class="lead">3alayna is designed for restaurant service in Lebanon: a menu in English, français and عربي, with USD and LBP prices and settlement through supported digital providers or staff-confirmed cash collection.</div>
-
-  <h2>Three practical outcomes to test</h2>
-  <div class="props">
-    <div class="prop"><span class="n">1</span><span><b>Easier bill settlement.</b> Guests choose how to split and pay. We measure settlement time and usage during the pilot.</span></div>
-    <div class="prop"><span class="n">2</span><span><b>A simpler staff workflow.</b> Cash requests include the note and change needed. Staff confirm collection; tips are attributed to a server or pool under your policy.</span></div>
-    <div class="prop"><span class="n">3</span><span><b>Clear payment records.</b> Confirmed payments are separate from pending cash, with an export for reconciliation against your POS.</span></div>
-    <div class="prop"><span class="n">+</span><span><b>Your menu and customer connection.</b> Update prices and service hours, offer optional receipt and marketing sign-ups, and give every guest equal access to public reviews and private feedback.</span></div>
+<div class="noprint-bar"><button class="btn" onclick="window.print()">Print / save PDF</button></div>
+<main>
+<section class="page" aria-labelledby="pitch-title">
+  <div class="topline"><div class="brand">3alay<b>na</b></div><div class="eyebrow">Restaurant partner pitch · Lebanon</div></div>
+  <h1 id="pitch-title">Make settling easier.<br><em>Make the next visit more likely.</em></h1>
+  <p class="lead">3alayna connects the table experience with the customer relationship: help guests browse, split and settle, give staff a clearer service view, and help owners understand who returns and whom to invite back.</p>
+  <div class="strip"><span>No guest app download</span><span>English · Français · العربية</span><span>USD &amp; LBP</span><span>Designed for Whish, card &amp; cash</span></div>
+  <div class="callout"><p><strong>Available to explore as a prototype.</strong> The guest journey, owner tools and customer-history workflows can be demonstrated today. Live payments, POS synchronisation and message delivery require connections before restaurant use.</p></div>
+  <h2>One experience, six owner benefits</h2>
+  <div class="grid">
+    <article class="card"><span class="number">01 · MENU</span><h3>Help guests find what suits them</h3><p>A multilingual QR menu with dietary filters and USD/LBP prices. Your team manages dishes, prices and service hours, and checks ingredient information with the kitchen.</p></article>
+    <article class="card"><span class="number">02 · SETTLEMENT</span><h3>Give groups an easier way to pay</h3><p>Open the bill, pay in full, split evenly, select items or choose an amount. The intended live flow supports merchant-approved digital payments and confirmed cash collection.</p></article>
+    <article class="card"><span class="number">03 · SERVICE</span><h3>Keep the floor informed</h3><p>See open balances, pending cash requests and confirmed payments. Cash requests show the note and change needed; tips follow your server or pool policy, with records for reconciliation.</p></article>
+    <article class="card"><span class="number">04 · FEEDBACK</span><h3>Listen while the visit is fresh</h3><p>One optional rating and feedback flow, with access to Google reviews and private feedback regardless of the rating. Guests can request a receipt without subscribing to offers.</p></article>
+    <article class="card"><span class="number">05 · CUSTOMERS</span><h3>Build a direct customer relationship</h3><p>Optional email or international WhatsApp details link identified payers to confirmed bills. Separate permission for marketing gives your team a usable, permission-based audience.</p></article>
+    <article class="card"><span class="number">06 · GROWTH</span><h3>Turn visit history into a next step</h3><p>Understand recorded spending, repeat visits and lapsed guests. Prepare relevant invitations, review the audience and follow subsequent visits as reliable records accumulate.</p></article>
   </div>
-
-  <h2>The offer</h2>
-  <div class="ask"><b>Two months free, starting at go-live.</b> We check your POS and payment compatibility, prepare the menu and table QR cards, and onboard your staff. Together we review guest usage, settlement time, staff workload and reconciliation. No 3alayna subscription fee for the first two months. You decide whether to continue; there is no automatic paid renewal.<br><br>
-    Then <b>$150/month per location.</b> The first 10 founding restaurants lock in <b>$100/month per location.</b> No 3alayna commission on sales. Payment-provider fees may apply separately. Integration scope and any additional setup costs are agreed before the pilot.</div>
-
-  <h2>What we’ll ask you</h2>
-  <ol class="qs">
-    <li>Which POS and version do you use?</li>
-    <li>How long do guests wait to settle a bill at busy times?</li>
-    <li>How often do groups ask to split?</li>
-    <li>Are other parties waiting when tables are settling?</li>
-    <li>What share of checks settles in cash?</li>
-    <li>Which payment providers do you already accept?</li>
-    <li>How are tips distributed and recorded?</li>
-    <li>Who updates the menu, and how long does it take?</li>
+  <div class="footer"><span>3alayna · Restaurant experience &amp; retention</span><span>01 / 03</span></div>
+</section>
+<section class="page" aria-labelledby="growth-title">
+  <div class="topline"><div class="brand">3alay<b>na</b></div><div class="eyebrow">Customer relationships &amp; value</div></div>
+  <h1 id="growth-title">Know who comes back.<br><em>Know what to do next.</em></h1>
+  <p class="lead">The ambition is to answer an owner's practical questions: Who are my valuable regulars? Who has stopped visiting? Which invitation deserves my budget? What happened afterward?</p>
+  <h2>From a receipt to a return visit</h2>
+  <ol class="steps">
+    <li><b>Connect with permission.</b> Offer a receipt by email or WhatsApp, with a separate, optional choice for restaurant offers. Paying and reviewing never require contact details.</li>
+    <li><b>Understand the relationship.</b> Review recorded spend, visit count and last visit. Group first-time customers, regulars and guests who have not returned recently.</li>
+    <li><b>Choose an appropriate invitation.</b> Prepare a second-visit message, a regular-guest invitation or a win-back campaign. Your team approves the audience and message before any future sending.</li>
+    <li><b>Measure the response.</b> Follow reported deliveries, returning contacts and linked spending. Optional comparison groups help assess results as the audience and observation period become sufficient.</li>
   </ol>
-  <div class="note"><b>Explore the demo now.</b> It uses sample data and simulated payments; no money moves. Live pilots depend on POS and payment-provider readiness. Settlement timing and fees depend on the restaurant’s provider agreement. Tip payouts remain the restaurant’s responsibility.<br><br>
-    <a href="3alyna_full_flow.html?venue=Your%20restaurant&amp;place=Sample%20menu">Try the guest demo</a> · <a href="book.html">Discuss a pilot</a></div>
-
-</div>
+  <div class="grid">
+    <article class="card"><span class="status">Prototype today</span><h3>Customer history &amp; campaign planning</h3><p>Payment-linked profiles, consent records, audience selection, campaign drafts and approval, eligible-audience exports, delivery-report imports and recorded return visits. No WhatsApp or email messages are sent today.</p></article>
+    <article class="card"><span class="status future">Planned · requires live history</span><h3>Predictive customer value</h3><p>Estimate spending over the next 90 days, identify customers at risk of lapsing and prioritise outreach. Forecasts need sufficient identified visit history, validation and visible uncertainty before they can guide decisions.</p></article>
+  </div>
+  <h2>An owner dashboard with a clear hierarchy</h2>
+  <p><span class="metric">At a glance:</span> confirmed payment value, identified-bill coverage, marketing opt-in rate and 30-day return rate. Today, 7-day and 30-day views give context, with previous-period comparisons where meaningful.</p>
+  <p style="margin-top:8px"><span class="metric">When needed:</span> completed bills, average bill, payment mix, cash still to collect, tips and campaign results. Deeper customer and service records sit behind the overview.</p>
+  <div class="callout"><p><strong>Useful numbers, with honest boundaries.</strong> Recorded spending is historical revenue, not a forecast or profit. Profiles cover identified payers and their paid share, not everyone at the table. Spending after a campaign is associated revenue; it is not automatically additional revenue caused by that campaign.</p></div>
+  <div class="footer"><span>Customer insights support decisions; they do not guarantee growth.</span><span>02 / 03</span></div>
+</section>
+<section class="page" aria-labelledby="pilot-title">
+  <div class="topline"><div class="brand">3alay<b>na</b></div><div class="eyebrow">Founding restaurant offer</div></div>
+  <h1 id="pilot-title">Start with your restaurant.<br><em>Continue on evidence.</em></h1>
+  <p class="lead">Our focus is a practical, accessible experience for independent restaurants in Lebanon: easier settlement, clearer operations and customer follow-up in one workflow. The pilot tests whether that combination is useful to your team.</p>
+  <div class="ask">
+    <h2>Two months free, from actual go-live.</h2>
+    <p>Menu setup, table QR cards and staff onboarding are included. No 3alayna subscription fee during the pilot. You decide whether to continue; there is no automatic paid renewal.</p>
+    <div class="prices"><div><strong>$150</strong><span>per month / location · standard</span></div><div><strong>$100</strong><span>per month / location · locked for the first 10 founding restaurants</span></div></div>
+    <p class="small">No 3alayna commission on sales. Payment-provider and messaging charges may apply separately. Integration scope and any additional setup costs are agreed before the pilot. Predictive analytics are a future roadmap item; their availability and any separate pricing are not promised in this offer.</p>
+  </div>
+  <h2>Agree the scope before the first live bill</h2>
+  <ol class="steps">
+    <li><b>Check the fit.</b> Confirm your POS name and version, existing-bill access, payment writeback and merchant payment options, including Whish where supported. Agree how cash recorded in the POS reaches 3alayna; the prototype uses staff confirmation.</li>
+    <li><b>Connect and prepare.</b> Set up secure shared records and staff access, test payments and reconciliation, and configure your menu and tables. Connect restaurant-owned messaging accounts and opt-out handling before sending receipts or offers.</li>
+    <li><b>Review the evidence.</b> Compare guest usage, settlement time, staff effort, reconciliation, contact capture and marketing permission. Track returning identified guests and campaign outcomes where data and observation time allow.</li>
+  </ol>
+  <div class="grid">
+    <article class="card"><h3>What we'll ask you</h3><ul class="qs"><li>Which POS, payment providers and cash workflow do you use?</li><li>Where does settling a bill slow service down?</li><li>Can you identify valuable regulars who have stopped visiting?</li><li>How do you contact guests and measure whether they return?</li></ul></article>
+    <article class="card"><h3>What success should mean</h3><p>Agree a baseline and practical targets together. Keep what reduces staff effort or helps retain guests. Two months can test adoption and early repeat visits; reliable longer-term value forecasts need more history.</p><p style="margin-top:8px">Tip payouts remain your responsibility. Live settlement timing and fees follow your provider agreement.</p></article>
+  </div>
+  <div class="footer"><span>Prototype uses sample data and simulated payments.<br>No live POS connection or message delivery today.</span><span><a href="book.html">Discuss a pilot</a><br>03 / 03</span></div>
+</section>
+</main>
 </body>
 </html>
