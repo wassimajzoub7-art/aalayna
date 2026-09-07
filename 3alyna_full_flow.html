@@ -772,12 +772,12 @@
 
         <div class="mailrc" id="mailrc">
           <input class="mailin" id="mail-in" type="text" inputmode="text"
-            placeholder="+961 number or email" aria-label="Optional receipt or offers contact">
+            placeholder="WhatsApp (+code) or email" aria-label="Optional WhatsApp number with any country code, or email">
           <button class="mailbtn" onclick="sendReceipt()" aria-label="Send">Send</button>
         </div>
         <div class="consents" id="consents">
           <label><input type="checkbox" id="c-receipt" checked><span>Send me my receipt</span></label>
-          <label><input type="checkbox" id="c-mkt"><span>Send me <span class="v-short">Hallab</span>'s offers and specials</span></label>
+          <label><input type="checkbox" id="c-mkt"><span>Send me offers from <span id="offers-venue">Hallab 1881</span></span></label>
         </div>
 
 
@@ -1633,7 +1633,7 @@ function sendReceipt(){
   var v = $('mail-in').value.trim();
   var isMail = /^\S+@\S+\.\S+$/.test(v);
   var isPhone = /^(\+|00)[0-9 ().-]{8,22}$/.test(v);
-  if (!isMail && !isPhone){ alert('Enter an email or a phone number including its country code.'); $('mail-in').focus(); return; }
+  if (!isMail && !isPhone){ alert('Enter an email or a WhatsApp number with its country code. Numbers from any country are welcome.'); $('mail-in').focus(); return; }
   var receipt = $('c-receipt').checked, mkt = $('c-mkt').checked;
   if (!receipt && !mkt){ $('c-receipt').focus(); return; }
   /* the venue's list, two explicit consents, captured at the one moment guests want to give it */
@@ -1714,6 +1714,7 @@ function paintVenue(){
   var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
   set('v-name-stage', v.name); set('v-name-crest', v.name); set('v-name-menu', v.name);
   set('v-name-receipt', v.name.toUpperCase());
+  set('offers-venue', v.name);
   set('v-place', v.place || '');
   set('v-est', v.heritage ? 'EST. 1881 · TRIPOLI' : (v.place ? v.place.toUpperCase() : 'YOUR MENU, LIVE'));
   set('v-est2', v.heritage ? 'Est. 1881 · Tripoli' : v.name);
