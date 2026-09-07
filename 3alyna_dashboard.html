@@ -325,7 +325,7 @@
 
       <div class="card">
         <h3>Tips payable</h3>
-        <div class="cs">Confirmed digital tips. Distribute under your restaurant’s policy and record each payout.</div>
+        <div class="cs">Outstanding digital tips across all recorded activity, independent of the reporting period. Record each payout under your restaurant’s policy.</div>
         <div id="tips" style="margin-top:8px"></div>
         <div class="note" id="tipdone" style="display:none"><span>✓</span><span>All tip payments recorded.</span></div>
       </div>
@@ -651,7 +651,7 @@ function paintRows(){
   all.forEach(function(x){
     var d = document.createElement('div');
     d.className = 'setr' + (x.refunded ? ' refunded' : '');
-    var t = new Date(x.ts);
+    var t = new Date(x.confirmedAt || x.ts);
     var hh = t.toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     d.innerHTML =
       '<span class="tm">' + hh + '</span>' +
@@ -713,7 +713,7 @@ function paintTips(){
     var row = document.createElement('div');
     row.className = 'tip';
     row.innerHTML = '<span class="av">' + t.server.split(' ').map(function(w){return w[0];}).join('').slice(0,2) + '</span>' +
-      '<span class="nm">' + t.server + '<span>digital tips, this service</span></span>' +
+      '<span class="nm">' + t.server + '<span>outstanding digital tips</span></span>' +
       '<span class="amt">' + money(t.amount) + '</span>';
     var b = document.createElement('button');
     b.className = 'btn' + (t.paid ? ' done' : '');
