@@ -1,11 +1,10 @@
 /* Owner reporting over recorded activity. No inferred POS totals or provider events. */
 (function(global){
   'use strict';
-  var A=global.Aalayna, DAY=86400000;
+  var A=global.Aalayna, DAY=86400000, cents=A.util.cents;
   var beirutFormat=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Beirut',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
   function timestamp(s){ return Date.parse(s.confirmedAt || s.ts); }
   function within(t,w){ return Number.isFinite(t) && t>=w.start && t<w.end; }
-  function cents(n){return Math.round(Number(n)*100);}
   function ratio(n,d){return d ? n/d : null;}
   function beirutParts(at){
     var parts=beirutFormat.formatToParts(new Date(at)),out={};

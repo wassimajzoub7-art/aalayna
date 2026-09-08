@@ -903,8 +903,8 @@
   cash option. Public reviews and private feedback are offered equally, for every rating. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=16"></script>
-<script src="restaurant-growth.js?v=1"></script>
+<script src="aalayna-store.js?v=17"></script>
+<script src="restaurant-growth.js?v=2"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -1661,7 +1661,7 @@ function restart(){
   CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check()});
   $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
-  kind = 'whish'; note = 0; cur = 'usd'; rating = 0;
+  kind = 'whish'; note = 0; CCY = 'usd'; rating = 0;
   $('tip-in').value = ''; $('tipcw').style.display = 'none';
   $('pn').textContent = 4;
   mode('even');

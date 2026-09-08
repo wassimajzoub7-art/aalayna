@@ -163,6 +163,15 @@
 
   function centsEqual(value, amount) { return Math.round(Number(value) * 100) === amount; }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  /* Shared primitives for the sibling modules (growth, metrics). One definition,
+     one behaviour: ids are UUIDs, money is integer cents, time is ISO. */
+  function uid(prefix) {
+    var c = global.crypto;
+    var id = c && c.randomUUID ? c.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+    return (prefix || '') + id;
+  }
+  function now() { return new Date().toISOString(); }
+  function cents(n) { return Math.round(Number(n) * 100); }
 
   /* Nothing downstream should ever receive a half-built item. A dish added in the
      editor used to reach the diner app with `ing` undefined, which crashed the
@@ -327,7 +336,7 @@
       var all = read(K.settle, []);
       var amount = Math.round(Number(s.amount) * 100), tip = Math.round(Number(s.tip || 0) * 100);
       if (!Number.isSafeInteger(amount) || amount <= 0 || !Number.isSafeInteger(tip) || tip < 0 || tip >= amount || ['cash','card','whish'].indexOf(s.rail) < 0) throw new Error('Enter a valid payment and tip.');
-      var scope = A.venueId ? A.venueId() : A.venue().name;
+      var scope = A.venueId();
       var previous = s.requestId && all.filter(function(x){ return x.requestId === s.requestId && x.venueId === scope; })[0];
       if (previous) {
         if (centsEqual(previous.amount, amount) && centsEqual(previous.tip || 0, tip) && previous.rail === s.rail && previous.checkId === (s.checkId || null) && Number(previous.table) === Number(s.table || 12) && JSON.stringify(previous.items || {}) === JSON.stringify(s.items || {})) return previous;
@@ -337,7 +346,7 @@
       if (s.rail === 'cash' && (!Number.isSafeInteger(cashNote) || cashNote < 0 || (cashNote > 0 && cashNote < amount))) throw new Error('Choose enough cash to cover your share and tip.');
       if (s.checkId && A.validateCheckPayment) A.validateCheckPayment(s, amount - tip);
       all.push({
-        id: 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2),
+        id: uid('p'),
         venueId: scope, venue: A.venue().name, checkId: s.checkId || null,
         requestId: s.requestId || null, items: s.items || {},
         table: s.table || 12, rail: s.rail, amount: amount / 100,
@@ -350,7 +359,7 @@
       return all[all.length - 1];
     },
     settlements: function () {
-      seedIfEmpty(); var scope = A.venueId ? A.venueId() : A.venue().name;
+      seedIfEmpty(); var scope = A.venueId();
       return read(K.settle, []).filter(function(s){ return !s.venueId || s.venueId === scope; });
     },
     settlementStatus: function (s) {
@@ -417,6 +426,12 @@
     },
 
     /* ---- venue ---- */
+    /* Every operational record is scoped to this key. It is data organisation,
+       not a tenant boundary: a real backend scopes by restaurant_id server-side. */
+    venueId: function () {
+      var v = A.venue();
+      return JSON.stringify([v.name.trim().toLowerCase(), (v.place || '').trim().toLowerCase()]);
+    },
     venue: function () {
       var u = venueFromURL();
       if (u) { if (JSON.stringify(read(K.venue, null)) !== JSON.stringify(u)) write(K.venue, u); return u; }
@@ -471,6 +486,7 @@
     /* ---- plumbing ---- */
     on: function (fn) { subs.push(fn); },
     notify: function (key) { fire(key); },
+    util: { read: read, write: write, uid: uid, now: now, cents: cents, clone: clone },
     reset: function () {
       try { localStorage.removeItem('aal.pack'); } catch (e) {}
       try { localStorage.removeItem(K.guests); localStorage.removeItem(K.campaigns); } catch (e) {}

@@ -2,12 +2,10 @@
    Customer statistics come only from linked, confirmed check payments. */
 (function (global) {
   'use strict';
-  var A = global.Aalayna, DAY = 86400000;
-  function read(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (_) { return []; } }
-  function save(key, rows) { localStorage.setItem(key, JSON.stringify(rows)); A.notify(key); }
-  function uid(prefix) { return prefix + (global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); }
-  function now() { return new Date().toISOString(); }
-  function cents(n) { return Math.round(Number(n) * 100); }
+  var A = global.Aalayna, U = A.util, DAY = 86400000;
+  function read(key) { return U.read(key, []); }
+  function save(key, rows) { U.write(key, rows); }
+  var uid = U.uid, now = U.now, cents = U.cents;
   function same(row) { return row.venueId === A.venueId(); }
   function getCustomer(id) { return read('aal.guests').filter(function(g){ return same(g) && g.id === id; })[0]; }
   function getCampaign(id) {
@@ -16,7 +14,6 @@
     return c;
   }
   function putCampaign(c) { var all = read('aal.campaigns'); var i = all.findIndex(function(x){ return x.id === c.id && same(x); }); if (i < 0) all.push(c); else all[i] = c; save('aal.campaigns', all); }
-  A.venueId = function () { var v = A.venue(); return JSON.stringify([v.name.trim().toLowerCase(), (v.place || '').trim().toLowerCase()]); };
   A.normaliseContact = function (input) {
     var s = String(input || '').trim();
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) && s.length <= 254) return { contact:s.toLowerCase(), channel:'email' };
@@ -77,7 +74,7 @@
     g.consentHistory.push({ at:now(), source:'receipt', receipt:g.receipt, marketing:g.marketing, version:'restaurant-offers-v1', settlementId:payment.id });
     var payments = read('aal.settle'); payments.find(function(s){ return s.id === payment.id && same(s); }).customerId = g.id;
     // Both writes are local prototype state; a live backend must commit these atomically.
-    localStorage.setItem('aal.settle', JSON.stringify(payments)); save('aal.guests', all);
+    save('aal.settle', payments); save('aal.guests', all);
     return g;
   };
   A.withdrawMarketing = function (id) {

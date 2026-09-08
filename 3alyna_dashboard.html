@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=16"></script>
-<script src="restaurant-growth.js?v=1"></script>
-<script src="owner-metrics.js?v=1"></script>
+<script src="aalayna-store.js?v=17"></script>
+<script src="restaurant-growth.js?v=2"></script>
+<script src="owner-metrics.js?v=2"></script>
 
 <style>
   :root{
@@ -196,18 +196,6 @@
     transform-origin:left;animation:fillIn .4s var(--eo) both .1s}
   @keyframes fillIn{from{transform:scaleX(0)}to{transform:none}}
   .hrow .p{text-align:right;font-weight:600;font-size:12px}
-
-  /* stacked mix */
-  .mix{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px;margin-top:14px}
-  .mtab{margin-top:12px;width:100%;border-collapse:collapse}
-  .mtab td{padding:6px 0;font-size:12.5px;border-bottom:1px solid var(--line-soft)}
-  .mtab tr:last-child td{border-bottom:none}
-  .mtab .r{text-align:right;font-weight:600}
-  .mtab .pc{text-align:right;color:var(--sub);width:48px}
-
-  /* funnel */
-  .step{display:grid;grid-template-columns:110px 1fr 78px;gap:12px;align-items:center;padding:8px 0;font-size:12.5px}
-  .step .p{text-align:right;font-weight:600}
 
   /* reviews */
   .rv{padding:12px 0;border-bottom:1px solid var(--line-soft)}
@@ -467,24 +455,9 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=3"></script>
+<script src="restaurant-ops.js?v=4"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
-var DWELL = [
-  {d:'Mon', a:61, b:70}, {d:'Tue', a:64, b:72}, {d:'Wed', a:63, b:74},
-  {d:'Thu', a:67, b:78}, {d:'Fri', a:71, b:83}, {d:'Sat', a:74, b:86}, {d:'Sun', a:66, b:76}];
-var FUNNEL = [ {n:'QR scans', v:96}, {n:'Bills opened', v:84}, {n:'Settled in-app', v:71} ];
-var MIX = [
-  {n:'Whish Money', v:1846.80, c:'#C4283C'}, {n:'Card', v:1263.60, c:'#26327A'},
-  {n:'Cash, declared', v:874.80, c:'#0F4B3A'}, {n:'OMT Pay', v:534.60, c:'#B87718'},
-  {n:'Other', v:340.20, c:'#9AA29C'}];
-var ORIG = [
-  {n:'Lebanon', v:74, c:'#0F4B3A'}, {n:'GCC', v:11, c:'#B87718'},
-  {n:'Europe', v:9, c:'#26327A'}, {n:'Other', v:6, c:'#9AA29C'}];
-var PARTY = [{d:'1', v:9},{d:'2', v:26},{d:'3', v:14},{d:'4', v:15},{d:'5+', v:7}];
-var TOP = [
-  {n:"Knefeh b'Jebne + kaakeh", v:214}, {n:'Mixed Grill platter', v:151},
-  {n:"Lahm b'Ajin", v:139}, {n:'Lebanese coffee', v:128}, {n:'Tabbouleh', v:96}];
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
 var RVS = [
   {s:5, w:'2 days ago', t:'Paid on my phone before the waiter came back. Knefeh remains the best in Tripoli.'},
@@ -746,20 +719,6 @@ function exportCSV(){
 }
 
 /* ───────── charts ───────── */
-function groupedBars(el, axEl, vEl, data, max){
-  var box = $(el), ax = $(axEl), vv = $(vEl);
-  box.innerHTML = ''; ax.innerHTML = ''; vv.innerHTML = '';
-  data.forEach(function(d){
-    var g = document.createElement('div');
-    g.className = 'bar';
-    g.innerHTML = '<div class="cols">' +
-      '<div class="col" style="height:' + (d.a/max*100) + '%"></div>' +
-      '<div class="col mut" style="height:' + (d.b/max*100) + '%"></div></div>';
-    box.appendChild(g);
-    ax.insertAdjacentHTML('beforeend','<span>' + d.d + '</span>');
-    vv.insertAdjacentHTML('beforeend','<span>' + d.a + '·' + d.b + '</span>');
-  });
-}
 function simpleBars(el, axEl, vEl, data, fmt){
   var box = $(el), ax = $(axEl), vv = $(vEl);
   box.innerHTML = ''; ax.innerHTML = ''; vv.innerHTML = '';
@@ -771,41 +730,6 @@ function simpleBars(el, axEl, vEl, data, fmt){
     box.appendChild(g);
     ax.insertAdjacentHTML('beforeend','<span>' + d.d + '</span>');
     vv.insertAdjacentHTML('beforeend','<span>' + (fmt ? fmt(d.v) : d.v) + '</span>');
-  });
-}
-function stacked(barId, tabId, data, isMoney){
-  var bar = $(barId), tab = $(tabId);
-  bar.innerHTML = ''; tab.innerHTML = '';
-  var sum = data.reduce(function(a,b){ return a + b.v; }, 0);
-  data.forEach(function(d){
-    var seg = document.createElement('div');
-    seg.style.flex = d.v; seg.style.background = d.c;
-    bar.appendChild(seg);
-    tab.insertAdjacentHTML('beforeend',
-      '<tr><td><span class="dot" style="display:inline-block;margin-right:8px;background:' + d.c + '"></span>' + d.n + '</td>' +
-      '<td class="r">' + (isMoney ? money(d.v) : d.v + '%') + '</td>' +
-      '<td class="pc">' + (100*d.v/sum).toFixed(1) + '%</td></tr>');
-  });
-}
-function hbars(el, data, unit){
-  var box = $(el); box.innerHTML = '';
-  var max = Math.max.apply(null, data.map(function(d){ return d.v; }));
-  data.forEach(function(d){
-    box.insertAdjacentHTML('beforeend',
-      '<div class="hrow"><span class="n">' + d.n + '</span>' +
-      '<span class="track"><span class="fill" style="width:' + (100*d.v/max) + '%"></span></span>' +
-      '<span class="p">' + d.v + (unit||'') + '</span></div>');
-  });
-}
-function funnel(){
-  var box = $('funnel'); box.innerHTML = '';
-  var max = FUNNEL[0].v;
-  FUNNEL.forEach(function(f, i){
-    var pct = (100*f.v/max).toFixed(0) + '%';
-    box.insertAdjacentHTML('beforeend',
-      '<div class="step"><span style="color:var(--sub)">' + f.n + '</span>' +
-      '<span class="track"><span class="fill" style="width:' + (100*f.v/max) + '%"></span></span>' +
-      '<span class="p">' + f.v + ' <span style="color:var(--faint);font-weight:400">' + pct + '</span></span></div>');
   });
 }
 function paintReviews(){
@@ -843,13 +767,6 @@ function paintTeam(){
 paintTonight();
 paintTips();
 Aalayna.on(function(){ paintTonight(); paintTips(); });
-
-
-
-
-
-
-
 simpleBars('rtrend','rtrend-ax','rtrend-v', RTREND.map(function(r){return {d:r.d,v:r.v};}), function(v){ return v.toFixed(1); });
 paintReviews();
 paintTeam();
