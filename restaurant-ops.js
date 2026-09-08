@@ -23,7 +23,7 @@ function opsDate(value) { return value ? new Date(value).toLocaleDateString('en-
 function opsMask(contact) { if(contact.indexOf('@')>=0){var p=contact.split('@');return p[0].slice(0,2)+'***@'+p[1];}return '•••• '+contact.slice(-4); }
 function opsGo(view) { var nav=Array.from(document.querySelectorAll('.ni')).find(function(n){return (n.getAttribute('onclick')||'').indexOf("'"+view+"'")>=0;}); if(nav)go(nav,view); }
 function opsDownload(name, text, type) { var url=URL.createObjectURL(new Blob([text],{type:type})),a=opsEl('a');a.href=url;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000); }
-function paintGrowth() { paintGrowthCustomers();paintGrowthCampaigns();paintAudience();paintGrowthWeek();paintCheckBalances(); }
+function paintGrowth() { paintGrowthCustomers();paintGrowthCampaigns();paintAudience();paintGrowthWeek();paintCheckBalances();paintGuestJourney();paintDataHealth();paintFeedbackAttention();paintRecordedRatings(); }
 function paintGrowthCustomers() {
   var profiles=Aalayna.customerProfiles(),box=$('gl-rows'),q=$('guest-search').value.trim().toLowerCase();box.replaceChildren();
   $('gl-total').textContent=profiles.length;$('gl-mkt').textContent=profiles.filter(function(g){return g.marketing;}).length;$('gl-ret').textContent=profiles.filter(function(g){return g.visits>1;}).length;
@@ -147,3 +147,59 @@ function opsPanel(group,id){
 }
 function openCampaign(){opsPanel('growth','growth-campaigns');$('campaign-compose').showModal();$('cp-name').focus();}
 function closeCampaign(){$('campaign-compose').close();}
+
+/* ---- Dashboard v2: cards computed from the event stream. Read-only; nothing here writes. ---- */
+function opsDuration(ms){ var s=Math.round(ms/1000),m=Math.floor(s/60),r=s%60; return m+':'+(r<10?'0':'')+r; }
+function opsBeirutTime(value){ return new Date(value).toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' Beirut'; }
+function opsCount(n,word){ return n+' '+word+(n===1?'':'s'); }
+function opsMetric(label,value,definition){ var b=opsEl('div',null,'journey-metric'); b.append(opsEl('div',label,'k'),opsEl('div',value,'v'),opsEl('div',definition,'d')); return b; }
+function paintGuestJourney(){
+  var box=$('journey-metrics'); if(!box)return;
+  var m=Aalayna.eventMetrics($('report-period').value); box.replaceChildren();
+  $('journey-period').textContent=m.window.label+' · from QR scan to payment, computed from recorded events.';
+  box.appendChild(opsMetric('Scan to payment',opsPercent(m.conversion),opsCount(m.paidSessions,'paid session')+' of '+opsCount(m.scans,'scan')));
+  box.appendChild(opsMetric('Repeat devices',opsPercent(m.repeatRate),m.repeatSessions+' of '+opsCount(m.sessions,'session')+' from a device seen before'));
+  var total=m.rails.cash+m.rails.card+m.rails.whish+m.rails.other, digital=m.rails.card+m.rails.whish;
+  box.appendChild(opsMetric('Cash vs digital',m.digitalShare==null?'—':Math.round(m.cashShare*100)+'% / '+Math.round(m.digitalShare*100)+'%',total?'Cash '+money(m.rails.cash/100)+', digital '+money(digital/100)+' of '+money(total/100)+' collected':'No collected amount in this period'));
+  box.appendChild(opsMetric('Bill to payment',m.medianBillToPaymentMs==null?'—':opsDuration(m.medianBillToPaymentMs),m.timedSessions?'Median across '+opsCount(m.timedSessions,'timed session')+', bill opened to first payment':'No timed sessions yet'));
+  box.appendChild(opsMetric('Identity capture',opsPercent(m.captureRate),m.identifiedPayments+' of '+opsCount(m.payments,'payment')+' linked to a known guest'));
+  var list=$('journey-never'); list.replaceChildren();
+  if(!m.neverOrdered.length)list.appendChild(opsEl('p','No viewed item is missing from every bill in this period.','ops-empty'));
+  m.neverOrdered.forEach(function(x){ var row=opsEl('div',null,'journey-item'); row.append(opsEl('span',x.name),opsEl('strong',opsCount(x.views,'view'))); list.appendChild(row); });
+}
+function paintDataHealth(){
+  var box=$('health-rows'); if(!box)return; box.replaceChildren();
+  var report=Aalayna.healthReport();
+  report.checks.forEach(function(c){
+    var row=opsEl('div',null,'health-row'); row.append(opsEl('span',c.label,'health-label'),opsEl('strong',String(c.value),'health-value'));
+    if(c.flag)row.appendChild(opsEl('span','Flag','status-badge flag'));
+    box.appendChild(row);
+  });
+  $('health-summary').textContent=(report.issues?opsCount(report.issues,'check')+' flagged':'No checks flagged')+' · ISO week '+report.week+'. One row is stored per week.';
+  var rate=Aalayna.rateInfo(),line=$('health-rate'); line.replaceChildren();
+  var age=rate.ageDays===0?'today':rate.ageDays+' day'+(rate.ageDays===1?'':'s')+' ago';
+  line.appendChild(opsEl('span',rate.updatedAt?'Rate '+rate.rate.toLocaleString('en-US')+' LL, updated '+age+' by '+(rate.updatedBy||'owner')+'.':'Rate not set: default '+rate.rate.toLocaleString('en-US')+' LL in use.'));
+  if(rate.stale)line.appendChild(opsEl('span','Stale','status-badge flag'));
+}
+function paintFeedbackAttention(){
+  var card=$('feedback-attention'); if(!card)return;
+  var w=Aalayna.ownerWindow($('report-period').value),rows=Aalayna.lowRatings(w.start).slice().reverse(),box=$('feedback-rows'); box.replaceChildren();
+  card.hidden=!rows.length; $('feedback-count').textContent=rows.length+' to review';
+  rows.forEach(function(e){
+    var row=opsEl('div',null,'ops-row'),body=opsEl('div');
+    body.append(opsEl('strong',e.payload.rating+'/5'+(e.tableId?' · Table '+e.tableId:'')),opsEl('p',e.payload.comment||'No comment','cs'),opsEl('p',opsBeirutTime(e.createdAt),'cs'));
+    row.appendChild(body); box.appendChild(row);
+  });
+  var incomplete=Aalayna.published().items.filter(function(x){ return !x.archivedAt&&x.status==='incomplete'; }).length,badge=$('incomplete-badge');
+  badge.hidden=!incomplete; badge.textContent='Filters disabled for '+opsCount(incomplete,'item');
+}
+function paintRecordedRatings(){
+  var box=$('rating-rows'); if(!box)return; box.replaceChildren();
+  var rows=Aalayna.events().filter(function(e){ return e.eventType==='review_submitted'; }).sort(function(a,b){ return b.createdAt.localeCompare(a.createdAt); }).slice(0,50);
+  if(!rows.length){ box.appendChild(opsEl('p','No ratings recorded yet. Guests are asked for a rating after each payment.','ops-empty')); return; }
+  rows.forEach(function(e){
+    var row=opsEl('div',null,'ops-row'),body=opsEl('div'),destination=e.payload.destination==='google'?'Shared on Google':e.payload.destination==='private'?'Private feedback':'Destination not recorded';
+    body.append(opsEl('strong',e.payload.rating+'/5'+(e.tableId?' · Table '+e.tableId:'')),opsEl('p',e.payload.comment||'No comment','cs'),opsEl('p',destination+' · '+opsBeirutTime(e.createdAt),'cs'));
+    row.appendChild(body); box.appendChild(row);
+  });
+}

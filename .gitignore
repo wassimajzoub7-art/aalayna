@@ -25,3 +25,6 @@
 !restaurant-ops.js
 !restaurant-ops.css
 !INTEGRATIONS.md
+!schema/
+!schema/*
+!admin.html

@@ -130,6 +130,26 @@
   .it .nm{font-size:13px;font-weight:500;line-height:1.3}
   .it .meta{font-size:11px;color:var(--sub);margin-top:2px;display:flex;gap:7px;align-items:center}
   .it .pr{font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0}
+  .it .tag{font-size:8.5px;font-weight:600;letter-spacing:.04em;padding:2px 6px;border-radius:4px;
+    background:var(--line-soft);color:var(--sub);flex-shrink:0;white-space:nowrap}
+  .it .tag.out{background:var(--amber-bg);color:var(--amber)}
+  .it.soldout .nm{color:var(--sub)}
+  .it .act{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;
+    font-size:11px;font-weight:600;color:var(--green);cursor:pointer;font-family:inherit;flex-shrink:0;
+    transition:background .12s,border-color .12s}
+  .it .act:hover{background:var(--green-bg);border-color:var(--green-line)}
+  /* archived: soft-deleted dishes, kept for history, one tap to restore */
+  .arch{border-bottom:1px solid var(--line-soft)}
+  .arch-h{display:flex;align-items:center;gap:9px;padding:13px 18px 9px;cursor:pointer;background:var(--surface)}
+  .arch-h .cv{font-size:9px;color:var(--faint);transition:transform .2s var(--ease);width:10px}
+  .arch.closed .cv{transform:rotate(-90deg)}
+  .arch-h .nm{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+  .arch-h .ct{font-size:10.5px;color:var(--faint)}
+  .arch-items{overflow:hidden;transition:max-height .3s var(--ease)}
+  .arch.closed .arch-items{max-height:0 !important}
+  .arch .it{padding-left:44px}   /* lines up with the gripped rows above */
+  .arch .it .nm,.arch .it .pr{color:var(--sub)}
+  .hint{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.5}
 
   /* service window chips */
   .win{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:600;letter-spacing:.02em;
@@ -348,6 +368,7 @@
         <div class="lb">Ingredients <span class="tag">DRIVES FILTERS</span></div>
         <div class="chips" id="ed-ing"></div>
         <input class="chipin" id="ed-ingin" placeholder="Type an ingredient, press Enter">
+        <div class="hint" id="ed-inghint" style="display:none">Add ingredients to enable dietary filters for this dish. Guests see it, but it is left out of filter results.</div>
       </div>
 
       <div class="fld">
@@ -392,6 +413,14 @@
           <select class="in" id="ed-sec" onchange="dirty()"></select>
         </div>
       </div>
+      <div class="fld">
+        <div class="lb">Availability</div>
+        <div class="scope" id="ed-avail" style="margin-top:0">
+          <button class="on" onclick="setAvail(true)">Available</button>
+          <button onclick="setAvail(false)">Sold out</button>
+        </div>
+        <div class="hint" id="ed-avail-hint">Sold out keeps the dish on the menu, marked as unavailable, until you switch it back.</div>
+      </div>
       <button class="cta cta-green" id="ed-save" style="margin-top:18px" onclick="saveItem()">Save</button>
       <button class="danger" id="ed-del" onclick="removeItem()">Remove from menu</button>
       <button class="cta cta-ghost" onclick="cancelEdit()">Cancel</button>
@@ -427,6 +456,8 @@
         </div>
         <input class="fxr-in" id="fx-rate" inputmode="numeric" onchange="saveRate(this)">
       </div>
+      <div class="hint" id="fx-prov"></div>
+      <div class="rate" id="fx-stale" style="display:none"><span>&#9888;</span><span>Rate older than 14 days. Confirm it matches your POS.</span></div>
       <button class="cta cta-green" style="margin-top:16px" onclick="applyFx()">Apply to 16 dishes</button>
       <button class="cta cta-ghost" onclick="closeOv('ov-fx')">Cancel</button>
     </div>
@@ -456,7 +487,7 @@
   breakfast at 11:30" — so the window sits on the section. Outside its hours a section is not on
   the guest's menu at all. Bulk repricing keeps menu updates quick when ingredient costs change.
 </div>
-<script src="aalayna-store.js?v=17"></script>
+<script src="aalayna-store.js?v=18"></script>
 <script>
 /* Service windows. Restaurants think in dayparts ("we stop serving breakfast at 11:30"),
    so the window lives on the SECTION, not the item. */
@@ -473,6 +504,7 @@ function pull(){
   SECTIONS = d.sections.map(function(x){ return {id:x.id, name:x.name, w:x.win}; });
   ITEMS    = d.items.map(function(x){
     return {id:x.id, s:x.sec, n:x.name, d:x.desc, p:x.price, imageUrl:x.imageUrl||'', fr:x.fr, ar:x.ar,
+            archivedAt:x.archivedAt||null, available:x.available!==false, status:x.status||'incomplete',
             ing:(x.ing||[]).slice(), al:(x.al||[]).slice(),
             tr: x.tr ? JSON.parse(JSON.stringify(x.tr)) : {fr:{n:'',d:''},ar:{n:'',d:''}},
             kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
@@ -484,14 +516,19 @@ function push(){
   d.sections = SECTIONS.map(function(x){ return {id:x.id, name:x.name, win:x.w}; });
   d.items = ITEMS.map(function(x){
     var prev = (Aalayna.published().items.filter(function(o){ return o.id === x.id; })[0]) || {};
+    /* status mirrors the store's rule so row tags stay right between pulls */
+    x.status = (x.ing && x.ing.length) ? 'complete' : 'incomplete';
     return Object.assign({}, prev, {
       id:x.id, sec:x.s, name:x.n, desc:x.d, price:x.p, imageUrl:x.imageUrl||'',
+      archivedAt:x.archivedAt || null, available:x.available !== false,
       ing:x.ing, al:x.al, tr:x.tr, kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
       opts:x.opts || []
     });
   });
-  Aalayna.saveDraft(d);
+  Aalayna.saveDraft(d, Aalayna.actor());
 }
+function active(){ return ITEMS.filter(function(i){ return !i.archivedAt; }); }
+function archived(){ return ITEMS.filter(function(i){ return i.archivedAt; }); }
 function nowMin(){ var d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
 function fmtNow(){
   var d = new Date();
@@ -522,8 +559,9 @@ function toast(msg){
   clearTimeout(toast._t);
   toast._t = setTimeout(function(){ $('toast').classList.remove('on'); }, 2400);
 }
-function dirty(){
-  push();
+function dirty(){ push(); markDirty(); }
+/* UI half of dirty(): used when the store already holds the change (archive, restore) */
+function markDirty(){
   isDirty = true;
   $('state').classList.add('dirty');
   $('state-t').textContent = 'UNPUBLISHED';
@@ -531,21 +569,24 @@ function dirty(){
   b.disabled = false;
   b.textContent = 'Publish to every table';
 }
-function publish(){
-  var v = Aalayna.publish();
+function markClean(){
   isDirty = false;
   $('state').classList.remove('dirty');
   $('state-t').textContent = 'LIVE';
   var b = $('pubbtn');
   b.disabled = true;
   b.textContent = 'Everything is live';
+}
+function publish(){
+  var v = Aalayna.publish();
+  markClean();
   toast('Published v' + v + ' — live on every table. No reprints.');
 }
 /* ---------- list ---------- */
 function render(){
   var L = $('list'); L.innerHTML = '';
   SECTIONS.forEach(function(sec){
-    var items = ITEMS.filter(function(i){ return i.s === sec.id; });
+    var items = ITEMS.filter(function(i){ return i.s === sec.id && !i.archivedAt; });
     var box = document.createElement('div');
     box.className = 'sec' + (collapsed[sec.id] ? ' closed' : '');
     var w = win(sec.w), live = isNow(sec.w);
@@ -577,9 +618,11 @@ function render(){
     items.forEach(function(it){
       var idx = ITEMS.indexOf(it);
       var row = document.createElement('div');
-      row.className = 'it';
+      row.className = 'it' + (it.available === false ? ' soldout' : '');
       row.dataset.id = it.id;
-      var langs = '<span>' + (it.d ? it.d.split(',')[0] : 'No description yet') + '</span>';
+      var langs = '<span>' + (it.d ? it.d.split(',')[0] : 'No description yet') + '</span>' +
+        (it.available === false ? '<span class="tag out">SOLD OUT</span>' : '') +
+        (it.status === 'incomplete' ? '<span class="tag">FILTERS OFF</span>' : '');
       row.innerHTML =
         '<span class="grip">&#8942;&#8942;</span>' +
         '<span class="tx"><div class="nm">' + it.n + '</div>' +
@@ -598,6 +641,44 @@ function render(){
     L.appendChild(box);
     wrap.style.maxHeight = collapsed[sec.id] ? '0px' : wrap.scrollHeight + 'px';
   });
+  renderArchived(L);
+}
+/* Soft-deleted dishes. Collapsed by default, never draggable, one tap to restore. */
+function renderArchived(L){
+  var items = archived();
+  if (!items.length) return;
+  if (collapsed.__arch === undefined) collapsed.__arch = true;
+  var box = document.createElement('div');
+  box.className = 'arch' + (collapsed.__arch ? ' closed' : '');
+  var h = document.createElement('div');
+  h.className = 'arch-h';
+  h.onclick = function(){ collapsed.__arch = !collapsed.__arch; render(); };
+  h.innerHTML = '<span class="cv">&#9660;</span><span class="nm">Archived</span>' +
+    '<span class="ct">' + items.length + '</span>';
+  box.appendChild(h);
+  var wrap = document.createElement('div');
+  wrap.className = 'arch-items';
+  items.forEach(function(it){
+    var row = document.createElement('div');
+    row.className = 'it arch-it';
+    row.dataset.id = it.id;
+    row.innerHTML =
+      '<span class="tx"><div class="nm">' + it.n + '</div>' +
+      '<div class="meta"><span>Not on the menu</span></div></span>' +
+      '<span class="pr">' + usd(it.p) + '</span>' +
+      '<button class="act">Restore</button>';
+    row.querySelector('.act').onclick = function(){ restoreItem(it.id); };
+    wrap.appendChild(row);
+  });
+  box.appendChild(wrap);
+  L.appendChild(box);
+  wrap.style.maxHeight = collapsed.__arch ? '0px' : wrap.scrollHeight + 'px';
+}
+function restoreItem(id){
+  var it = ITEMS.filter(function(x){ return x.id === id; })[0];
+  Aalayna.restoreItem(id, Aalayna.actor());
+  pull(); render(); markDirty();
+  toast((it ? it.n : 'Dish') + ' restored. Publish to put it back on every table.');
 }
 /* ---------- edit ---------- */
 function fillSecs(sel, val){
@@ -640,12 +721,26 @@ function editItem(i){
       cur().ing.splice(i,1); cur().conf = 0; redrawIng(true);
     });
     if (changed) dirty();
+    $('ed-inghint').style.display = cur().ing.length ? 'none' : 'block';
     paintAllergens(); paintConf();
   }
   chipInput('ed-ingin', function(){ return cur().ing; }, function(){ redrawIng(true); });
   redrawIng(false);
+  paintAvail();
   paintOpts();
   openOv('ov-item');
+}
+/* the 86 toggle: tier 1, the dish stays on the menu marked unavailable */
+function paintAvail(){
+  var on = cur().available !== false;
+  var bs = document.querySelectorAll('#ed-avail button');
+  bs[0].classList.toggle('on', on);
+  bs[1].classList.toggle('on', !on);
+}
+function setAvail(v){
+  if ((cur().available !== false) === v) return;
+  cur().available = v;
+  dirty(); paintAvail();
 }
 /* Ingredients are typed. Allergens are TICKED from a fixed list — free text is how
    a misspelt "pistachhio" silently drops out of a nut filter. */
@@ -896,12 +991,14 @@ function saveItem(){
     toast('Saved — publish when you’re ready');
   }
 }
+/* Soft delete. The row keeps its id and history; it moves to Archived. */
 function removeItem(){
   if (addingNew){ cancelEdit(); return; }
-  var n = ITEMS[editing].n;
-  ITEMS.splice(editing, 1);
-  closeOv('ov-item'); render(); dirty();
-  toast(n + ' removed');
+  var it = ITEMS[editing], n = it.n;
+  Aalayna.archiveItem(it.id, Aalayna.actor());
+  closeOv('ov-item');
+  pull(); render(); markDirty();
+  toast(n + ' archived. Restore it any time from Archived.');
 }
 /* ---------- add = edit ----------
    A new dish is a blank item opened in the full editor, so add and edit can
@@ -909,7 +1006,8 @@ function removeItem(){
 var addingNew = false;
 function newDish(secIdx){
   var sec = SECTIONS[secIdx || 0] || SECTIONS[0];
-  ITEMS.push({ id: 'i' + Date.now().toString(36), s: sec.id, n: '', d: '', p: 0,
+  ITEMS.push({ id: Aalayna.util.uid(), s: sec.id, n: '', d: '', p: 0,
+               archivedAt: null, available: true, status: 'incomplete',
                fr: 0, ar: 0, tr: { fr: { n:'', d:'' }, ar: { n:'', d:'' } },
                ing: [], al: [], kcal: null, pr: null, ft: null, cb: null, conf: 0, opts: [] });
   addingNew = true;
@@ -917,9 +1015,12 @@ function newDish(secIdx){
 }
 function cancelEdit(){
   if (addingNew){
-    ITEMS.splice(editing, 1);
+    /* an oninput handler may already have pushed the blank dish into the draft;
+       it was never published, so it can be dropped for real */
+    Aalayna.discardDraftItem(ITEMS[editing].id);
     addingNew = false;
-    push(); render();
+    pull(); render();
+    if (Aalayna.isDirty()) markDirty(); else markClean();
   }
   closeOv('ov-item');
 }
@@ -942,18 +1043,30 @@ function scope(el, s){
   paintPrev();
 }
 function targets(){
-  return fxScope === 'all' ? ITEMS : ITEMS.filter(function(i){ return i.s === 'mez'; });
+  return fxScope === 'all' ? active() : active().filter(function(i){ return i.s === 'mez'; });
 }
 function newPrice(p){ return Math.round(p * (1 + pct / 100) * 4) / 4; }  // nearest 0.25
 function saveRate(el){
   var v = Math.round(parseFloat(String(el.value).replace(/[^0-9.]/g,'')) || 0);
   if (v < 1000 || v > 10000000){ el.value = Aalayna.rate().toLocaleString('en-US'); return; }
-  Aalayna.setRate(v);
+  Aalayna.setRate(v, Aalayna.actor());
   el.value = v.toLocaleString('en-US');
-  toast('Rate set — LL ' + v.toLocaleString('en-US') + ' per $1, live on every menu');
+  paintRate();
+  toast('Rate set: LL ' + v.toLocaleString('en-US') + ' per $1, live on every menu');
+}
+/* provenance: the rate mirrors the house or POS rate, so say who set it and when */
+function paintRate(){
+  var info = Aalayna.rateInfo();
+  $('fx-rate').value = info.rate.toLocaleString('en-US');
+  var t;
+  if (!info.updatedAt) t = 'Not set yet, using the default';
+  else if (info.ageDays < 1) t = 'Updated today by ' + (info.updatedBy || 'owner');
+  else t = 'Updated ' + info.ageDays + (info.ageDays === 1 ? ' day ago by ' : ' days ago by ') + (info.updatedBy || 'owner');
+  $('fx-prov').textContent = t;
+  $('fx-stale').style.display = info.stale ? 'flex' : 'none';
 }
 function paintPrev(){
-  $('fx-rate').value = Aalayna.rate().toLocaleString('en-US');
+  paintRate();
   var v = $('pv');
   v.textContent = (pct >= 0 ? '+' : '') + pct + '%';
   v.className = 'v ' + (pct >= 0 ? 'up' : 'dn');
@@ -1024,7 +1137,7 @@ function onDrag(e){
   if (!under) return;
   if (drag.kind === 'item'){
     var row = under.closest && under.closest('.it');
-    if (row && row !== drag.el){
+    if (row && row !== drag.el && !row.classList.contains('arch-it')){
       var r = row.getBoundingClientRect();
       row.parentNode.insertBefore(drag.el, e.clientY < r.top + r.height/2 ? row : row.nextSibling);
       return;
@@ -1061,7 +1174,8 @@ function endDrag(){
         if (it){ it.s = sid; next.push(it); }
       });
     });
-    if (next.length === ITEMS.length) ITEMS = next;
+    var kept = archived();
+    if (next.length + kept.length === ITEMS.length) ITEMS = next.concat(kept);
     dirty();
     toast('Order saved — publish to make it live');
   } else {
@@ -1081,11 +1195,8 @@ function endDrag(){
 function reset(){
   Aalayna.reset();
   pull();
-  collapsed = {}; pct = 5; fxScope = 'all'; isDirty = false;
-  $('state').classList.remove('dirty');
-  $('state-t').textContent = 'LIVE';
-  $('pubbtn').disabled = true;
-  $('pubbtn').textContent = 'Everything is live';
+  collapsed = {}; pct = 5; fxScope = 'all';
+  markClean();
   $('fx-sub').textContent = 'Draft price changes, then publish when ready';
   render(); paintClock();
 }

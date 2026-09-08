@@ -420,7 +420,7 @@
     events.forEach(function (e) { if (e.customerId === from) e.customerId = to; });
     write(K.events, events);
     var settle = read(K.settle, []);
-    settle.forEach(function (x) { if (x.customerId === from) x.customerId = to; });
+    settle.forEach(function (x) { if (x.identityId === from) x.identityId = to; });
     write(K.settle, settle);
     var guests = read(K.guests, []);
     guests.forEach(function (g) { if (g.customerId === from) g.customerId = to; });
@@ -467,7 +467,7 @@
       { orderId: row.checkId, paymentId: row.id, requestId: row.requestId, amount: row.amount, currency: row.currency || 'USD',
         fxRateUsed: row.fxRateUsed || null, amountUsd: row.amountUsd == null ? row.amount : row.amountUsd,
         rail: row.rail, payerRef: row.payerRef || null, tip: row.tip || 0, externalRef: row.externalRef || null },
-      { deviceId: row.deviceId, sessionId: row.sessionId, tableId: row.table, customerId: row.customerId });
+      { deviceId: row.deviceId, sessionId: row.sessionId, tableId: row.table, customerId: row.identityId });
   }
   /* stable hash for event payloads: identifies a contact without carrying it */
   function contactHash(str) {
@@ -626,8 +626,10 @@
       if (cb.payerRef) row.payerRef = contactHash(String(cb.payerRef));
       write(K.settle, all);
       if (cb.payerRef) {
-        var cid = linkIdentity({ keys: [{ type: 'wallet_id', value: row.payerRef }], deviceId: row.deviceId, source: 'payment' });
-        row.customerId = row.customerId || cid; write(K.settle, all);
+        /* identityId is the global identity; customerId stays the venue guest profile
+           that optIn assigns. The two are different tables in the schema. */
+        row.identityId = linkIdentity({ keys: [{ type: 'wallet_id', value: row.payerRef }], deviceId: row.deviceId, source: 'payment' });
+        write(K.settle, all);
       }
       paymentEvent(row);
       return row;
@@ -668,7 +670,7 @@
       all.forEach(function (s) {
         if (allowed && s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') {
           s.cancelled = new Date().toISOString();
-          logEvent('payment_cancelled', { paymentId: s.id, orderId: s.checkId, rail: s.rail }, { deviceId: s.deviceId, sessionId: s.sessionId, tableId: s.table, customerId: s.customerId });
+          logEvent('payment_cancelled', { paymentId: s.id, orderId: s.checkId, rail: s.rail }, { deviceId: s.deviceId, sessionId: s.sessionId, tableId: s.table, customerId: s.identityId });
         }
       });
       write(K.settle, all);
@@ -682,7 +684,7 @@
         if (s.id === id && A.settlements().some(function(x){ return x.id === id; }) && A.isConfirmed(s)) {
           s.refunded = new Date().toISOString();
           logEvent('payment_refunded', { paymentId: s.id, orderId: s.checkId, amount: s.amount, currency: s.currency || 'USD', fxRateUsed: s.fxRateUsed || null, amountUsd: s.amountUsd == null ? s.amount : s.amountUsd, rail: s.rail },
-                   { deviceId: s.deviceId, sessionId: s.sessionId, tableId: s.table, customerId: s.customerId });
+                   { deviceId: s.deviceId, sessionId: s.sessionId, tableId: s.table, customerId: s.identityId });
         }
       });
       write(K.settle, all);

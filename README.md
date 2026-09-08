@@ -22,9 +22,20 @@ To collect events across visitors, provision an HTTPS collector and set its URL 
 
 Events do not contain contact information, query strings, bill amounts, or persistent visitor identifiers. Do Not Track and Global Privacy Control disable recording and delivery. Booking link clicks measure intent, not confirmed bookings: the embedded third-party calendar needs a separate integration to report completion.
 
+## Data and payments layer
+
+The store implements the engineering spec for data integrity, event logging, identity and payment orchestration, on localStorage, with the same rules a Postgres backend enforces. The DDL lives in `schema/` (one file per spec section) and `schema/README.md` maps every localStorage key to its table and API.
+
+- Menu item ids are immutable. Deleting archives (`archivedAt`); archived dishes leave the guest menu but stay resolvable in history. A dish without an ingredient record is `incomplete`: it stays on the menu and is excluded from dietary filters. The 86 toggle (`available`) is a tier-1 edit. Every mutation is written to a field-level edit log with its tier.
+- `aal.events` is append-only: qr_scan, item_view and bill_requested are client-fired (accept loss); order_placed, payment_completed, receipt_requested and review_submitted are emitted by the data layer. Each event carries device_id, session_id (one per scan), restaurant_id, table_id and, once known, customer_id.
+- Every check and payment stores currency, raw amount, the exchange rate used and the USD figure. The rate records who set it and when; 14 days without an update flags it stale.
+- Identity: a receipt contact or a wallet reference becomes a key; keys map to one customer; a transaction carrying two keys from two customers merges them and repoints history; linking a device backfills its earlier anonymous events.
+- Digital payments are two-step: a request is created when the guest hands over to the provider and is confirmed once by a provider reference (duplicate callbacks are idempotent, raw callbacks are logged). Cash stays a first-class pending-then-confirmed path.
+- `admin.html` is the internal view: weekly health reports, admin notifications, edit log, identity merges and payment callbacks. Nothing there is for restaurants.
+
 ## Validation
 
-Run `node --test tests/*.test.cjs` for the cash-state and measurement regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
+Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
 
 ## Live pilot prerequisites
 

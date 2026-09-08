@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=17"></script>
-<script src="restaurant-growth.js?v=2"></script>
-<script src="owner-metrics.js?v=2"></script>
+<script src="aalayna-store.js?v=18"></script>
+<script src="restaurant-growth.js?v=3"></script>
+<script src="owner-metrics.js?v=3"></script>
 
 <style>
   :root{
@@ -227,7 +227,7 @@
     .btn:active{transform:none}
   }
 </style>
-<link rel="stylesheet" href="restaurant-ops.css?v=3">
+<link rel="stylesheet" href="restaurant-ops.css?v=4">
 </head>
 <body>
 
@@ -259,6 +259,7 @@
       <div>
         <h1>Service</h1>
         <div class="sub" id="t-date">Settlement activity, current service</div>
+        <span class="status-badge pending" id="incomplete-badge" hidden></span>
       </div>
       <div class="actions">
         <button class="btn" onclick="exportCSV()">Export CSV</button>
@@ -269,6 +270,7 @@
     <section id="service-live" data-panel-group="service">
       <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Collected in period · incl. tips</span><strong id="live-paid">$0.00</strong></div></div>
       <div class="card attention-card"><div class="ops-heading"><div><h3>Needs attention</h3><p class="cs">Confirm cash only after it reaches your hands.</p></div><span class="status-badge pending" id="cash-count">0 waiting</span></div><div id="cash-queue" aria-live="polite"></div></div>
+      <div class="card attention-card mt" id="feedback-attention" hidden><div class="ops-heading"><div><h3>Guest feedback needing attention</h3><p class="cs">Ratings of 2 or lower recorded in the selected period. Follow up with the table where you can.</p></div><span class="status-badge pending" id="feedback-count">0 to review</span></div><div id="feedback-rows" class="ops-list"></div></div>
       <div class="grid live-grid mt">    <div class="card"><h3>Balances by bill</h3><div class="cs">Bill amounts exclude tips. Pending cash reserves a share but does not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
     <div class="card">
       <h3>Floor tonight</h3>
@@ -343,6 +345,22 @@
       <p id="withdrawal-detail"></p>
     </details>
     <div class="card mt"><h3>Recommended next actions</h3><div class="cs">Based on recorded visits and settlement activity. Campaigns always need your approval.</div><div id="weekly-actions"></div></div>
+    <div class="grid g2e mt">
+      <div class="card" id="guest-journey">
+        <h3>Guest journey</h3>
+        <div class="cs" id="journey-period">From QR scan to payment, computed from recorded events.</div>
+        <div class="journey-grid" id="journey-metrics"></div>
+        <h4 class="journey-sub">Viewed, never on a bill</h4>
+        <div id="journey-never"></div>
+        <p class="cs journey-note">Computed from recorded events on this device. Scans and views are client-fired and may be incomplete.</p>
+      </div>
+      <div class="card" id="data-health">
+        <h3>Menu and data health</h3>
+        <div class="cs" id="health-summary">Weekly checks over the published menu and recorded activity.</div>
+        <div id="health-rows" class="ops-list"></div>
+        <p class="cs health-rate" id="health-rate"></p>
+      </div>
+    </div>
     <details class="ops-help"><summary>Metrics available after connection</summary><p>POS data will unlock the share of eligible bills using 3alayna. Payment-provider events will unlock completion times and failed payments, with cash measured separately. Messaging-provider events will unlock delivery, failure and unsubscribe rates. Missing connections are not shown as zero performance.</p></details>
     <div class="note mt"><span>ⓘ</span><span>These figures cover this browser’s recorded activity. They are not total restaurant revenue.</span></div>
   </div>
@@ -389,9 +407,15 @@
       <div>
         <h1>Reviews &amp; feedback</h1>
         <div class="sub">Both channels are offered to every guest after settlement, independent of rating</div>
-        <p class="sample-notice">Sample data · illustrative ratings, reviews and conversion figures. No Google connection.</p>
       </div>
     </div>
+
+    <div class="card mb" id="recorded-ratings">
+      <h3>Recorded ratings</h3>
+      <div class="cs">Submitted by guests on this device after payment. Ratings are stored as events and never edited.</div>
+      <div id="rating-rows" class="ops-list"></div>
+    </div>
+    <p class="sample-notice mb">Sample data below · illustrative ratings, reviews and conversion figures. No Google connection.</p>
 
     <div class="grid g4">
       <div class="card"><div class="k">Google rating</div><div class="v">4.7</div>
@@ -455,7 +479,7 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=4"></script>
+<script src="restaurant-ops.js?v=5"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
@@ -764,6 +788,7 @@ function paintTeam(){
 /* ───────── boot ───────── */
 (function(){ var v = Aalayna.venue();
   document.getElementById('v-sub').textContent = (v.name + (v.place ? ' · ' + v.place : '')).toUpperCase(); })();
+Aalayna.recordHealth();
 paintTonight();
 paintTips();
 Aalayna.on(function(){ paintTonight(); paintTips(); });

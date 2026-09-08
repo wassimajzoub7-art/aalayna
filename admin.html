@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3alayna internal admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<script src="aalayna-store.js?v=18"></script>
+<script src="restaurant-growth.js?v=3"></script>
+<script src="owner-metrics.js?v=3"></script>
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#58655E; --faint:#66736B;
+    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
+    --red:#B4423A; --red-bg:#F9EEEC;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+    font-size:15px;line-height:1.5;font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+  main{max-width:1080px;margin:0 auto;padding:28px 24px 64px}
+  header{padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  header .n{font-family:'Amiri',serif;font-size:29px;font-weight:700;line-height:1;color:var(--green)}
+  header .n b{color:#B4423A;font-weight:700}
+  h1{font-size:28px;line-height:1.2;letter-spacing:-.025em;margin-top:14px}
+  .sub{font-size:15px;color:var(--sub);margin-top:7px}
+  .notice{display:inline-block;margin-top:12px;padding:8px 12px;background:var(--amber-bg);border-radius:8px;font-size:13px;color:var(--amber)}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:14px;box-shadow:0 2px 8px #18392804}
+  .card h2{font-size:17px;line-height:1.4;font-weight:600}
+  .cs{font-size:14px;line-height:1.6;margin-top:5px;color:var(--sub)}
+  .heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+  .btn{font:inherit;font-size:14px;font-weight:500;min-height:44px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap}
+  .btn:hover{border-color:#CFCCC5}.btn:disabled{opacity:.5;cursor:default}
+  .btn:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  .tbl{width:100%;overflow-x:auto;margin-top:14px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:10px 12px 10px 0;border-top:1px solid var(--line);vertical-align:top;line-height:1.5}
+  th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);font-weight:600;border-top:0;padding-top:0}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  td.code{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;overflow-wrap:anywhere}
+  td.time{white-space:nowrap;color:var(--sub)}
+  .badge{display:inline-flex;align-items:center;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.5}
+  .badge.flag{background:var(--amber-bg);color:var(--amber)}.badge.ok{background:#E5F0E7;color:#245C3D}.badge.new{background:var(--red-bg);color:var(--red)}
+  .empty{font-size:14px;color:var(--sub);line-height:1.7;padding:16px 0 4px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 18px;margin-top:14px}
+  .k{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--sub)}
+  .v{font-size:24px;font-weight:600;margin:8px 0 6px;letter-spacing:-.01em;line-height:1}
+  .d{font-size:13px;color:var(--sub)}
+  .foot{color:var(--faint);font-size:13px;margin-top:20px;line-height:1.75}
+  .foot a{color:var(--green)}
+  @media(max-width:720px){main{padding:18px 16px 40px}.card{padding:18px}.heading{flex-direction:column}.btn{width:100%}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="n">3alay<b>na</b></div>
+    <h1>3alayna internal admin</h1>
+    <div class="sub" id="venue-line">Venue</div>
+    <p class="notice">Everything on this page is local prototype data stored on this device. Nothing is sent anywhere.</p>
+  </header>
+
+  <section class="card" id="health">
+    <div class="heading"><div><h2>Health reports</h2><p class="cs">One stored row per restaurant per ISO week, ranked by issue count. The weekly check runs whenever a dashboard is opened.</p></div></div>
+    <div class="tbl"><table><thead><tr><th>Week</th><th>Restaurant</th><th class="num">Issues</th><th>Flagged checks</th><th>Recorded</th></tr></thead><tbody id="health-rows"></tbody></table></div>
+    <p class="empty" id="health-empty" hidden>No health reports stored yet. Open the operations dashboard once to record this week.</p>
+    <h2 style="margin-top:22px">Current checks</h2>
+    <p class="cs" id="health-current-line"></p>
+    <div class="tbl"><table><thead><tr><th>Check</th><th>Value</th><th>State</th></tr></thead><tbody id="health-checks"></tbody></table></div>
+  </section>
+
+  <section class="card" id="notifications">
+    <div class="heading"><div><h2>Admin notifications</h2><p class="cs">Raised by the data layer, for example when an item is saved without an ingredient record.</p></div><button class="btn" id="mark-seen" type="button" onclick="markSeen()">Mark all seen</button></div>
+    <div class="tbl"><table><thead><tr><th>State</th><th>Kind</th><th>Detail</th><th>Restaurant</th><th>Time</th></tr></thead><tbody id="notification-rows"></tbody></table></div>
+    <p class="empty" id="notification-empty" hidden>No notifications recorded.</p>
+  </section>
+
+  <section class="card" id="editlog">
+    <div class="heading"><div><h2>Edit log</h2><p class="cs">Last 100 rows for this venue, newest first. Tier 1 is price and availability, tier 2 content and nutrition, tier 3 structural.</p></div></div>
+    <div class="tbl"><table><thead><tr><th>Time</th><th>Who</th><th class="num">Tier</th><th>Entity</th><th>Field</th><th>Old</th><th>New</th></tr></thead><tbody id="edit-rows"></tbody></table></div>
+    <p class="empty" id="edit-empty" hidden>No edits logged for this venue.</p>
+  </section>
+
+  <section class="card" id="identity">
+    <div class="heading"><div><h2>Identity</h2><p class="cs">Global customer identities across venues, and the merges that joined two records into one.</p></div></div>
+    <div class="kpis"><div><div class="k">Identities</div><div class="v" id="identity-count">0</div><div class="d">Distinct customers with at least one key</div></div><div><div class="k">Merges</div><div class="v" id="merge-count">0</div><div class="d">Records repointed into a survivor</div></div></div>
+    <div class="tbl"><table><thead><tr><th>Time</th><th>Merged from</th><th>Into</th></tr></thead><tbody id="merge-rows"></tbody></table></div>
+    <p class="empty" id="merge-empty" hidden>No merges recorded.</p>
+  </section>
+
+  <section class="card" id="webhooks">
+    <div class="heading"><div><h2>Payment callbacks</h2><p class="cs">Every provider confirmation received, including duplicates. A payment moves to confirmed only from one of these rows.</p></div></div>
+    <div class="tbl"><table><thead><tr><th>Time</th><th>Request</th><th>Provider reference</th><th>Payer</th></tr></thead><tbody id="webhook-rows"></tbody></table></div>
+    <p class="empty" id="webhook-empty" hidden>No payment callbacks recorded.</p>
+  </section>
+
+  <p class="foot">Internal view for the 3alayna team, not for restaurants. Venue scope follows the same ?venue= link as the other apps. <a href="system.html">System overview</a></p>
+</main>
+<script>
+function $(id){ return document.getElementById(id); }
+function el(tag, text, cls){ var n=document.createElement(tag); if(text!=null)n.textContent=text; if(cls)n.className=cls; return n; }
+function cell(text, cls){ return el('td', text, cls); }
+function when(value){ return value ? new Date(value).toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : ''; }
+function short(id){ id=String(id==null?'':id); return id.length>14 ? id.slice(0,6)+'…'+id.slice(-6) : id; }
+function show(value){ if(value==null)return 'null'; if(typeof value==='object')return JSON.stringify(value); return String(value); }
+function paintHealth(){
+  var rows=Aalayna.healthReports().slice().sort(function(a,b){ return b.issues-a.issues||b.week.localeCompare(a.week); }), body=$('health-rows'); body.replaceChildren();
+  $('health-empty').hidden=!!rows.length;
+  rows.forEach(function(r){
+    var tr=el('tr'); tr.append(cell(r.week),cell(r.restaurant),cell(String(r.issues),'num'),cell(r.checks.filter(function(c){ return c.flag; }).map(function(c){ return c.label; }).join('; ')||'none'),cell(when(r.at),'time'));
+    body.appendChild(tr);
+  });
+  var current=Aalayna.healthReport(), checks=$('health-checks'); checks.replaceChildren();
+  $('health-current-line').textContent=current.restaurant+' · ISO week '+current.week+' · '+current.issues+' flagged of '+current.checks.length+' checks.';
+  current.checks.forEach(function(c){
+    var tr=el('tr'), state=cell(null); state.appendChild(el('span',c.flag?'Flag':'OK','badge '+(c.flag?'flag':'ok')));
+    tr.append(cell(c.label),cell(String(c.value)),state); checks.appendChild(tr);
+  });
+}
+function paintNotifications(){
+  var rows=Aalayna.adminNotifications().slice().reverse(), body=$('notification-rows'); body.replaceChildren();
+  $('notification-empty').hidden=!!rows.length;
+  var unseen=rows.filter(function(n){ return !n.seen; }).length;
+  $('mark-seen').disabled=!unseen; $('mark-seen').textContent=unseen?'Mark all seen ('+unseen+')':'All seen';
+  rows.forEach(function(n){
+    var tr=el('tr'), state=cell(null); state.appendChild(el('span',n.seen?'Seen':'New','badge '+(n.seen?'ok':'new')));
+    var detail=n.detail||{}, text=detail.name?detail.name+(detail.itemId?' ('+detail.itemId+')':''):show(detail);
+    tr.append(state,cell(n.kind),cell(text),cell(n.restaurantId||'','code'),cell(when(n.at),'time')); body.appendChild(tr);
+  });
+}
+function markSeen(){ Aalayna.markNotificationsSeen(); paintNotifications(); }
+function paintEdits(){
+  var rows=Aalayna.editLog().slice(-100).reverse(), body=$('edit-rows'); body.replaceChildren();
+  $('edit-empty').hidden=!!rows.length;
+  rows.forEach(function(r){
+    var tr=el('tr');
+    tr.append(cell(when(r.at),'time'),cell(r.who),cell(String(r.tier),'num'),cell(r.entityType+' '+short(r.entityId),'code'),cell(r.field),cell(show(r.oldValue),'code'),cell(show(r.newValue),'code'));
+    body.appendChild(tr);
+  });
+}
+function paintIdentity(){
+  var merges=Aalayna.identity.merges().slice().reverse(), body=$('merge-rows'); body.replaceChildren();
+  $('identity-count').textContent=String(Aalayna.identity.count()); $('merge-count').textContent=String(merges.length);
+  $('merge-empty').hidden=!!merges.length;
+  merges.forEach(function(m){ var tr=el('tr'); tr.append(cell(when(m.at),'time'),cell(m.from,'code'),cell(m.into,'code')); body.appendChild(tr); });
+}
+function paintWebhooks(){
+  var rows=Aalayna.webhookLog().slice().reverse(), body=$('webhook-rows'); body.replaceChildren();
+  $('webhook-empty').hidden=!!rows.length;
+  rows.forEach(function(w){ var tr=el('tr'); tr.append(cell(when(w.at),'time'),cell(w.requestId||'','code'),cell(w.externalRef||'','code'),cell(w.payerRef||'not supplied')); body.appendChild(tr); });
+}
+function paintAll(){ paintHealth(); paintNotifications(); paintEdits(); paintIdentity(); paintWebhooks(); }
+(function(){ var v=Aalayna.venue(); $('venue-line').textContent=v.name+(v.place?' · '+v.place:'')+' · venue id '+Aalayna.venueId(); })();
+paintAll();
+Aalayna.on(function(){ paintAll(); });
+</script>
+</body>
+</html>

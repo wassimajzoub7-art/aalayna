@@ -56,11 +56,11 @@ test('every rating opens one review panel with both destinations and restores fo
   const html = fs.readFileSync(path.join(__dirname, '../3alyna_full_flow.html'), 'utf8');
   const code = html.slice(html.indexOf('function rate(n){'), html.indexOf('/* optional, after payment'));
   const stars = Array.from({length:5}, () => ({classList:{toggle(){}},setAttribute(){}}));
-  const fields = Object.fromEntries(['review-title','review-destination','review-submit','review-status','v-done'].map(id=>[id,{textContent:'',value:'',disabled:false}]));
-  const opened=[];let focused=false;
+  const fields = Object.fromEntries(['review-title','review-destination','review-submit','review-status','review-text','v-done'].map(id=>[id,{textContent:'',value:'',disabled:false}]));
+  const opened=[],recorded=[];let focused=false;
   const trigger={isConnected:true,focus(){focused=true;}};
   fields['ov-review']={classList:{remove(){}},querySelector(){return {focus(){}};}};
-  const context={document:{activeElement:trigger,querySelectorAll:()=>stars},$:id=>fields[id],openOv:id=>opened.push(id)};
+  const context={document:{activeElement:trigger,querySelectorAll:()=>stars},$:id=>fields[id],openOv:id=>opened.push(id),lastSettlementId:'p1',Aalayna:{submitReview:r=>recorded.push(r)}};
   vm.createContext(context);vm.runInContext(code,context);
   for(let n=1;n<=5;n++){
     context.rate(n);assert.equal(context.rating,n);assert.equal(opened.at(-1),'ov-review');assert.equal(fields['v-done'].inert,true);
@@ -71,6 +71,7 @@ test('every rating opens one review panel with both destinations and restores fo
     context.closeReview();assert.equal(fields['v-done'].inert,false);assert.equal(focused,true);
   }
   assert.ok(!html.includes('id="ov-google"'));assert.ok(!html.includes('id="ov-priv"'));
+  assert.equal(recorded.length,10);assert.equal(recorded[0].settlementId,'p1');assert.equal(recorded.at(-1).rating,5);
 });
 test('guest receipt stays pending until staff confirmation, and hides receipt and review actions', () => {
   const a = setup(), cash = a.settle({rail:'cash',amount:42,tip:2});

@@ -83,10 +83,11 @@
     /* Identity layer: the contact is a strong key. Linking attaches this device and
        backfills every earlier anonymous event from it. The venue profile keeps its
        own id (lists are never joined across venues); customerId is the global one. */
-    g.customerId = A.identity.link({ keys:[{ type:contact.channel === 'email' ? 'email' : 'phone', value:contact.contact }],
-                                     deviceId:payment.deviceId, source:'receipt' });
+    var keys = [{ type:contact.channel === 'email' ? 'email' : 'phone', value:contact.contact }];
+    if (payment.payerRef) keys.push({ type:'wallet_id', value:payment.payerRef });   // same transaction, two keys: one customer
+    g.customerId = A.identity.link({ keys:keys, deviceId:payment.deviceId, source:'receipt' });
     var payments = read('aal.settle'), row = payments.find(function(s){ return s.id === payment.id && same(s); });
-    row.customerId = g.id;
+    row.customerId = g.id; row.identityId = g.customerId;
     // Both writes are local prototype state; a live backend must commit these atomically.
     save('aal.settle', payments); save('aal.guests', all);
     if (input.receipt) A.logEvent('receipt_requested', { channel:contact.channel, contactHash:A.contactHash(contact.contact), marketing:!!input.marketing },
@@ -102,7 +103,7 @@
     var payment = A.settlements().find(function(s){ return s.id === input.settlementId && same(s); });
     var comment = String(input.comment || '').trim().slice(0, 1000);
     return A.logEvent('review_submitted', { rating:rating, comment:comment || null, destination:input.destination || null, paymentId:payment ? payment.id : null },
-                      payment ? { deviceId:payment.deviceId, sessionId:payment.sessionId, tableId:payment.table, customerId:payment.customerId } : {});
+                      payment ? { deviceId:payment.deviceId, sessionId:payment.sessionId, tableId:payment.table, customerId:payment.identityId } : {});
   };
   A.lowRatings = function (since) {
     return A.events().filter(function(e){ return e.eventType === 'review_submitted' && e.payload.rating <= 2 && (!since || Date.parse(e.createdAt) >= since); });

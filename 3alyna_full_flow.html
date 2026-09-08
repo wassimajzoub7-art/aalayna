@@ -225,6 +225,17 @@
     border-color:var(--green-line)}
   .mi.swap .why .x{display:none}
   .mi.swap .why::before{content:'\2713';font-size:9px}
+  /* no ingredient record, or not confirmed: neutral, never a red warning */
+  .mi.unk{opacity:.55}
+  .mi.unk .why{display:inline-flex;color:var(--sub);background:var(--bg);border-color:var(--line)}
+  .mi.unk .why .x{display:none}
+  /* 86'd: still listed so the table sees the same menu, just not orderable */
+  .mi.out{opacity:.5}
+  .soldout{display:inline-block;margin-inline-start:6px;font-size:9.5px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--sub);background:var(--bg);border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;vertical-align:middle;line-height:1.5}
+  #i-out{margin:10px 0 0;margin-inline-start:0}
+  .disc{font-size:10.5px;color:var(--faint);line-height:1.5;margin-top:8px}
 
   .billpill{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:22;
     background:var(--green);color:#fff;border:none;border-radius:10px;padding:12px 20px;
@@ -801,7 +812,9 @@
       <div class="grab"></div>
       <div class="sh-t" id="i-name">Mixed Grill platter</div>
       <div class="sh-s" id="i-desc">Kabab, shish taouk, lamb chops, fries</div>
+      <div class="soldout" id="i-out" style="display:none">Sold out</div>
       <div class="alrt" id="i-alrt"></div>
+      <div class="disc" id="i-disc">Always confirm allergies with staff.</div>
       <div class="adds" id="i-adds"></div>
       <div class="i-price"><span class="ipl">Price as selected</span>
         <span class="ipv" id="i-tot">$16.00</span></div>
@@ -844,6 +857,7 @@
         <span id="fmsg">of 16 dishes work for you</span>
         <button class="clr" id="fclear" onclick="clearF()">Clear</button>
       </div>
+      <div class="disc" id="f-disc" style="margin:10px 18px 0">Always confirm allergies with staff.</div>
       <button class="cta cta-green" style="margin-top:16px" onclick="closeOv('ov-filters')">Done</button>
     </div>
   </div>
@@ -863,7 +877,7 @@
         <div class="wh-s"><b>3</b> Table updates</div>
       </div>
       <button class="cta cta-green" id="wh-btn" onclick="whishConfirm()">Open Whish</button>
-      <button class="cta cta-ghost" onclick="closeOv('ov-whish')">Cancel</button>
+      <button class="cta cta-ghost" onclick="cancelProvider('ov-whish')">Cancel</button>
       <div class="sim-note">Simulated &mdash; in production this is a Whish deep link with a payment callback.</div>
     </div>
   </div>
@@ -884,7 +898,7 @@
         <div class="fldc"><div class="lbc">CVC</div><input class="inc" value="123" readonly aria-label="Sample security code"></div>
       </div>
       <button class="cta cta-green" id="card-btn" style="margin-top:20px" onclick="cardConfirm()">Pay $41.94</button>
-      <button class="cta cta-ghost" onclick="closeOv('ov-card')">Cancel</button>
+      <button class="cta cta-ghost" onclick="cancelProvider('ov-card')">Cancel</button>
       <div class="sim-note">Simulated &mdash; in production this is the gateway's hosted page (3-D Secure included).</div>
     </div>
   </div>
@@ -903,8 +917,8 @@
   cash option. Public reviews and private feedback are offered equally, for every rating. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=17"></script>
-<script src="restaurant-growth.js?v=2"></script>
+<script src="aalayna-store.js?v=18"></script>
+<script src="restaurant-growth.js?v=3"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -929,9 +943,11 @@ function loadMenu(){
                    .map(function(x){ return {id:x.id, label:x.name}; });
   var live = {};
   CATS.forEach(function(c){ live[c.id] = 1; });
-  MENU = m.items.filter(function(x){ return live[x.sec]; }).map(function(x){
+  // archived dishes are history, not menu; sold-out ones stay listed but dimmed
+  MENU = m.items.filter(function(x){ return live[x.sec] && !x.archivedAt; }).map(function(x){
     return {id:x.id, c:x.sec, n:x.name, d:x.desc, p:x.price, imageUrl:x.imageUrl, ing:x.ing, al:x.al,
             kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
+            available:x.available !== false, status:x.status || 'incomplete',
             opts:x.opts||[], tr:x.tr};
   });
   BILL = Aalayna.check().map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
@@ -939,10 +955,13 @@ function loadMenu(){
 }
 loadMenu();
 
-/* Confirmation is an ONBOARDING GATE, not a per-dish badge: unless every dish is
-   confirmed, nutrition and filters are absent entirely. A diner never sees a caveat. */
+/* Filters are PER DISH (spec section 8): a dish can be filtered only when it has an
+   ingredient record and the kitchen has confirmed it. Everything else stays on the
+   menu and, once a filter is on, is dimmed with a neutral "ask staff" reason.
+   DEMO_INCOMPLETE shows the state where nothing has been confirmed yet. */
 var DEMO_INCOMPLETE = false;
-function menuReady(){ return !DEMO_INCOMPLETE && MENU.length > 0 && MENU.every(function(m){ return m.conf; }); }
+function filterable(m){ return !DEMO_INCOMPLETE && m.status === 'complete' && !!m.conf; }
+function anyFilterable(){ return MENU.some(filterable); }
 
 /* Dietary flags are DERIVED from the ingredient record, never hand-tagged. */
 var MEAT = ['lamb','chicken','beef','lamb awarma','minced lamb'];
@@ -978,7 +997,9 @@ var T = {
       more:'For more details', of:'of', work:'dishes work for you', works:'dish works for you',
       clear:'Clear', whatsin:"What's in it", table:'Table 12', sub:'Table 12 · Kasr El Helou',
       rMeat:'has meat', rNuts:'contains nuts', rDairy:'contains dairy',
-      rSwap:'works with',
+      rSwap:'works with', rUnk:'ingredients not confirmed, ask staff', soldOut:'Sold out',
+      disc:'Always confirm allergies with staff.',
+      unkSheet:'Ingredient details are not confirmed for this dish. Please ask your server.',
       rKcal:function(n){return 'over 400 kcal (' + n + ')'},
       rProt:function(n){return 'only ' + n + 'g protein'}},
   fr:{filters:['Végétarien','Sans noix','Sans lactose','Moins de 400 kcal','Riche en protéines'],
@@ -986,7 +1007,9 @@ var T = {
       more:'Plus de détails', of:'sur', work:'plats vous conviennent', works:'plat vous convient',
       clear:'Effacer', whatsin:'Composition', table:'Table 12', sub:'Table 12 · Kasr El Helou',
       rMeat:'contient de la viande', rNuts:'contient des noix', rDairy:'contient du lactose',
-      rSwap:'possible avec',
+      rSwap:'possible avec', rUnk:'ingrédients non confirmés, demandez au personnel', soldOut:'Épuisé',
+      disc:'Confirmez toujours vos allergies auprès du personnel.',
+      unkSheet:'Les ingrédients de ce plat ne sont pas confirmés. Merci de demander à votre serveur.',
       rKcal:function(n){return 'plus de 400 kcal (' + n + ')'},
       rProt:function(n){return 'seulement ' + n + 'g de protéines'}},
   ar:{filters:['نباتي','بدون مكسرات','بدون ألبان','أقل من ٤٠٠ سعرة','غني بالبروتين'],
@@ -994,7 +1017,9 @@ var T = {
       more:'تفاصيل أكثر', of:'من', work:'أطباق تناسبك', works:'طبق يناسبك',
       clear:'مسح', whatsin:'المكوّنات', table:'طاولة ١٢', sub:'طاولة ١٢ · قصر الحلو',
       rMeat:'يحتوي على لحم', rNuts:'يحتوي على مكسرات', rDairy:'يحتوي على ألبان',
-      rSwap:'متاح مع',
+      rSwap:'متاح مع', rUnk:'المكوّنات غير مؤكدة، اسأل الموظفين', soldOut:'نفد',
+      disc:'تأكّد دائماً من الحساسية مع الموظفين.',
+      unkSheet:'تفاصيل مكوّنات هذا الطبق غير مؤكدة. يُرجى سؤال النادل.',
       rKcal:function(n){return 'أكثر من ٤٠٠ سعرة (' + n + ')'},
       rProt:function(n){return 'بروتين قليل · ' + n + 'غ'}}
 };
@@ -1025,6 +1050,7 @@ function renderMenu(){
   var f = t('filters');
   ['veg','nonuts','nodairy','light','protein'].forEach(function(k,i){ $('f-'+k).textContent = f[i]; });
   $('fclear').textContent = t('clear');
+  $('f-disc').textContent = t('disc');
   buildCats(true);
   buildMenu();
   applyF();
@@ -1044,6 +1070,8 @@ function go(id){
   syncReceiptViewport();
   document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
   $(id).classList.add('on');
+  if (id === 'v-bill' || id === 'v-settle') logBillRequested();
+  if (id === 'v-done') prefillReceipt();
   if (id === 'v-pay') paintPay();
   if (id === 'v-menu'){
     // the tab underline can only be measured once the view is actually laid out
@@ -1124,7 +1152,7 @@ var staggered = false;
 function buildMenu(){
   var sc = $('menuscroll');
   if (!sc._spy){ sc.addEventListener('scroll', spy, { passive: true }); sc._spy = 1; }
-  var ready = menuReady();
+  var ready = anyFilterable();
   document.getElementById('ftrig').style.display = ready ? 'flex' : 'none';
   if (!ready) clearF();
   var s = $('menuscroll');
@@ -1136,7 +1164,7 @@ function buildMenu(){
     s.appendChild(h);
     MENU.filter(function(m){ return m.c === c.id; }).forEach(function(m){
       var d = document.createElement('div');
-      d.className = 'mi';
+      d.className = 'mi' + (m.available ? '' : ' out');
       d.onclick = function(){ openItem(m); };
       d.tabIndex=0;d.setAttribute('role','button');d.setAttribute('aria-label',nameOf(m)+' · '+price(m.p));
       d.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openItem(m);}};
@@ -1146,7 +1174,8 @@ function buildMenu(){
       }
       d.innerHTML =
         '<div class="tx">' +
-          '<div class="mn">' + esc(nameOf(m)) + '</div>' +
+          '<div class="mn">' + esc(nameOf(m)) +
+            (m.available ? '' : '<span class="soldout">' + esc(t('soldOut')) + '</span>') + '</div>' +
           '<div class="md">' + esc(descOf(m)) + '</div>' +
           '<div class="why"><span class="x">&#10005;</span><span class="wt"></span></div>' +
         '</div>' +
@@ -1203,13 +1232,21 @@ function applyF(){
   var ok = 0, total = 0;
   document.querySelectorAll('.mi').forEach(function(mi){
     var m = mi._m; if (!m) return;
+    var w = mi.querySelector('.wt');
+    /* sold out or not filterable: never a match, never in the count */
+    if (!m.available || !filterable(m)){
+      mi.classList.remove('dim', 'swap');
+      mi.classList.toggle('unk', any && m.available);
+      if (w) w.textContent = any && m.available ? t('rUnk') : '';
+      return;
+    }
     total++;
     var r = any ? reasons(m) : [];
     var swaps = r.length ? fitSwap(m) : null;
+    mi.classList.remove('unk');
     mi.classList.toggle('dim', r.length > 0 && !swaps);
     mi.classList.toggle('swap', !!swaps);
     if (r.length === 0 || swaps) ok++;
-    var w = mi.querySelector('.wt');
     if (w) w.textContent = swaps ? t('rSwap') + ' ' + swaps.join(' · ') : r.join(' · ');
   });
   var bar = document.getElementById('fbar');
@@ -1227,7 +1264,10 @@ function openItem(m){
   $('i-name').textContent = nameOf(m);
   $('i-desc').textContent = descOf(m);
   $('ov-item').setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
-  // All-or-nothing gate still applies: an unconfirmed menu makes no allergen claim at all.
+  var out = $('i-out');
+  out.textContent = t('soldOut');
+  out.style.display = m.available ? 'none' : 'inline-block';
+  try { Aalayna.logEvent('item_view', { itemId: m.id, categoryId: m.c }, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
   var box = $('i-adds'); box.innerHTML = '';
   /* 'one' groups behave like radios — the first choice is the default and is
      already in the base price. 'many' groups are independent add-ons. */
@@ -1266,10 +1306,15 @@ function openItem(m){
 /* the allergen line is computed from what is actually selected — pick oat milk
    and the dairy warning goes away, pick almond and a nuts warning appears */
 function paintAlert(){
-  var ready = menuReady();
   var alrt = $('i-alrt');
-  alrt.style.display = ready ? 'flex' : 'none';
-  if (!ready) return;
+  $('i-disc').textContent = t('disc');
+  alrt.style.display = 'flex';
+  if (!filterable(curItem)){
+    // no confirmed ingredient record: no claim either way, just point at the staff
+    alrt.innerHTML = '<span>&#8505;</span><span>' + esc(t('unkSheet')) + '</span>';
+    alrt.style.background = 'var(--bg)'; alrt.style.borderColor = 'var(--line)'; alrt.style.color = 'var(--sub)';
+    return;
+  }
   var al = effDiet(curItem, curSel).al, bg, bd, fg;
   if (al.length){
     alrt.innerHTML = '<span>&#9888;</span><span><b>Contains ' + al.join(', ') + '.</b> ' +
@@ -1511,49 +1556,83 @@ function watchGuestChanges(){
     if (document.visibilityState === 'visible') refreshGuest();
   });
 }
+function newRequestId(){ return 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2); }
+/* the same fields whichever rail: the store validates them against the open check */
+function paymentFields(rail){
+  var t = tipAmt(), tot = share + t;
+  return {
+    checkId: CHECK.id, requestId: paymentRequestId, sessionId: Aalayna.session(), deviceId: Aalayna.device(),
+    items: splitMode === 'item' ? BILL.reduce(function(out,b,i){ if(picked[i]) out[b.id]=picked[i]; return out; },{}) : {},
+    table: TABLE, rail: rail, amount: tot, tip: t, server: SERVER,
+    note: (rail === 'cash' ? note : 0),
+    change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
+  };
+}
+/* a store rejection is shown to the guest and the bill is repainted; the next tap
+   is a fresh request, never a retry of the rejected one */
+function paymentFailed(error){
+  try { Aalayna.failPayment(paymentRequestId, 'failed'); } catch(e) {}
+  paymentRequestId = newRequestId();
+  paymentBusy = false;
+  buildBill(); buildPick(); calcShare();
+  alert(error.message);
+}
+/* Digital rails are two-step (spec section 6): the request is created when the
+   guest hands over to the provider, and only the provider's confirmation settles it.
+   Cash stays single-step and pending until staff confirm collection. */
 function settle(){
   if (paymentBusy) return;
   paintPay();
   var t = tipAmt(), tot = share + t;
+  if (kind === 'cash'){
+    paymentBusy = true;
+    finishSettle('cash');
+    return;
+  }
+  try { Aalayna.requestPayment(paymentFields(kind)); }
+  catch(error) { paymentFailed(error); return; }
   if (kind === 'whish'){
     $('wh-amt').textContent = 'Pay ' + usd(tot);
     $('wh-btn').textContent = 'Open Whish';
     openOv('ov-whish');
     return;
   }
-  if (kind === 'card'){
-    $('card-btn').textContent = 'Pay ' + usd(tot);
-    openOv('ov-card');
-    return;
-  }
-  paymentBusy = true;
-  finishSettle('cash');
+  $('card-btn').textContent = 'Pay ' + usd(tot);
+  openOv('ov-card');
 }
-function whishConfirm(){
+/* closing the provider without confirming: the request expires, a retry starts clean */
+function cancelProvider(ovId){
+  if (paymentBusy) return;
+  closeOv(ovId);
+  try { Aalayna.failPayment(paymentRequestId, 'expired'); } catch(e) {}
+  paymentRequestId = newRequestId();
+  buildBill(); buildPick(); calcShare();
+}
+function providerConfirm(rail, ovId, btnId, label){
   if (paymentBusy) return;
   paymentBusy = true;
-  var b = $('wh-btn');
-  b.textContent = 'Confirming with Whish…';
-  setTimeout(function(){ closeOv('ov-whish'); finishSettle('whish'); }, 900);
+  $(btnId).textContent = label;
+  var requestId = paymentRequestId;
+  setTimeout(function(){
+    closeOv(ovId);
+    var record;
+    try { record = Aalayna.confirmPayment(requestId, {
+      externalRef: 'demo-' + Aalayna.util.uid(),
+      payerRef: rail === 'whish' ? 'demo-wallet-' + Aalayna.device() : null
+    }); } catch(error) { paymentFailed(error); return; }
+    completeSettle(record, rail);
+  }, 900);
 }
-function cardConfirm(){
-  if (paymentBusy) return;
-  paymentBusy = true;
-  var b = $('card-btn');
-  b.textContent = 'Processing…';
-  setTimeout(function(){ closeOv('ov-card'); finishSettle('card'); }, 900);
-}
+function whishConfirm(){ providerConfirm('whish', 'ov-whish', 'wh-btn', 'Confirming with Whish…'); }
+function cardConfirm(){ providerConfirm('card', 'ov-card', 'card-btn', 'Processing…'); }
 var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 function finishSettle(rail){
-  var t = tipAmt(), tot = share + t;
   var record;
-  try { record = Aalayna.settle({
-    checkId: CHECK.id, requestId: paymentRequestId,
-    items: splitMode === 'item' ? BILL.reduce(function(out,b,i){ if(picked[i]) out[b.id]=picked[i]; return out; },{}) : {},
-    table: TABLE, rail: rail, amount: tot, tip: t, server: SERVER,
-    note: (rail === 'cash' ? note : 0),
-    change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
-  }); } catch(error) { paymentBusy = false; buildBill(); buildPick(); calcShare(); alert(error.message); return; }
+  try { record = Aalayna.settle(paymentFields(rail)); }
+  catch(error) { paymentFailed(error); return; }
+  completeSettle(record, rail);
+}
+function completeSettle(record, rail){
   lastSettlementId = record.id;
   lastSettlementStatus = null;
   go('v-done');
@@ -1584,6 +1663,19 @@ function paintSettlementResult(){
   }
   lastSettlementStatus = status;
   rememberReceipt();
+}
+/* a device we already know: offer the contact back, never require it */
+function prefillReceipt(){
+  var input = $('mail-in');
+  if (!input || input.value.trim() || input.disabled) return;
+  try {
+    var cid = Aalayna.identity.customerForDevice(Aalayna.device());
+    if (!cid) return;
+    var keys = Aalayna.identity.keysFor(cid);
+    var hit = keys.filter(function(k){ return k.type === 'email'; })[0] ||
+              keys.filter(function(k){ return k.type === 'phone'; })[0];
+    if (hit) input.value = hit.value;
+  } catch(error) {}
 }
 /* Every rating opens the same single review panel. */
 function rate(n){
@@ -1619,6 +1711,9 @@ function paintReviewDestination(){
   $('review-status').textContent = 'Prototype only — no review or feedback is sent.';
 }
 function submitReview(){
+  try { Aalayna.submitReview({ settlementId: lastSettlementId, rating: rating,
+                               comment: $('review-text').value, destination: $('review-destination').value }); }
+  catch(error) { $('review-status').textContent = error.message; return; }
   $('review-status').textContent = $('review-destination').value === 'google'
     ? 'Google posting is not connected. No review was published.'
     : 'Private feedback delivery is not connected. Nothing was sent.';
@@ -1653,12 +1748,15 @@ function toggleCoverage(){
   $('covsw').innerHTML = DEMO_INCOMPLETE
     ? 'Menu fully confirmed \u2192'
     : 'Menu not fully confirmed \u2192';
-  buildMenu();
+  buildMenu(); applyF();
 }
 function restart(){
   try { sessionStorage.removeItem(receiptSessionKey()); } catch(error) {}
-  paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null; paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-  CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check()});
+  Aalayna.newSession();            // start over = a new scan, a new session
+  billRequested = false;
+  paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null; paymentRequestId = newRequestId();
+  CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
+  logScan();
   $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
   kind = 'whish'; note = 0; CCY = 'usd'; rating = 0;
@@ -1697,7 +1795,18 @@ syncReceiptViewport();
 /* ---------------- boot ---------------- */
 /* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
 var TABLE = 12, SERVER = 'Abou Karim';
-CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check()});
+/* client-side events (spec section 4): the scan, each dish opened, the first look at the bill */
+var billRequested = false;
+function logScan(){
+  try { Aalayna.logEvent('qr_scan', { tableId: TABLE, userAgent: navigator.userAgent }, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
+}
+function logBillRequested(){
+  if (billRequested) return;
+  billRequested = true;
+  try { Aalayna.logEvent('bill_requested', {}, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
+}
+logScan();
+CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paintServer(){
   SERVER = Aalayna.serverFor(TABLE);

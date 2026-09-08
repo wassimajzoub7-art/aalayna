@@ -94,12 +94,15 @@ test('§6 digital payments are requested, then confirmed once by a provider refe
   assert.throws(()=>a.confirmPayment('req-1',{}),/transaction reference/);
   const done=a.confirmPayment('req-1',{externalRef:'whish-abc',payerRef:'wallet-777'});
   assert.equal(a.settlementStatus(done),'confirmed'); assert.equal(a.settledTotal(),30);
-  assert.ok(done.customerId);   // the wallet id is a strong key
+  assert.ok(done.identityId);   // the wallet id is a strong key; customerId stays the venue profile
   assert.equal(a.confirmPayment('req-1',{externalRef:'whish-abc'}).id,done.id);   // duplicate callback is idempotent
   assert.equal(a.events().filter(e=>e.eventType==='payment_completed').length,1);
   assert.equal(a.webhookLog().length,2);   // rejected callbacks are not logged as confirmations
   a.requestPayment({table:12,checkId:c.id,rail:'card',amount:20,requestId:'req-2'});
   assert.throws(()=>a.confirmPayment('req-2',{externalRef:'whish-abc'}),/already confirmed another/);
+  // a receipt after a wallet-confirmed payment links the same identity instead of failing
+  const g=a.optIn({settlementId:done.id,contact:'+96171000000',receipt:true,marketing:false});
+  assert.equal(g.customerId,done.identityId); assert.equal(a.identity.count(),1);
   a.failPayment('req-2','expired');
   assert.throws(()=>a.confirmPayment('req-2',{externalRef:'card-9'}),/expired/);
   assert.equal(a.checkBalance(c.id).remainingCents,7000);
