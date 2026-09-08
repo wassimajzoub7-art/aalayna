@@ -27,8 +27,16 @@
     if (!Number.isSafeInteger(total) || total <= 0 || !Number.isInteger(Number(input.table)) || Number(input.table) < 1) throw new Error('A check needs a table and a positive total.');
     var existing = A.serviceChecks().find(function(c){ return c.table === Number(input.table) && !c.closedAt; });
     if (existing) return existing;
-    var c = { id:uid('check-'), venueId:A.venueId(), table:Number(input.table), totalCents:total, openedAt:now(), lines:input.lines || [], source:'prototype' };
-    var all = read('aal.checks'); all.push(c); save('aal.checks', all); return c;
+    var rate = A.rate();
+    var c = { id:uid('check-'), venueId:A.venueId(), table:Number(input.table), totalCents:total, openedAt:now(), lines:input.lines || [], source:'prototype',
+              currency:'USD', fxRateUsed:rate, amountUsd:total / 100, sessionId:input.sessionId || A.session(), deviceId:input.deviceId || A.device() };
+    var all = read('aal.checks'); all.push(c); save('aal.checks', all);
+    /* In this prototype the check IS the order (bills come from the waiter/POS,
+       3alayna takes no orders). The event carries the lines the way a POS would. */
+    A.logEvent('order_placed', { orderId:c.id, items:c.lines.map(function(l){ return { itemId:l.id, qty:l.q, unitPrice:Math.round(l.p / l.q * 100) / 100, currency:'USD' }; }),
+                                 total:total / 100, currency:'USD', fxRateUsed:rate, amountUsd:total / 100 },
+               { sessionId:c.sessionId, deviceId:c.deviceId, tableId:c.table });
+    return c;
   };
   A.checkBalance = function (id) {
     var c = A.serviceChecks().find(function(x){ return x.id === id; });
@@ -72,10 +80,32 @@
     }
     g.receipt = input.receipt; g.marketing = input.marketing;
     g.consentHistory.push({ at:now(), source:'receipt', receipt:g.receipt, marketing:g.marketing, version:'restaurant-offers-v1', settlementId:payment.id });
-    var payments = read('aal.settle'); payments.find(function(s){ return s.id === payment.id && same(s); }).customerId = g.id;
+    /* Identity layer: the contact is a strong key. Linking attaches this device and
+       backfills every earlier anonymous event from it. The venue profile keeps its
+       own id (lists are never joined across venues); customerId is the global one. */
+    g.customerId = A.identity.link({ keys:[{ type:contact.channel === 'email' ? 'email' : 'phone', value:contact.contact }],
+                                     deviceId:payment.deviceId, source:'receipt' });
+    var payments = read('aal.settle'), row = payments.find(function(s){ return s.id === payment.id && same(s); });
+    row.customerId = g.id;
     // Both writes are local prototype state; a live backend must commit these atomically.
     save('aal.settle', payments); save('aal.guests', all);
+    if (input.receipt) A.logEvent('receipt_requested', { channel:contact.channel, contactHash:A.contactHash(contact.contact), marketing:!!input.marketing },
+                                  { deviceId:payment.deviceId, sessionId:payment.sessionId, tableId:payment.table, customerId:g.customerId });
     return g;
+  };
+  /* Post-payment prompt (spec §7): one tap to rate, optional comment. Low ratings
+     surface on the owner dashboard. The contact box on the same screen goes
+     through optIn, so it reaches the identity layer the same way. */
+  A.submitReview = function (input) {
+    var rating = Number(input.rating);
+    if (!Number.isInteger(rating) || rating < 0 || rating > 5) throw new Error('Rate from 0 to 5.');
+    var payment = A.settlements().find(function(s){ return s.id === input.settlementId && same(s); });
+    var comment = String(input.comment || '').trim().slice(0, 1000);
+    return A.logEvent('review_submitted', { rating:rating, comment:comment || null, destination:input.destination || null, paymentId:payment ? payment.id : null },
+                      payment ? { deviceId:payment.deviceId, sessionId:payment.sessionId, tableId:payment.table, customerId:payment.customerId } : {});
+  };
+  A.lowRatings = function (since) {
+    return A.events().filter(function(e){ return e.eventType === 'review_submitted' && e.payload.rating <= 2 && (!since || Date.parse(e.createdAt) >= since); });
   };
   A.withdrawMarketing = function (id) {
     var all = read('aal.guests'), g = all.find(function(x){ return same(x) && x.id === id; });

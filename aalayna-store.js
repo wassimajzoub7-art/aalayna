@@ -16,8 +16,13 @@
   'use strict';
 
   var K = { draft: 'aal.draft', live: 'aal.live', settle: 'aal.settle', tips: 'aal.tips',
-            venue: 'aal.venue', rate: 'aal.rate', floor: 'aal.floor',
-            guests: 'aal.guests', campaigns: 'aal.campaigns' };
+            venue: 'aal.venue', rate: 'aal.rate', rateMeta: 'aal.rate_meta', floor: 'aal.floor',
+            guests: 'aal.guests', campaigns: 'aal.campaigns',
+            /* data layer (engineering spec): one localStorage key per Postgres table */
+            events: 'aal.events', device: 'aal.device', devices: 'aal.devices',
+            identities: 'aal.identities', identityKeys: 'aal.identity_keys',
+            deviceLinks: 'aal.device_links', merges: 'aal.identity_merges',
+            editLog: 'aal.edit_log', webhooks: 'aal.webhook_log', admin: 'aal.admin_notifications' };
 
   /* ---------- venue identity -------------------------------------------
      The walk-in trick: open any app with ?venue=Roadster's&place=Dbayeh and
@@ -178,14 +183,22 @@
      dietary filters. Every write goes through here. */
   var ALLERGENS = ['nuts','dairy','gluten','sesame','egg','shellfish','soy'];
   function normalise(x) {
+    var ing = Array.isArray(x.ing) ? x.ing : [];
     return {
-      id:   x.id   || 'i' + Date.now().toString(36),
+      /* Immutable once minted. Renames touch `name`, deletes set `archivedAt`;
+         the id is what every event, check line and report points at. */
+      id:   x.id   || uid(),
+      archivedAt: typeof x.archivedAt === 'string' ? x.archivedAt : null,
+      available: x.available === false ? false : true,   // the 86 toggle
+      /* No ingredient record = no dietary claim. The dish stays on the menu but
+         every filter and allergen line treats it as unknown. */
+      status: ing.length ? 'complete' : 'incomplete',
       sec:  x.sec  || 'mez',
       name: x.name || '(untitled)',
       desc: x.desc || '',
       imageUrl: typeof x.imageUrl === 'string' && /^https:\/\/[^\s]+$/i.test(x.imageUrl) ? x.imageUrl : '',
       price: typeof x.price === 'number' ? x.price : 0,
-      ing:  Array.isArray(x.ing) ? x.ing : [],
+      ing:  ing,
       al:   Array.isArray(x.al)  ? x.al.filter(function (a) { return ALLERGENS.indexOf(a) > -1; }) : [],
       kcal: x.kcal == null ? null : +x.kcal,
       pr:   x.pr   == null ? null : +x.pr,
@@ -229,7 +242,7 @@
      A device that scanned the QR last week holds last week's data shape in
      localStorage. New fields (like per-item translations) must be merged in
      silently — a field demo can never depend on someone finding "Reset". */
-  var SCHEMA = 4;
+  var SCHEMA = 5;   // v5: archivedAt / available / status on every item
   function migrate() {
     var meta = read('aal.schema', 0);
     if (meta >= SCHEMA) return;
@@ -280,6 +293,189 @@
     if (!read(K.tips, null)) write(K.tips, {});
   }
 
+  /* ---------- edit log --------------------------------------------------
+     Every mutation from any tier lands here, field by field. `who` is a label
+     in the prototype; a backend stamps the authenticated staff account. */
+  var TIER = { price: 1, available: 1, desc: 1, name: 2, sec: 2, created: 2, imageUrl: 2,
+               ing: 2, al: 2, kcal: 2, pr: 2, ft: 2, cb: 2, opts: 2, tr: 2, conf: 2,
+               archivedAt: 3, id: 3 };
+  function fieldEq(a, b) { return JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b); }
+  function logEdits(prev, next, who) {
+    var rows = read(K.editLog, []), at = now(), rid = A.venueId();
+    function row(type, id, field, o, n) {
+      rows.push({ id: uid('e'), who: who || 'owner', restaurantId: rid, entityType: type, entityId: id,
+                  field: field, oldValue: o === undefined ? null : o, newValue: n === undefined ? null : n,
+                  tier: TIER[field] || 2, at: at });
+    }
+    var before = {}, after = {};
+    (prev && prev.items || []).forEach(function (x) { before[x.id] = x; });
+    (next.items || []).forEach(function (x) { after[x.id] = x; });
+    Object.keys(after).forEach(function (id) {
+      var o = before[id], n = after[id];
+      if (!o) { row('item', id, 'created', null, n.name); if (n.status === 'incomplete') adminNotify('incomplete_item', { itemId: id, name: n.name }); return; }
+      Object.keys(TIER).forEach(function (f) {
+        if (f === 'created' || f === 'id') return;
+        if (!fieldEq(o[f], n[f])) {
+          row('item', id, f, o[f], n[f]);
+          if (f === 'ing' && n.status === 'incomplete' && o.status !== 'incomplete') adminNotify('incomplete_item', { itemId: id, name: n.name });
+        }
+      });
+    });
+    Object.keys(before).forEach(function (id) { if (!after[id]) row('item', id, 'hard_delete_blocked', before[id].name, null); });
+    var bs = {}, as = {};
+    (prev && prev.sections || []).forEach(function (x) { bs[x.id] = x; });
+    (next.sections || []).forEach(function (x) { as[x.id] = x; });
+    Object.keys(as).forEach(function (id) {
+      if (!bs[id]) { row('section', id, 'created', null, as[id].name); return; }
+      ['name', 'win'].forEach(function (f) { if (!fieldEq(bs[id][f], as[id][f])) row('section', id, f, bs[id][f], as[id][f]); });
+    });
+    Object.keys(bs).forEach(function (id) { if (!as[id]) row('section', id, 'removed', bs[id].name, null); });
+    if (rows.length > 5000) rows = rows.slice(-5000);
+    write(K.editLog, rows);
+  }
+  function adminNotify(kind, detail) {
+    var rows = read(K.admin, []);
+    rows.push({ id: uid('n'), kind: kind, restaurantId: A.venueId(), detail: detail || {}, at: now(), seen: false });
+    write(K.admin, rows.slice(-500));
+  }
+
+  /* ---------- device + session ------------------------------------------
+     device_id is a weak signal (Safari ITP, in-app browsers), kept in
+     localStorage with a first-party cookie as the backup copy. session_id is
+     minted per QR scan and travels on every event. */
+  function cookieGet(name) {
+    try {
+      var m = global.document && global.document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : '';
+    } catch (e) { return ''; }
+  }
+  function cookieSet(name, value) {
+    try { if (global.document) global.document.cookie = name + '=' + encodeURIComponent(value) + '; Max-Age=31536000; Path=/; SameSite=Lax'; } catch (e) {}
+  }
+  var UUIDish = /^[A-Za-z0-9-]{8,64}$/;
+  function deviceId() {
+    var ls = '', ck = cookieGet('device_id');
+    try { ls = localStorage.getItem(K.device) || ''; } catch (e) {}
+    if (!UUIDish.test(ls)) ls = '';
+    if (!UUIDish.test(ck)) ck = '';
+    var id = ls || ck || uid();
+    if (id !== ls) { try { localStorage.setItem(K.device, id); } catch (e) {} }
+    if (id !== ck) cookieSet('device_id', id);
+    var devices = read(K.devices, {});
+    if (!devices[id]) devices[id] = { firstSeen: now() };
+    devices[id].lastSeen = now();
+    try { localStorage.setItem(K.devices, JSON.stringify(devices)); } catch (e) {}
+    return id;
+  }
+  var memSession = null;
+  function sessionId(fresh) {
+    var ss = null;
+    try { ss = global.sessionStorage; } catch (e) {}
+    var cur = null;
+    try { cur = ss ? ss.getItem('aal.session') : memSession; } catch (e) {}
+    if (!fresh && cur && UUIDish.test(cur)) return cur;
+    var id = uid();
+    try { if (ss) ss.setItem('aal.session', id); } catch (e) {}
+    memSession = id;
+    return id;
+  }
+
+  /* ---------- events: append-only ----------------------------------------
+     Never updated, never deleted (customer_id backfill is the one sanctioned
+     exception, and it is done by the identity layer). */
+  var EVENT_TYPES = ['qr_scan', 'item_view', 'bill_requested', 'order_placed', 'payment_completed',
+                     'payment_refunded', 'payment_cancelled', 'receipt_requested', 'review_submitted'];
+  function logEvent(type, payload, extra) {
+    if (EVENT_TYPES.indexOf(type) < 0) throw new Error('Unknown event type: ' + type);
+    extra = extra || {};
+    var did = extra.deviceId || deviceId();
+    var rows = read(K.events, []);
+    var e = { eventId: uid(), deviceId: did, sessionId: extra.sessionId || sessionId(),
+              restaurantId: A.venueId(), tableId: extra.tableId == null ? null : String(extra.tableId),
+              customerId: extra.customerId || customerForDevice(did) || null,
+              eventType: type, payload: payload || {}, createdAt: now() };
+    rows.push(e);
+    if (rows.length > 5000) rows = rows.slice(-5000);
+    write(K.events, rows);
+    return e;
+  }
+
+  /* ---------- identity ---------------------------------------------------
+     identities / identity_keys / device_links / identity_merges. Keys are
+     normalised (E.164, lower-case email); a backend hashes them at rest. */
+  function keyId(type, value) { return type + ':' + value; }
+  function customerForDevice(did) {
+    var links = read(K.deviceLinks, []), best = null;
+    links.forEach(function (l) { if (l.deviceId === did && (!best || l.linkedAt > best.linkedAt)) best = l; });
+    return best ? best.customerId : null;
+  }
+  function repoint(from, to) {
+    var keys = read(K.identityKeys, {});
+    Object.keys(keys).forEach(function (k) { if (keys[k].customerId === from) keys[k].customerId = to; });
+    write(K.identityKeys, keys);
+    var links = read(K.deviceLinks, []);
+    links.forEach(function (l) { if (l.customerId === from) l.customerId = to; });
+    write(K.deviceLinks, links);
+    var events = read(K.events, []);
+    events.forEach(function (e) { if (e.customerId === from) e.customerId = to; });
+    write(K.events, events);
+    var settle = read(K.settle, []);
+    settle.forEach(function (x) { if (x.customerId === from) x.customerId = to; });
+    write(K.settle, settle);
+    var guests = read(K.guests, []);
+    guests.forEach(function (g) { if (g.customerId === from) g.customerId = to; });
+    write(K.guests, guests);
+    var merges = read(K.merges, []);
+    merges.push({ id: uid('m'), from: from, into: to, at: now() });
+    write(K.merges, merges);
+  }
+  function linkIdentity(input) {
+    var keys = read(K.identityKeys, {}), ids = read(K.identities, {});
+    var found = [], fresh = [];
+    (input.keys || []).forEach(function (k) {
+      if (!k || !k.type || !k.value) return;
+      var kid = keyId(k.type, k.value), hit = keys[kid];
+      if (hit) { if (found.indexOf(hit.customerId) < 0) found.push(hit.customerId); }
+      else fresh.push(kid);
+    });
+    var survivor = found[0] || null;
+    if (!survivor) {
+      survivor = uid();
+      ids[survivor] = { customerId: survivor, createdAt: now() };
+      write(K.identities, ids);
+    }
+    fresh.forEach(function (kid) { keys[kid] = { customerId: survivor, createdAt: now() }; });
+    write(K.identityKeys, keys);
+    // two keys, two customers: union-find style merge into the survivor
+    found.slice(1).forEach(function (other) { repoint(other, survivor); delete ids[other]; });
+    if (found.length > 1) write(K.identities, ids);
+    var did = input.deviceId || deviceId();
+    var links = read(K.deviceLinks, []);
+    if (!links.some(function (l) { return l.deviceId === did && l.customerId === survivor; })) {
+      links.push({ deviceId: did, customerId: survivor, linkedAt: now(), source: input.source || 'receipt' });
+      write(K.deviceLinks, links);
+    }
+    // retroactive attribution: everything this device did before we knew who it was
+    var events = read(K.events, []), touched = false;
+    events.forEach(function (e) { if (e.deviceId === did && !e.customerId) { e.customerId = survivor; touched = true; } });
+    if (touched) write(K.events, events);
+    return survivor;
+  }
+  /* the one event the whole reporting layer hangs off */
+  function paymentEvent(row) {
+    logEvent('payment_completed',
+      { orderId: row.checkId, paymentId: row.id, requestId: row.requestId, amount: row.amount, currency: row.currency || 'USD',
+        fxRateUsed: row.fxRateUsed || null, amountUsd: row.amountUsd == null ? row.amount : row.amountUsd,
+        rail: row.rail, payerRef: row.payerRef || null, tip: row.tip || 0, externalRef: row.externalRef || null },
+      { deviceId: row.deviceId, sessionId: row.sessionId, tableId: row.table, customerId: row.customerId });
+  }
+  /* stable hash for event payloads: identifies a contact without carrying it */
+  function contactHash(str) {
+    var h = 5381, i;
+    for (i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return 'h' + (h >>> 0).toString(16);
+  }
+
   /* ---------- API ---------------------------------------------------------- */
   var A = {
     SECTIONS_SEED: SEED_SECTIONS,
@@ -287,10 +483,51 @@
     /* ---- menu ---- */
     draft:     function () { seedIfEmpty(); return read(K.draft, null); },
     published: function () { seedIfEmpty(); return read(K.live, null); },
-    saveDraft: function (d) {
+    saveDraft: function (d, who) {
+      var prev = read(K.draft, null);
       d.items = (d.items || []).map(normalise);
+      /* A row referenced by history never disappears: an item missing from the
+         incoming draft is kept as archived rather than dropped. */
+      if (prev && prev.items) {
+        var have = {};
+        d.items.forEach(function (x) { have[x.id] = 1; });
+        prev.items.forEach(function (x) {
+          if (!have[x.id]) { var keep = clone(x); keep.archivedAt = keep.archivedAt || now(); d.items.push(normalise(keep)); }
+        });
+      }
+      logEdits(prev, d, who);
       write(K.draft, d);
     },
+    /* Tier 3: archive semantics. Soft delete only; re-adding mints a new id. */
+    archiveItem: function (id, who) {
+      var d = A.draft(), hit = d.items.filter(function (x) { return x.id === id; })[0];
+      if (!hit) throw new Error('Item not found.');
+      hit.archivedAt = hit.archivedAt || now();
+      A.saveDraft(d, who);
+    },
+    restoreItem: function (id, who) {
+      var d = A.draft(), hit = d.items.filter(function (x) { return x.id === id; })[0];
+      if (!hit) throw new Error('Item not found.');
+      hit.archivedAt = null;
+      A.saveDraft(d, who);
+    },
+    /* The one hard delete: a draft row that was never published and that nothing
+       references (a blank dish the editor opened and abandoned). */
+    discardDraftItem: function (id) {
+      if (A.published().items.some(function (x) { return x.id === id; })) return false;
+      var d = A.draft(), before = d.items.length;
+      d.items = d.items.filter(function (x) { return x.id !== id; });
+      if (d.items.length === before) return false;
+      write(K.draft, d);   // not through saveDraft: nothing to log, nothing to keep
+      return true;
+    },
+    /* what a guest can see: published, not archived */
+    liveItems: function () {
+      return A.published().items.filter(function (x) { return !x.archivedAt; });
+    },
+    editLog: function () { return read(K.editLog, []).filter(function (r) { return r.restaurantId === A.venueId(); }); },
+    adminNotifications: function () { return read(K.admin, []); },
+    markNotificationsSeen: function () { var rows = read(K.admin, []); rows.forEach(function (r) { r.seen = true; }); write(K.admin, rows); },
     ALLERGENS: ALLERGENS,
     /* what a dish still needs before it can be confirmed */
     missing: function (x) {
@@ -345,18 +582,60 @@
       var cashNote = Math.round(Number(s.note || 0) * 100);
       if (s.rail === 'cash' && (!Number.isSafeInteger(cashNote) || cashNote < 0 || (cashNote > 0 && cashNote < amount))) throw new Error('Choose enough cash to cover your share and tip.');
       if (s.checkId && A.validateCheckPayment) A.validateCheckPayment(s, amount - tip);
-      all.push({
+      var rate = A.rate(), status = s.rail === 'cash' ? 'pending' : (s.initiate ? 'initiated' : 'confirmed');
+      var row = {
         id: uid('p'),
         venueId: scope, venue: A.venue().name, checkId: s.checkId || null,
         requestId: s.requestId || null, items: s.items || {},
+        deviceId: s.deviceId || deviceId(), sessionId: s.sessionId || sessionId(),
         table: s.table || 12, rail: s.rail, amount: amount / 100,
         tip: tip / 100, server: s.server || 'Abou Karim',
+        /* raw amount + the rate it was taken at + the normalised figure: all
+           three, always. A converted number on its own is meaningless later. */
+        currency: 'USD', fxRateUsed: rate, amountUsd: amount / 100,
         note: s.rail === 'cash' ? cashNote / 100 : 0, change: s.rail === 'cash' && cashNote > 0 ? (cashNote - amount) / 100 : 0,
-        status: s.rail === 'cash' ? 'pending' : 'confirmed',
+        status: status,
         ts: new Date().toISOString()
-      });
+      };
+      if (status === 'confirmed') { row.confirmedAt = row.ts; }
+      all.push(row);
       write(K.settle, all);
-      return all[all.length - 1];
+      if (status === 'confirmed') paymentEvent(row);
+      return row;
+    },
+    /* Two-step digital path (spec §6): the guest app creates the request when it
+       hands over to the provider; the provider's callback confirms it. Anything
+       else (a redirect, a returning tab) is not a confirmation. */
+    requestPayment: function (s) {
+      if (s.rail === 'cash') return A.settle(s);
+      return A.settle(Object.assign({}, s, { initiate: true }));
+    },
+    confirmPayment: function (requestId, cb) {
+      cb = cb || {};
+      var all = read(K.settle, []), log = read(K.webhooks, []);
+      var ref = String(cb.externalRef || '').trim();
+      if (!ref) throw new Error('A provider confirmation needs its transaction reference.');
+      log.push({ id: uid('w'), requestId: requestId, externalRef: ref, payerRef: cb.payerRef || null, body: cb.raw || null, at: now() });
+      write(K.webhooks, log.slice(-2000));
+      var row = all.filter(function (x) { return x.requestId === requestId && x.venueId === A.venueId(); })[0];
+      if (!row) throw new Error('Unknown payment request.');
+      if (row.externalRef === ref && A.settlementStatus(row) === 'confirmed') return row;   // duplicate callback
+      if (A.settlementStatus(row) !== 'initiated') throw new Error('This request is ' + A.settlementStatus(row) + ' and cannot be confirmed.');
+      if (all.some(function (x) { return x.externalRef === ref && x.id !== row.id; })) throw new Error('This provider reference already confirmed another request.');
+      row.status = 'confirmed'; row.confirmedAt = now(); row.externalRef = ref;
+      if (cb.payerRef) row.payerRef = contactHash(String(cb.payerRef));
+      write(K.settle, all);
+      if (cb.payerRef) {
+        var cid = linkIdentity({ keys: [{ type: 'wallet_id', value: row.payerRef }], deviceId: row.deviceId, source: 'payment' });
+        row.customerId = row.customerId || cid; write(K.settle, all);
+      }
+      paymentEvent(row);
+      return row;
+    },
+    failPayment: function (requestId, reason) {
+      var all = read(K.settle, []);
+      var row = all.filter(function (x) { return x.requestId === requestId && x.venueId === A.venueId(); })[0];
+      if (row && A.settlementStatus(row) === 'initiated') { row.status = reason === 'expired' ? 'expired' : 'failed'; row.failedAt = now(); write(K.settle, all); }
     },
     settlements: function () {
       seedIfEmpty(); var scope = A.venueId();
@@ -374,19 +653,23 @@
     confirmCash: function (id) {
       var all = read(K.settle, []), changed = false;
       var allowed = A.settlements().some(function(s){ return s.id === id; });
+      var hit = null;
       all.forEach(function (s) {
         if (allowed && s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') {
-          s.status = 'confirmed'; s.confirmedAt = new Date().toISOString(); changed = true;
+          s.status = 'confirmed'; s.confirmedAt = new Date().toISOString(); changed = true; hit = s;
         }
       });
-      if (changed) write(K.settle, all);
+      if (changed) { write(K.settle, all); paymentEvent(hit); }
       return changed;
     },
     cancelCash: function (id) {
       var all = read(K.settle, []);
       var allowed = A.settlements().some(function(s){ return s.id === id; });
       all.forEach(function (s) {
-        if (allowed && s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') s.cancelled = new Date().toISOString();
+        if (allowed && s.id === id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') {
+          s.cancelled = new Date().toISOString();
+          logEvent('payment_cancelled', { paymentId: s.id, orderId: s.checkId, rail: s.rail }, { deviceId: s.deviceId, sessionId: s.sessionId, tableId: s.table, customerId: s.customerId });
+        }
       });
       write(K.settle, all);
     },
@@ -395,7 +678,13 @@
        same rule as the rest of settlement state. */
     refund: function (id) {
       var all = read(K.settle, []);
-      all.forEach(function (s) { if (s.id === id && A.settlements().some(function(x){ return x.id === id; }) && A.isConfirmed(s)) s.refunded = new Date().toISOString(); });
+      all.forEach(function (s) {
+        if (s.id === id && A.settlements().some(function(x){ return x.id === id; }) && A.isConfirmed(s)) {
+          s.refunded = new Date().toISOString();
+          logEvent('payment_refunded', { paymentId: s.id, orderId: s.checkId, amount: s.amount, currency: s.currency || 'USD', fxRateUsed: s.fxRateUsed || null, amountUsd: s.amountUsd == null ? s.amount : s.amountUsd, rail: s.rail },
+                   { deviceId: s.deviceId, sessionId: s.sessionId, tableId: s.table, customerId: s.customerId });
+        }
+      });
       write(K.settle, all);
     },
     byRail: function () {
@@ -467,9 +756,19 @@
       var r = read(K.rate, 0);
       return (r >= 1000 && r <= 10000000) ? r : 89500;
     },
-    setRate: function (v) {
+    setRate: function (v, by) {
       v = Math.round(+v || 0);
-      if (v >= 1000 && v <= 10000000) write(K.rate, v);
+      if (v >= 1000 && v <= 10000000) {
+        write(K.rateMeta, { updatedAt: now(), updatedBy: by || 'owner', restaurantId: A.venueId() });
+        write(K.rate, v);
+      }
+    },
+    /* the rate with its provenance: mirrors the house/POS rate, never a market feed */
+    rateInfo: function (at) {
+      var meta = read(K.rateMeta, null) || {};
+      var age = meta.updatedAt ? ((at || Date.now()) - Date.parse(meta.updatedAt)) / 86400000 : null;
+      return { rate: A.rate(), updatedAt: meta.updatedAt || null, updatedBy: meta.updatedBy || null,
+               ageDays: age == null ? null : Math.floor(age), stale: age == null ? true : age >= 14 };
     },
     /* The one integration that needs no partner: with a Place ID this opens the
        venue's actual Google review box; without one it opens their real Maps
@@ -483,6 +782,28 @@
     },
     resetVenue: function () { try { localStorage.removeItem(K.venue); } catch (e) {} fire(K.venue); },
 
+    /* ---- data layer: device, session, events, identity ---- */
+    device: function () { return deviceId(); },
+    session: function () { return sessionId(false); },
+    newSession: function () { return sessionId(true); },
+    events: function () { return read(K.events, []).filter(function (e) { return e.restaurantId === A.venueId(); }); },
+    logEvent: logEvent,
+    EVENT_TYPES: EVENT_TYPES,
+    contactHash: contactHash,
+    identity: {
+      link: linkIdentity,
+      customerForDevice: customerForDevice,
+      keysFor: function (customerId) {
+        var keys = read(K.identityKeys, {});
+        return Object.keys(keys).filter(function (k) { return keys[k].customerId === customerId; })
+          .map(function (k) { return { type: k.slice(0, k.indexOf(':')), value: k.slice(k.indexOf(':') + 1) }; });
+      },
+      merges: function () { return read(K.merges, []); },
+      count: function () { return Object.keys(read(K.identities, {})).length; }
+    },
+    webhookLog: function () { return read(K.webhooks, []); },
+    actor: function () { return 'owner'; },   // a backend replaces this with the authenticated staff user
+
     /* ---- plumbing ---- */
     on: function (fn) { subs.push(fn); },
     notify: function (key) { fire(key); },
@@ -490,7 +811,8 @@
     reset: function () {
       try { localStorage.removeItem('aal.pack'); } catch (e) {}
       try { localStorage.removeItem(K.guests); localStorage.removeItem(K.campaigns); } catch (e) {}
-      [K.draft, K.live, K.settle, K.tips, 'aal.checks'].forEach(function (k) {
+      [K.draft, K.live, K.settle, K.tips, 'aal.checks', K.events, K.identities, K.identityKeys, K.deviceLinks,
+       K.merges, K.editLog, K.webhooks, K.admin, K.rateMeta].forEach(function (k) {
         try { localStorage.removeItem(k); } catch (e) {}
       });
       seedIfEmpty();
