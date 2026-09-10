@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<title>Aalayna × Hallab 1881 — full flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
+    --green:#0F4B3A; --green-deep:#0B3A2D; --green-bg:#EDF3EF; --green-line:#D5E3DA;
+    --gold:#C9A227; --gold-lt:#E8D9A8;
+    --red:#B4423A; --red-bg:#F9EEEC;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
+    --ivory:#FFFFFF; --paper:#FFFFFF; --hair:#E7E5E0; --coral:#B4423A;
+    --spring:cubic-bezier(.34,1.56,.64,1); --ease:cubic-bezier(0.23,1,0.32,1);
+    --ease-drawer:cubic-bezier(0.32,0.72,0,1); --ease-io:cubic-bezier(0.77,0,0.175,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
+    color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:26px 16px 40px;font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+  .stage{width:100%;max-width:410px;margin-bottom:14px}
+  .stage .t{font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .stage .t b{font-weight:600;color:var(--green)}
+  .stage .s{font-size:11px;color:var(--sub);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
+
+  .phone{width:410px;max-width:96vw;height:80vh;min-height:660px;background:var(--surface);
+    border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden;
+    box-shadow:0 1px 2px rgba(23,29,26,.04)}
+  .screen{width:100%;height:100%;position:relative;background:var(--surface)}
+  .view{position:absolute;inset:0;display:none;flex-direction:column;background:var(--surface)}
+  .view.on{display:flex;animation:rise .25s var(--ease)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes rowIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .view.on,.sheet,.ov .scrim,.go .seal,.go .rcpt,.go .rate-wrap,.chg.on{
+      animation:scrimIn .15s ease both !important;animation-delay:0s !important}
+    .ov.closing .sheet,.ov.closing .scrim{animation:scrimOut .12s ease forwards !important}
+    .cta:active{transform:none}
+  }
+
+  .scroll{flex:1;overflow-y:auto;scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .dock{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 16px;z-index:20;
+    background:linear-gradient(transparent, var(--surface) 32%)}
+  .back{position:absolute;top:16px;inset-inline-start:14px;z-index:30;width:32px;height:32px;
+    border-radius:9px;background:var(--surface);border:1px solid var(--line);font-size:14px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+
+  .display{font-weight:600;line-height:1.1;letter-spacing:-.01em}
+
+  .cta{width:100%;border:1px solid transparent;border-radius:10px;padding:14px;font-size:14px;
+    font-weight:600;cursor:pointer;font-family:inherit;position:relative;overflow:hidden;
+    transition:opacity .12s}
+  .cta{transition:transform .12s var(--ease),opacity .12s ease}
+  .cta:active{opacity:.9;transform:scale(.97)}
+  .cta:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  .cta-green{background:var(--green);color:#fff}
+  .cta-line{background:var(--surface);color:var(--ink);border-color:var(--line);margin-top:8px}
+  .cta-line-lt{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+  .cta-ghost{background:transparent;color:var(--sub);font-weight:500;font-size:12.5px;margin-top:2px}
+  .cta .sheen{display:none}
+  .cta:hover .sheen{display:none}
+  .powered{text-align:center;font-size:10.5px;color:var(--faint);padding:10px 0 2px}
+  .powered b{color:var(--sub);font-weight:600}
+  .powered.dk{color:rgba(255,255,255,.45)} .powered.dk b{color:rgba(255,255,255,.7)}
+
+  /* ── landing ── */
+  .hero{height:210px;flex-shrink:0;position:relative;overflow:hidden;background:var(--green-deep)}
+  .hero .pat{display:none}
+  .hero::after{content:none}
+  .crest{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;
+    color:#F2EDE0;width:80%;padding:16px 10px 14px;border:1px solid rgba(255,255,255,.22);border-radius:6px}
+  .crest .est{font-size:9px;letter-spacing:.24em;color:#9DBBAC;margin-bottom:6px}
+  .crest .name{font-family:'Amiri',serif;font-size:30px;font-weight:700;line-height:1.05;color:#fff}
+  .crest .place{font-size:11px;color:#9DBBAC;margin-top:7px}
+  .crest .rule{width:40px;height:1px;background:var(--gold);margin:11px auto 0}
+  .land-body{flex:1;display:flex;flex-direction:column;padding:20px 20px 118px;background:var(--surface);
+    overflow-y:auto;scrollbar-width:none}
+  .land-body::-webkit-scrollbar{display:none}
+  .greet{font-family:'Amiri',serif;font-size:24px;font-weight:700}
+  .tbl{display:inline-flex;align-items:center;gap:7px;margin-top:10px;background:var(--green-bg);
+    color:var(--green);font-size:11.5px;font-weight:600;border-radius:6px;padding:5px 10px;width:fit-content}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .note{font-size:12.5px;color:var(--sub);margin-top:12px;line-height:1.6}
+
+  /* ── menu ── */
+  .m-head{padding-block:18px 0;padding-inline:56px 128px;flex-shrink:0}
+  .m-head .vn{font-family:'Amiri',serif;font-size:19px;font-weight:700}
+  .m-head .vs{font-size:11px;color:var(--sub);margin-top:2px}
+  .sels{position:absolute;top:16px;inset-inline-end:14px;z-index:30;display:flex;gap:5px}
+  .sel{position:relative;flex:0 0 auto}
+  .sel select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--surface);
+    border-radius:8px;padding:6px 18px 6px 9px;font-size:10.5px;font-weight:600;color:var(--ink);
+    font-family:inherit;cursor:pointer}
+  .sel select:hover{border-color:#CFCCC5}
+  .sel select:focus{outline:none;border-color:var(--green)}
+  .sel::after{content:'\25BE';position:absolute;right:7px;top:50%;transform:translateY(-50%);
+    font-size:9px;color:var(--sub);pointer-events:none;line-height:1}
+  [dir="rtl"] .sel select{padding:6px 9px 6px 18px}
+  [dir="rtl"] .sel::after{right:auto;left:7px}
+
+  .fchips{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+  .ftrig{display:flex;align-items:center;gap:10px;padding:12px 18px 0;flex-shrink:0}
+  .fbtn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);
+    border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:600;color:var(--ink);cursor:pointer;
+    font-family:inherit;transition:border-color .12s}
+  .fbtn:hover{border-color:#CFCCC5}
+  .fbtn .fi{font-size:11px;color:var(--sub)}
+  .fbadge{background:var(--green);color:#fff;font-size:9.5px;font-weight:600;border-radius:8px;
+    padding:1px 6px;min-width:16px;text-align:center}
+  .fsum{font-size:11px;color:var(--green);font-weight:500}
+  .rcpt{margin-top:2px;width:100%;max-width:280px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:16px 18px}
+  .rc-amt{font-size:30px;font-weight:600;color:#fff;letter-spacing:-.01em}
+  .rc-rows{margin-top:12px;border-top:1px solid rgba(255,255,255,.14);padding-top:4px}
+  .rc-r{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;color:#9DBBAC}
+  .rc-r b{color:#fff;font-weight:600}
+  .rc-note{margin-top:10px;font-size:10.5px;color:#9DBBAC}
+  .mailrc{display:flex;gap:8px;margin-top:14px;width:100%;max-width:280px;
+    margin-left:auto;margin-right:auto}
+  .mailin{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:9px;color:#fff;padding:13px 14px;font-family:inherit;font-size:15px}
+  .mailin::placeholder{color:rgba(255,255,255,.45)}
+  .mailin:focus{outline:none;border-color:rgba(255,255,255,.4)}
+  .mailbtn{border:1px solid rgba(255,255,255,.25);background:none;color:#fff;border-radius:9px;
+    width:46px;flex-shrink:0;font-size:16px;line-height:1;cursor:pointer;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s ease,transform .12s var(--ease)}
+  .mailbtn:hover{background:rgba(255,255,255,.1)}
+  .mailbtn.sent{background:rgba(255,255,255,.18);border-color:transparent;cursor:default}
+  .consents{width:100%;max-width:280px;margin:10px auto 0;display:flex;flex-direction:column;gap:6px;
+    text-align:left}
+  .consents label{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#CBDDD2;cursor:pointer}
+  .consents input{accent-color:var(--gold);width:14px;height:14px;margin:0}
+  .consents.done{opacity:.55;pointer-events:none}
+  .mailin:disabled{opacity:.75}
+  .mailbtn:active{transform:scale(.96)}
+  .rate-wrap{margin-top:20px}
+  .rate-q{font-size:13px;font-weight:600;color:#fff}
+  .dstars{display:flex;gap:10px;justify-content:center;margin-top:10px}
+  .dstars .star{font-size:30px;color:rgba(255,255,255,.3)}
+  .dstars .star.on{color:var(--gold)}
+  /* pointing at star n lights 1..n — gold up to the cursor, dim after it */
+  @media (hover:hover) and (pointer:fine){
+    .dstars:hover .star{color:var(--gold-lt)}
+    .dstars .star:hover ~ .star{color:rgba(255,255,255,.3)}
+  }
+  .linky{margin-top:12px;text-align:center;font-size:11px;color:var(--sub);text-decoration:underline;
+    cursor:pointer}
+  .sim-note{margin-top:12px;text-align:center;font-size:10px;color:var(--faint);line-height:1.5}
+  .wh-mark{width:64px;height:38px;border-radius:9px;background:#E4002B;color:#fff;font-weight:700;
+    font-size:13px;display:flex;align-items:center;justify-content:center;margin:2px auto 12px}
+  .wh-steps{display:flex;gap:8px;margin:16px 0}
+  .wh-s{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 4px;
+    font-size:10.5px;color:var(--sub)}
+  .wh-s b{display:block;color:var(--green);font-size:12px;margin-bottom:3px}
+  .cardhead{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .cardhead .lock{font-size:12px}
+  .cardby{margin-left:auto;font-size:10px;color:var(--faint);font-weight:500;letter-spacing:.04em}
+  .fldc{margin-top:12px}
+  .lbc{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub);margin-bottom:5px}
+  .inc{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px;font-size:14px;
+    font-family:inherit;background:var(--surface);font-feature-settings:'tnum'}
+  .inc:focus{outline:none;border-color:var(--green)}
+  .rowc{display:flex;gap:9px}
+  .rowc .fldc{flex:1}
+  .r-paid{opacity:.5}
+  .r-paid .p{text-decoration:line-through}
+  .paidtag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:.04em;color:var(--green);
+    background:var(--green-bg);border-radius:5px;padding:1px 6px;margin-left:6px;text-decoration:none}
+  .pl.dis{opacity:.45;pointer-events:none}
+  .fc{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;
+    font-size:11px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .fc.on{background:var(--green-bg);border-color:var(--green-line);color:var(--green);font-weight:600}
+  .fbar{display:none;align-items:center;gap:9px;margin:10px 18px 0;padding:8px 11px;border-radius:8px;
+    background:var(--green-bg);border:1px solid var(--green-line);font-size:11.5px;color:var(--green);font-weight:500}
+  .fbar.on{display:flex}
+  .fbar .cnt{font-size:13px;font-weight:600}
+  .fbar .clr{margin-inline-start:auto;background:none;border:none;color:var(--green);font-size:11px;
+    font-weight:600;cursor:pointer;text-decoration:underline;font-family:inherit}
+
+  .cats{display:flex;gap:16px;overflow-x:auto;padding:12px 18px 0;scrollbar-width:none;flex-shrink:0;
+    border-bottom:1px solid var(--line);position:relative}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{flex-shrink:0;background:none;border:none;font-family:inherit;font-size:12.5px;font-weight:500;
+    color:var(--sub);padding:0 1px 9px;cursor:pointer}
+  .cat.on{color:var(--ink);font-weight:600}
+  #ink{position:absolute;bottom:-1px;height:2px;background:var(--green);border-radius:1px;
+    transition:left .25s ease,width .25s ease}
+
+  .sect-h{display:flex;align-items:center;gap:10px;padding:18px 18px 8px;
+    font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);
+    background:var(--surface)}
+  .sect-h::after{content:'';flex:1;height:1px;background:var(--line-soft)}
+  .sect-h:first-child{padding-top:12px}
+
+  .mi{display:flex;align-items:flex-start;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line-soft);
+    cursor:pointer;transition:background .12s,opacity .2s}
+  .mi:last-child{border-bottom:none}
+  .mi:hover{background:var(--bg)}
+  .mi:hover .more{color:var(--green)}
+  .mi.dim{opacity:.4}
+  .mi.dim .mp{color:var(--sub)}
+  .mi .tx{flex:1;min-width:0}
+  .mi .mn{font-size:13.5px;font-weight:600;line-height:1.35}
+  .mi .md{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
+  .mi .mp{font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;padding-top:1px}
+  .more{display:flex;align-items:center;gap:4px;margin-top:7px;font-size:10.5px;font-weight:500;
+    color:var(--faint);transition:color .12s;width:fit-content}
+  .more .ch{font-size:11px;line-height:1}
+  [dir="rtl"] .more .ch{transform:scaleX(-1)}
+  .why{display:none;align-items:center;gap:5px;margin-top:7px;font-size:10px;font-weight:600;
+    color:var(--red);background:var(--red-bg);border:1px solid #EAD2CF;border-radius:6px;
+    padding:3px 7px;width:fit-content}
+  .mi.dim .why{display:inline-flex}
+  .why .x{font-size:8px;opacity:.8}
+  .mi.swap .mn,.mi.swap .md,.mi.swap .mp,.mi.swap .more{opacity:.55}
+  .mi.swap .why{display:inline-flex;color:var(--green);background:var(--green-bg);
+    border-color:var(--green-line)}
+  .mi.swap .why .x{display:none}
+  .mi.swap .why::before{content:'\2713';font-size:9px}
+  /* no ingredient record, or not confirmed: neutral, never a red warning */
+  .mi.unk{opacity:.55}
+  .mi.unk .why{display:inline-flex;color:var(--sub);background:var(--bg);border-color:var(--line)}
+  .mi.unk .why .x{display:none}
+  /* 86'd: still listed so the table sees the same menu, just not orderable */
+  .mi.out{opacity:.5}
+  .soldout{display:inline-block;margin-inline-start:6px;font-size:9.5px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--sub);background:var(--bg);border:1px solid var(--line);
+    border-radius:5px;padding:1px 6px;vertical-align:middle;line-height:1.5}
+  #i-out{margin:10px 0 0;margin-inline-start:0}
+  .disc{font-size:10.5px;color:var(--faint);line-height:1.5;margin-top:8px}
+
+  .billpill{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:22;
+    background:var(--green);color:#fff;border:none;border-radius:10px;padding:12px 20px;
+    font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;
+    gap:10px;white-space:nowrap;box-shadow:0 6px 18px rgba(15,75,58,.3);transition:opacity .12s}
+  .billpill:active{opacity:.85}
+  .billpill .amt{color:var(--gold-lt)}
+
+  /* ── bill ── */
+  .b-body{padding:60px 18px 128px}
+  .b-title{font-size:17px;font-weight:600;text-align:center;letter-spacing:-.01em}
+  .b-sub{font-size:11.5px;color:var(--sub);text-align:center;margin-top:3px}
+  .receipt{background:var(--surface);border:1px solid var(--line);margin-top:16px;
+    padding:13px 16px 11px;border-radius:10px}
+  .receipt::before,.receipt::after{content:none}
+  .r-crest{text-align:center;font-size:9px;letter-spacing:.22em;color:var(--faint);font-weight:600;
+    padding-bottom:9px;border-bottom:1px dashed var(--line);margin-bottom:2px}
+  .r-item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;
+    border-bottom:1px solid var(--line-soft);font-size:12.5px}
+  .r-item:last-of-type{border-bottom:none}
+  .r-item .q{color:var(--sub);font-size:11px;margin-right:6px}
+  .r-item .p{font-weight:600}
+  .r-total{display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px 2px;
+    border-top:1px solid var(--ink);margin-top:6px}
+  .r-total .l{font-size:10.5px;letter-spacing:.1em;color:var(--sub);font-weight:600}
+  .r-total .a{font-size:24px;font-weight:600;letter-spacing:-.01em}
+  .r-ll{text-align:right;font-size:10.5px;color:var(--sub);padding:2px 2px 4px}
+  .hint{font-size:11.5px;color:var(--sub);margin-top:11px;line-height:1.55;text-align:center}
+
+  /* ── settle ── */
+  .seg{display:flex;background:var(--line-soft);border-radius:9px;padding:3px;margin-top:16px}
+  .seg button{flex:1;border:none;background:transparent;border-radius:7px;padding:9px 4px;font-size:12px;
+    font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,color .15s,transform .15s,box-shadow .15s,opacity .15s}
+  .seg button.on{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(23,29,26,.08)}
+  .amtbox{display:flex;align-items:center;gap:8px;margin-top:14px;background:var(--surface);
+    border:1px solid var(--line);border-radius:10px;padding:6px 14px}
+  .amtbox:focus-within{border-color:var(--green)}
+  .acur{font-size:20px;font-weight:600;color:var(--sub)}
+  .amtin{flex:1;min-width:0;border:none;background:none;outline:none;font-family:inherit;
+    font-size:24px;font-weight:600;color:var(--ink);padding:8px 0;font-feature-settings:'tnum'}
+  .ppl{display:flex;align-items:center;justify-content:space-between;margin-top:14px;
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px}
+  .ppl .lab{font-size:12.5px;font-weight:600}
+  .stp{display:flex;align-items:center;gap:14px}
+  .stp button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--surface);
+    font-size:15px;cursor:pointer;color:var(--ink);font-family:inherit}
+  .stp button:active{background:var(--bg)}
+  .stp .n{font-size:17px;font-weight:600;min-width:22px;text-align:center}
+  .share{margin-top:14px;text-align:center;background:var(--green-bg);border:1px solid var(--green-line);
+    border-radius:10px;padding:18px 14px}
+  .share .k{font-size:10px;color:var(--green);font-weight:600;letter-spacing:.08em}
+  .share .v{font-size:34px;font-weight:600;color:var(--green);margin-top:6px;letter-spacing:-.01em}
+  .share .ll{font-size:10.5px;color:var(--green);opacity:.75;margin-top:4px}
+  .picklist{margin-top:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .pl{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line-soft);
+    cursor:pointer;font-size:12.5px;transition:background .12s}
+  .pl:last-child{border-bottom:none}
+  .pl.on{background:var(--green-bg)}
+  .pl .cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .pl.on .cb{background:var(--green);border-color:var(--green)}
+  .pl .nm{flex:1}
+  .pl .pr{font-weight:600}
+  .pl .st{display:none;align-items:center;gap:5px;margin-inline-start:8px;vertical-align:middle}
+  .pl.on .st{display:inline-flex}
+  .sb{width:21px;height:21px;border-radius:6px;border:1px solid var(--green-line);background:var(--surface);
+    color:var(--green);font-size:12px;line-height:1;cursor:pointer;font-family:inherit;padding:0;
+    transition:transform .12s var(--ease),background .12s ease}
+  .sb:active{transform:scale(.92)}
+  .sn{font-size:10px;font-weight:600;color:var(--green);min-width:40px;text-align:center;
+    font-feature-settings:'tnum'}
+
+  /* ── pay ── */
+  .amt{text-align:center}
+  .amt .who{font-size:11.5px;color:var(--sub);margin-bottom:7px}
+  .amt .big{font-size:40px;font-weight:600;letter-spacing:-.02em}
+  .amt .ll{font-size:11px;color:var(--sub);margin-top:6px}
+  .tipwrap{margin-top:20px}
+  .tiphead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .tiphead .l{font-size:12.5px;font-weight:600}
+  .tiphead .r{font-size:11px;color:var(--green);font-weight:500}
+  .tips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .tipb{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 2px;
+    cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .tipb .tp{font-weight:600;font-size:13px}
+  .tipb .tv{font-size:10px;color:var(--sub);margin-top:2px}
+  .tipb.on{border-color:var(--green-line);background:var(--green-bg)}
+  .tipcw{display:flex;align-items:center;gap:7px;margin-top:8px;background:var(--surface);
+    border:1px solid var(--line);border-radius:8px;padding:2px 12px}
+  .tipcw:focus-within{border-color:var(--green)}
+  .tipb.on .tp{color:var(--green)}
+  .pays{margin-top:18px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+  .pm{display:flex;align-items:center;gap:11px;padding:12px 13px;cursor:pointer;
+    border-bottom:1px solid var(--line-soft);transition:background .12s}
+  .pm:last-child{border-bottom:none}
+  .pm.on{background:var(--green-bg)}
+  .mark{width:36px;height:23px;border-radius:5px;display:flex;align-items:center;justify-content:center;
+    font-size:8px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.02em}
+  .pm .pn{font-size:12.5px;font-weight:600}
+  .pm .pd{font-size:10.5px;color:var(--sub);margin-top:1px}
+  .radio{margin-left:auto;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);
+    flex-shrink:0;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .pm.on .radio{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px var(--surface)}
+  .cashnote{background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:8px;
+    padding:10px 12px;font-size:11px;color:var(--amber);margin-top:10px;line-height:1.55;display:none}
+  .cashnote b{font-weight:600}
+  .chg{display:none;margin-top:10px;border:1px solid var(--amber-line);background:var(--amber-bg);
+    border-radius:10px;padding:13px 12px}
+  .chg.on{display:block;animation:rise .22s var(--ease)}
+  .chg-q{font-size:12px;font-weight:600;color:var(--amber);margin-bottom:8px}
+  .chg-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .chip{border:1px solid var(--amber-line);background:var(--surface);border-radius:7px;padding:9px 2px;
+    cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--amber);transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .chip.on{background:var(--green);border-color:var(--green);color:#fff}
+  .chg-sub{font-size:10.5px;color:var(--amber);margin:11px 0 6px;font-weight:600}
+  .cur{display:flex;gap:6px}
+  .curb{flex:1;border:1px solid var(--amber-line);background:var(--surface);border-radius:7px;padding:8px 2px;
+    cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;color:var(--amber);transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .curb.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+  .chg-out{margin-top:12px;padding-top:11px;border-top:1px dashed var(--amber-line);
+    font-size:12px;color:var(--amber);line-height:1.55}
+  .chg-out b{font-weight:600}
+
+  /* ── success — the venue's screen ── */
+  .done-inner{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--green-deep)}
+  .pat2{display:none} .vig{display:none}
+  .burst{display:none} .burst i{display:none}
+  .go .burst i{animation:none}
+  .done-body{position:relative;z-index:3;flex:1;overflow-y:auto;scrollbar-width:none;
+    padding:40px 24px 14px;display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;text-align:center;min-height:0}
+  .done-body>*{flex-shrink:0}
+  .done-body::-webkit-scrollbar{display:none}
+  .seal{width:74px;height:74px;flex:0 0 74px;border-radius:50%;background:#fff;color:var(--green);
+    display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:18px}
+  .seal::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(255,255,255,.25)}
+  .seal{position:relative}
+  .go .seal{animation:sealIn .35s var(--ease) both}
+  .go .rcpt{animation:rise .3s var(--ease) both;animation-delay:.12s}
+  .go .rate-wrap{animation:rise .3s var(--ease) both;animation-delay:.24s}
+  @keyframes sealIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+  .est2{font-size:9px;letter-spacing:.24em;color:#9DBBAC;margin-bottom:8px;text-transform:uppercase}
+  .shukran{font-family:'Amiri',serif;font-size:42px;font-weight:700;color:#fff;margin-bottom:2px}
+  .ar{font-size:20px;color:var(--gold-lt);direction:rtl;line-height:1.3;margin-bottom:13px}
+  .rule2{width:44px;height:1px;background:var(--gold);margin-bottom:14px;flex:0 0 auto}
+  .done-p{font-size:13px;color:#C9D8CF;line-height:1.7;max-width:270px;text-wrap:balance}
+  .done-p b{color:#fff;font-weight:600}
+  .twoup{margin-top:20px;width:100%;display:flex;flex-direction:column;gap:8px}
+  .offer{display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;
+    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:10px;
+    padding:12px;font-family:inherit;transition:background .12s}
+  .offer:active{background:rgba(255,255,255,.14)}
+  .offer:hover{background:rgba(255,255,255,.12)}
+  .offer .ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:14px;flex-shrink:0;background:rgba(255,255,255,.12);color:var(--gold-lt)}
+  .offer .ot{font-size:12.5px;font-weight:600;color:#fff}
+  .offer .os{font-size:10.5px;color:#9DBBAC;margin-top:2px}
+  .dock-dk{position:relative;z-index:6;flex:0 0 auto;padding:4px 24px 18px}
+
+  /* ── overlays ── */
+  .ov{position:absolute;inset:0;z-index:60;display:none;align-items:flex-end}
+  .ov.on{display:flex}
+  .ov .scrim{position:absolute;inset:0;background:rgba(23,29,26,.4)}
+  .sheet{position:relative;width:100%;background:var(--surface);border-radius:14px 14px 0 0;
+    border-top:1px solid var(--line);padding:16px 18px 20px;animation:up .4s var(--ease-drawer);
+    max-height:92%;overflow-y:auto;scrollbar-width:none}
+  .sheet::-webkit-scrollbar{display:none}
+  .ov .scrim{animation:scrimIn .25s var(--ease)}
+  .ov.closing .sheet{animation:down .22s var(--ease) forwards}
+  .ov.closing .scrim{animation:scrimOut .22s var(--ease) forwards}
+  @keyframes up{from{transform:translateY(100%)}to{transform:none}}
+  @keyframes down{from{transform:none}to{transform:translateY(100%)}}
+  @keyframes scrimIn{from{opacity:0}to{opacity:1}}
+  @keyframes scrimOut{from{opacity:1}to{opacity:0}}
+  .grab{width:34px;height:4px;border-radius:3px;background:var(--line);margin:0 auto 14px}
+  .sh-t{font-size:16px;font-weight:600;text-align:left;letter-spacing:-.01em}
+  .sh-s{font-size:12px;color:var(--sub);text-align:left;margin-top:5px;line-height:1.55}
+  [dir="rtl"] .sh-t,[dir="rtl"] .sh-s{text-align:right}
+  .idet .sh-t{font-size:20px;line-height:1.2;margin-top:2px}
+  .idet .sh-s{font-size:12.5px;margin-top:8px}
+  .idet .sh-t::after{content:'';display:block;width:38px;height:1.5px;background:var(--gold);
+    border-radius:1px;margin-top:11px}
+  [dir="rtl"] .idet .sh-t::after{margin-inline-start:0}
+  .idet .alrt{margin-top:13px}
+  .adds{margin-top:14px}
+  .i-price{display:flex;justify-content:space-between;align-items:center;margin-top:16px;
+    padding-top:14px;border-top:1px solid var(--line)}
+  .ipl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--sub)}
+  .ipv{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .opt-g{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--faint);margin:13px 0 3px}
+  .opt-g:first-child{margin-top:0}
+  .add .cb.rd{border-radius:50%;font-size:7px}
+  .add{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-soft);
+    cursor:pointer;font-size:13px}
+  .add:last-child{border-bottom:none}
+  .add .cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .add.on .cb{background:var(--green);border-color:var(--green)}
+  .add .an{flex:1}
+  .add .ap{color:var(--sub);font-size:12px}
+  .alrt{margin-top:12px;display:flex;gap:8px;align-items:flex-start;border-radius:8px;
+    padding:10px 11px;font-size:11px;line-height:1.55;border:1px solid}
+  .alrt b{color:inherit;font-weight:600}
+  .stars{display:flex;gap:8px;justify-content:center;margin:16px 0 4px}
+  .star{font-size:26px;color:var(--line);cursor:pointer;transition:color .12s ease}
+  .star.on{color:var(--amber)}
+  @media (hover:hover) and (pointer:fine){
+    .stars:hover .star{color:var(--amber)}
+    .stars .star:hover ~ .star{color:var(--line)}
+  }
+  .ta{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px;font-size:12.5px;
+    font-family:inherit;resize:none;height:88px;margin-top:12px;background:var(--surface)}
+  .ta:focus{outline:none;border-color:var(--green)}
+  .opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+  .opt{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 10px;
+    font-size:11px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
+  .opt.on{background:var(--green-bg);border-color:var(--green-line);color:var(--green);font-weight:600}
+
+  .switcher{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .sw{background:var(--surface);border:1px solid var(--line);color:var(--sub);border-radius:8px;
+    padding:7px 12px;font-size:11.5px;cursor:pointer;font-family:inherit;font-weight:500}
+  .sw:hover{border-color:#CFCCC5;color:var(--ink)}
+  .note-out{color:var(--sub);font-size:11.5px;text-align:center;margin-top:16px;max-width:600px;line-height:1.7}
+  .note-out b{color:var(--ink);font-weight:600}
+
+  #dstars button.star{background:none;border:0;padding:4px;min-width:44px;min-height:44px;font:inherit;font-size:28px;cursor:pointer}
+  body.receipt-mode{height:100vh;height:var(--app-height,100dvh);min-height:0;padding:0;overflow:hidden;justify-content:center;background:var(--green-deep)}
+  body.receipt-mode>.stage,body.receipt-mode>.switcher,body.receipt-mode>.note-out{display:none}
+  body.receipt-mode .phone{width:480px;max-width:100%;height:100%;min-height:0;max-height:none;border:0;border-radius:0;box-shadow:none;container-type:size;container-name:receipt}
+  .receipt-mode .done-body{padding:18px 20px 8px;justify-content:center;gap:8px;overflow-y:auto}
+  .receipt-mode .seal{width:36px;height:36px;flex:0 0 36px;font-size:21px;margin:0}
+  .receipt-mode .seal::after,.receipt-mode .est2,.receipt-mode .ar,.receipt-mode .rule2{display:none}
+  .receipt-mode .shukran{font-size:34px;line-height:1.1;margin:0}
+  .receipt-mode .rcpt{max-width:320px;margin:0;padding:10px 14px}
+  .receipt-mode .rc-amt{font-size:28px;line-height:1.2}
+  .receipt-mode .rc-rows{margin-top:6px;padding-top:3px}
+  .receipt-mode .rc-r{padding:3px 0;font-size:14px;gap:8px}
+  .receipt-mode .rc-note{font-size:12px;line-height:1.4;margin-top:5px}
+  .receipt-mode .mailrc{margin:2px 0 0;max-width:320px}
+  .receipt-mode .mailin{min-height:44px;padding:10px 12px;font-size:16px}
+  .receipt-mode .consents{max-width:320px;margin:0;gap:6px}
+  .receipt-mode .consents label{font-size:14px;line-height:1.35;min-height:24px}
+  .receipt-mode .consents input{width:18px;height:18px;flex-shrink:0}
+  .receipt-mode .rate-wrap{margin:4px 0 0}
+  .receipt-mode .rate-q{font-size:14px}
+  .receipt-mode .dstars{margin-top:3px;gap:6px}
+  .receipt-mode .dock-dk{padding:0 16px max(8px,env(safe-area-inset-bottom))}
+  .receipt-mode .powered{padding:0;font-size:12px}
+  .feedback-sheet{display:flex;flex-direction:column;gap:8px;padding:16px;max-height:100%;overflow-y:auto;border-radius:0}
+  .feedback-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .feedback-head .sh-t{font-size:18px;line-height:1.3}
+  .review-close{width:44px;height:44px;background:none;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:24px;cursor:pointer;flex-shrink:0}
+  .feedback-sheet .stars{margin:0;gap:4px}
+  .feedback-sheet .star{background:none;border:0;width:44px;height:44px;font-size:28px}
+  .feedback-label{font-size:14px;line-height:1.4;font-weight:600}
+  .feedback-label span{font-weight:400;color:var(--sub)}
+  .feedback-sheet .ta{margin:0;height:88px;min-height:48px;font-size:16px;flex-shrink:1}
+  .feedback-sheet select{width:100%;min-height:44px;padding:8px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+  .feedback-sheet .sh-s{margin:0;font-size:12px;line-height:1.4}
+  .feedback-sheet .cta{min-height:44px;padding:10px;font-size:16px;flex-shrink:0}
+  @container receipt (max-height:600px){
+    .receipt-mode .seal{display:none}
+    .receipt-mode .done-body{padding-top:12px;gap:6px}
+  }
+  @container receipt (max-height:500px){
+    .receipt-mode .done-body{padding:10px 16px 6px;gap:6px}
+    .receipt-mode .seal,.receipt-mode .rc-rows{display:none}
+    .receipt-mode .shukran{font-size:28px}
+    .feedback-sheet{padding:12px;gap:5px}
+    .feedback-sheet .stars,.feedback-sheet .feedback-label{display:none}
+    .feedback-sheet .ta{height:56px}
+  }
+  @container receipt (max-height:380px){
+    .receipt-mode .done-inner:has(.mailin:focus) .rate-wrap,.receipt-mode .done-inner:has(.mailin:focus) .shukran{display:none}
+  }
+  button:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+  /* legacy keyframes kept as no-ops for JS-toggled classes */
+  @keyframes pop{from{opacity:0}to{opacity:0}}
+  @keyframes stamp{from{opacity:1}to{opacity:1}}
+
+  /* Guest visual system: full-height app; scrolling stays within each task. */
+  :root{--sub:#58655E;--faint:#66736B}
+  body{padding:0;background:#EEF1EC}
+  .stage,.switcher,.note-out{display:none}
+  .phone{width:480px;max-width:100%;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:0 0 60px #173D2510}
+  .screen::before{content:'Preview · no money moves';position:absolute;inset:0 0 auto;height:28px;display:flex;align-items:center;justify-content:center;background:#EEF3ED;color:#43594D;font-size:12px;z-index:60}
+  .view{top:28px}
+  .scroll{min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
+  .back{width:44px;height:44px;font-size:20px;top:12px}
+  .cta{font-size:16px;min-height:48px}
+  .dock{padding:12px 20px max(16px,env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--surface) 16%)}
+  .hero{height:154px}
+  .crest{border:0;padding:12px}
+  .crest .est{font-size:11px;letter-spacing:.16em}
+  .crest .name{font-size:32px}
+  .crest .place{font-size:14px;color:#BDD0C4}
+  .crest .rule{margin-top:8px}
+  .land-body{flex:0 0 auto;padding:28px 24px 20px;overflow:visible}
+  #v-land{overflow-y:auto}
+  #v-land .dock{position:static;flex:0 0 auto;margin-top:auto;padding:12px 24px max(24px,env(safe-area-inset-bottom));background:none}
+  .greet{font-size:32px}.tbl{font-size:14px;padding:7px 12px}
+  .note{font-size:16px;line-height:1.6}
+  .powered{font-size:12px}
+  .m-head{padding:16px 170px 0 68px;min-height:72px}
+  .m-head .vn{font-size:23px;line-height:1.2}.m-head .vs{font-size:13px;line-height:1.4;margin-top:4px}
+  .sels{top:12px;gap:6px}.sel select{min-height:44px;font-size:14px;padding:8px 23px 8px 10px}
+  .sel::after{font-size:11px}
+  .ftrig{padding:12px 20px 0}.fbtn,.fc{font-size:14px;min-height:40px}.fbtn .fi{font-size:15px}
+  .cats{padding:8px 20px 0;gap:20px}.cat{min-height:44px;font-size:14px;padding:8px 0}
+  .sect-h{font-size:12px;color:var(--green);padding:24px 20px 10px;letter-spacing:.06em}
+  .mi{padding:18px 20px;gap:12px;align-items:flex-start;position:relative}
+  .mi .tx{min-width:0;flex:1}.mi .mn{font-size:16px;line-height:1.35;font-weight:600}
+  .mi .md{font-size:14px;line-height:1.5;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .mi .mp{font-size:16px;white-space:nowrap}.mi .more{display:none}
+  .mi .item-end{display:flex;align-items:center;gap:10px}.details-arrow{font-size:22px;color:var(--green);line-height:1}
+  .menu-photo{width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;background:var(--green-bg)}
+  .mi:focus-visible,.pm:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--green);outline-offset:-3px}
+  .seg button{font-size:14px;min-height:48px}.ppl .lab{font-size:15px}
+  .stp button,.sb{min-width:44px;width:44px;height:44px;font-size:18px}.sn{font-size:13px;min-width:36px}
+  .pl{font-size:15px;flex-wrap:wrap}.pl .st{gap:6px}.share .k{font-size:13px}.share .ll{font-size:14px;opacity:1}
+  .hint{font-size:14px;line-height:1.55}.amt .who{font-size:14px;color:var(--green);font-weight:600}
+  .amt .big{font-size:44px}.amt .ll{font-size:14px}
+  #v-pay>.scroll{padding:76px 20px 128px!important}
+  .pay-breakdown{margin:18px auto 0;padding:12px 16px;border-radius:12px;background:var(--green-bg);display:flex;justify-content:space-between;gap:12px;text-align:start;font-size:14px}
+  .pay-breakdown span{display:flex;flex-direction:column;gap:4px;color:var(--sub)}.pay-breakdown b{color:var(--ink);font-size:16px}
+  .tiphead .l{font-size:15px}.tipb{min-height:58px}.tipb .tp{font-size:15px}.tipb .tv{font-size:12px}
+  .pm{min-height:72px}.pm .pn{font-size:16px}.pm .pd{font-size:13px;line-height:1.4;margin-top:3px}
+  .chg-q,.cashnote,.chg-out{font-size:14px;line-height:1.5}.chip{min-height:44px;font-size:15px}
+  .sheet .ss,.sim-note,.wh-s,.hint,.inc{font-size:14px}.inc{font-size:16px;min-height:44px}
+  .receipt-mode .screen::before{display:none}.receipt-mode .view{top:0}
+  .receipt-mode .mailin{border-color:#789C88;background:#204F3E;padding-inline:10px}
+  .receipt-mode .mailin::placeholder{color:#CEE0D4;opacity:1}
+  .receipt-mode .mailbtn{width:96px;padding:6px 10px;min-width:96px;font-size:14px;line-height:1.2;font-weight:600;border-color:#789C88}
+  .receipt-mode .consents{gap:8px}.receipt-mode .consents label{align-items:flex-start;text-align:start;gap:9px}
+  .receipt-mode .consents input{margin-top:1px}.receipt-mode .rc-r,.receipt-mode .rc-note{color:#C5D8CB}
+  .receipt-mode .mailin:focus-visible,.receipt-mode .mailbtn:focus-visible,.receipt-mode .star:focus-visible{outline:2px solid #F0DFA8;outline-offset:2px}
+  @media(max-width:380px){.m-head{padding-inline-end:20px;padding-top:66px}.sels{inset-inline-end:16px}.mi{gap:8px;padding-inline:16px}.menu-photo{width:48px;height:48px}.mi .item-end{gap:5px}.seg button{font-size:13px}}
+  @container receipt (max-height:600px){.receipt-mode .consents{gap:6px}}
+
+  .b-title{font-size:23px;line-height:1.3}.b-sub{font-size:14px;margin-top:5px}.r-crest{font-size:12px;letter-spacing:.1em}.r-item{font-size:15px;line-height:1.45;padding:13px 0}.r-item .q{font-size:14px}.r-item .p{white-space:nowrap}.r-total .l{font-size:12px;letter-spacing:.04em}.r-total .a{font-size:28px}.r-ll{font-size:14px}.billpill{font-size:15px;min-height:48px}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="t">aalay<b>na</b> &times; <span id="v-name-stage">Hallab 1881</span></div>
+  <div class="s">Interactive demo · sample data · no money moves</div>
+  <p style="font-size:14px;margin:12px 0"><a href="index.html">Back to website</a> · <a id="staff-demo" href="dashboard.html" target="_blank" rel="noopener">Open staff demo</a></p>
+</div>
+<div class="phone"><div class="screen">
+  <!-- ================= 1. LANDING ================= -->
+  <div class="view on" id="v-land">
+    <div class="hero">
+      <div class="pat"></div>
+      <div class="crest">
+        <div class="est" id="v-est">EST. 1881 &middot; TRIPOLI</div>
+        <div class="name" id="v-name-crest">Hallab 1881</div>
+        <div class="place" id="v-place">Kasr El Helou &middot; Riad El Solh Street</div>
+        <div class="rule"></div>
+      </div>
+    </div>
+    <div class="land-body">
+      <div class="greet">Ahla w sahla</div>
+      <div class="tbl"><span class="dot"></span>Table 12 &middot; sample bill</div>
+      <div class="note">
+        Explore the menu. When you’re ready, split the bill your way and pay from your table.
+      </div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" onclick="go('v-menu')"><span class="sheen"></span>See the menu</button>
+      <button class="cta cta-line" onclick="go('v-bill')">Open the bill &middot; <b id="land-tot">$152.50</b></button>
+      <div class="powered">powered by <b>Aalayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 2. MENU ================= -->
+  <div class="view" id="v-menu">
+    <button class="back" onclick="go('v-land')">&#8592;</button>
+    <div class="m-head">
+      <div class="vn" id="v-name-menu">Hallab 1881</div>
+      <div class="vs" id="m-sub">Table 12 &middot; Kasr El Helou</div>
+    </div>
+    <div class="sels">
+      <div class="sel"><select id="langsel" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">EN</option><option value="fr">FR</option><option value="ar">AR</option>
+      </select></div>
+      <div class="sel"><select id="ccysel" onchange="setCcy(this.value)" aria-label="Currency">
+        <option value="usd">USD $</option><option value="lbp">LBP&nbsp;LL</option>
+      </select></div>
+    </div>
+    <div class="ftrig" id="ftrig">
+      <button class="fbtn" onclick="openOv('ov-filters')">
+        <span class="fi">&#9776;</span> Dietary filters
+        <span class="fbadge" id="fbadge" style="display:none">0</span>
+      </button>
+      <span class="fsum" id="fsum"></span>
+    </div>
+    <div class="cats" id="cats"><span id="ink"></span></div>
+    <div class="scroll" id="menuscroll" style="padding-bottom:96px"></div>
+    <button class="billpill" onclick="go('v-bill')">Open the bill <span class="amt" id="pill-tot">$152.50</span></button>
+  </div>
+  <!-- ================= 3. BILL ================= -->
+  <div class="view" id="v-bill">
+    <button class="back" onclick="go('v-menu')">&#8592;</button>
+    <div class="scroll b-body">
+      <div class="b-title">Table 12</div>
+      <div class="b-sub">4 guests &middot; opened 8:42 pm</div>
+      <div class="receipt">
+        <div class="r-crest" id="v-name-receipt">HALLAB 1881</div>
+        <div id="r-items"></div>
+        <div class="r-total"><div class="l">TOTAL</div><div class="a" id="r-tot">$152.50</div></div>
+        <div class="r-ll" id="r-ll">&asymp; LL 13,633,500</div>
+      </div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" onclick="go('v-settle')"><span class="sheen"></span>Settle my share</button>
+      <div class="powered">powered by <b>Aalayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 4. SETTLE ================= -->
+  <div class="view" id="v-settle">
+    <button class="back" onclick="go('v-bill')">&#8592;</button>
+    <div class="scroll b-body">
+      <div class="b-title">How are we doing this?</div>
+      <div class="b-sub">Nobody has to work out the maths</div>
+      <div class="seg">
+        <button id="s-even" class="on" onclick="mode('even')">Evenly</button>
+        <button id="s-item" onclick="mode('item')">My items</button>
+        <button id="s-amt" onclick="mode('amt')">Custom amount</button>
+        <button id="s-all" onclick="mode('all')">All of it</button>
+      </div>
+      <div id="evenwrap">
+        <div class="ppl">
+          <div class="lab">How many of you?</div>
+          <div class="stp">
+            <button onclick="ppl(-1)">&minus;</button>
+            <div class="n" id="pn">4</div>
+            <button onclick="ppl(1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div id="itemwrap" style="display:none">
+        <div class="picklist" id="picklist"></div>
+        <div class="hint">Tap what was yours. The rest stays on the table for the others.</div>
+      </div>
+      <div id="amtwrap" style="display:none">
+        <div class="amtbox">
+          <span class="acur">$</span>
+          <input class="amtin" id="amt-in" inputmode="decimal" placeholder="0.00" oninput="calcShare()">
+        </div>
+        <div class="hint" id="amt-hint"></div>
+      </div>
+      <div class="share">
+        <div class="k">YOUR SHARE</div>
+        <div class="v" id="sh-v">$38.13</div>
+        <div class="ll" id="sh-ll">&asymp; LL 3,408,522</div>
+      </div>
+      <div class="hint" id="restnote">$114.37 left for the other three. They'll see it update live.</div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" id="continue-btn" onclick="go('v-pay')"><span class="sheen"></span>Continue &middot; $38.13</button>
+      <div class="powered">powered by <b>Aalayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 5. PAY ================= -->
+  <div class="view" id="v-pay">
+    <button class="back" onclick="go('v-settle')">&#8592;</button>
+    <div class="scroll" style="padding:88px 20px 130px">
+      <div class="amt">
+        <div class="who">Total to pay &middot; Table 12</div>
+        <div class="display big" id="bigamt">$38.13</div>
+        <div class="ll" id="bigll">&asymp; LL 3,408,522</div>
+        <div class="pay-breakdown"><span>Bill share<b id="pay-share">$38.13</b></span><span>Tip<b id="pay-tip">$3.81</b></span></div>
+      </div>
+      <div class="tipwrap">
+        <div class="tiphead">
+          <div class="l" id="tip-who">Something for Abou Karim?</div>
+        </div>
+        <div class="tips">
+          <button class="tipb" onclick="setTip(this,0)"><div class="tp">No tip</div><div class="tv">&nbsp;</div></button>
+          <button class="tipb" onclick="setTip(this,.05)"><div class="tp">5%</div><div class="tv" id="tv5">$1.91</div></button>
+          <button class="tipb on" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
+          <button class="tipb" onclick="setTip(this,.15)"><div class="tp">15%</div><div class="tv" id="tv15">$5.72</div></button>
+          <button class="tipb" id="tipb-c" onclick="tipCustom(this)"><div class="tp">Other</div><div class="tv">&nbsp;</div></button>
+        </div>
+        <div class="tipcw" id="tipcw" style="display:none">
+          <span class="acur" style="font-size:15px">$</span>
+          <input class="amtin" id="tip-in" style="font-size:17px;padding:6px 0" inputmode="decimal"
+            placeholder="0.00" oninput="tipTyped()">
+        </div>
+      </div>
+      <div class="pays">
+        <div class="pm on" role="button" tabindex="0" aria-pressed="true" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'whish')">
+          <div class="mark" style="background:#E4002B">whish</div>
+          <div><div class="pn">Whish Money</div><div class="pd">Opens with the amount filled in</div></div>
+          <div class="radio"></div>
+        </div>
+        <div class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'card')">
+          <div class="mark" style="background:#1A1F71">VISA</div>
+          <div><div class="pn">Card</div><div class="pd">Visa, Mastercard, Amex</div></div>
+          <div class="radio"></div>
+        </div>
+        <div class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'cash')">
+          <div class="mark" style="background:#3F8F6B">CASH</div>
+          <div><div class="pn">Paying cash</div><div class="pd">Staff confirm after collection</div></div>
+          <div class="radio"></div>
+        </div>
+      </div>
+      <div class="chg" id="chg">
+        <div class="chg-q">What are you handing over?</div>
+        <div class="chg-row">
+          <button class="chip" onclick="setNote(this,20)">$20</button>
+          <button class="chip" onclick="setNote(this,50)">$50</button>
+          <button class="chip" onclick="setNote(this,100)">$100</button>
+          <button class="chip" onclick="setNote(this,0)">Exact</button>
+        </div>
+        <div class="chg-out" id="chgout">Your server comes <b>once</b>, with your change already counted.</div>
+      </div>
+      <div class="cashnote" id="cashnote">
+        Your cash request stays <b>awaiting collection</b> until staff confirm it. Please wait for your server before leaving.
+      </div>
+    </div>
+    <div class="dock">
+      <button class="cta cta-green" id="paybtn" onclick="settle()"><span class="sheen"></span>Pay $41.94</button>
+      <div class="powered">powered by <b>Aalayna</b></div>
+    </div>
+  </div>
+  <!-- ================= 6. SUCCESS ================= -->
+  <div class="view" id="v-done">
+    <div class="done-inner" id="inner">
+      <div class="pat2"></div><div class="burst" id="burst"></div><div class="vig"></div>
+      <div class="done-body">
+        <div class="seal" id="result-seal">&#10003;</div>
+        <div class="est2" id="v-est2">Est. 1881 &middot; Tripoli</div>
+        <h2 class="display shukran" id="result-title">Shukran.</h2>
+        <div class="ar">&#1588;&#1603;&#1585;&#1575;&#1611;</div>
+        <div class="rule2"></div>
+        <div class="rcpt">
+          <div class="rc-amt" id="rc-amt">$41.94</div>
+          <div class="rc-rows">
+            <div class="rc-r"><span id="method-label">Paid via</span><b id="rc-method">Whish Money</b></div>
+            <div class="rc-r"><span>Table</span><b>12</b></div>
+          </div>
+          <div class="rc-note" id="payment-status" role="status" aria-live="polite">Demo payment confirmed</div>
+        </div>
+
+        <div class="mailrc" id="mailrc">
+          <input class="mailin" id="mail-in" type="text" inputmode="text"
+            placeholder="WhatsApp (+code) or email" aria-label="Optional WhatsApp number with any country code, or email">
+          <button class="mailbtn" onclick="sendReceipt()">Send my receipt</button>
+        </div>
+        <div class="consents" id="consents">
+          <label><input type="checkbox" id="c-mkt"><span>Send me offers from <span id="offers-venue">Hallab 1881</span></span></label>
+        </div>
+
+
+        <div class="rate-wrap" id="feedback-options">
+          <div class="rate-q">How was <span class="v-short">Hallab</span> tonight?</div>
+          <div class="dstars" id="dstars" role="group" aria-label="Your rating">
+            <button type="button" class="star" aria-label="1 star" aria-pressed="false" onclick="rate(1)">&#9733;</button><button type="button" class="star" aria-label="2 stars" aria-pressed="false" onclick="rate(2)">&#9733;</button>
+            <button type="button" class="star" aria-label="3 stars" aria-pressed="false" onclick="rate(3)">&#9733;</button><button type="button" class="star" aria-label="4 stars" aria-pressed="false" onclick="rate(4)">&#9733;</button><button type="button" class="star" aria-label="5 stars" aria-pressed="false" onclick="rate(5)">&#9733;</button>
+          </div>
+
+        </div>
+      </div>
+      <div class="dock-dk">
+        <div class="powered dk">powered by <b>Aalayna</b></div>
+      </div>
+    </div>
+  </div>
+  <!-- ============ OVERLAY: item detail ============ -->
+  <div class="ov" id="ov-item">
+    <div class="scrim" onclick="closeOv('ov-item')"></div>
+    <div class="sheet idet">
+      <div class="grab"></div>
+      <div class="sh-t" id="i-name">Mixed Grill platter</div>
+      <div class="sh-s" id="i-desc">Kabab, shish taouk, lamb chops, fries</div>
+      <div class="soldout" id="i-out" style="display:none">Sold out</div>
+      <div class="alrt" id="i-alrt"></div>
+      <div class="disc" id="i-disc">Always confirm allergies with staff.</div>
+      <div class="adds" id="i-adds"></div>
+      <div class="i-price"><span class="ipl">Price as selected</span>
+        <span class="ipv" id="i-tot">$16.00</span></div>
+      <button class="cta cta-ghost" style="margin-top:10px" onclick="closeOv('ov-item')">Close</button>
+    </div>
+  </div>
+  <!-- One review panel for every rating. No rating-based destination routing. -->
+  <div class="ov" id="ov-review" role="dialog" aria-modal="true" aria-labelledby="review-title">
+    <div class="scrim" onclick="closeReview()"></div>
+    <div class="sheet feedback-sheet">
+      <div class="feedback-head"><h3 class="sh-t" id="review-title">Your review</h3><button class="review-close" type="button" aria-label="Close review" onclick="closeReview()">×</button></div>
+      <div class="stars" id="gstars" role="group" aria-label="Review rating">
+        <button type="button" class="star" aria-label="1 star" aria-pressed="false" onclick="setStar(1)">&#9733;</button><button type="button" class="star" aria-label="2 stars" aria-pressed="false" onclick="setStar(2)">&#9733;</button><button type="button" class="star" aria-label="3 stars" aria-pressed="false" onclick="setStar(3)">&#9733;</button><button type="button" class="star" aria-label="4 stars" aria-pressed="false" onclick="setStar(4)">&#9733;</button><button type="button" class="star" aria-label="5 stars" aria-pressed="false" onclick="setStar(5)">&#9733;</button>
+      </div>
+      <label class="feedback-label" for="review-text">Your feedback <span>(optional)</span></label>
+      <textarea class="ta" id="review-text" aria-label="Your feedback (optional)" maxlength="1000" placeholder="How was your visit?"></textarea>
+      <label class="feedback-label" for="review-destination">Share with</label>
+      <select id="review-destination" aria-label="Share feedback with" onchange="paintReviewDestination()"><option value="google">Google · public review</option><option value="private">Restaurant · private feedback</option></select>
+      <p class="sh-s" id="review-status" role="status" aria-live="polite">Prototype only — no review or feedback is sent.</p>
+      <button class="cta cta-green" id="review-submit" type="button" onclick="submitReview()">Continue to Google</button>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: dietary filters ============ -->
+  <div class="ov" id="ov-filters">
+    <div class="scrim" onclick="closeOv('ov-filters')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="sh-t">Dietary filters</div>
+      <div class="sh-s">Dishes that don't fit stay visible but fade, with the reason shown.</div>
+      <div class="fchips" style="padding:14px 0 0">
+        <button class="fc" id="f-veg" onclick="togF('veg')">Vegetarian</button>
+        <button class="fc" id="f-nonuts" onclick="togF('nonuts')">No nuts</button>
+        <button class="fc" id="f-nodairy" onclick="togF('nodairy')">No dairy</button>
+        <button class="fc" id="f-light" onclick="togF('light')">Under 400 kcal</button>
+        <button class="fc" id="f-protein" onclick="togF('protein')">High protein</button>
+      </div>
+      <div class="fbar" id="fbar">
+        <span class="cnt" id="fcount">16</span>
+        <span id="fmsg">of 16 dishes work for you</span>
+        <button class="clr" id="fclear" onclick="clearF()">Clear</button>
+      </div>
+      <div class="disc" id="f-disc" style="margin:10px 18px 0">Always confirm allergies with staff.</div>
+      <button class="cta cta-green" style="margin-top:16px" onclick="closeOv('ov-filters')">Done</button>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: Whish handoff (simulated) ============ -->
+  <div class="ov" id="ov-whish">
+    <div class="scrim"></div>
+    <div class="sheet" style="text-align:center">
+      <div class="grab"></div>
+      <div class="wh-mark">whish</div>
+      <div class="sh-t" style="text-align:center" id="wh-amt">Pay $41.94</div>
+      <div class="sh-s" style="text-align:center">The Whish app opens with the amount and reference
+        already filled in. Confirm there and you're brought straight back.</div>
+      <div class="wh-steps">
+        <div class="wh-s"><b>1</b> Whish opens</div>
+        <div class="wh-s"><b>2</b> You confirm</div>
+        <div class="wh-s"><b>3</b> Table updates</div>
+      </div>
+      <button class="cta cta-green" id="wh-btn" onclick="whishConfirm()">Open Whish</button>
+      <button class="cta cta-ghost" onclick="cancelProvider('ov-whish')">Cancel</button>
+      <div class="sim-note">Simulated &mdash; in production this is a Whish deep link with a payment callback.</div>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: card checkout (simulated hosted page) ============ -->
+  <div class="ov" id="ov-card">
+    <div class="scrim"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <div class="cardhead"><span class="lock">&#128274;</span> Secure checkout
+        <span class="cardby">areeba &middot; simulated</span></div>
+      <div class="sh-s">This page is hosted by the venue's payment provider.
+        This is a simulated provider page. Use the sample details below.</div>
+      <div class="fldc"><div class="lbc">Card number</div>
+        <input class="inc" value="4242 4242 4242 4242" readonly aria-label="Sample card number"></div>
+      <div class="rowc">
+        <div class="fldc"><div class="lbc">Expiry</div><input class="inc" value="12 / 30" readonly aria-label="Sample expiry"></div>
+        <div class="fldc"><div class="lbc">CVC</div><input class="inc" value="123" readonly aria-label="Sample security code"></div>
+      </div>
+      <button class="cta cta-green" id="card-btn" style="margin-top:20px" onclick="cardConfirm()">Pay $41.94</button>
+      <button class="cta cta-ghost" onclick="cancelProvider('ov-card')">Cancel</button>
+      <div class="sim-note">Simulated &mdash; in production this is the gateway's hosted page (3-D Secure included).</div>
+    </div>
+  </div>
+</div></div>
+<div class="switcher">
+  <button class="sw" onclick="restart()">&#8635; Start over</button>
+  <button class="sw" onclick="go('v-menu')">Menu</button>
+  <button class="sw" onclick="go('v-bill')">Bill</button>
+  <button class="sw" onclick="go('v-settle')">Split</button>
+  <button class="sw" onclick="go('v-pay')">Pay</button>
+  <button class="sw" onclick="settle()">Thanks</button>
+  <button class="sw" id="covsw" onclick="toggleCoverage()">Menu not fully confirmed &rarr;</button>
+</div>
+<div class="note-out">
+  The venue owns every surface; Aalayna is the footer credit. <b>Change-ahead</b> lives under the
+  cash option. Public reviews and private feedback are offered equally, for every rating. Cash
+  requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
+</div>
+<script src="aalayna-store.js?v=18"></script>
+<script src="restaurant-growth.js?v=3"></script>
+<script src="analytics-config.js" defer></script>
+<script src="analytics.js" defer></script>
+<script>
+/* ---------------- data ---------------- */
+function RATE(){ return Aalayna.rate(); }
+/* ---- everything below is the PUBLISHED menu. Never the draft. ---- */
+var WINDOWS = {all:[0,1440], brkf:[420,690], lunch:[720,960], dinner:[1080,1410]};
+function serving(win){
+  var w = WINDOWS[win] || WINDOWS.all, d = new Date(), n = d.getHours()*60 + d.getMinutes();
+  return n >= w[0] && n < w[1];
+}
+var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
+var CHECK = null;
+function paidUnits(l){ return CHECK ? (Aalayna.checkBalance(CHECK.id).items[l.id] || 0) : 0; }
+function linePaid(l){ return paidUnits(l) >= l.q; }
+function remaining(){ return CHECK ? Aalayna.checkBalance(CHECK.id).availableCents / 100 : TOTAL; }
+function loadMenu(){
+  var m = Aalayna.published();
+  MENU_V = m.version;
+  // a section outside its service window is not on the guest's menu at all
+  CATS = m.sections.filter(function(x){ return serving(x.win); })
+                   .map(function(x){ return {id:x.id, label:x.name}; });
+  var live = {};
+  CATS.forEach(function(c){ live[c.id] = 1; });
+  // archived dishes are history, not menu; sold-out ones stay listed but dimmed
+  MENU = m.items.filter(function(x){ return live[x.sec] && !x.archivedAt; }).map(function(x){
+    return {id:x.id, c:x.sec, n:x.name, d:x.desc, p:x.price, imageUrl:x.imageUrl, ing:x.ing, al:x.al,
+            kcal:x.kcal, pr:x.pr, ft:x.ft, cb:x.cb, conf:x.conf,
+            available:x.available !== false, status:x.status || 'incomplete',
+            opts:x.opts||[], tr:x.tr};
+  });
+  BILL = Aalayna.check().map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
+  TOTAL = Aalayna.checkTotal();
+}
+loadMenu();
+
+/* Filters are PER DISH (spec section 8): a dish can be filtered only when it has an
+   ingredient record and the kitchen has confirmed it. Everything else stays on the
+   menu and, once a filter is on, is dimmed with a neutral "ask staff" reason.
+   DEMO_INCOMPLETE shows the state where nothing has been confirmed yet. */
+var DEMO_INCOMPLETE = false;
+function filterable(m){ return !DEMO_INCOMPLETE && m.status === 'complete' && !!m.conf; }
+function anyFilterable(){ return MENU.some(filterable); }
+
+/* Dietary flags are DERIVED from the ingredient record, never hand-tagged. */
+var MEAT = ['lamb','chicken','beef','lamb awarma','minced lamb'];
+/* A dish's own al/ing are its UNAVOIDABLE base. Option choices add on top:
+   the default view = base + the first choice of every pick-one group. Selecting
+   oat milk really does take the dairy out — the warning and filters follow. */
+function effDiet(m, sel){
+  var al = (m.al||[]).slice(), ing = (m.ing||[]).slice();
+  function add(c){
+    (c.al||[]).forEach(function(a){ if (al.indexOf(a) < 0) al.push(a); });
+    (c.ing||[]).forEach(function(i){ if (ing.indexOf(i) < 0) ing.push(i); });
+  }
+  (m.opts||[]).forEach(function(g, gi){
+    if (g.type === 'one'){
+      var c = g.choices[(sel && sel[gi]) || 0];
+      if (c) add(c);
+    } else if (sel && sel[gi]){
+      g.choices.forEach(function(c, ci){ if (sel[gi][ci]) add(c); });
+    }
+  });
+  return { al: al, ing: ing, kcal: m.kcal, pr: m.pr };
+}
+function isVeg(e){ return !(e.ing||[]).some(function(i){ return MEAT.indexOf(i) > -1; }); }
+function hasNuts(e){ return (e.al||[]).indexOf('nuts') > -1; }
+function hasDairy(e){ return (e.al||[]).indexOf('dairy') > -1; }
+function isLight(e){ return e.kcal != null && e.kcal <= 400; }
+function isHighP(e){ return e.pr != null && e.pr >= 20; }
+/* ---------------- i18n + currency ---------------- */
+var LANG = 'en', CCY = 'usd';
+var T = {
+  en:{filters:['Vegetarian','No nuts','No dairy','Under 400 kcal','High protein'],
+      cats:['Breakfast','Mezze & Grill','Knefeh & Sweets','Drinks'],
+      more:'For more details', of:'of', work:'dishes work for you', works:'dish works for you',
+      clear:'Clear', whatsin:"What's in it", table:'Table 12', sub:'Table 12 · Kasr El Helou',
+      rMeat:'has meat', rNuts:'contains nuts', rDairy:'contains dairy',
+      rSwap:'works with', rUnk:'ingredients not confirmed, ask staff', soldOut:'Sold out',
+      disc:'Always confirm allergies with staff.',
+      unkSheet:'Ingredient details are not confirmed for this dish. Please ask your server.',
+      rKcal:function(n){return 'over 400 kcal (' + n + ')'},
+      rProt:function(n){return 'only ' + n + 'g protein'}},
+  fr:{filters:['Végétarien','Sans noix','Sans lactose','Moins de 400 kcal','Riche en protéines'],
+      cats:['Petit-déjeuner','Mezzé & grillades','Knefeh & douceurs','Boissons'],
+      more:'Plus de détails', of:'sur', work:'plats vous conviennent', works:'plat vous convient',
+      clear:'Effacer', whatsin:'Composition', table:'Table 12', sub:'Table 12 · Kasr El Helou',
+      rMeat:'contient de la viande', rNuts:'contient des noix', rDairy:'contient du lactose',
+      rSwap:'possible avec', rUnk:'ingrédients non confirmés, demandez au personnel', soldOut:'Épuisé',
+      disc:'Confirmez toujours vos allergies auprès du personnel.',
+      unkSheet:'Les ingrédients de ce plat ne sont pas confirmés. Merci de demander à votre serveur.',
+      rKcal:function(n){return 'plus de 400 kcal (' + n + ')'},
+      rProt:function(n){return 'seulement ' + n + 'g de protéines'}},
+  ar:{filters:['نباتي','بدون مكسرات','بدون ألبان','أقل من ٤٠٠ سعرة','غني بالبروتين'],
+      cats:['فطور','مازة ومشاوي','كنافة وحلويات','مشروبات'],
+      more:'تفاصيل أكثر', of:'من', work:'أطباق تناسبك', works:'طبق يناسبك',
+      clear:'مسح', whatsin:'المكوّنات', table:'طاولة ١٢', sub:'طاولة ١٢ · قصر الحلو',
+      rMeat:'يحتوي على لحم', rNuts:'يحتوي على مكسرات', rDairy:'يحتوي على ألبان',
+      rSwap:'متاح مع', rUnk:'المكوّنات غير مؤكدة، اسأل الموظفين', soldOut:'نفد',
+      disc:'تأكّد دائماً من الحساسية مع الموظفين.',
+      unkSheet:'تفاصيل مكوّنات هذا الطبق غير مؤكدة. يُرجى سؤال النادل.',
+      rKcal:function(n){return 'أكثر من ٤٠٠ سعرة (' + n + ')'},
+      rProt:function(n){return 'بروتين قليل · ' + n + 'غ'}}
+};
+function t(k){ return T[LANG][k]; }
+function nameOf(m){
+  if (LANG === 'en') return m.n;
+  return (m.tr && m.tr[LANG] && m.tr[LANG].n) || m.n;   // English is the fallback
+}
+function descOf(m){
+  if (LANG === 'en') return m.d;
+  return (m.tr && m.tr[LANG] && m.tr[LANG].d) || m.d;
+}
+/* price display follows the currency toggle — the diner-facing half of the FX feature */
+function price(v){
+  if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE() / 1000) * 1000).toLocaleString('en-US');
+  return '$' + v.toFixed(2);
+}
+function setLang(v){ LANG = v; renderMenu(); }
+function setCcy(v){ CCY = v; renderMenu(); }
+function renderMenu(){
+  var m = $('v-menu');
+  m.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
+  $('langsel').value = LANG;
+  $('ccysel').value = CCY;
+  $('m-sub').textContent = t('sub');
+  $('pill-tot').textContent = price(TOTAL);
+  $('land-tot').textContent = price(TOTAL);
+  var f = t('filters');
+  ['veg','nonuts','nodairy','light','protein'].forEach(function(k,i){ $('f-'+k).textContent = f[i]; });
+  $('fclear').textContent = t('clear');
+  $('f-disc').textContent = t('disc');
+  buildCats(true);
+  buildMenu();
+  applyF();
+}
+/* ---------------- state ---------------- */
+var people = 4, splitMode = 'even', picked = {}, share = 0;
+var tipRate = .10, tipFlat = null, kind = 'whish', note = 0;
+function tipAmt(){ return Math.round((tipFlat != null ? tipFlat : share * tipRate) * 100) / 100; }
+var curItem = null, curSel = {}, rating = 0;
+/* ---------------- helpers ---------------- */
+function $(id){ return document.getElementById(id); }
+function usd(n){ return '$' + n.toFixed(2); }
+function ll(n){ return '≈ LL ' + Math.round(n * RATE()).toLocaleString('en-US'); }
+function go(id){
+  if ($('ov-review').classList.contains('on')) closeReview();
+  document.body.classList.toggle('receipt-mode', id === 'v-done');
+  syncReceiptViewport();
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('on'); });
+  $(id).classList.add('on');
+  if (id === 'v-bill' || id === 'v-settle') logBillRequested();
+  if (id === 'v-done') prefillReceipt();
+  if (id === 'v-pay') paintPay();
+  if (id === 'v-menu'){
+    // the tab underline can only be measured once the view is actually laid out
+    var act = document.querySelector('.cat.on') || document.querySelector('.cat');
+    if (act) requestAnimationFrame(function(){ moveInk(act); });
+  }
+}
+function openOv(id){
+  var ov = $(id);
+  ov.classList.add('on');
+  // the sheet element is reused between opens — without this it keeps the
+  // scroll depth of the previous visit and opens mid-page on phones
+  var sh = ov.querySelector('.sheet');
+  if (sh) sh.scrollTop = 0;
+}
+function closeOv(id){
+  var ov = $(id);
+  if (!ov.classList.contains('on')) return;
+  ov.classList.add('closing');
+  setTimeout(function(){ ov.classList.remove('on'); ov.classList.remove('closing'); }, 220);
+}
+/* ---------------- menu ---------------- */
+var filt = {veg:false, nonuts:false, nodairy:false, light:false, protein:false};
+/* Every reason is derived from the ingredient record, not from a hand-typed tag.
+   Items are DIMMED and given a reason, never hidden — four people share one menu,
+   and one person's filter should not erase the other three's dinner. */
+function buildCats(rebuild){
+  var wrap = $('cats'), ink = $('ink');
+  if (rebuild) wrap.querySelectorAll('.cat').forEach(function(c){ c.remove(); });
+  CATS.forEach(function(c, i){
+    var b = document.createElement('button');
+    b.className = 'cat' + (i === 0 ? ' on' : '');
+    b.textContent = (LANG==='en') ? c.label : (t('cats')[['brk','mez','swt','drk'].indexOf(c.id)] || c.label);
+    b.onclick = function(){ selectCat(b, c.id); };
+    wrap.insertBefore(b, ink);
+  });
+  requestAnimationFrame(function(){ moveInk(wrap.querySelector('.cat')); });
+}
+function moveInk(el){
+  var ink = $('ink');
+  ink.style.left = el.offsetLeft + 'px';
+  ink.style.width = el.offsetWidth + 'px';
+}
+var spyLock = 0;
+function selectCat(el, id){
+  markCat(el);
+  var h = document.querySelector('[data-sect="' + id + '"]'), sc = $('menuscroll');
+  if (h){
+    spyLock = 1;                                   // don't let the spy fight the smooth scroll
+    // offsetTop is measured against the positioned .view, not the scroller — use rects
+    var delta = h.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+    sc.scrollTo({ top: sc.scrollTop + delta, behavior: 'smooth' });
+    setTimeout(function(){ spyLock = 0; }, 650);
+  }
+}
+function markCat(el){
+  document.querySelectorAll('.cat').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  moveInk(el);
+}
+function spy(){
+  if (spyLock) return;
+  var sc = $('menuscroll'), heads = sc.querySelectorAll('.sect-h'), cur = 0;
+  var base = sc.getBoundingClientRect().top;
+  for (var i = 0; i < heads.length; i++){
+    if (heads[i].getBoundingClientRect().top - base <= 4) cur = i;
+  }
+  // the final section can never reach the top — there isn't enough content beneath it.
+  // Once you're at the bottom of the list you are, by definition, in the last section.
+  if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 90) cur = heads.length - 1;
+  var tabs = document.querySelectorAll('.cat');
+  if (tabs[cur] && !tabs[cur].classList.contains('on')){
+    markCat(tabs[cur]);
+    tabs[cur].scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+  }
+}
+var staggered = false;
+function buildMenu(){
+  var sc = $('menuscroll');
+  if (!sc._spy){ sc.addEventListener('scroll', spy, { passive: true }); sc._spy = 1; }
+  var ready = anyFilterable();
+  document.getElementById('ftrig').style.display = ready ? 'flex' : 'none';
+  if (!ready) clearF();
+  var s = $('menuscroll');
+  s.innerHTML = '';
+  CATS.forEach(function(c){
+    var h = document.createElement('div');
+    h.className = 'sect-h'; h.dataset.sect = c.id;
+    h.textContent = (LANG==='en') ? c.label : (t('cats')[['brk','mez','swt','drk'].indexOf(c.id)] || c.label);
+    s.appendChild(h);
+    MENU.filter(function(m){ return m.c === c.id; }).forEach(function(m){
+      var d = document.createElement('div');
+      d.className = 'mi' + (m.available ? '' : ' out');
+      d.onclick = function(){ openItem(m); };
+      d.tabIndex=0;d.setAttribute('role','button');d.setAttribute('aria-label',nameOf(m)+' · '+price(m.p));
+      d.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openItem(m);}};
+      if (!staggered){
+        d.style.animation = 'rowIn .25s var(--ease) both';
+        d.style.animationDelay = Math.min(MENU.indexOf(m), 8) * 35 + 'ms';
+      }
+      d.innerHTML =
+        '<div class="tx">' +
+          '<div class="mn">' + esc(nameOf(m)) +
+            (m.available ? '' : '<span class="soldout">' + esc(t('soldOut')) + '</span>') + '</div>' +
+          '<div class="md">' + esc(descOf(m)) + '</div>' +
+          '<div class="why"><span class="x">&#10005;</span><span class="wt"></span></div>' +
+        '</div>' +
+        '<div class="item-end"><div class="mp">' + price(m.p) + '</div><span class="details-arrow" aria-hidden="true">&#8250;</span></div>';
+      if(m.imageUrl){var img=document.createElement('img');img.className='menu-photo';img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=m.imageUrl;img.onerror=function(){this.remove();};d.prepend(img);}
+      d._m = m;
+      s.appendChild(d);
+    });
+  });
+}
+function reasonsE(e){
+  var r = [];
+  if (filt.veg     && !isVeg(e))    r.push(t('rMeat'));
+  if (filt.nonuts  && hasNuts(e))   r.push(t('rNuts'));
+  if (filt.nodairy && hasDairy(e))  r.push(t('rDairy'));
+  if (filt.light   && !isLight(e))  r.push(t('rKcal')(e.kcal));
+  if (filt.protein && !isHighP(e))  r.push(t('rProt')(e.pr));
+  return r;
+}
+function reasons(m){ return reasonsE(effDiet(m, null)); }
+/* If the default choices break a filter, is there a pick-one swap that fixes it?
+   Groups are independent and additive, so the best choice per group is enough. */
+function fitSwap(m){
+  var sel = {}, swaps = [];
+  (m.opts||[]).forEach(function(g, gi){
+    if (g.type !== 'one') return;
+    var best = 0, bestN = 1e9;
+    g.choices.forEach(function(c, ci){
+      var e = { al:(m.al||[]).concat(c.al||[]), ing:(m.ing||[]).concat(c.ing||[]),
+                kcal:m.kcal, pr:m.pr };
+      var n = reasonsE(e).length;
+      if (n < bestN){ bestN = n; best = ci; }
+    });
+    sel[gi] = best;
+    if (best !== 0) swaps.push(g.choices[best].n);
+  });
+  if (!swaps.length) return null;
+  return reasonsE(effDiet(m, sel)).length === 0 ? swaps : null;
+}
+function togF(k){
+  filt[k] = !filt[k];
+  document.getElementById('f-' + k).classList.toggle('on', filt[k]);
+  applyF();
+}
+function clearF(){
+  Object.keys(filt).forEach(function(k){
+    filt[k] = false;
+    document.getElementById('f-' + k).classList.remove('on');
+  });
+  applyF();
+}
+function applyF(){
+  var any = Object.keys(filt).some(function(k){ return filt[k]; });
+  var ok = 0, total = 0;
+  document.querySelectorAll('.mi').forEach(function(mi){
+    var m = mi._m; if (!m) return;
+    var w = mi.querySelector('.wt');
+    /* sold out or not filterable: never a match, never in the count */
+    if (!m.available || !filterable(m)){
+      mi.classList.remove('dim', 'swap');
+      mi.classList.toggle('unk', any && m.available);
+      if (w) w.textContent = any && m.available ? t('rUnk') : '';
+      return;
+    }
+    total++;
+    var r = any ? reasons(m) : [];
+    var swaps = r.length ? fitSwap(m) : null;
+    mi.classList.remove('unk');
+    mi.classList.toggle('dim', r.length > 0 && !swaps);
+    mi.classList.toggle('swap', !!swaps);
+    if (r.length === 0 || swaps) ok++;
+    if (w) w.textContent = swaps ? t('rSwap') + ' ' + swaps.join(' · ') : r.join(' · ');
+  });
+  var bar = document.getElementById('fbar');
+  bar.classList.toggle('on', any);
+  document.getElementById('fcount').textContent = ok;
+  document.getElementById('fmsg').textContent =
+    t('of') + ' ' + total + ' ' + (ok === 1 ? t('works') : t('work'));
+  var nOn = Object.keys(filt).filter(function(k){ return filt[k]; }).length;
+  var badge = document.getElementById('fbadge'), sum = document.getElementById('fsum');
+  if (badge){ badge.style.display = nOn ? 'inline-block' : 'none'; badge.textContent = nOn; }
+  if (sum) sum.textContent = nOn ? (ok + ' ' + t('of') + ' ' + total + ' ' + t('work')) : '';
+}
+function openItem(m){
+  curItem = m; curSel = {};
+  $('i-name').textContent = nameOf(m);
+  $('i-desc').textContent = descOf(m);
+  $('ov-item').setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
+  var out = $('i-out');
+  out.textContent = t('soldOut');
+  out.style.display = m.available ? 'none' : 'inline-block';
+  try { Aalayna.logEvent('item_view', { itemId: m.id, categoryId: m.c }, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
+  var box = $('i-adds'); box.innerHTML = '';
+  /* 'one' groups behave like radios — the first choice is the default and is
+     already in the base price. 'many' groups are independent add-ons. */
+  (m.opts || []).forEach(function(g, gi){
+    var lb = document.createElement('div');
+    lb.className = 'opt-g'; lb.textContent = g.name;
+    box.appendChild(lb);
+    curSel[gi] = g.type === 'one' ? 0 : {};
+    g.choices.forEach(function(c, ci){
+      var row = document.createElement('div');
+      row.className = 'add' + (g.type === 'one' && ci === 0 ? ' on' : '');
+      row.dataset.g = gi;
+      row.onclick = function(){
+        if (g.type === 'one'){
+          curSel[gi] = ci;
+          box.querySelectorAll('[data-g="' + gi + '"]').forEach(function(r, k){
+            r.classList.toggle('on', k === ci);
+          });
+        } else {
+          curSel[gi][ci] = !curSel[gi][ci];
+          row.classList.toggle('on', curSel[gi][ci]);
+        }
+        calcItem();
+      };
+      row.innerHTML =
+        '<span class="cb' + (g.type === 'one' ? ' rd' : '') + '">' +
+          (g.type === 'one' ? '&#9679;' : '&#10003;') + '</span>' +
+        '<span class="an">' + c.n + '</span>' +
+        '<span class="ap">' + (c.p ? '+' + usd(c.p) : (g.type === 'one' ? '' : 'free')) + '</span>';
+      box.appendChild(row);
+    });
+  });
+  calcItem();
+  openOv('ov-item');
+}
+/* the allergen line is computed from what is actually selected — pick oat milk
+   and the dairy warning goes away, pick almond and a nuts warning appears */
+function paintAlert(){
+  var alrt = $('i-alrt');
+  $('i-disc').textContent = t('disc');
+  alrt.style.display = 'flex';
+  if (!filterable(curItem)){
+    // no confirmed ingredient record: no claim either way, just point at the staff
+    alrt.innerHTML = '<span>&#8505;</span><span>' + esc(t('unkSheet')) + '</span>';
+    alrt.style.background = 'var(--bg)'; alrt.style.borderColor = 'var(--line)'; alrt.style.color = 'var(--sub)';
+    return;
+  }
+  var al = effDiet(curItem, curSel).al, bg, bd, fg;
+  if (al.length){
+    alrt.innerHTML = '<span>&#9888;</span><span><b>Contains ' + al.join(', ') + '.</b> ' +
+      'If you have a serious allergy, tell your server too.</span>';
+    bg = '#FBEDEB'; bd = '#F3D9D5'; fg = '#8E3A33';
+  } else {
+    alrt.innerHTML = '<span>&#10003;</span><span><b>No common allergens</b> as selected. ' +
+      'If you have a serious allergy, tell your server too.</span>';
+    bg = '#EAF1EC'; bd = '#CFE0D5'; fg = '#2F5A48';
+  }
+  alrt.style.background = bg; alrt.style.borderColor = bd; alrt.style.color = fg;
+}
+function calcItem(){
+  paintAlert();
+  var t = curItem.p;
+  (curItem.opts || []).forEach(function(g, gi){
+    if (g.type === 'one'){
+      var c = g.choices[curSel[gi] || 0];
+      if (c) t += c.p;
+    } else {
+      g.choices.forEach(function(c, ci){ if (curSel[gi] && curSel[gi][ci]) t += c.p; });
+    }
+  });
+  $('i-tot').textContent = price(t);
+}
+/* ---------------- bill ---------------- */
+function buildBill(){
+  var box = $('r-items'); box.innerHTML = '';
+  BILL.forEach(function(b){
+    var d = document.createElement('div');
+    var paid = paidUnits(b), full = paid >= b.q;
+    d.className = 'r-item' + (full ? ' r-paid' : '');
+    var tag = full ? '<span class="paidtag">COVERED</span>'
+            : paid ? '<span class="paidtag">' + paid + ' OF ' + b.q + ' COVERED</span>' : '';
+    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n + tag + '</div>' +
+                  '<div class="p">' + usd(full ? b.p : (b.p / b.q) * (b.q - paid)) + '</div>';
+    box.appendChild(d);
+  });
+  var rem = remaining();
+  $('r-tot').textContent = usd(rem);
+  document.querySelector('.r-total .l').textContent = 'AVAILABLE TO SETTLE';
+  $('r-ll').textContent = ll(rem);
+  $('land-tot').textContent = price(rem);
+  $('pill-tot').textContent = price(rem);
+}
+/* ---------------- settle ---------------- */
+function buildPick(){
+  var box = $('picklist'); box.innerHTML = '';
+  BILL.forEach(function(b, i){
+    var d = document.createElement('div');
+    var paid = paidUnits(b), avail = b.q - paid;
+    d.className = 'pl' + (avail === 0 ? ' dis' : '');
+    if (avail === 0){
+      d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
+        '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
+        '<span class="paidtag">COVERED</span></span><span class="pr">' + usd(b.p) + '</span>';
+      box.appendChild(d);
+      return;
+    }
+    /* picked[i] is a UNIT COUNT, not a boolean — tapping the row takes one unit
+       of the line, the stepper takes more. 4 people can each pay for their own
+       coffee off a single 4x line. */
+    var unit = b.p / b.q, lineOwed = unit * avail;
+    function paint(){
+      var n = picked[i] || 0;
+      d.classList.toggle('on', n > 0);
+      d.querySelector('.pr').textContent = usd(n > 0 && n < avail ? unit * n : lineOwed);
+      var sn = d.querySelector('.sn');
+      if (sn) sn.textContent = n + ' of ' + avail;
+    }
+    d.onclick = function(){
+      picked[i] = picked[i] ? 0 : 1;
+      paint(); calcShare();
+    };
+    d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
+                  '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
+                  (paid ? '<span class="paidtag">' + paid + ' COVERED</span>' : '') +
+                  (avail > 1 ? '<span class="st">' +
+                    '<button class="sb" data-d="-1">&minus;</button><span class="sn"></span>' +
+                    '<button class="sb" data-d="1">+</button></span>' : '') +
+                  '</span><span class="pr">' + usd(lineOwed) + '</span>';
+    d.querySelectorAll('.sb').forEach(function(sb){
+      sb.onclick = function(e){
+        e.stopPropagation();
+        picked[i] = Math.max(0, Math.min(avail, (picked[i] || 0) + (+sb.dataset.d)));
+        paint(); calcShare();
+      };
+    });
+    paint();
+    box.appendChild(d);
+  });
+}
+function mode(m){
+  splitMode = m;
+  ['even','item','amt','all'].forEach(function(k){ $('s-' + k).classList.toggle('on', k === m); });
+  $('evenwrap').style.display = (m === 'even') ? 'block' : 'none';
+  $('itemwrap').style.display = (m === 'item') ? 'block' : 'none';
+  $('amtwrap').style.display  = (m === 'amt')  ? 'block' : 'none';
+  if (m === 'amt') $('amt-in').focus();
+  calcShare();
+}
+function ppl(d){
+  people = Math.max(1, Math.min(12, people + d));
+  $('pn').textContent = people;
+  calcShare();
+}
+function calcShare(){
+  var rem = remaining();
+  if (splitMode === 'even')      share = rem / people;
+  else if (splitMode === 'all')  share = rem;
+  else if (splitMode === 'amt'){
+    // whatever they type, never more than what the table still owes
+    share = Math.max(0, Math.min(rem, parseFloat($('amt-in').value) || 0));
+    $('amt-hint').textContent = 'Whatever you like — up to the ' + usd(rem) + ' remaining.';
+  }
+  else { share = 0; BILL.forEach(function(b, i){
+    var avail = b.q - paidUnits(b);
+    if (picked[i] && avail > 0) share += (b.p / b.q) * Math.min(picked[i], avail); }); }
+  share = Math.min(rem, Math.round(share * 100) / 100);
+  $('sh-v').textContent = usd(share);
+  $('sh-ll').textContent = ll(share);
+  var cb = $('continue-btn');
+  if (cb) cb.disabled = share <= 0;
+  if (cb) cb.innerHTML = '<span class="sheen"></span>Continue · ' + usd(share);
+  var rest = rem - share;
+  $('restnote').textContent = rest > 0.01
+    ? usd(rest) + ' available for other guests. Pending cash is held until staff confirm or cancel it.'
+    : rem <= 0 ? 'No balance is available for another payment. Check any pending cash request with your server.' : 'That covers the available balance. Staff still need to confirm any pending cash.';
+  paintPay();
+}
+/* ---------------- pay ---------------- */
+function setTip(el, r){
+  tipRate = r; tipFlat = null;
+  $('tipcw').style.display = 'none';
+  document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  paintPay();
+}
+function tipCustom(el){
+  document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+  $('tipcw').style.display = 'flex';
+  tipFlat = parseFloat($('tip-in').value) || 0;
+  $('tip-in').focus();
+  paintPay();
+}
+function tipTyped(){
+  tipFlat = Math.max(0, parseFloat($('tip-in').value) || 0);
+  paintPay();
+}
+function pick(el, k){
+  kind = k;
+  document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on');p.setAttribute('aria-pressed','false'); });
+  el.classList.add('on');el.setAttribute('aria-pressed','true');
+  $('cashnote').style.display = (k === 'cash') ? 'block' : 'none';
+  $('chg').classList.toggle('on', k === 'cash');
+  paintPay();
+}
+function setNote(el, n){
+  note = n;
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  paintPay();
+}
+function money(v){ return usd(v); }
+function paintChange(due){
+  var out = $('chgout');
+  if (note === 0){
+    out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. ' + esc(SERVER) + ' just collects the notes — no trip to the till.';
+    return;
+  }
+  var back = note - due;
+  if (back < 0){
+    out.innerHTML = '<b>$' + note + '</b> doesn’t cover ' + usd(due) + '. Pick a bigger note, or split it with the table.';
+    return;
+  }
+  out.innerHTML = 'Change requested from ' + esc(SERVER) + ': <b>' + usd(back) + '</b>. Please wait for collection.';
+}
+function paintPay(){
+  var t = tipAmt(), tot = share + t, isCash = (kind === 'cash');
+  $('bigamt').textContent = usd(tot);
+  $('pay-share').textContent = usd(share);
+  $('pay-tip').textContent = usd(t);
+  $('bigll').textContent = ll(tot);
+  $('tv5').textContent  = usd(share * .05);
+  $('tv10').textContent = usd(share * .10);
+  $('tv15').textContent = usd(share * .15);
+  $('paybtn').disabled = share <= 0 || (isCash && note > 0 && note < tot);
+  $('paybtn').innerHTML = '<span class="sheen"></span>' +
+    (isCash ? 'Request cash collection' : 'Pay ' + usd(tot));
+  if (isCash) paintChange(tot);   // tot, not share — the change must account for the tip
+}
+/* ---------------- success ---------------- */
+var GOLDS = ['#C9A227','#F0DFA8','#E2BE45','#F9EFDC','#9C7A16','#F0DFA8'];
+function makeBurst(){
+  var b = $('burst'); b.innerHTML = '';
+  for (var i = 0; i < 18; i++){
+    var s = document.createElement('i');
+    var ang = (Math.PI * 2 * i) / 18 + .3, dist = 74 + (i % 4) * 27;
+    s.style.background = GOLDS[i % GOLDS.length];
+    s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+    s.style.setProperty('--dy', Math.sin(ang) * dist * .82 + 'px');
+    s.style.setProperty('--rot', (i % 2 ? 240 : -200) + 'deg');
+    s.style.animationDelay = (i * 10) + 'ms';
+    if (i % 3 === 0) s.style.borderRadius = '50%';
+    b.appendChild(s);
+  }
+}
+var paymentBusy = false, lastSettlementId = null, lastSettlementStatus = null, paymentRequestId = 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+/* Keep this guest's receipt through a tab reload, without choosing another guest's payment. */
+function receiptSessionKey(){ return 'aal.guest-receipt:' + JSON.stringify([Aalayna.venueId(), TABLE]); }
+function rememberReceipt(){
+  try { sessionStorage.setItem(receiptSessionKey(), JSON.stringify({id:lastSettlementId,status:lastSettlementStatus})); } catch(error) {}
+}
+function restoreReceipt(){
+  var saved;
+  try { saved = JSON.parse(sessionStorage.getItem(receiptSessionKey())); } catch(error) { return; }
+  if (!saved || !saved.id) return;
+  var record = Aalayna.settlements().filter(function(s){ return s.id === saved.id && s.venueId === Aalayna.venueId() && s.table === TABLE; })[0];
+  if (!record) return;
+  lastSettlementId = record.id;
+  lastSettlementStatus = saved.status;
+  paymentBusy = true;
+  paintSettlementResult();
+  go('v-done');
+}
+function refreshGuest(){
+  paintSettlementResult();
+  var before = MENU_V;
+  loadMenu();
+  if (MENU_V !== before){ buildCats(true); buildMenu(); renderMenu(); }
+  buildBill(); buildPick(); calcShare();
+}
+function watchGuestChanges(){
+  Aalayna.on(refreshGuest);
+  window.addEventListener('pageshow', refreshGuest);
+  window.addEventListener('focus', refreshGuest);
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible') refreshGuest();
+  });
+}
+function newRequestId(){ return 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2); }
+/* the same fields whichever rail: the store validates them against the open check */
+function paymentFields(rail){
+  var t = tipAmt(), tot = share + t;
+  return {
+    checkId: CHECK.id, requestId: paymentRequestId, sessionId: Aalayna.session(), deviceId: Aalayna.device(),
+    items: splitMode === 'item' ? BILL.reduce(function(out,b,i){ if(picked[i]) out[b.id]=picked[i]; return out; },{}) : {},
+    table: TABLE, rail: rail, amount: tot, tip: t, server: SERVER,
+    note: (rail === 'cash' ? note : 0),
+    change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
+  };
+}
+/* a store rejection is shown to the guest and the bill is repainted; the next tap
+   is a fresh request, never a retry of the rejected one */
+function paymentFailed(error){
+  try { Aalayna.failPayment(paymentRequestId, 'failed'); } catch(e) {}
+  paymentRequestId = newRequestId();
+  paymentBusy = false;
+  buildBill(); buildPick(); calcShare();
+  alert(error.message);
+}
+/* Digital rails are two-step (spec section 6): the request is created when the
+   guest hands over to the provider, and only the provider's confirmation settles it.
+   Cash stays single-step and pending until staff confirm collection. */
+function settle(){
+  if (paymentBusy) return;
+  paintPay();
+  var t = tipAmt(), tot = share + t;
+  if (kind === 'cash'){
+    paymentBusy = true;
+    finishSettle('cash');
+    return;
+  }
+  try { Aalayna.requestPayment(paymentFields(kind)); }
+  catch(error) { paymentFailed(error); return; }
+  if (kind === 'whish'){
+    $('wh-amt').textContent = 'Pay ' + usd(tot);
+    $('wh-btn').textContent = 'Open Whish';
+    openOv('ov-whish');
+    return;
+  }
+  $('card-btn').textContent = 'Pay ' + usd(tot);
+  openOv('ov-card');
+}
+/* closing the provider without confirming: the request expires, a retry starts clean */
+function cancelProvider(ovId){
+  if (paymentBusy) return;
+  closeOv(ovId);
+  try { Aalayna.failPayment(paymentRequestId, 'expired'); } catch(e) {}
+  paymentRequestId = newRequestId();
+  buildBill(); buildPick(); calcShare();
+}
+function providerConfirm(rail, ovId, btnId, label){
+  if (paymentBusy) return;
+  paymentBusy = true;
+  $(btnId).textContent = label;
+  var requestId = paymentRequestId;
+  setTimeout(function(){
+    closeOv(ovId);
+    var record;
+    try { record = Aalayna.confirmPayment(requestId, {
+      externalRef: 'demo-' + Aalayna.util.uid(),
+      payerRef: rail === 'whish' ? 'demo-wallet-' + Aalayna.device() : null
+    }); } catch(error) { paymentFailed(error); return; }
+    completeSettle(record, rail);
+  }, 900);
+}
+function whishConfirm(){ providerConfirm('whish', 'ov-whish', 'wh-btn', 'Confirming with Whish…'); }
+function cardConfirm(){ providerConfirm('card', 'ov-card', 'card-btn', 'Processing…'); }
+var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
+function finishSettle(rail){
+  var record;
+  try { record = Aalayna.settle(paymentFields(rail)); }
+  catch(error) { paymentFailed(error); return; }
+  completeSettle(record, rail);
+}
+function completeSettle(record, rail){
+  lastSettlementId = record.id;
+  lastSettlementStatus = null;
+  go('v-done');
+  var w = $('inner');
+  w.classList.remove('go');
+  paintSettlementResult();
+  if (rail !== 'cash') makeBurst();
+  if (window.AalaynaAnalytics) AalaynaAnalytics.track(rail === 'cash' ? 'demo_cash_requested' : 'demo_complete', rail === 'cash' ? 'cash_requested' : rail);
+  void w.offsetWidth;
+  w.classList.add('go');
+}
+function paintSettlementResult(){
+  if (!lastSettlementId) return;
+  var record = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
+  if (!record) return;
+  var status = Aalayna.settlementStatus(record), confirmed = status === 'confirmed';
+  $('rc-amt').textContent = usd(record.amount);
+  $('rc-method').textContent = RAIL_NAMES[record.rail] + (record.rail === 'cash' && record.change > 0 ? ' · ' + usd(record.change) + ' change' : '');
+  $('result-title').textContent = confirmed ? 'Shukran.' : status === 'pending' ? 'Cash requested.' : 'Request updated.';
+  $('result-seal').textContent = confirmed ? '✓' : '…';
+  $('method-label').textContent = confirmed ? 'Paid via' : 'Requested via';
+  $('payment-status').textContent = status === 'pending'
+    ? 'Your server will collect the cash. You can close this screen; not marked paid until collection is confirmed.'
+    : confirmed ? 'Demo payment confirmed · no money moved.' : 'This request was ' + status + '. Please speak with your server.';
+  ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
+  if (record.rail === 'cash' && lastSettlementStatus === 'pending' && confirmed && window.AalaynaAnalytics) {
+    AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
+  }
+  lastSettlementStatus = status;
+  rememberReceipt();
+}
+/* a device we already know: offer the contact back, never require it */
+function prefillReceipt(){
+  var input = $('mail-in');
+  if (!input || input.value.trim() || input.disabled) return;
+  try {
+    var cid = Aalayna.identity.customerForDevice(Aalayna.device());
+    if (!cid) return;
+    var keys = Aalayna.identity.keysFor(cid);
+    var hit = keys.filter(function(k){ return k.type === 'email'; })[0] ||
+              keys.filter(function(k){ return k.type === 'phone'; })[0];
+    if (hit) input.value = hit.value;
+  } catch(error) {}
+}
+/* Every rating opens the same single review panel. */
+function rate(n){
+  setStar(n);
+  openReview();
+}
+function setStar(n){
+  rating = Math.max(1, Math.min(5, Number(n) || 1));
+  ['dstars','gstars'].forEach(function(id){
+    document.querySelectorAll('#' + id + ' .star').forEach(function(st,i){
+      st.classList.toggle('on',i<rating); st.setAttribute('aria-pressed',String(i<rating));
+    });
+  });
+  $('review-title').textContent = 'Your review · ' + rating + '/5';
+}
+var reviewReturnFocus = null;
+function openReview(){
+  reviewReturnFocus = document.activeElement;
+  $('review-destination').value = 'google';
+  paintReviewDestination();
+  $('v-done').inert = true;
+  openOv('ov-review');
+  $('ov-review').querySelector('.review-close').focus();
+}
+function closeReview(){
+  $('ov-review').classList.remove('on','closing');
+  $('v-done').inert = false;
+  if (reviewReturnFocus && reviewReturnFocus.isConnected) reviewReturnFocus.focus();
+}
+function paintReviewDestination(){
+  $('review-submit').textContent = $('review-destination').value === 'google' ? 'Continue to Google' : 'Send privately';
+  $('review-submit').disabled = false;
+  $('review-status').textContent = 'Prototype only — no review or feedback is sent.';
+}
+function submitReview(){
+  try { Aalayna.submitReview({ settlementId: lastSettlementId, rating: rating,
+                               comment: $('review-text').value, destination: $('review-destination').value }); }
+  catch(error) { $('review-status').textContent = error.message; return; }
+  $('review-status').textContent = $('review-destination').value === 'google'
+    ? 'Google posting is not connected. No review was published.'
+    : 'Private feedback delivery is not connected. Nothing was sent.';
+  $('review-submit').disabled = true;
+}
+function syncReceiptViewport(){
+  if (window.visualViewport) document.documentElement.style.setProperty('--app-height',window.visualViewport.height+'px');
+}
+/* optional, after payment — never a gate. Simulated like the payments. */
+function sendReceipt(){
+  var v = $('mail-in').value.trim();
+  var isMail = /^\S+@\S+\.\S+$/.test(v);
+  var isPhone = /^(\+|00)[0-9 ().-]{8,22}$/.test(v);
+  if (!isMail && !isPhone){ alert('Enter an email or a WhatsApp number with its country code. Numbers from any country are welcome.'); $('mail-in').focus(); return; }
+  var mkt = $('c-mkt').checked;
+  /* The button requests a receipt; restaurant offers remain a separate, optional choice. */
+  try { Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:true, marketing:mkt }); }
+  catch(error) { alert(error.message); return; }
+  $('consents').classList.add('done');
+  var btn = document.querySelector('.mailbtn');
+  btn.textContent = 'Saved';
+  btn.classList.add('sent');
+  btn.onclick = null;
+  $('mail-in').disabled = true;
+  $('payment-status').textContent = 'Preferences saved locally. No receipt or message sent.';
+}
+/* demo only: flip between a venue that has finished confirming its menu and one that
+   hasn't. Note what the second state does NOT contain — no warnings, no badges, no
+   half-information. Just an ordinary menu. */
+function toggleCoverage(){
+  DEMO_INCOMPLETE = !DEMO_INCOMPLETE;
+  $('covsw').innerHTML = DEMO_INCOMPLETE
+    ? 'Menu fully confirmed \u2192'
+    : 'Menu not fully confirmed \u2192';
+  buildMenu(); applyF();
+}
+function restart(){
+  try { sessionStorage.removeItem(receiptSessionKey()); } catch(error) {}
+  Aalayna.newSession();            // start over = a new scan, a new session
+  billRequested = false;
+  paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null; paymentRequestId = newRequestId();
+  CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
+  logScan();
+  $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
+  people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
+  kind = 'whish'; note = 0; CCY = 'usd'; rating = 0;
+  $('tip-in').value = ''; $('tipcw').style.display = 'none';
+  $('pn').textContent = 4;
+  mode('even');
+  document.querySelectorAll('.pl').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  document.querySelectorAll('#gstars .star').forEach(function(s){ s.classList.remove('on'); });
+  document.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('on'); });
+  document.querySelectorAll('.tipb').forEach(function(b, i){ b.classList.toggle('on', i === 2); });
+  document.querySelectorAll('.pm').forEach(function(p, i){ p.classList.toggle('on', i === 0); });
+  clearF();
+  $('chg').classList.remove('on');
+  $('cashnote').style.display = 'none';
+  document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); st.setAttribute('aria-pressed','false'); });
+  $('mail-in').value = ''; $('mail-in').disabled = false;
+  $('consents').classList.remove('done'); $('c-mkt').checked = false;
+  var mb = document.querySelector('.mailbtn');
+  mb.textContent = 'Send my receipt'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
+  buildBill(); buildPick(); calcShare();
+  go('v-land');
+}
+/* Keyboard access stays inside the review panel and returns to the selected star. */
+document.addEventListener('keydown',function(e){
+  if (!$('ov-review').classList.contains('on')) return;
+  if(e.key === 'Escape'){e.preventDefault();closeReview();return;}
+  if(e.key !== 'Tab') return;
+  var nodes=Array.from($('ov-review').querySelectorAll('button,textarea,select')).filter(function(n){return !n.disabled && n.getClientRects().length;});
+  var first=nodes[0],last=nodes[nodes.length-1];
+  if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+});
+if(window.visualViewport)window.visualViewport.addEventListener('resize',syncReceiptViewport);
+syncReceiptViewport();
+/* ---------------- boot ---------------- */
+/* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
+var TABLE = 12, SERVER = 'Abou Karim';
+/* client-side events (spec section 4): the scan, each dish opened, the first look at the bill */
+var billRequested = false;
+function logScan(){
+  try { Aalayna.logEvent('qr_scan', { tableId: TABLE, userAgent: navigator.userAgent }, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
+}
+function logBillRequested(){
+  if (billRequested) return;
+  billRequested = true;
+  try { Aalayna.logEvent('bill_requested', {}, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
+}
+logScan();
+CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
+function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function paintServer(){
+  SERVER = Aalayna.serverFor(TABLE);
+  var pooled = Aalayna.floor().pooled;
+  var el = $('tip-who');
+  if (el) el.textContent = pooled ? 'Something for the team?' : 'Something for ' + SERVER + '?';
+}
+function paintVenue(){
+  paintServer();
+  var v = Aalayna.venue();
+  var short = v.name.split(/[ ·]/)[0];
+  var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
+  set('v-name-stage', v.name); set('v-name-crest', v.name); set('v-name-menu', v.name);
+  set('v-name-receipt', v.name.toUpperCase());
+  set('offers-venue', v.name);
+  set('v-place', v.place || '');
+  set('v-est', v.heritage ? 'EST. 1881 · TRIPOLI' : (v.place ? v.place.toUpperCase() : 'YOUR MENU, LIVE'));
+  set('v-est2', v.heritage ? 'Est. 1881 · Tripoli' : v.name);
+  set('v-review-sub', v.heritage ? '144 years, one review at a time' : 'One review at a time');
+  document.querySelectorAll('.v-short').forEach(function(el){ el.textContent = short; });
+  var ms = document.getElementById('m-sub');
+  if (ms && LANG === 'en') ms.textContent = 'Table 12 · ' + (v.place || v.name);
+}
+buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue();
+$('staff-demo').href = 'dashboard.html' + window.location.search;
+staggered = true;
+restoreReceipt();
+watchGuestChanges();
+</script>
+</body>
+</html>

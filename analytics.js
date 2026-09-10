@@ -28,6 +28,6 @@
     if (link) track(link.dataset.track, link.dataset.placement);
   });
   var file = global.location.pathname.split('/').pop();
-  if (file === '3alyna_full_flow.html') track('demo_open', 'guest_demo');
+  if (file === 'guest.html') track('demo_open', 'guest_demo');
   if (file === 'book.html') track('booking_page_view', 'booking');
 })(window);

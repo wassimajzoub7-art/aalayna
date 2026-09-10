@@ -53,7 +53,7 @@ test('mixed payment totals and tips exclude refunds and pending cash', () => {
   assert.equal(a.tipsOwed()[0].amount, 2);
 });
 test('every rating opens one review panel with both destinations and restores focus on close', () => {
-  const html = fs.readFileSync(path.join(__dirname, '../3alyna_full_flow.html'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '../guest.html'), 'utf8');
   const code = html.slice(html.indexOf('function rate(n){'), html.indexOf('/* optional, after payment'));
   const stars = Array.from({length:5}, () => ({classList:{toggle(){}},setAttribute(){}}));
   const fields = Object.fromEntries(['review-title','review-destination','review-submit','review-status','review-text','v-done'].map(id=>[id,{textContent:'',value:'',disabled:false}]));
@@ -75,7 +75,7 @@ test('every rating opens one review panel with both destinations and restores fo
 });
 test('guest receipt stays pending until staff confirmation, and hides receipt and review actions', () => {
   const a = setup(), cash = a.settle({rail:'cash',amount:42,tip:2});
-  const html = fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
+  const html = fs.readFileSync(path.join(__dirname,'../guest.html'),'utf8');
   const code = html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Every rating opens'));
   const nodes = Object.fromEntries(['rc-amt','rc-method','result-title','result-seal','method-label','payment-status','mailrc','consents','feedback-options'].map(id => [id,{textContent:'',style:{}}]));
   const ctx = { lastSettlementId:cash.id,lastSettlementStatus:null,Aalayna:a,$:id=>nodes[id],usd:n=>'$'+n.toFixed(2),RAIL_NAMES:{cash:'Cash'},window:{},rememberReceipt(){} };
@@ -90,7 +90,7 @@ test('guest receipt stays pending until staff confirmation, and hides receipt an
   assert.equal(nodes['feedback-options'].style.display,'');
 });
 function guestSession(a, storage = new Map()) {
-  const html = fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
+  const html = fs.readFileSync(path.join(__dirname,'../guest.html'),'utf8');
   const nodes = Object.fromEntries(['rc-amt','rc-method','result-title','result-seal','method-label','payment-status','mailrc','consents','feedback-options'].map(id=>[id,{textContent:'',style:{}}]));
   const events = {}, tracked = [], views = [];
   a.venueId = a.venueId || (()=>a.venue().name);
@@ -135,7 +135,7 @@ test('reload restores this tab’s exact receipt, including confirmation receive
 });
 test('one explicit staff action confirms cash and stale actions show feedback',()=>{
   const a=setup(),cash=a.settle({rail:'cash',amount:42});
-  const html=fs.readFileSync(path.join(__dirname,'../3alyna_dashboard.html'),'utf8');
+  const html=fs.readFileSync(path.join(__dirname,'../dashboard.html'),'utf8');
   const code=html.slice(html.indexOf('function confirmCashReceived(id){'),html.indexOf('/* Refunds retain'));
   const messages=[];let refreshed=0;
   const ctx={Aalayna:a,toast:message=>messages.push(message),paintRows:()=>refreshed++};
@@ -144,7 +144,7 @@ test('one explicit staff action confirms cash and stale actions show feedback',(
   ctx.confirmCashReceived(cash.id);assert.equal(a.settledTotal(),42);assert.equal(refreshed,1);assert.match(messages[1],/Request changed/);
 });
 test('payment breakdown updates with tips and keeps cash coverage validation', () => {
-  const html=fs.readFileSync(path.join(__dirname,'../3alyna_full_flow.html'),'utf8');
+  const html=fs.readFileSync(path.join(__dirname,'../guest.html'),'utf8');
   const code=html.slice(html.indexOf('function paintPay(){'),html.indexOf('/* ---------------- success'));
   const nodes=Object.fromEntries(['bigamt','bigll','pay-share','pay-tip','tv5','tv10','tv15','paybtn'].map(id=>[id,{}]));
   let tip=3.81,changeDue;

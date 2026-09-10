@@ -1,4 +1,4 @@
--- §6 Payment orchestration, direct-to-merchant. 3alayna initiates, the
+-- §6 Payment orchestration, direct-to-merchant. Aalayna initiates, the
 -- restaurant's own account settles, the provider confirms via webhook.
 -- Payment links are check/session-scoped, never static per table.
 CREATE TABLE orders (                       -- the check; comes from the waiter / POS

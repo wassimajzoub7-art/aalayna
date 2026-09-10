@@ -32,7 +32,7 @@
               currency:'USD', fxRateUsed:rate, amountUsd:total / 100, sessionId:input.sessionId || A.session(), deviceId:input.deviceId || A.device() };
     var all = read('aal.checks'); all.push(c); save('aal.checks', all);
     /* In this prototype the check IS the order (bills come from the waiter/POS,
-       3alayna takes no orders). The event carries the lines the way a POS would. */
+       Aalayna takes no orders). The event carries the lines the way a POS would. */
     A.logEvent('order_placed', { orderId:c.id, items:c.lines.map(function(l){ return { itemId:l.id, qty:l.q, unitPrice:Math.round(l.p / l.q * 100) / 100, currency:'USD' }; }),
                                  total:total / 100, currency:'USD', fxRateUsed:rate, amountUsd:total / 100 },
                { sessionId:c.sessionId, deviceId:c.deviceId, tableId:c.table });

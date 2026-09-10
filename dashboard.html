@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aalayna — operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<script src="aalayna-store.js?v=18"></script>
+<script src="restaurant-growth.js?v=3"></script>
+<script src="owner-metrics.js?v=3"></script>
+
+<style>
+  :root{
+    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
+    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
+    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
+    --red:#B4423A; --red-bg:#F9EEEC;
+    --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
+    --side:#0F2E24;
+    --eo:cubic-bezier(0.23,1,0.32,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);display:flex;min-height:100vh;
+    font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+
+  /* ───────── sidebar ───────── */
+  .side{width:218px;flex-shrink:0;background:var(--side);color:#fff;position:sticky;top:0;
+    height:100vh;display:flex;flex-direction:column}
+  .brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .brand .n{font-family:'Amiri',serif;font-size:21px;font-weight:700;color:#fff;line-height:1}
+  .brand .n b{color:#E8B4B8;font-weight:700}
+  .brand .s{font-size:10px;color:#8FA79A;margin-top:7px;letter-spacing:.06em;text-transform:uppercase}
+  nav{padding:10px 10px;flex:1}
+  .ni{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
+    color:#9DB4A9;font-family:inherit;font-size:13px;font-weight:500;text-align:left;
+    padding:9px 11px;border-radius:8px;cursor:pointer;margin-bottom:1px;
+    transition:background .15s ease,color .15s ease}
+  .ni:hover{background:rgba(255,255,255,.05);color:#fff}
+  .ni.on{background:rgba(255,255,255,.09);color:#fff}
+  .ni .bg{margin-left:auto;background:var(--red);color:#fff;font-size:9.5px;font-weight:600;
+    border-radius:8px;padding:1px 6px}
+  .side-f{padding:14px 20px 18px;border-top:1px solid rgba(255,255,255,.08);
+    font-size:10.5px;color:#7E958A;line-height:1.6}
+
+  /* ───────── main ───────── */
+  main{flex:1;min-width:0;padding:26px 32px 64px;max-width:1160px}
+  .top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+    padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  h1{font-size:19px;font-weight:600;letter-spacing:-.01em}
+  .sub{font-size:12.5px;color:var(--sub);margin-top:4px}
+  .actions{display:flex;gap:8px}
+  .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 13px;
+    font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--ink);
+    white-space:nowrap;transition:border-color .12s,background .12s}
+  .btn:hover{border-color:#CFCCC5}
+  .btn{transition:transform .12s var(--eo),border-color .12s ease,background .15s ease,color .15s ease}
+  .btn:active{transform:scale(.97)}
+  .btn.done{background:var(--green-bg);border-color:var(--green-line);color:var(--green);cursor:default}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+
+  .fl-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 12px;align-items:center}
+  .fl-sv{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:7px 14px;
+    font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sub);cursor:pointer;
+    transition:background .15s ease,color .15s ease,border-color .15s ease}
+  .fl-sv.on{background:var(--green);border-color:var(--green);color:#fff}
+  .fl-sv .x{margin-left:7px;opacity:.55;font-weight:400}
+  .fl-add{border:1px dashed var(--line);background:none;border-radius:20px;padding:7px 14px;
+    font-family:inherit;font-size:12.5px;color:var(--sub);cursor:pointer}
+  .fl-map{position:relative;width:100%;max-width:760px;height:320px;background:var(--bg);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .fl-lbl{position:absolute;font-size:9px;font-weight:600;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--faint);pointer-events:none}
+  .fl-t{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;
+    border:2px solid var(--line);background:var(--surface);cursor:pointer;text-align:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    touch-action:none;user-select:none;-webkit-user-select:none;
+    transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
+  .fl-t.sq{border-radius:10px}
+  .fl-t .tn{font-size:11.5px;font-weight:700;line-height:1}
+  .fl-t .ts{font-size:8px;font-weight:600;margin-top:2px;max-width:38px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .fl-t.drag{box-shadow:0 8px 18px rgba(23,29,26,.18);z-index:5}
+  .fl-sv .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;
+    background:var(--faint);vertical-align:1px}
+  .fl-tables.off,.fl-row.off{opacity:.35;pointer-events:none}
+  .fl-pool{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--sub);margin-top:14px;cursor:pointer}
+  .mb{margin-bottom:14px}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .mini{border:1px solid var(--line);border-radius:9px;padding:10px 12px}
+  .mini .k{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .mini .v{font-size:20px;font-weight:600;margin-top:2px;font-feature-settings:'tnum'}
+  .glr{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px}
+  .glr .ct{font-weight:600;font-feature-settings:'tnum';flex:1}
+  .glr .tg{font-size:9.5px;font-weight:600;letter-spacing:.05em;padding:2px 7px;border-radius:5px;
+    background:var(--green-bg);color:var(--green)}
+  .glr .tg.off{background:var(--line-soft);color:var(--faint)}
+  .glr .vs{color:var(--sub);font-size:11.5px;font-feature-settings:'tnum'}
+  .cf{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .cf .in{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:12.5px;
+    font-family:inherit;background:var(--surface);color:var(--ink);width:100%}
+  .cf textarea.in{resize:vertical;line-height:1.5}
+  .cpr{padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px;display:flex;gap:10px;align-items:center}
+  .cpr b{flex:1}
+  .cpr .n{color:var(--sub);font-feature-settings:'tnum'}
+  .setr{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);
+    font-size:12.5px}
+  .setr:last-child{border-bottom:none}
+  .setr .tm{color:var(--sub);width:44px;font-feature-settings:'tnum'}
+  .setr .tb2{width:56px;color:var(--sub)}
+  .setr .rl{min-width:86px;font-weight:500}
+  .setr .am{margin-left:auto;font-weight:600;font-feature-settings:'tnum'}
+  .setr .tp2{color:var(--sub);width:70px;text-align:right;font-feature-settings:'tnum'}
+  .setr.refunded .am,.setr.refunded .tp2,.setr.refunded .rl,.setr.refunded .tb2{
+    text-decoration:line-through;color:var(--faint)}
+  .rfb{border:1px solid var(--line);background:var(--surface);color:var(--red);border-radius:7px;
+    padding:5px 10px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;
+    transition:border-color .15s ease,background .15s ease}
+  .rfb:hover{border-color:var(--red)}
+  .rfb.arm{background:var(--red);border-color:var(--red);color:#fff}
+  .rftag{font-size:9.5px;font-weight:600;letter-spacing:.05em;color:var(--red);
+    border:1px solid #EAD2CF;background:var(--red-bg,#F9EEEC);border-radius:5px;padding:2.5px 7px}
+  .view{display:none} .view.on{display:block;animation:viewIn .2s var(--eo)}
+  @keyframes viewIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .grid{display:grid;gap:12px}
+  .g2{grid-template-columns:1.4fr 1fr}
+  .g2e{grid-template-columns:1fr 1fr}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .mt{margin-top:12px}
+  @media(max-width:1060px){.g4{grid-template-columns:repeat(2,1fr)}.g2,.g2e{grid-template-columns:1fr}}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .card h3{font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+  .card .cs{font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.5}
+
+  /* KPI */
+  .k{font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub)}
+  .v{font-size:25px;font-weight:600;margin-top:9px;letter-spacing:-.01em;line-height:1}
+  .d{font-size:11.5px;margin-top:8px;color:var(--sub);display:flex;align-items:center;gap:6px}
+  .pill{display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;border-radius:6px;padding:2px 6px}
+  .pill.up{background:var(--green-bg);color:var(--green)}
+  .pill.dn{background:var(--red-bg);color:var(--red)}
+
+  /* statement */
+  .sr{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13px}
+  .sr:last-child{border-bottom:none}
+  .rail{display:flex;align-items:center;gap:8px;flex:1;color:var(--ink)}
+  .dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+  .sr .amt{font-weight:600}
+  .sr.tot{border-top:1px solid var(--ink);border-bottom:none;margin-top:4px;padding-top:12px}
+  .sr.tot .amt{font-size:17px}
+  .note{display:flex;gap:9px;align-items:flex-start;margin-top:14px;padding:11px 13px;border-radius:8px;
+    font-size:11.5px;line-height:1.55;color:var(--sub);background:var(--bg);border:1px solid var(--line)}
+  .note b{color:var(--ink);font-weight:600}
+  .note.warn{background:var(--amber-bg);border-color:var(--amber-line);color:var(--amber)}
+  .note.warn b{color:var(--amber)}
+
+  /* ledger */
+  .tip{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+  .tip:last-child{border-bottom:none}
+  .av{width:30px;height:30px;border-radius:8px;background:var(--green-bg);color:var(--green);
+    display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11.5px;flex-shrink:0}
+  .tip .nm{flex:1;font-size:13px;font-weight:500}
+  .tip .nm span{display:block;font-size:11px;color:var(--sub);font-weight:400;margin-top:1px}
+  .tip .amt{font-size:14px;font-weight:600;margin-right:2px}
+
+  /* charts */
+  .bars{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:16px;
+    border-bottom:1px solid var(--line)}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+  .bar .cols{display:flex;gap:3px;width:100%;height:100%;align-items:flex-end;justify-content:center}
+  .col{width:100%;max-width:26px;border-radius:3px 3px 0 0;background:var(--green);min-height:3px;
+    transform-origin:bottom;animation:colIn .35s var(--eo) both}
+  @keyframes colIn{from{opacity:0;transform:scaleY(.5)}to{opacity:1;transform:none}}
+  .bar:nth-child(1) .col{animation-delay:0ms}.bar:nth-child(2) .col{animation-delay:30ms}
+  .bar:nth-child(3) .col{animation-delay:60ms}.bar:nth-child(4) .col{animation-delay:90ms}
+  .bar:nth-child(5) .col{animation-delay:120ms}.bar:nth-child(6) .col{animation-delay:150ms}
+  .bar:nth-child(7) .col{animation-delay:180ms}
+  .col.mut{background:#CFCCC5}
+  .axis{display:flex;gap:10px;margin-top:7px}
+  .axis span{flex:1;text-align:center;font-size:10.5px;color:var(--sub)}
+  .vals{display:flex;gap:10px;margin-top:2px}
+  .vals span{flex:1;text-align:center;font-size:10px;color:var(--faint)}
+  .legend{display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--sub)}
+  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:5px}
+
+  /* horizontal list bars */
+  .hrow{display:grid;grid-template-columns:1fr 90px 52px;gap:10px;align-items:center;
+    padding:7px 0;font-size:12.5px}
+  .hrow .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .track{height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+  .fill{height:100%;border-radius:3px;background:var(--green);display:block;
+    transform-origin:left;animation:fillIn .4s var(--eo) both .1s}
+  @keyframes fillIn{from{transform:scaleX(0)}to{transform:none}}
+  .hrow .p{text-align:right;font-weight:600;font-size:12px}
+
+  /* reviews */
+  .rv{padding:12px 0;border-bottom:1px solid var(--line-soft)}
+  .rv:last-child{border-bottom:none}
+  .rv .h{display:flex;align-items:center;gap:8px}
+  .st{color:var(--amber);font-size:11px;letter-spacing:1px}
+  .rv .w{font-size:11px;color:var(--faint);margin-left:auto}
+  .rv .t{font-size:12.5px;line-height:1.55;margin-top:5px;color:#3C453F}
+  .fb{padding:12px 0;border-bottom:1px solid var(--line-soft);display:flex;gap:10px}
+  .fb:last-child{border-bottom:none}
+  .fb .dt2{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:6px}
+  .fb .t{font-size:12.5px;line-height:1.55;color:#3C453F}
+  .fb .m{font-size:11px;color:var(--faint);margin-top:3px}
+
+  .lock{display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft);
+    font-size:12.5px;color:var(--sub)}
+  .lock:last-child{border-bottom:none}
+  .lock b{color:var(--ink);font-weight:500}
+  .lock .tag{margin-left:auto;font-size:10px;font-weight:600;letter-spacing:.05em;color:var(--faint);
+    border:1px solid var(--line);border-radius:6px;padding:2px 7px;white-space:nowrap}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,10px);background:var(--ink);color:#fff;
+    border-radius:9px;padding:11px 16px;font-size:12.5px;font-weight:500;opacity:0;pointer-events:none;
+    transition:transform .22s var(--eo),opacity .22s ease;z-index:99}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  @media (prefers-reduced-motion:reduce){
+    .view.on{animation:none}
+    .col,.fill{animation:none !important}
+    .btn:active{transform:none}
+  }
+</style>
+<link rel="stylesheet" href="restaurant-ops.css?v=4">
+</head>
+<body>
+
+<aside class="side">
+  <div class="brand">
+    <div class="n">aalay<b>na</b></div>
+    <div class="s" id="v-sub">Hallab 1881 · Kasr El Helou</div>
+  </div>
+  <nav>
+    <button class="ni on" onclick="go(this,'tonight')">Service</button>
+    <button class="ni" onclick="go(this,'week')">Overview</button>
+    <button class="ni" onclick="go(this,'guests')">Customers</button>
+    <button class="ni" onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
+    <button class="ni" onclick="go(this,'team')">Team</button>
+  </nav>
+  <div class="side-f">Insights use recorded activity. Messaging and POS connections are not configured.</div>
+</aside>
+
+<main>
+  <div style="font-size:14px;padding:12px 0 20px;color:var(--sub)">Interactive demo · sample data · no real payments or messages. <a href="index.html">Back to website</a></div>
+
+  <div class="report-toolbar" id="report-toolbar">
+    <label for="report-period">Reporting period <select id="report-period" onchange="paintTonight()"><option value="today">Today</option><option value="7" selected>Last 7 days</option><option value="30">Last 30 days</option></select></label>
+    <p id="report-period-note">Reports use Beirut time. Open bills and pending cash always show the live queue.</p>
+  </div>
+  <!-- ═══════════ TONIGHT ═══════════ -->
+  <div class="view on" id="v-tonight">
+    <div class="top">
+      <div>
+        <h1>Service</h1>
+        <div class="sub" id="t-date">Settlement activity, current service</div>
+        <span class="status-badge pending" id="incomplete-badge" hidden></span>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="exportCSV()">Export CSV</button>
+      </div>
+    </div>
+
+    <nav class="ops-tabs" aria-label="Service views"><button type="button" aria-pressed="true" data-group="service" data-panel="service-live" onclick="opsPanel('service','service-live')">Live floor</button><button type="button" aria-pressed="false" data-group="service" data-panel="service-report" onclick="opsPanel('service','service-report')">Settlement report</button></nav>
+    <section id="service-live" data-panel-group="service">
+      <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Collected in period · incl. tips</span><strong id="live-paid">$0.00</strong></div></div>
+      <div class="card attention-card"><div class="ops-heading"><div><h3>Needs attention</h3><p class="cs">Confirm cash only after it reaches your hands.</p></div><span class="status-badge pending" id="cash-count">0 waiting</span></div><div id="cash-queue" aria-live="polite"></div></div>
+      <div class="card attention-card mt" id="feedback-attention" hidden><div class="ops-heading"><div><h3>Guest feedback needing attention</h3><p class="cs">Ratings of 2 or lower recorded in the selected period. Follow up with the table where you can.</p></div><span class="status-badge pending" id="feedback-count">0 to review</span></div><div id="feedback-rows" class="ops-list"></div></div>
+      <div class="grid live-grid mt">    <div class="card"><h3>Balances by bill</h3><div class="cs">Bill amounts exclude tips. Pending cash reserves a share but does not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
+    <div class="card">
+      <h3>Floor tonight</h3>
+      <details class="ops-help"><summary>Assign servers &amp; arrange tables</summary><p>Select a server, then tap their tables. Drag tables to match your room. Assignments determine who receives tips; a connected POS will supply these later.</p></details>
+      <div class="fl-row" id="fl-servers"></div>
+      <div class="fl-map" id="fl-tables">
+        <span class="fl-lbl" style="left:12px;top:10px">Window</span>
+        <span class="fl-lbl" style="right:12px;top:10px">Bar</span>
+        <span class="fl-lbl" style="left:12px;bottom:10px">Entrance</span>
+        <span class="fl-lbl" style="right:12px;bottom:10px">Terrace</span>
+      </div>
+      <label class="fl-pool"><input type="checkbox" id="fl-pooled" onchange="floorPool(this.checked)">
+        This venue pools tips (one house pool, no per-table assignment)</label>
+    </div>
+
+</div>
+    </section>
+    <section id="service-report" data-panel-group="service" hidden>    <div class="grid g4">
+      <div class="card"><div class="k">Bill payments collected</div><div class="v" id="k-tot">$0.00</div>
+        <div class="d" id="settlement-change">Excluding tips</div></div>
+      <div class="card"><div class="k">Completed bills</div><div class="v" id="t-scan">0</div>
+        <div class="d">Fully paid and closed in this period</div></div>
+      <div class="card"><div class="k">Average completed bill</div><div class="v" id="k-avg">—</div>
+        <div class="d">Per bill, excluding tips</div></div>
+      <div class="card"><div class="k">Tip rate</div><div class="v" id="k-tip">—</div>
+        <div class="d">tips ÷ net settled</div></div>
+    </div>
+
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>Settlement statement</h3>
+        <div class="cs">Confirmed amounts in the selected period, including tips.</div>
+        <div style="margin-top:12px">
+          <div class="sr"><span class="rail"><span class="dot" style="background:#C4283C"></span>Whish Money</span><span class="amt" id="r-whish">$0.00</span></div>
+          <div class="sr"><span class="rail"><span class="dot" style="background:#26327A"></span>Card</span><span class="amt" id="r-card">$0.00</span></div>
+          <div class="sr"><span class="rail"><span class="dot" style="background:#0F4B3A"></span>Cash collected</span><span class="amt" id="r-cash">$0.00</span></div>
+          <div class="sr tot"><span class="rail">Total settled in-app</span><span class="amt" id="r-tot">$0.00</span></div>
+        </div>
+        <div class="note warn" id="shortbox" style="display:none"></div>
+        <details class="ops-help"><summary>About this statement</summary><p id="t-note"></p></details>
+      </div>
+
+      <div class="card">
+        <h3>Tips payable</h3>
+        <div class="cs">Outstanding digital tips across all recorded activity, independent of the reporting period. Record each payout under your restaurant’s policy.</div>
+        <div id="tips" style="margin-top:8px"></div>
+        <div class="note" id="tipdone" style="display:none"><span>✓</span><span>All tip payments recorded.</span></div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h3>Payment history</h3>
+      <div class="cs">Selected period, by confirmation or request date. Refunded and cancelled rows show their current status. Pending cash stays on the Live floor.</div>
+      <div id="setrows" style="margin-top:10px"></div>
+    </div>
+</section>
+  </div>
+
+  <div class="view" id="v-week">
+    <div class="top"><div><h1>Business overview</h1><div class="sub" id="overview-period">Collected payments and customer growth</div></div></div>
+    <div class="grid g4 owner-kpis">
+      <div class="card"><div class="k">Bill payments collected</div><div class="v" id="week-net">$0.00</div><div class="d" id="overview-money-detail"></div><p class="metric-change" id="overview-money-change"></p></div>
+      <div class="card"><div class="k">Contact capture</div><div class="v" id="capture-rate">—</div><div class="d" id="capture-detail"></div><p class="metric-change" id="capture-change"></p></div>
+      <div class="card"><div class="k">Marketing sign-ups</div><div class="v" id="optin-rate">—</div><div class="d" id="optin-detail"></div><p class="metric-change" id="optin-change"></p></div>
+      <div class="card"><div class="k">Return within 30 days</div><div class="v" id="return-rate">—</div><div class="d" id="return-detail"></div><p class="metric-change" id="return-change"></p></div>
+    </div>
+    <details class="ops-help metric-definitions"><summary>What these numbers mean</summary>
+      <p id="overview-period-detail"></p>
+      <p>Collected payments exclude tips, pending cash and payments now refunded. Contact capture counts bills with an identified payer, not every diner. Marketing sign-ups use each contact’s last receipt choice in the period; repeated submissions count once.</p>
+      <p id="return-cohort-detail"></p>
+      <p>Return visits cover known payers and their first observed visit, not every customer or necessarily their first-ever visit. Comparisons use the previous equal-length period; a dash means there is no eligible data. Historical figures reflect current payment and refund status.</p>
+      <p id="withdrawal-detail"></p>
+    </details>
+    <div class="card mt"><h3>Recommended next actions</h3><div class="cs">Based on recorded visits and settlement activity. Campaigns always need your approval.</div><div id="weekly-actions"></div></div>
+    <div class="grid g2e mt">
+      <div class="card" id="guest-journey">
+        <h3>Guest journey</h3>
+        <div class="cs" id="journey-period">From QR scan to payment, computed from recorded events.</div>
+        <div class="journey-grid" id="journey-metrics"></div>
+        <h4 class="journey-sub">Viewed, never on a bill</h4>
+        <div id="journey-never"></div>
+        <p class="cs journey-note">Computed from recorded events on this device. Scans and views are client-fired and may be incomplete.</p>
+      </div>
+      <div class="card" id="data-health">
+        <h3>Menu and data health</h3>
+        <div class="cs" id="health-summary">Weekly checks over the published menu and recorded activity.</div>
+        <div id="health-rows" class="ops-list"></div>
+        <p class="cs health-rate" id="health-rate"></p>
+      </div>
+    </div>
+    <details class="ops-help"><summary>Metrics available after connection</summary><p>POS data will unlock the share of eligible bills using Aalayna. Payment-provider events will unlock completion times and failed payments, with cash measured separately. Messaging-provider events will unlock delivery, failure and unsubscribe rates. Missing connections are not shown as zero performance.</p></details>
+    <div class="note mt"><span>ⓘ</span><span>These figures cover this browser’s recorded activity. They are not total restaurant revenue.</span></div>
+  </div>
+
+  <div class="view" id="v-guests">
+    <div class="top"><div><h1>Customers &amp; return visits</h1><div class="sub">All recorded customer history · known payers, not every diner</div></div></div>
+    <div class="grid g3 mb">
+      <div class="card"><div class="k">Known contacts</div><div class="v" id="gl-total">0</div></div>
+      <div class="card"><div class="k">Marketing permission</div><div class="v" id="gl-mkt">0</div></div>
+      <div class="card"><div class="k">More than one recorded visit</div><div class="v" id="gl-ret">0</div></div>
+    </div>
+    <nav class="ops-tabs" aria-label="Customer views"><button type="button" aria-pressed="true" data-group="growth" data-panel="growth-customers" onclick="opsPanel('growth','growth-customers')">Customers</button><button type="button" aria-pressed="false" data-group="growth" data-panel="growth-campaigns" onclick="opsPanel('growth','growth-campaigns')">Campaigns</button></nav>
+    <section id="growth-customers" data-panel-group="growth">    <div class="card mb"><h3>Customer history</h3><details class="ops-help"><summary>How visits and spending are counted</summary><p>Each bill counts once per contact. Spending is their linked share, excluding tips and refunds. Phone numbers include their country code.</p></details>
+      <label class="ops-label" for="guest-search">Find a contact</label><input class="in" id="guest-search" type="search" placeholder="Email or phone number" oninput="paintGrowthCustomers()">
+      <div id="gl-rows" class="ops-list"></div>
+      <p class="cs" id="legacy-guests"></p>
+    </div>
+</section>
+    <section id="growth-campaigns" data-panel-group="growth" hidden>
+      <div class="card"><div class="ops-heading"><div><h3>Campaigns &amp; outcomes</h3><p class="cs">Invite guests back, then follow their return visits.</p></div><button class="btn primary" onclick="openCampaign()">New campaign</button></div>
+      <details class="ops-help"><summary>How campaign results work</summary><p>Returns are measured for 30 days after approval. Delivery counts come only from an imported provider report. Approval and export do not send messages.</p></details><div id="cp-rows" class="ops-list"></div></div>
+    </section>
+    <details class="ops-help mt"><summary>Customer permissions &amp; privacy</summary><p>Customer details and permissions stay with this restaurant. Dietary selections are not added to profiles. Marketing opt-outs remove contacts from subsequent audience exports.</p></details>
+  </div>
+  <dialog id="campaign-compose" class="ops-dialog" aria-labelledby="compose-title"><div class="ops-heading"><h2 id="compose-title">New return-visit campaign</h2><button class="btn icon-btn" type="button" aria-label="Close campaign" onclick="closeCampaign()">×</button></div>
+        <div class="cs">Draft, review and approve an audience. Messaging is not connected: approval and export do not send a message.</div>
+        <div class="cf">
+          <label class="ops-label" for="cp-name">Campaign name</label><input class="in" id="cp-name" maxlength="100" placeholder="Invite first-time guests back">
+          <label class="ops-label" for="cp-channel">Channel</label><select class="in" id="cp-channel" onchange="paintAudience()"><option value="whatsapp">WhatsApp</option><option value="email">Email</option></select>
+          <label class="ops-label" for="cp-aud">Audience</label><select class="in" id="cp-aud" onchange="paintAudience()">
+            <option value="second_visit">One visit, 7–29 days ago</option><option value="lapsed">Last visit at least 30 days ago</option><option value="regulars">Three or more visits, seen in last 30 days</option><option value="all">All eligible contacts in this channel</option>
+          </select>
+          <p class="cs" id="audience-count" aria-live="polite"></p>
+          <label class="ops-label" for="cp-msg">Message</label><textarea class="in" id="cp-msg" rows="5" maxlength="2000" placeholder="Write a relevant invitation from your restaurant. Include how to opt out."></textarea>
+          <label class="ops-label"><input id="cp-holdout" type="checkbox" checked> Reserve 20% as a comparison group (minimum five contacts)</label>
+          <button class="btn primary" onclick="saveGrowthCampaign()">Save draft for review</button>
+        </div>
+      </dialog>
+  <dialog id="customer-dialog" class="ops-dialog" aria-label="Customer history"><div class="ops-heading"><h2>Customer history</h2><button class="btn icon-btn" aria-label="Close customer history" onclick="document.getElementById('customer-dialog').close()">×</button></div><div id="customer-detail" aria-live="polite"></div></dialog>
+
+  <!-- ═══════════ REVIEWS ═══════════ -->
+  <div class="view" id="v-reviews">
+    <div class="top">
+      <div>
+        <h1>Reviews &amp; feedback</h1>
+        <div class="sub">Both channels are offered to every guest after settlement, independent of rating</div>
+      </div>
+    </div>
+
+    <div class="card mb" id="recorded-ratings">
+      <h3>Recorded ratings</h3>
+      <div class="cs">Submitted by guests on this device after payment. Ratings are stored as events and never edited.</div>
+      <div id="rating-rows" class="ops-list"></div>
+    </div>
+    <p class="sample-notice mb">Sample data below · illustrative ratings, reviews and conversion figures. No Google connection.</p>
+
+    <div class="grid g4">
+      <div class="card"><div class="k">Google rating</div><div class="v">4.7</div>
+        <div class="d"><span class="pill up">▲ 0.2</span> over 6 weeks</div></div>
+      <div class="card"><div class="k">Reviews this week</div><div class="v">34</div>
+        <div class="d">31 at five stars</div></div>
+      <div class="card"><div class="k">Review conversion</div><div class="v">47.9%</div>
+        <div class="d">34 of 71 settled tables</div></div>
+      <div class="card"><div class="k">Private feedback, unread</div><div class="v" style="color:var(--red)">2</div>
+        <div class="d">not published anywhere</div></div>
+    </div>
+
+    <div class="grid g2e mt">
+      <div class="card">
+        <h3>Rating trend</h3>
+        <div class="cs">Weekly average, trailing six weeks.</div>
+        <div class="bars" id="rtrend"></div>
+        <div class="axis" id="rtrend-ax"></div>
+        <div class="vals" id="rtrend-v"></div>
+      </div>
+      <div class="card">
+        <h3>Private feedback</h3>
+        <div class="cs">Submitted by guests who chose not to post publicly.</div>
+        <div id="fbs" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <h3>Recent public reviews</h3>
+      <div id="rvs" style="margin-top:4px"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ TEAM ═══════════ -->
+  <div class="view" id="v-team">
+    <div class="top">
+      <div>
+        <h1>Team</h1>
+        <div class="sub">Tip attribution and payouts are managed under the restaurant’s policy</div>
+        <p class="sample-notice">Sample data · illustrative team charts and payout history. Recorded tips are under Service.</p>
+      </div>
+    </div>
+
+    <div class="grid g2e">
+      <div class="card">
+        <h3>Tips by server — this week</h3>
+        <div class="cs">Suitable basis for weekly one-on-ones alongside guest feedback.</div>
+        <div id="team" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <h3>Payout record</h3>
+        <div class="cs">Payments recorded at close of each service.</div>
+        <div style="margin-top:8px" id="hist"></div>
+        <div class="note"><span>ⓘ</span><span>The restaurant decides how and when tips are distributed. These records acknowledge
+          payouts; they do not transfer money to staff.</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"><span id="toast-t"></span></div>
+
+<script src="restaurant-ops.js?v=5"></script>
+<script>
+/* ───────── static illustrative data (labelled where shown) ───────── */
+var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
+var RVS = [
+  {s:5, w:'2 days ago', t:'Paid on my phone before the waiter came back. Knefeh remains the best in Tripoli.'},
+  {s:5, w:'3 days ago', t:'Split the bill four ways in seconds. Service was excellent.'},
+  {s:4, w:'5 days ago', t:'Busy on a Friday but the table was ready quickly. Baklava worth the drive.'}];
+var FBS = [
+  {t:'The terrace took around twenty minutes to be cleared although the table was free.', m:'Saturday · table 8'},
+  {t:'Coffee arrived cold. Everything else was very good.', m:'Sunday · table 21'}];
+var WEEKTEAM = [
+  {n:'Abou Karim', t:156.00, k:44}, {n:'Georges', t:121.00, k:38},
+  {n:'Mariam', t:98.00, k:29}, {n:'Rami', t:43.00, k:18}];
+
+/* ───────── utilities ───────── */
+function $(id){ return document.getElementById(id); }
+function money(v){ return '$' + v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function toast(m){
+  $('toast-t').textContent = m;
+  $('toast').classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ $('toast').classList.remove('on'); }, 2400);
+}
+function go(el, v){
+  document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
+  el.classList.add('on');
+  document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('on'); });
+  $('v-' + v).classList.add('on');
+  $('report-toolbar').hidden = v !== 'tonight' && v !== 'week';
+}
+
+/* ───────── Tonight — live from the store ───────── */
+function paintTonight(){
+  ownerReportSnapshot = Aalayna.ownerReport($('report-period').value);
+  var report=opsReport(), m=report.current, r=m.rails;
+  $('r-whish').textContent=money(r.whish/100);$('r-card').textContent=money(r.card/100);$('r-cash').textContent=money(r.cash/100);
+  $('r-tot').textContent=money(m.grossCents/100);$('k-tot').textContent=money(m.netCents/100);
+  $('t-scan').textContent=m.completedBills;$('k-avg').textContent=m.averageBillCents==null?'—':money(m.averageBillCents/100);
+  $('k-tip').textContent=m.netCents>0?opsPercent(m.tipCents/m.netCents):'—';
+  $('settlement-change').textContent=opsMoneyChange(m.netCents,report.previous.netCents);
+  $('t-date').textContent='Open bills and collection requests · live now';
+  $('report-period-note').textContent=report.window.label+' · Beirut time. Open bills and pending cash always stay live.';
+  $('t-note').textContent=money(m.grossCents/100)+' confirmed, including '+money(m.tipCents/100)+' in tips, across '+m.bills+' bills with a payment in this period. This is recorded Aalayna activity, not a POS closing statement.';
+
+  paintRows();
+  paintFloor();
+  paintGuests();
+  var box = $('shortbox');
+  var pending = Aalayna.pendingCash().reduce(function(total,x){ return total + x.amount; },0);
+  if (pending > 0){
+    box.style.display = 'flex';
+    box.innerHTML = '<span>ⓘ</span><span><b>' + money(pending) + '</b> cash awaiting collection. Excluded from confirmed totals. Use the Live floor to confirm after receiving the cash.</span>';
+  } else box.style.display = 'none';
+}
+
+/* ---- floor assignment ----
+   The plan is a stylised room, not a survey: default positions sketch a dining
+   room (window row, centre cluster, bar, terrace); dragging persists percent
+   coordinates so a venue can roughly mirror its real floor in a minute. */
+var FL_COLORS = ['#0F4B3A', '#B4423A', '#26327A', '#8A6A1F', '#5B3E82', '#3A6B78'];
+var FL_DEFAULT = {
+  1:{x:10,y:22}, 2:{x:24,y:22}, 3:{x:38,y:22}, 4:{x:52,y:22},
+  5:{x:14,y:50}, 6:{x:30,y:52}, 7:{x:46,y:50}, 8:{x:22,y:78,sq:1}, 9:{x:40,y:80,sq:1},
+  10:{x:66,y:20,sq:1}, 11:{x:78,y:20,sq:1}, 12:{x:90,y:20,sq:1},
+  13:{x:70,y:52}, 14:{x:86,y:52}, 15:{x:70,y:80}, 16:{x:86,y:80}
+};
+function flColor(f, name){
+  var i = f.servers.indexOf(name);
+  return i < 0 ? 'var(--faint)' : FL_COLORS[i % FL_COLORS.length];
+}
+var flActive = null;
+function escF(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function paintFloor(){
+  var f = Aalayna.floor();
+  if (flActive === null || f.servers.indexOf(flActive) < 0) flActive = f.servers[0];
+  var row = $('fl-servers'); row.innerHTML = '';
+  f.servers.forEach(function(name){
+    var b = document.createElement('button');
+    b.className = 'fl-sv' + (name === flActive ? ' on' : '');
+    b.innerHTML = '<span class="dot" style="background:' + flColor(f, name) + '"></span>' +
+      escF(name) + (f.servers.length > 1 ? '<span class="x">&times;</span>' : '');
+    b.onclick = function(){ flActive = name; paintFloor(); };
+    var x = b.querySelector('.x');
+    if (x) x.onclick = function(e){
+      e.stopPropagation();
+      f.servers.splice(f.servers.indexOf(name), 1);
+      Object.keys(f.tables).forEach(function(t){ if (f.tables[t] === name) delete f.tables[t]; });
+      Aalayna.setFloor(f);
+    };
+    row.appendChild(b);
+  });
+  var add = document.createElement('button');
+  add.className = 'fl-add'; add.textContent = '+ Add server';
+  add.onclick = function(){
+    var n = prompt('Server name');
+    if (n && n.trim()){ f.servers.push(n.trim().slice(0, 24)); flActive = n.trim().slice(0, 24); Aalayna.setFloor(f); }
+  };
+  row.appendChild(add);
+  var grid = $('fl-tables');
+  grid.querySelectorAll('.fl-t').forEach(function(el){ el.remove(); });
+  f.layout = f.layout || {};
+  for (var t = 1; t <= 16; t++){(function(t){
+    var pos = f.layout[String(t)] || FL_DEFAULT[t];
+    var who = f.tables[String(t)] || '';
+    var d = document.createElement('div');
+    d.className = 'fl-t' + (FL_DEFAULT[t].sq ? ' sq' : '');
+    d.style.left = pos.x + '%'; d.style.top = pos.y + '%';
+    if (who){
+      var c = flColor(f, who);
+      d.style.borderColor = c; d.style.color = c;
+    }
+    d.innerHTML = '<div class="tn">' + t + '</div><div class="ts">' + escF(who.split(' ')[0]) + '</div>';
+    /* tap = assign; a drag past 6px = move the table instead */
+    d.onpointerdown = function(e){
+      e.preventDefault();
+      var r = grid.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, moved = false;
+      function mv(ev){
+        if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) < 6) return;
+        moved = true;
+        d.classList.add('drag');
+        var x = Math.min(96, Math.max(4, (ev.clientX - r.left) / r.width * 100));
+        var y = Math.min(90, Math.max(8, (ev.clientY - r.top) / r.height * 100));
+        d.style.left = x + '%'; d.style.top = y + '%';
+      }
+      function up(ev){
+        document.removeEventListener('pointermove', mv);
+        document.removeEventListener('pointerup', up);
+        d.classList.remove('drag');
+        if (moved){
+          f.layout[String(t)] = { x: Math.round(parseFloat(d.style.left)), y: Math.round(parseFloat(d.style.top)) };
+          Aalayna.setFloor(f);
+        } else {
+          if (f.tables[String(t)] === flActive) delete f.tables[String(t)];
+          else f.tables[String(t)] = flActive;
+          Aalayna.setFloor(f);
+        }
+      }
+      document.addEventListener('pointermove', mv);
+      document.addEventListener('pointerup', up);
+    };
+    grid.appendChild(d);
+  })(t);}
+  $('fl-pooled').checked = !!f.pooled;
+  row.classList.toggle('off', !!f.pooled);
+  grid.classList.toggle('off', !!f.pooled);
+}
+function floorPool(on){
+  var f = Aalayna.floor();
+  f.pooled = on;
+  Aalayna.setFloor(f);
+}
+function paintGuests(){ paintGrowth(); }
+var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
+function paintRows(){
+  var box = $('setrows'), cashbox=$('cash-queue'); box.innerHTML = '';cashbox.replaceChildren();
+  var pendingRows=Aalayna.pendingCash();$('cash-count').textContent=pendingRows.length+' waiting';
+  if(!pendingRows.length)cashbox.appendChild(opsEl('p','All clear. No cash requests are waiting for collection.','ops-empty'));
+  var history=Aalayna.ownerPaymentHistory($('report-period').value);
+  if(!history.length)box.appendChild(opsEl('p','No payment history in this period. Pending cash appears on the Live floor.','ops-empty'));
+  var all = history.concat(Aalayna.pendingCash()).slice().reverse();
+  if (!all.length){
+    box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:12px 0">No settlements yet ' +
+      'this service. Rows appear as guests pay.</div>';
+    return;
+  }
+  all.forEach(function(x){
+    var d = document.createElement('div');
+    d.className = 'setr' + (x.refunded ? ' refunded' : '');
+    var t = new Date(x.confirmedAt || x.ts);
+    var hh = t.toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    d.innerHTML =
+      '<span class="tm">' + hh + '</span>' +
+      '<span class="tb2">Table ' + x.table + '</span>' +
+      '<span class="rl">' + ((RAIL_LABEL[x.rail] || x.rail) + (x.rail === 'cash' ? (Aalayna.isConfirmed(x) ? ', collected' : ', ' + Aalayna.settlementStatus(x)) : '')) + '</span>' +
+      '<span class="am">' + money(x.amount) + '</span>' +
+      '<span class="tp2">' + (x.tip ? '+' + money(x.tip) + ' tip' : '') + '</span>' +
+      (x.refunded ? '<span class="rftag">REFUNDED</span>'
+        : x.cancelled ? '<span class="rftag">CANCELLED</span>'
+        : '');
+    if (Aalayna.settlementStatus(x) === 'pending') {
+      var collect = document.createElement('button'); collect.className = 'rfb'; collect.textContent = 'Confirm cash received';
+      collect.onclick = function(){ confirmCashReceived(x.id); };
+      d.appendChild(collect);
+      var cancel = document.createElement('button'); cancel.className = 'rfb'; cancel.textContent = 'Cancel request';
+      cancel.onclick = function(){ Aalayna.cancelCash(x.id); toast('Cash request cancelled'); };
+      d.appendChild(cancel);
+    } else if (Aalayna.isConfirmed(x)) {
+      var refund = document.createElement('button'); refund.className = 'rfb'; refund.textContent = 'Refund';
+      refund.onclick = function(){ refundRow(refund,x.id); }; d.appendChild(refund);
+    }
+    if (x.rail === 'cash' && Aalayna.settlementStatus(x) === 'pending') {
+      var change = document.createElement('span'); change.style.cssText = 'font-size:12px;flex-basis:100%;color:var(--sub)';
+      change.textContent = x.note ? 'Guest declares ' + money(x.note) + ' · change ' + money(x.change) : 'Guest declares exact cash';
+      d.appendChild(change);
+    }
+    (Aalayna.settlementStatus(x)==='pending'?cashbox:box).appendChild(d);
+  });
+}
+function confirmCashReceived(id){
+  if (Aalayna.confirmCash(id)) toast('Cash collection recorded (demo)');
+  else { paintRows(); toast('Request changed. Check its current status.'); }
+}
+/* Refunds retain two taps: first arms the button, second executes. */
+function refundRow(btn, id){
+  if (!btn.classList.contains('arm')){
+    btn.classList.add('arm');
+    btn.textContent = 'Confirm refund';
+    setTimeout(function(){
+      if (btn.isConnected){ btn.classList.remove('arm'); btn.textContent = 'Refund'; }
+    }, 3000);
+    return;
+  }
+  Aalayna.refund(id);
+  toast('Refund recorded — statement and tips updated');
+}
+function paintTips(){
+  var box = $('tips'); box.innerHTML = '';
+  var owed = Aalayna.tipsOwed();
+  if (!owed.length){
+    box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:12px 0">No digital tips recorded ' +
+      'this service. Entries appear as guests settle.</div>';
+    $('tipdone').style.display = 'none';
+    return;
+  }
+  var left = 0;
+  owed.forEach(function(t){
+    if (!t.paid) left += t.amount;
+    var row = document.createElement('div');
+    row.className = 'tip';
+    row.innerHTML = '<span class="av">' + t.server.split(' ').map(function(w){return w[0];}).join('').slice(0,2) + '</span>' +
+      '<span class="nm">' + t.server + '<span>outstanding digital tips</span></span>' +
+      '<span class="amt">' + money(t.amount) + '</span>';
+    var b = document.createElement('button');
+    b.className = 'btn' + (t.paid ? ' done' : '');
+    b.textContent = t.paid ? 'Recorded ✓' : 'Record payment';
+    if (!t.paid) b.onclick = function(){ payTip(t.server, t.amount); };
+    row.appendChild(b);
+    box.appendChild(row);
+  });
+  $('tipdone').style.display = left === 0 ? 'flex' : 'none';
+}
+function payTip(server, amount){
+  Aalayna.payTip(server);
+  paintTips();
+  toast('Payment of ' + money(amount) + ' to ' + server + ' recorded');
+}
+
+function exportCSV(){
+  var s = Aalayna.ownerPaymentHistory($('report-period').value);
+  if (!s.length){ toast('No payment history in this period to export'); return; }
+  var rows = [['id','timestamp','table','method','amount','tip','server','status','confirmed_at','refunded','cancelled']];
+  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server, Aalayna.settlementStatus(x), x.confirmedAt || '', x.refunded || '', x.cancelled || '']); });
+  var csv = rows.map(function(r){ return r.map(function(v){ var text = String(v); if (/^[=+@-]/.test(text)) text = "'" + text; return '"' + text.replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+  try{
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+    a.download = 'aalayna-settlements.csv';
+    a.click();
+    toast('Statement exported — ' + s.length + ' rows');
+  }catch(e){ toast('Export unavailable in this preview'); }
+}
+
+/* ───────── charts ───────── */
+function simpleBars(el, axEl, vEl, data, fmt){
+  var box = $(el), ax = $(axEl), vv = $(vEl);
+  box.innerHTML = ''; ax.innerHTML = ''; vv.innerHTML = '';
+  var max = Math.max.apply(null, data.map(function(d){ return d.v; })) * 1.1;
+  data.forEach(function(d){
+    var g = document.createElement('div');
+    g.className = 'bar';
+    g.innerHTML = '<div class="cols"><div class="col" style="height:' + (d.v/max*100) + '%"></div></div>';
+    box.appendChild(g);
+    ax.insertAdjacentHTML('beforeend','<span>' + d.d + '</span>');
+    vv.insertAdjacentHTML('beforeend','<span>' + (fmt ? fmt(d.v) : d.v) + '</span>');
+  });
+}
+function paintReviews(){
+  var box = $('rvs'); box.innerHTML = '';
+  RVS.forEach(function(r){
+    box.insertAdjacentHTML('beforeend','<div class="rv"><div class="h"><span class="st">' +
+      '★'.repeat(r.s) + '</span><span class="w">' + r.w + '</span></div><div class="t">' + r.t + '</div></div>');
+  });
+  var f = $('fbs'); f.innerHTML = '';
+  FBS.forEach(function(x){
+    f.insertAdjacentHTML('beforeend','<div class="fb"><span class="dt2"></span><span><div class="t">' +
+      x.t + '</div><div class="m">' + x.m + '</div></span></div>');
+  });
+}
+function paintTeam(){
+  var box = $('team'); box.innerHTML = '';
+  WEEKTEAM.forEach(function(t){
+    box.insertAdjacentHTML('beforeend','<div class="tip"><span class="av">' +
+      t.n.split(' ').map(function(w){return w[0];}).join('').slice(0,2) + '</span>' +
+      '<span class="nm">' + t.n + '<span>' + t.k + ' tables · avg ' + money(t.t/t.k) + ' per table</span></span>' +
+      '<span class="amt">' + money(t.t) + '</span></div>');
+  });
+  var h = $('hist'); h.innerHTML = '';
+  [{n:'Friday 16 Aug', v:'$96.00 · 4 servers'},{n:'Thursday 15 Aug', v:'$71.00 · 4 servers'},
+   {n:'Wednesday 14 Aug', v:'$58.00 · 3 servers'},{n:'Tuesday 13 Aug', v:'$63.00 · 4 servers'}]
+  .forEach(function(d){
+    h.insertAdjacentHTML('beforeend','<div class="hrow" style="grid-template-columns:1fr auto">' +
+      '<span class="n" style="color:var(--sub)">' + d.n + '</span><span class="p">' + d.v + '</span></div>');
+  });
+}
+
+/* ───────── boot ───────── */
+(function(){ var v = Aalayna.venue();
+  document.getElementById('v-sub').textContent = (v.name + (v.place ? ' · ' + v.place : '')).toUpperCase(); })();
+Aalayna.recordHealth();
+paintTonight();
+paintTips();
+Aalayna.on(function(){ paintTonight(); paintTips(); });
+simpleBars('rtrend','rtrend-ax','rtrend-v', RTREND.map(function(r){return {d:r.d,v:r.v};}), function(v){ return v.toFixed(1); });
+paintReviews();
+paintTeam();
+</script>
+</body>
+</html>

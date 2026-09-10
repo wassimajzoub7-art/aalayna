@@ -62,7 +62,7 @@ function saveGrowthCampaign() {
 function importGrowthDeliveries(id) {
   var input=opsEl('input');input.type='file';input.accept='.json,application/json';
   input.onchange=async function(){
-    try{var file=input.files[0];if(!file)return;if(file.size>1000000)throw new Error('Choose a delivery report smaller than 1 MB.');var rows=JSON.parse(await file.text());Aalayna.recordCampaignDeliveries(id,rows);toast('Delivery report recorded; no messages sent by 3alayna.');}
+    try{var file=input.files[0];if(!file)return;if(file.size>1000000)throw new Error('Choose a delivery report smaller than 1 MB.');var rows=JSON.parse(await file.text());Aalayna.recordCampaignDeliveries(id,rows);toast('Delivery report recorded; no messages sent by Aalayna.');}
     catch(e){toast(e.message);}
   };input.click();
 }
