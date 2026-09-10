@@ -95,6 +95,11 @@
       <input class="in" id="f-brand" value="" oninput="paint(); markSwatch()" placeholder="or exact hex, e.g. #EA312B" style="margin-top:8px">
       <div class="lb">Font <span style="font-weight:400;text-transform:none;letter-spacing:0">&mdash; optional, Google Fonts name</span></div>
       <input class="in" id="f-font" value="" oninput="paint()" placeholder="Montserrat">
+    </div>
+    <div class="fld">
+      <label class="lb" for="f-key">Guest access key (live venues only)</label>
+      <input class="in" id="f-key" value="" oninput="paint()" placeholder="gst_&hellip; from the venue registration">
+      <div class="hint">Leave blank for a demo. With a key, every card writes to the venue's shared store.</div>
       <div class="hint">One hex from their logo re-skins the whole demo; the font swaps the
         typography. Pull both from their menu PDF or Instagram.</div>
       <div class="lb">Demo base URL</div>
@@ -130,6 +135,8 @@ function demoURL(){
   if (g) q.push('gplace=' + encodeURIComponent(g));
   if (br) q.push('brand=' + encodeURIComponent(br));
   if (ft) q.push('font=' + encodeURIComponent(ft));
+  var gk = document.getElementById('f-key').value.trim();
+  if (/^gst_[0-9a-f]{12,64}$/.test(gk)) q.push('k=' + gk);
   return q.length ? u + '?' + q.join('&') : u;
 }
 function tent(url, name, place){

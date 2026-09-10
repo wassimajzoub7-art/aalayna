@@ -157,7 +157,15 @@
     try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; }
     catch (e) { return fallback; }
   }
+  /* afterWrite hooks let a sync layer mirror writes elsewhere; rawWrite is the
+     path that layer uses to land remote state locally without echoing it back. */
+  var hooks = { afterWrite: [] };
   function write(k, v) {
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+    fire(k);
+    hooks.afterWrite.forEach(function (h) { try { h(k, v); } catch (e) {} });
+  }
+  function rawWrite(k, v) {
     try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
     fire(k);
   }
@@ -809,7 +817,7 @@
     /* ---- plumbing ---- */
     on: function (fn) { subs.push(fn); },
     notify: function (key) { fire(key); },
-    util: { read: read, write: write, uid: uid, now: now, cents: cents, clone: clone },
+    util: { read: read, write: write, rawWrite: rawWrite, hooks: hooks, uid: uid, now: now, cents: cents, clone: clone },
     reset: function () {
       try { localStorage.removeItem('aal.pack'); } catch (e) {}
       try { localStorage.removeItem(K.guests); localStorage.removeItem(K.campaigns); } catch (e) {}

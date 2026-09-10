@@ -33,3 +33,7 @@
 !schema/*
 !admin.html
 !CNAME
+!aalayna-sync.js
+!aalayna-config.js
+!supabase/
+!supabase/*

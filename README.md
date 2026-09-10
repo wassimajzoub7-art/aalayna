@@ -33,6 +33,10 @@ The store implements the engineering spec for data integrity, event logging, ide
 - Digital payments are two-step: a request is created when the guest hands over to the provider and is confirmed once by a provider reference (duplicate callbacks are idempotent, raw callbacks are logged). Cash stays a first-class pending-then-confirmed path.
 - `admin.html` is the internal view: weekly health reports, admin notifications, edit log, identity merges and payment callbacks. Nothing there is for restaurants.
 
+## Shared store (pilot backend, phase 1)
+
+`aalayna-sync.js` mirrors the store to Supabase so a guest's phone and the owner's dashboard share one venue. Apply `supabase/migration.sql` once in the Supabase SQL editor, register each venue with `select * from aal_register_venue('Name','Place')`, put the guest key in the QR links (`?k=gst_...`, the QR generator has a field for it) and open the dashboard and editor once with the owner key (`?k=own_...`). Without a key the apps stay local, which is what the public demos do. Row-level security decides what each key may read or write: guests add payments, checks, events and receipt sign-ups and read bill state; only the owner key reads the guest list, the event stream, or writes the menu. `aalayna-config.js` holds the project URL and the anon key, which is public by design. Remote wins on first load; local writes are pushed within a second; other devices poll every four seconds. Server-side validation of balances and item claims is phase 2 (`schema/`).
+
 ## Validation
 
 Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
