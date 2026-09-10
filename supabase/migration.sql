@@ -96,9 +96,10 @@ grant select, insert, update, delete on kv_docs, kv_rows to anon;
 -- is typed into the dashboard once, the guest key goes into the QR links.
 create or replace function aal_register_venue(p_name text, p_place text)
 returns table (restaurant_id text, owner_key text, guest_key text) language plpgsql security definer as $$
+#variable_conflict use_column
 declare rid text := '["' || lower(trim(p_name)) || '","' || lower(trim(coalesce(p_place,''))) || '"]';
 begin
-  insert into venue_keys (restaurant_id, owner_key, guest_key, name)
+  insert into venue_keys as v (restaurant_id, owner_key, guest_key, name)
   values (rid, 'own_' || encode(gen_random_bytes(18), 'hex'), 'gst_' || encode(gen_random_bytes(9), 'hex'), p_name)
   on conflict (restaurant_id) do nothing;
   return query select v.restaurant_id, v.owner_key, v.guest_key from venue_keys v where v.restaurant_id = rid;
