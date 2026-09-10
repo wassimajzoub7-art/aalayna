@@ -67,15 +67,17 @@
   if (!key) return;
   var rid = A.venueId();
   var base = cfg.supabaseUrl.replace(/\/$/, '') + '/rest/v1/';
-  var headers = { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'x-aalayna-key': key, 'Content-Type': 'application/json' };
+  var headers = { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'x-aalayna-key': key, 'x-aalayna-device': A.device(), 'Content-Type': 'application/json' };
 
   function call(path, opts) {
     opts = opts || {};
     return fetch(base + path, { method: opts.method || 'GET', headers: Object.assign({}, headers, opts.headers || {}),
                                 body: opts.body ? JSON.stringify(opts.body) : undefined })
       .then(function (res) {
-        if (!res.ok) return res.text().then(function (t) { throw new Error(res.status + ' ' + t.slice(0, 160)); });
-        return res.status === 204 ? null : res.json();
+        return res.text().then(function (t) {
+          if (!res.ok) throw new Error(res.status + ' ' + t.slice(0, 160));
+          return t ? JSON.parse(t) : null;      // 201/204 with return=minimal have no body
+        });
       });
   }
   function fail(e) { state.errors++; state.lastError = String(e && e.message || e); state.status = 'error'; }
@@ -122,7 +124,9 @@
     if (!rows.length) return Promise.resolve();
     if (state.role === 'guest' && GUEST_COLLECTIONS.indexOf(c) < 0) return Promise.resolve();
     var body = rows.map(function (r) { return { restaurant_id: rid, collection: c, id: r.id, body: r.body }; });
-    return call('kv_rows?on_conflict=restaurant_id,collection,id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: body })
+    /* events are append-only: a retry must never turn into an update */
+    var resolution = c === 'aal.events' ? 'ignore-duplicates' : 'merge-duplicates';
+    return call('kv_rows?on_conflict=restaurant_id,collection,id', { method: 'POST', headers: { Prefer: 'resolution=' + resolution + ',return=minimal' }, body: body })
       .then(function () { rows.forEach(function (r) { snap[c][r.id] = r.json; }); state.pushed += rows.length; state.lastPush = new Date().toISOString(); });
   }
   function pushDoc(k) {

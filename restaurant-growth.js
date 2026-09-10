@@ -75,7 +75,7 @@
     var g = all.find(function(x){ return same(x) && x.contact === contact.contact; });
     if (payment.customerId && (!g || payment.customerId !== g.id)) throw new Error('This payment is already linked to another contact.');
     if (!g) {
-      g = { id:uid('guest-'), venueId:A.venueId(), venue:A.venue().name, contact:contact.contact, channel:contact.channel, createdAt:now(), consentHistory:[] };
+      g = { id:uid('guest-'), venueId:A.venueId(), venue:A.venue().name, contact:contact.contact, channel:contact.channel, deviceId:payment.deviceId || null, createdAt:now(), consentHistory:[] };
       all.push(g);
     }
     g.receipt = input.receipt; g.marketing = input.marketing;
