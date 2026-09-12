@@ -40,3 +40,26 @@ test('honors Do Not Track and bounds local event retention', () => {
   const {a} = setup(); for(let i=0;i<350;i++) a.track('demo_start','hero');
   assert.equal(a.events().length,300); a.clear(); assert.equal(a.events().length,0);
 });
+
+test('with a shared store configured, events are appended with the public key and nothing else', async () => {
+  const calls = [];
+  const records = new Map(), listeners = {};
+  const window = {
+    navigator: { doNotTrack: '0', sendBeacon: () => true },
+    document: { addEventListener: (name, cb) => listeners[name] = cb },
+    location: { pathname: '/numbers.html', search: '?focus=tips&tables=30' },
+    localStorage: { getItem: k => records.get(k), setItem: (k,v) => records.set(k,v), removeItem: k => records.delete(k) },
+    dispatchEvent() {}, AalaynaAnalyticsConfig: { endpoint: '' },
+    AalaynaConfig: { supabaseUrl: 'https://x.supabase.co/', anonKey: 'anon' },
+    fetch: (url, opts) => { calls.push({ url, opts }); return Promise.resolve({ ok: true }); }
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../analytics.js'),'utf8'), { window, Blob, CustomEvent: class { constructor(type,init) { this.type=type;this.detail=init.detail; } } });
+  window.AalaynaAnalytics.track('numbers_click', 'outcome_tips');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, 'https://x.supabase.co/rest/v1/site_events');
+  const body = JSON.parse(calls[0].opts.body);
+  assert.deepEqual(Object.keys(body).sort(), ['at','name','path','placement']);
+  assert.equal(body.path, '/numbers.html');
+  assert.ok(!calls[0].opts.body.includes('tables=30'));
+  assert.equal(calls[0].opts.headers.apikey, 'anon');
+});

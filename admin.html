@@ -63,8 +63,14 @@
     <div class="n">aalay<b>na</b></div>
     <h1>Aalayna internal admin</h1>
     <div class="sub" id="venue-line">Venue</div>
-    <p class="notice">Everything on this page is local prototype data stored on this device. Nothing is sent anywhere.</p>
+    <p class="notice">Local prototype data on this device, plus the shared store when this page was opened with an owner key.</p>
   </header>
+
+  <section class="card" id="funnel">
+    <div class="heading"><div><h2>Website funnel</h2><p class="cs">Clicks and demo events from aalayna.com, read from the shared store with the owner key. Last 7 and last 30 days, by event and by where on the page it happened.</p></div></div>
+    <div class="tbl"><table><thead><tr><th>Event</th><th class="num">7 days</th><th class="num">30 days</th><th>Where (30 days)</th></tr></thead><tbody id="funnel-rows"></tbody></table></div>
+    <p class="empty" id="funnel-empty" hidden>No website events yet, or no owner key on this device. Open this page once with an owner link to read them.</p>
+  </section>
 
   <section class="card" id="health">
     <div class="heading"><div><h2>Health reports</h2><p class="cs">One stored row per restaurant per ISO week, ranked by issue count. The weekly check runs whenever a dashboard is opened.</p></div></div>
@@ -155,7 +161,24 @@ function paintWebhooks(){
   $('webhook-empty').hidden=!!rows.length;
   rows.forEach(function(w){ var tr=el('tr'); tr.append(cell(when(w.at),'time'),cell(w.requestId||'','code'),cell(w.externalRef||'','code'),cell(w.payerRef||'not supplied')); body.appendChild(tr); });
 }
-function paintAll(){ paintHealth(); paintNotifications(); paintEdits(); paintIdentity(); paintWebhooks(); }
+var LABELS={demo_start:'Demo started',demo_open:'Guest app opened',demo_complete:'Demo payment completed',demo_cash_requested:'Demo cash requested',whatsapp_click:'WhatsApp tapped',booking_click:'Book a conversation tapped',booking_page_view:'Booking page viewed',booking_calendar_click:'Calendar opened',numbers_click:'Calculator opened'};
+function paintFunnel(){
+  var cfg=window.AalaynaConfig||{}, key=(Aalayna.sync&&Aalayna.sync.key&&Aalayna.sync.key())||'';
+  var body=$('funnel-rows'); body.replaceChildren();
+  if(!cfg.supabaseUrl||key.indexOf('own_')!==0){ $('funnel-empty').hidden=false; return; }
+  var since=new Date(Date.now()-30*86400000).toISOString();
+  fetch(cfg.supabaseUrl.replace(/\/$/,'')+'/rest/v1/site_events?select=name,placement,at&at=gte.'+encodeURIComponent(since)+'&order=at.desc&limit=5000',
+    {headers:{apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey,'x-aalayna-key':key}})
+  .then(function(r){ return r.ok?r.json():[]; })
+  .then(function(rows){
+    var week=Date.now()-7*86400000, agg={};
+    rows.forEach(function(e){ var a=agg[e.name]=agg[e.name]||{w:0,m:0,where:{}}; a.m++; if(Date.parse(e.at)>=week)a.w++; a.where[e.placement]=(a.where[e.placement]||0)+1; });
+    var names=Object.keys(LABELS).filter(function(n){ return agg[n]; });
+    $('funnel-empty').hidden=names.length>0;
+    names.forEach(function(n){ var a=agg[n], tr=el('tr'); tr.append(cell(LABELS[n]),cell(String(a.w),'num'),cell(String(a.m),'num'),cell(Object.keys(a.where).sort(function(x,y){return a.where[y]-a.where[x];}).map(function(p){return p+' '+a.where[p];}).join(' · '))); body.appendChild(tr); });
+  }).catch(function(){ $('funnel-empty').hidden=false; });
+}
+function paintAll(){ paintFunnel(); paintHealth(); paintNotifications(); paintEdits(); paintIdentity(); paintWebhooks(); }
 (function(){ var v=Aalayna.venue(); $('venue-line').textContent=v.name+(v.place?' · '+v.place:'')+' · venue id '+Aalayna.venueId(); })();
 paintAll();
 Aalayna.on(function(){ paintAll(); });

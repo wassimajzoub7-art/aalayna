@@ -14,6 +14,17 @@
     var event = { name: name, placement: /^[a-z_]{1,40}$/.test(placement || '') ? placement : 'unspecified', path: global.location.pathname, at: new Date().toISOString() };
     try { global.localStorage.setItem(KEY, JSON.stringify(events().concat([event]).slice(-300))); } catch (e) {}
     global.dispatchEvent(new CustomEvent('aalayna:analytics', { detail: event }));
+    // Shared store: the same public key every page uses, append-only by policy.
+    var sb = global.AalaynaConfig || {};
+    if (sb.supabaseUrl && sb.anonKey && global.fetch) {
+      try {
+        global.fetch(sb.supabaseUrl.replace(/\/$/, '') + '/rest/v1/site_events', {
+          method: 'POST', keepalive: true, credentials: 'omit',
+          headers: { apikey: sb.anonKey, Authorization: 'Bearer ' + sb.anonKey, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+          body: JSON.stringify({ name: event.name, placement: event.placement, path: event.path.slice(0, 120), at: event.at })
+        }).catch(function () {});
+      } catch (e) {}
+    }
     var endpoint = (global.AalaynaAnalyticsConfig || {}).endpoint;
     if (!endpoint || !/^https:\/\//.test(endpoint)) return;
     var payload = JSON.stringify(event);
