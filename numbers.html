@@ -19,20 +19,23 @@
   .result .unit{font-size:1.15rem;color:#D7E3E2;margin-top:.5rem}
   .result .unit b{color:#fff;font-weight:600}
   .result .star{font-size:.875rem;color:#B9C7C4;margin-top:1rem}
-  .inputs{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid #ffffff2a}
-  .inputs label{font-size:.8125rem;color:#D7E3E2;display:flex;flex-direction:column;gap:.3rem;min-width:9rem;flex:1}
-  .inputs input{font:inherit;font-size:1.05rem;font-weight:600;padding:.5rem .7rem;border:1px solid #ffffff33;border-radius:.6rem;background:#ffffff14;color:#fff;width:100%}
-  .inputs input:focus{outline:2px solid var(--peach);outline-offset:1px}
-  .inputs .hint{font-size:.75rem;color:#B9C7C4;font-weight:400}
+  .edit-h{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid #ffffff2a;font-size:.9rem;color:#fff;font-weight:600}
+  .edit-h span{font-weight:400;color:#B9C7C4}
+  .inputs{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin-top:.75rem;align-items:flex-end}
+  .inputs label{font-size:.8125rem;color:#D7E3E2;display:flex;flex-direction:column;justify-content:flex-end;gap:.3rem;min-width:9rem;flex:1}
+  .inputs .hint{font-size:.75rem;color:#B9C7C4;font-weight:400;min-height:1.1em}
+  .inputs input{font:inherit;font-size:1.1rem;font-weight:600;padding:.55rem .75rem;border:2px dashed var(--peach);border-radius:.6rem;background:#fff;color:var(--ink);width:100%;cursor:text;margin-top:auto}
+  .inputs input:hover{border-style:solid}
+  .inputs input:focus{outline:none;border:2px solid var(--peach);box-shadow:0 0 0 3px #f6c39f55}
   .how{margin-top:1.5rem;background:var(--surface);border:1px solid var(--line);border-radius:1.25rem;padding:1.75rem 2rem}
   .how h2{font-size:1.15rem}
-  .steps{list-style:none;margin:1rem 0 0;padding:0;counter-reset:s}
-  .steps li{display:grid;grid-template-columns:2rem 1fr auto;gap:1rem;align-items:baseline;padding:.75rem 0;border-top:1px solid var(--line);font-size:.95rem}
-  .steps li::before{counter-increment:s;content:counter(s);font-weight:600;color:var(--brand)}
-  .steps li span:last-child{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--petrol)}
-  .steps li.final{border-top:2px solid var(--petrol)}
-  .steps li.final span:last-child{font-size:1.15rem}
-  .steps small{display:block;color:var(--sub);font-size:.8125rem;margin-top:.15rem}
+  .calc-steps{list-style:none;margin:1rem 0 0;padding:0;counter-reset:s;display:block}
+  .calc-steps li{display:grid;grid-template-columns:2rem 1fr auto;gap:1rem;align-items:baseline;padding:.75rem 0;border-top:1px solid var(--line);font-size:.95rem}
+  .calc-steps li::before{counter-increment:s;content:counter(s);font-weight:600;color:var(--brand)}
+  .calc-steps li span:last-child{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--petrol)}
+  .calc-steps li.final{border-top:2px solid var(--petrol)}
+  .calc-steps li.final span:last-child{font-size:1.15rem}
+  .calc-steps small{display:block;color:var(--sub);font-size:.8125rem;margin-top:.15rem}
   .story{margin-top:1.5rem;border:1px solid var(--line);border-radius:1.25rem;padding:1.75rem 2rem;background:var(--surface)}
   .story h2{font-size:1.15rem}.story p{margin-top:.4rem}
   .timelines{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1rem}
@@ -50,7 +53,7 @@
   .pills a.on{background:var(--petrol);border-color:var(--petrol);color:#fff}
   .sources{margin-top:1.5rem;font-size:.8125rem;color:var(--sub);line-height:1.6}
   .section+.section{margin-top:3rem;padding-top:3rem;border-top:1px solid var(--line)}
-  @media(max-width:720px){.result{padding:1.5rem}.how,.story,.proof{padding:1.25rem}.timelines{grid-template-columns:1fr}.steps li{grid-template-columns:1.5rem 1fr;gap:.5rem}.steps li span:last-child{grid-column:2;white-space:normal}}
+  @media(max-width:720px){.result{padding:1.5rem}.how,.story,.proof{padding:1.25rem}.timelines{grid-template-columns:1fr}.calc-steps li{grid-template-columns:1.5rem 1fr;gap:.5rem}.calc-steps li span:last-child{grid-column:2;white-space:normal}}
   @media print{.site-nav,.other,.proof .actions{display:none}.result{color:#000;background:#fff;border:1px solid #999}.result .eyebrow,.result .unit,.result .unit b,.result .star,.result .figure sup,.inputs label,.inputs .hint{color:#000}.inputs input{color:#000;background:#fff;border-color:#999}}
 </style>
 </head>
@@ -201,15 +204,16 @@
     res.appendChild(el('p', 'eyebrow', o.eyebrow));
     var fig = el('div', 'figure'), unit = el('p', 'unit'), star = el('p', 'star', '* Assuming every bill at your restaurant is settled through Aalayna. Fewer bills, proportionally fewer.');
     res.appendChild(fig); res.appendChild(unit); res.appendChild(star);
+    res.appendChild(el('p', 'edit-h', 'Your figures. <span>Tap any box and type your own; the number above updates as you type.</span>'));
     var inputs = el('div', 'inputs');
     o.inputs.forEach(function (k) {
-      var f = FIELDS[k], lab = el('label', '', f.label + (f.hint ? ' <span class="hint">' + f.hint + '</span>' : ''));
+      var f = FIELDS[k], lab = el('label', '', f.label + '<span class="hint">' + (f.hint || '') + '</span>');
       var inp = el('input'); inp.type = 'number'; inp.min = f.min; if (f.max != null) inp.max = f.max; inp.value = v[k]; inp.setAttribute('aria-label', f.label);
       inp.addEventListener('input', function () { var x = parseFloat(inp.value); if (isFinite(x)) { v[k] = x; document.querySelectorAll('input[data-key="' + k + '"]').forEach(function (i) { if (i !== inp) i.value = x; }); paintAll(); } });
       inp.dataset.key = k; lab.appendChild(inp); inputs.appendChild(lab);
     });
     res.appendChild(inputs); wrap.appendChild(res);
-    var how = el('div', 'how'); how.appendChild(el('h2', '', 'How we get to this number')); var ol = el('ol', 'steps'); how.appendChild(ol); wrap.appendChild(how);
+    var how = el('div', 'how'); how.appendChild(el('h2', '', 'How we get to this number')); var ol = el('ol', 'calc-steps'); how.appendChild(ol); wrap.appendChild(how);
     var st = el('div', 'story'); wrap.appendChild(st);
     var proof = el('div', 'proof'); proof.appendChild(el('h2', '', 'How the pilot proves it, on your own tables'));
     var ul = el('ul'); o.proof.forEach(function (t) { ul.appendChild(el('li', '', t)); }); proof.appendChild(ul);
