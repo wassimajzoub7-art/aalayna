@@ -177,3 +177,15 @@ test('ui_action events summarise how guests use the interface, one vote per sess
   assert.equal(u.tip.values['10%'],1); assert.equal(u.language.values.ar,1); assert.equal(u.filter.values['veg:on'],1);
   assert.throws(()=>a.logEvent('ui_tap',{}),/Unknown event type/);
 });
+
+test('dish interest counts opens per dish and per guest, attention, and whether it reached a bill', ()=>{
+  const env=setup(), a=env.a;
+  a.logEvent('item_view',{itemId:'i01'}); a.logEvent('item_view',{itemId:'i01'}); a.logEvent('ui_action',{action:'dwell',value:'i01',n:12});
+  a.logEvent('item_view',{itemId:'i02'}); a.logEvent('ui_action',{action:'dwell',value:'i02',n:4});
+  a.openServiceCheck({table:12,total:40,lines:[{id:'i02',q:2,p:40}]});
+  a.newSession(); a.logEvent('item_view',{itemId:'i01'});
+  const rows=a.dishInterest('7'), i01=rows.find(r=>r.itemId==='i01'), i02=rows.find(r=>r.itemId==='i02');
+  assert.equal(rows[0].itemId,'i01'); assert.equal(i01.opens,3); assert.equal(i01.sessions,2); assert.equal(i01.avgDwellS,12); assert.equal(i01.onBills,0);
+  assert.equal(i02.opens,1); assert.equal(i02.onBills,1); assert.equal(i02.units,2); assert.equal(i02.billRate,1);
+  assert.ok(rows.some(r=>r.opens===0));
+});

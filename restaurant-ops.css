@@ -82,3 +82,5 @@ textarea.in{resize:vertical;min-height:132px}.in::placeholder{color:#69776E;opac
 .status-badge.flag{background:var(--amber-bg);color:var(--amber)}
 #incomplete-badge{margin-top:10px}#feedback-attention .ops-row .cs{margin-top:2px}
 @media(max-width:760px){.journey-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.journey-metric .v{font-size:22px}.health-row{flex-wrap:wrap}.health-label{flex-basis:100%}}
+
+.dish-table{width:100%;border-collapse:collapse;font-size:14px}.dish-table th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);text-align:left;padding:6px 0;border-bottom:1px solid var(--line)}.dish-table td{padding:8px 0;border-bottom:1px solid var(--line-soft)}.dish-table .num{text-align:right;font-variant-numeric:tabular-nums;padding-left:12px}.dish-table th.num{text-align:right}

@@ -23,7 +23,7 @@ function opsDate(value) { return value ? new Date(value).toLocaleDateString('en-
 function opsMask(contact) { if(contact.indexOf('@')>=0){var p=contact.split('@');return p[0].slice(0,2)+'***@'+p[1];}return '•••• '+contact.slice(-4); }
 function opsGo(view) { var nav=Array.from(document.querySelectorAll('.ni')).find(function(n){return (n.getAttribute('onclick')||'').indexOf("'"+view+"'")>=0;}); if(nav)go(nav,view); }
 function opsDownload(name, text, type) { var url=URL.createObjectURL(new Blob([text],{type:type})),a=opsEl('a');a.href=url;a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000); }
-function paintGrowth() { paintGrowthCustomers();paintGrowthCampaigns();paintAudience();paintGrowthWeek();paintCheckBalances();paintGuestJourney();paintDataHealth();paintFeedbackAttention();paintRecordedRatings(); }
+function paintGrowth() { paintGrowthCustomers();paintGrowthCampaigns();paintAudience();paintGrowthWeek();paintCheckBalances();paintDishInterest();paintGuestJourney();paintDataHealth();paintFeedbackAttention();paintRecordedRatings(); }
 function paintGrowthCustomers() {
   var profiles=Aalayna.customerProfiles(),box=$('gl-rows'),q=$('guest-search').value.trim().toLowerCase();box.replaceChildren();
   $('gl-total').textContent=profiles.length;$('gl-mkt').textContent=profiles.filter(function(g){return g.marketing;}).length;$('gl-ret').textContent=profiles.filter(function(g){return g.visits>1;}).length;
@@ -153,6 +153,16 @@ function opsDuration(ms){ var s=Math.round(ms/1000),m=Math.floor(s/60),r=s%60; r
 function opsBeirutTime(value){ return new Date(value).toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' Beirut'; }
 function opsCount(n,word){ return n+' '+word+(n===1?'':'s'); }
 function opsMetric(label,value,definition){ var b=opsEl('div',null,'journey-metric'); b.append(opsEl('div',label,'k'),opsEl('div',value,'v'),opsEl('div',definition,'d')); return b; }
+function paintDishInterest(){
+  var body=$('dish-rows'); if(!body)return;
+  var rows=Aalayna.dishInterest($('report-period').value), w=Aalayna.ownerWindow($('report-period').value);
+  $('dish-period').textContent=w.label+' · which dishes guests open, how long they look, and whether the dish reaches a bill. From recorded events on this device.';
+  body.replaceChildren();
+  var seen=rows.filter(function(r){ return r.opens>0; }), unseen=rows.filter(function(r){ return r.opens===0; });
+  seen.slice(0,25).forEach(function(r){ var tr=opsEl('tr'); [r.name,String(r.opens),String(r.sessions),r.avgDwellS==null?'—':r.avgDwellS+' s',String(r.onBills),r.billRate==null?'—':Math.round(r.billRate*100)+'%'].forEach(function(t,i){ tr.appendChild(opsEl('td',t,i?'num':null)); }); body.appendChild(tr); });
+  if(!seen.length){ var tr=opsEl('tr'); var td=opsEl('td','No dish opened yet in this period. Rows appear as guests browse the menu on their phones.','ops-empty'); td.colSpan=6; tr.appendChild(td); body.appendChild(tr); }
+  $('dish-none').textContent=unseen.length?'Not opened at all in this period: '+unseen.slice(0,12).map(function(r){ return r.name; }).join(', ')+(unseen.length>12?' and '+(unseen.length-12)+' more':'')+'.':'';
+}
 function paintGuestJourney(){
   var box=$('journey-metrics'); if(!box)return;
   var m=Aalayna.eventMetrics($('report-period').value); box.replaceChildren();

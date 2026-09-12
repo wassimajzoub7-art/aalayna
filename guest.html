@@ -1040,7 +1040,7 @@ function price(v){
   return '$' + v.toFixed(2);
 }
 /* how guests use the interface: one small event per choice, never a keystroke */
-function ui(action, value){ try { Aalayna.logEvent('ui_action', { action: action, value: value }, { tableId: TABLE }); } catch(e) {} }
+function ui(action, value, n){ try { Aalayna.logEvent('ui_action', n == null ? { action: action, value: value } : { action: action, value: value, n: n }, { tableId: TABLE }); } catch(e) {} }
 function setLang(v){ LANG = v; ui('language', v); renderMenu(); }
 function setCcy(v){ CCY = v; ui('currency', v); renderMenu(); }
 function renderMenu(){
@@ -1091,9 +1091,12 @@ function openOv(id){
   var sh = ov.querySelector('.sheet');
   if (sh) sh.scrollTop = 0;
 }
+var itemOpenedAt = 0;
 function closeOv(id){
   var ov = $(id);
   if (!ov.classList.contains('on')) return;
+  /* how long the dish held their attention, in whole seconds */
+  if (id === 'ov-item' && curItem && itemOpenedAt){ ui('dwell', curItem.id, Math.round((Date.now() - itemOpenedAt) / 1000)); itemOpenedAt = 0; }
   ov.classList.add('closing');
   setTimeout(function(){ ov.classList.remove('on'); ov.classList.remove('closing'); }, 220);
 }
@@ -1273,6 +1276,7 @@ function openItem(m){
   out.textContent = t('soldOut');
   out.style.display = m.available ? 'none' : 'inline-block';
   try { Aalayna.logEvent('item_view', { itemId: m.id, categoryId: m.c }, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
+  itemOpenedAt = Date.now();
   var box = $('i-adds'); box.innerHTML = '';
   /* 'one' groups behave like radios — the first choice is the default and is
      already in the base price. 'many' groups are independent add-ons. */

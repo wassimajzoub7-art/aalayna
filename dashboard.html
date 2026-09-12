@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <script src="aalayna-store.js?v=19"></script>
 <script src="restaurant-growth.js?v=3"></script>
-<script src="owner-metrics.js?v=4"></script>
+<script src="owner-metrics.js?v=5"></script>
 <script src="aalayna-config.js"></script>
 <script src="aalayna-sync.js?v=1"></script>
 
@@ -347,6 +347,12 @@
       <p id="withdrawal-detail"></p>
     </details>
     <div class="card mt"><h3>Recommended next actions</h3><div class="cs">Based on recorded visits and settlement activity. Campaigns always need your approval.</div><div id="weekly-actions"></div></div>
+    <div class="card mt" id="dish-interest">
+      <h3>Dish interest</h3>
+      <div class="cs" id="dish-period">Which dishes guests open, how long they look, and whether the dish reaches a bill. From recorded events on this device.</div>
+      <div class="tbl mt"><table class="dish-table"><thead><tr><th>Dish</th><th class="num">Opened</th><th class="num">By guests</th><th class="num">Looked for</th><th class="num">On bills</th><th class="num">Open to bill</th></tr></thead><tbody id="dish-rows"></tbody></table></div>
+      <p class="cs" id="dish-none"></p>
+    </div>
     <div class="grid g2e mt">
       <div class="card" id="guest-journey">
         <h3>Guest journey</h3>
@@ -483,7 +489,7 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=6"></script>
+<script src="restaurant-ops.js?v=7"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];

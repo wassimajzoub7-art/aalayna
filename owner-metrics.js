@@ -102,6 +102,21 @@
       medianBillToPaymentMs:median(gaps), timedSessions:gaps.length,
       payments:payments.length, identifiedPayments:identified, captureRate:ratio(identified,payments.length)};
   };
+  /* ---- dish interest: opens, attention, and whether it reached a bill, per live dish ---- */
+  A.dishInterest=function(range,at){
+    at=at==null?Date.now():at;
+    var w=A.ownerWindow(range,at), byId={};
+    A.published().items.forEach(function(x){ if(!x.archivedAt) byId[x.id]={itemId:x.id,name:x.name,section:x.sec,opens:0,sessions:{},dwell:[],onBills:0,units:0}; });
+    A.events().forEach(function(e){
+      if(!within(Date.parse(e.createdAt),w))return;
+      if(e.eventType==='item_view'&&byId[e.payload.itemId]){ var d=byId[e.payload.itemId]; d.opens++; d.sessions[e.sessionId]=1; }
+      else if(e.eventType==='ui_action'&&e.payload.action==='dwell'&&byId[e.payload.value]&&Number.isFinite(e.payload.n)){ byId[e.payload.value].dwell.push(e.payload.n); }
+      else if(e.eventType==='order_placed'){ (e.payload.items||[]).forEach(function(i){ var d=byId[i.itemId]; if(d){ d.onBills++; d.units+=i.qty||1; } }); }
+    });
+    return Object.keys(byId).map(function(k){ var d=byId[k], n=Object.keys(d.sessions).length;
+      return {itemId:d.itemId,name:d.name,section:d.section,opens:d.opens,sessions:n,avgDwellS:d.dwell.length?Math.round(d.dwell.reduce(function(a,b){return a+b;},0)/d.dwell.length):null,onBills:d.onBills,units:d.units,billRate:n?d.onBills/n:null};
+    }).sort(function(a,b){ return b.opens-a.opens||b.onBills-a.onBills||a.name.localeCompare(b.name); });
+  };
   /* ---- how guests use the interface, from ui_action events, per session (last choice wins) ---- */
   A.uiUsage=function(range,at){
     at=at==null?Date.now():at;
