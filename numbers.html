@@ -60,6 +60,8 @@
   .card.focused .big{font-size:2.8rem}
   .rest-h{grid-column:1/-1;font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase;color:var(--sub);margin-top:.5rem}
   .field[hidden]{display:none}
+  .other{margin-top:2rem}.other p{font-size:.9rem;color:var(--sub)}.other .pills{margin-top:.6rem}
+  .other[hidden]{display:none}
   @media(max-width:900px){.layout{grid-template-columns:1fr}.inputs{position:static}.cards,.timelines{grid-template-columns:1fr}.summary .row{grid-template-columns:1fr 1fr}}
   @media print{.site-nav,.inputs .actions,.legend{display:none}.layout{grid-template-columns:1fr}.story{color:#000;background:#fff;border:1px solid #999}.story h2,.story p,.tl li span:last-child,.verdict,.verdict b,.tl h3{color:#000}}
 </style>
@@ -188,6 +190,16 @@
         </ul>
         <p style="margin-top:.75rem">In week seven we sit down with these numbers and yours from above, side by side. You decide with evidence, not with this page.</p>
       </div>
+      <div class="other" id="other" hidden>
+        <p>Look at another outcome with the same figures:</p>
+        <nav class="pills" aria-label="Other outcomes">
+          <a href="?focus=turns" data-focus="turns">Faster tables</a>
+          <a href="?focus=tips" data-focus="tips">Tips</a>
+          <a href="?focus=reviews" data-focus="reviews">Reviews</a>
+          <a href="?focus=guests" data-focus="guests">Guests who return</a>
+          <a href="?focus=all" data-focus="all">Everything</a>
+        </nav>
+      </div>
       <p class="sources">Benchmarks are figures reported publicly by leading pay-at-table platforms in Europe, Asia and the Gulf, not Lebanese data. Assumptions are Aalayna's estimates and are shown so they can be challenged. Extra revenue at peak only exists on services where guests are turned away or wait for a table; on quiet nights the saving is time and staff effort, not sales. Tips go to your staff under your own policy; Aalayna never handles them.</p>
     </section>
   </div>
@@ -203,6 +215,8 @@
   var q = new URLSearchParams(location.search);
   ids.forEach(function (k) { var v = q.get(k); if (v !== null && v !== '' && isFinite(+v)) $('i-' + k).value = +v; });
   function n(k) { var v = parseFloat($('i-' + k).value); return isFinite(v) ? v : 0; }
+  // outputs may have been removed in a focused view; writing to a detached node is harmless
+  function out(id) { return $(id) || document.createElement('div'); }
   function usd(v) { return '$' + Math.round(v).toLocaleString('en-US'); }
   function int(v) { return Math.round(v).toLocaleString('en-US'); }
   var WEEKS = 4.33, AFTER = 4, TIP_SHARE_AFTER = 0.75, TIP_RATE_AFTER = 0.09, REVIEW_RATE = 0.04, OPTIN = 0.20, RETURN = 0.08, TRIP_MIN = 2, TRIPS = 3, FEE = 150;
@@ -233,8 +247,8 @@
     var extraTurnsPerService = settledTables * (saved / sit);
     var extraTurnsMonth = extraTurnsPerService * peak * WEEKS;
     var extraRevenue = extraTurnsMonth * check;
-    $('o-turns').innerHTML = '+' + extraTurnsPerService.toFixed(1) + '<small>tables per busy service</small>';
-    $('o-turns-p').textContent = peak > 0
+    out('o-turns').innerHTML = '+' + extraTurnsPerService.toFixed(1) + '<small>tables per busy service</small>';
+    out('o-turns-p').textContent = peak > 0
       ? 'Across ' + peak + ' busy services a week: about ' + int(extraTurnsMonth) + ' extra tables a month, ' + usd(extraRevenue) + ' at your average bill.'
       : 'You said no service has a wait, so there is no extra table to seat. The minutes saved are staff time and a better exit, not revenue.';
 
@@ -244,13 +258,13 @@
     var tipsSettled = settledBills * check * TIP_SHARE_AFTER * TIP_RATE_AFTER;
     var tipsSettledToday = settledBills * check * tipRate * tipShare;
     var tipUplift = Math.max(0, tipsSettled - tipsSettledToday);
-    $('o-tips').innerHTML = '+' + usd(tipUplift * WEEKS) + '<small>per month</small>';
-    $('o-tips-p').textContent = 'Today about ' + usd(tipsToday * WEEKS) + ' a month in tips at ' + Math.round(tipRate * 100) + '% from ' + Math.round(tipShare * 100) + '% of tables. On the ' + Math.round(share * 100) + '% of bills settled through Aalayna, that share rises to 75% at 9%.';
+    out('o-tips').innerHTML = '+' + usd(tipUplift * WEEKS) + '<small>per month</small>';
+    out('o-tips-p').textContent = 'Today about ' + usd(tipsToday * WEEKS) + ' a month in tips at ' + Math.round(tipRate * 100) + '% from ' + Math.round(tipShare * 100) + '% of tables. On the ' + Math.round(share * 100) + '% of bills settled through Aalayna, that share rises to 75% at 9%.';
 
     // reviews
     var reviewsAfter = settledBills * REVIEW_RATE * WEEKS;
-    $('o-reviews').innerHTML = '+' + int(reviewsAfter) + '<small>reviews per month</small>';
-    $('o-reviews-p').textContent = reviews > 0
+    out('o-reviews').innerHTML = '+' + int(reviewsAfter) + '<small>reviews per month</small>';
+    out('o-reviews-p').textContent = reviews > 0
       ? 'From ' + int(reviews) + ' a month today to about ' + int(reviews + reviewsAfter) + ', ' + (((reviews + reviewsAfter) / reviews)).toFixed(1) + ' times as many.'
       : 'From none today to about ' + int(reviewsAfter) + ' a month.';
 
@@ -258,28 +272,28 @@
     var contactsMonth = settledBills * OPTIN * WEEKS;
     var list3 = contactsMonth * 3;
     var returnsPerCampaign = list3 * RETURN;
-    $('o-guests').innerHTML = int(contactsMonth) + '<small>contacts per month</small>';
-    $('o-guests-p').textContent = 'About ' + int(list3) + ' guests on your list after three months. One invitation to that list brings back about ' + int(returnsPerCampaign) + ' tables, ' + usd(returnsPerCampaign * check) + ' at your average bill.';
+    out('o-guests').innerHTML = int(contactsMonth) + '<small>contacts per month</small>';
+    out('o-guests-p').textContent = 'About ' + int(list3) + ' guests on your list after three months. One invitation to that list brings back about ' + int(returnsPerCampaign) + ' tables, ' + usd(returnsPerCampaign * check) + ' at your average bill.';
 
     // trips
     var tripsWeek = settledBills * TRIPS;
     var hoursWeek = tripsWeek * TRIP_MIN / 60;
-    $('o-trips').innerHTML = int(hoursWeek) + '<small>hours a week</small>';
-    $('o-trips-p').textContent = int(tripsWeek) + ' fewer trips to the table and the till each week. Time your floor spends on guests who are still eating.';
+    out('o-trips').innerHTML = int(hoursWeek) + '<small>hours a week</small>';
+    out('o-trips-p').textContent = int(tripsWeek) + ' fewer trips to the table and the till each week. Time your floor spends on guests who are still eating.';
 
     // cash
     var cashBills = settledBills * cash;
-    $('o-cash').innerHTML = int(cashBills) + '<small>cash tables a week</small>';
-    $('o-cash-p').textContent = 'Each one tells the floor its note before the waiter walks over. No second trip for change, no waiting with coats on.';
+    out('o-cash').innerHTML = int(cashBills) + '<small>cash tables a week</small>';
+    out('o-cash-p').textContent = 'Each one tells the floor its note before the waiter walks over. No second trip for change, no waiting with coats on.';
 
     // summary
     var listValueMonth = returnsPerCampaign * check / 3;   // one campaign per quarter, spread
-    $('s-rev').textContent = usd(extraRevenue);
-    $('s-tips').textContent = usd(tipUplift * WEEKS);
-    $('s-list').textContent = usd(listValueMonth);
-    $('s-fee').textContent = usd(FEE);
+    out('s-rev').textContent = usd(extraRevenue);
+    out('s-tips').textContent = usd(tipUplift * WEEKS);
+    out('s-list').textContent = usd(listValueMonth);
+    out('s-fee').textContent = usd(FEE);
     var ratio = (extraRevenue + listValueMonth) / FEE;
-    $('s-line').textContent = extraRevenue + listValueMonth > 0
+    out('s-line').textContent = extraRevenue + listValueMonth > 0
       ? 'Revenue effects alone cover the fee ' + ratio.toFixed(1) + ' times over, before counting tips, reviews and staff time. Free for the first two months, so the first number you see is your own.'
       : 'With no busy services and no list yet, the case rests on tips, reviews and staff time. The pilot is free, so the first number you see is your own.';
   }
@@ -304,12 +318,21 @@
       location.href = '?' + p.toString();
     });
   });
+  var PROOF = {
+    turns:   ['Share of bills settled through Aalayna, week by week.', 'Median minutes from bill opened to paid, on your own tables.', 'Table time on busy nights against the baseline you give us in week zero.'],
+    tips:    ['Digital tips per server, per week, from the first service.', 'Share of settled bills that included a tip, and the average rate.', 'Side by side with what your servers declared before the pilot.'],
+    reviews: ['Ratings left on the receipt screen, per week.', 'Google reviews per week against your count from the month before.', 'Private notes from unhappy guests, so you see what never reached Google.'],
+    guests:  ['Receipt and offer sign-ups per paid bill.', 'The list, with each guest\'s visits and spend, in your dashboard.', 'From month two: how many first-month guests came back within 30 days.']
+  };
   if (focus !== 'all') {
     document.querySelectorAll('.field[data-for]').forEach(function (f) { f.hidden = f.dataset.for.split(' ').indexOf(focus) < 0; });
-    var cards = $('cards'), main = cards.querySelector('.card[data-focus="' + focus + '"]');
-    main.classList.add('focused'); cards.insertBefore(main, cards.firstChild);
-    var h = document.createElement('div'); h.className = 'rest-h'; h.textContent = 'The rest of the picture';
-    cards.insertBefore(h, main.nextSibling);
+    // one outcome, one page: everything that is not this outcome leaves
+    document.querySelectorAll('#cards .card').forEach(function (c) { if (c.dataset.focus !== focus) c.remove(); });
+    $('cards').querySelector('.card').classList.add('focused');
+    var ul = document.querySelector('.proof ul'); ul.innerHTML = '';
+    PROOF[focus].forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    document.querySelector('.proof p:last-child').textContent = 'In week seven we put this number next to the one you typed above. You decide with your own figure, not with this page.';
+    $('other').hidden = false;
   }
   function altStory(title, intro, leftH, left, rightH, right, verdict) {
     $('st-title').textContent = title; $('st-intro').textContent = intro;
