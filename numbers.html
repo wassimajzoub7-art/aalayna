@@ -100,7 +100,7 @@
       eyebrow: 'Tables turn faster', inputs: ['done', 'tables', 'sit', 'peak', 'check'],
       compute: function () {
         /* today's minutes, split across the usual steps; the change trip is the same in both flows */
-        var shares = [['Catching the waiter\'s eye', .22], ['Bill printed and brought over', .17], ['The table works out who pays what', .28], ['Waiter comes back for the cash', .17], ['Waiter goes to the till and returns with the change', .16]];
+        var shares = [['Catching the waiter\'s eye', .17], ['Bill printed and brought over', .15], ['The table works out who pays what', .28], ['Waiter comes back for the cash', .15], ['Waiter goes to the till', .11], ['Waiter returns with the change', .14]];
         var acc = 0, left = [];
         shares.forEach(function (x, i) { var m = i === shares.length - 1 ? Math.max(1, v.done - acc) : Math.max(1, Math.round(v.done * x[1])); acc += m; left.push([x[0], m]); });
         var change = left[left.length - 1][1], after = AFTER_MIN + change;
@@ -109,9 +109,9 @@
       },
       headline: function (r) { return { figure: '+' + int(r.month), unit: '<b>extra tables a month</b> on your busy nights, worth ' + usd(r.revenue) + ' at your average bill' }; },
       steps: function (r) { return [
-        ['Minutes from done to out the door today', 'what you typed; the last ' + r.change + ' of them are the waiter bringing the change', v.done + ' min'],
+        ['Minutes from done to out the door today', 'what you typed; the last ' + r.change + ' of them are the waiter returning with the change', v.done + ' min'],
         ['Bill, split and payment on the phone', 'measured at 3 to 5 minutes by pay-at-table platforms abroad; we use 4', AFTER_MIN + ' min'],
-        ['Waiter brings the change with the receipt', 'the same trip as today, counted on both sides', r.change + ' min'],
+        ['Waiter returns with the change and the receipt', 'the same return trip as today, counted on both sides; the trip to the till is gone', r.change + ' min'],
         ['Done to out the door with Aalayna', AFTER_MIN + ' plus ' + r.change, r.after + ' min'],
         ['Minutes given back on every table', v.done + ' minus ' + r.after, r.saved + ' min'],
         ['Share of a sitting that frees up', r.saved + ' of ' + v.sit + ' minutes', pct(r.saved / v.sit)],
@@ -122,8 +122,8 @@
       story: function (r) {
         var left = r.left.map(function (x) { return [x[0], x[1] + ' min']; });
         left.push(['Done to out the door', v.done + ' min']);
-        return { title: 'One table, tonight, paying cash.', intro: 'A party of four finishes dinner. What happens next, today and with Aalayna. The change trip is the same in both.', left: left,
-                 right: [['Scan the QR, the bill is already there', '1 min'], ['Split on their phones, evenly, by item or an amount', '2 min'], ['Declare the note they are paying with, tip in one tap', '1 min'], ['Waiter brings the change with the receipt, one trip', r.change + ' min'], ['Done to out the door', r.after + ' min']] };
+        return { title: 'One table, tonight, paying cash.', intro: 'A party of four finishes dinner. What happens next, today and with Aalayna. The return trip with the change is the same in both.', left: left,
+                 right: [['Scan the QR, the bill is already there', '1 min'], ['Split on their phones, evenly, by item or an amount', '2 min'], ['Declare the note they are paying with, tip in one tap', '1 min'], ['Waiter returns with the change and the receipt', r.change + ' min'], ['Done to out the door', r.after + ' min']] };
       },
       proof: ['Share of bills settled through Aalayna, week by week.', 'Median minutes from bill opened to paid, on your own tables.', 'Table time on busy nights against the baseline you give us in week zero.'],
       note: 'Extra tables only exist on services where guests wait or are turned away. On a quiet night the minutes saved are staff time and a better exit, not sales.'
