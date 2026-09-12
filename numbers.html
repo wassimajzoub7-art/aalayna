@@ -83,7 +83,7 @@
     paid:    { label: 'Bills paid per week', hint: 'all services', def: 360, min: 1 },
     peak:    { label: 'Busy services per week', hint: 'nights you turn people away', def: 2, min: 0, max: 14 },
     sit:     { label: 'Average sitting at peak', hint: 'minutes, arrival to departure', def: 90, min: 30 },
-    done:    { label: 'Done eating to out the door', hint: 'minutes, today', def: 18, min: 1 },
+    done:    { label: 'Done eating to out the door', hint: 'minutes, today', def: 20, min: 1 },
     tiprate: { label: 'Tip today, when guests tip', hint: '% of the bill', def: 5, min: 0, max: 30 },
     tipshare:{ label: 'Tables that tip today', hint: '%', def: 60, min: 0, max: 100 },
     reviews: { label: 'Google reviews per month today', def: 4, min: 0 }
@@ -100,7 +100,7 @@
       eyebrow: 'Tables turn faster', inputs: ['done', 'tables', 'sit', 'peak', 'check'],
       compute: function () {
         /* today's minutes, split across the usual steps; the change trip is the same in both flows */
-        var shares = [['Catching the waiter\'s eye', .17], ['Bill printed and brought over', .15], ['The table works out who pays what', .28], ['Waiter comes back for the cash', .15], ['Waiter goes to the till', .11], ['Waiter returns with the change', .14]];
+        var shares = [['Catching the waiter\'s eye', .15], ['Bill printed and brought over', .15], ['The table works out who pays what', .25], ['Waiter comes back for the cash', .15], ['Waiter goes to the till', .15], ['Waiter returns with the change', .15]];
         var acc = 0, left = [];
         shares.forEach(function (x, i) { var m = i === shares.length - 1 ? Math.max(1, v.done - acc) : Math.max(1, Math.round(v.done * x[1])); acc += m; left.push([x[0], m]); });
         var change = left[left.length - 1][1], after = AFTER_MIN + change;
