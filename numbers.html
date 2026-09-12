@@ -24,9 +24,8 @@
   .inputs{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin-top:.75rem;align-items:flex-end}
   .inputs label{font-size:.8125rem;color:#D7E3E2;display:flex;flex-direction:column;justify-content:flex-end;gap:.3rem;min-width:9rem;flex:1}
   .inputs .hint{font-size:.75rem;color:#B9C7C4;font-weight:400;min-height:1.1em}
-  .inputs input{font:inherit;font-size:1.1rem;font-weight:600;padding:.55rem .75rem;border:2px dashed var(--peach);border-radius:.6rem;background:#fff;color:var(--ink);width:100%;cursor:text;margin-top:auto}
-  .inputs input:hover{border-style:solid}
-  .inputs input:focus{outline:none;border:2px solid var(--peach);box-shadow:0 0 0 3px #f6c39f55}
+  .inputs input{font:inherit;font-size:1.1rem;font-weight:600;padding:.55rem .75rem;border:0;border-radius:.6rem;background:#fff;color:var(--ink);width:100%;cursor:text;margin-top:auto}
+  .inputs input:focus{outline:none;box-shadow:0 0 0 3px var(--peach)}
   .how{margin-top:1.5rem;background:var(--surface);border:1px solid var(--line);border-radius:1.25rem;padding:1.75rem 2rem}
   .how h2{font-size:1.15rem}
   .calc-steps{list-style:none;margin:1rem 0 0;padding:0;counter-reset:s;display:block}
@@ -100,25 +99,31 @@
     turns: {
       eyebrow: 'Tables turn faster', inputs: ['done', 'tables', 'sit', 'peak', 'check'],
       compute: function () {
-        var saved = Math.max(0, v.done - AFTER_MIN), perService = v.tables * saved / v.sit, month = perService * v.peak * WEEKS;
-        return { saved: saved, perService: perService, month: month, revenue: month * v.check };
+        /* today's minutes, split across the usual steps; the change trip is the same in both flows */
+        var shares = [['Catching the waiter\'s eye', .22], ['Bill printed and brought over', .17], ['The table works out who pays what', .28], ['Waiter comes back for the cash', .17], ['Waiter goes to the till and returns with the change', .16]];
+        var acc = 0, left = [];
+        shares.forEach(function (x, i) { var m = i === shares.length - 1 ? Math.max(1, v.done - acc) : Math.max(1, Math.round(v.done * x[1])); acc += m; left.push([x[0], m]); });
+        var change = left[left.length - 1][1], after = AFTER_MIN + change;
+        var saved = Math.max(0, v.done - after), perService = v.tables * saved / v.sit, month = perService * v.peak * WEEKS;
+        return { left: left, change: change, after: after, saved: saved, perService: perService, month: month, revenue: month * v.check };
       },
       headline: function (r) { return { figure: '+' + int(r.month), unit: '<b>extra tables a month</b> on your busy nights, worth ' + usd(r.revenue) + ' at your average bill' }; },
       steps: function (r) { return [
-        ['Minutes from done to out the door today', 'what you typed', v.done + ' min'],
-        ['With the bill, the split and the payment on the phone', 'measured at 3 to 5 minutes by pay-at-table platforms abroad; we use 4', AFTER_MIN + ' min'],
-        ['Minutes given back on every table', v.done + ' minus ' + AFTER_MIN, r.saved + ' min'],
+        ['Minutes from done to out the door today', 'what you typed; the last ' + r.change + ' of them are the waiter bringing the change', v.done + ' min'],
+        ['Bill, split and payment on the phone', 'measured at 3 to 5 minutes by pay-at-table platforms abroad; we use 4', AFTER_MIN + ' min'],
+        ['Waiter brings the change with the receipt', 'the same trip as today, counted on both sides', r.change + ' min'],
+        ['Done to out the door with Aalayna', AFTER_MIN + ' plus ' + r.change, r.after + ' min'],
+        ['Minutes given back on every table', v.done + ' minus ' + r.after, r.saved + ' min'],
         ['Share of a sitting that frees up', r.saved + ' of ' + v.sit + ' minutes', pct(r.saved / v.sit)],
         ['Extra tables per busy service', v.tables + ' tables times ' + pct(r.saved / v.sit), r.perService.toFixed(1)],
         ['Extra tables a month', r.perService.toFixed(1) + ' times ' + v.peak + ' busy services times 4.33 weeks', int(r.month), true],
         ['At your average bill', int(r.month) + ' times ' + usd(v.check), usd(r.revenue), true]
       ]; },
       story: function (r) {
-        var steps = [['Catching the waiter\'s eye', .22], ['Bill printed and brought over', .17], ['The table works out who pays what', .28], ['Waiter comes back for the money', .17], ['Card machine, or change from the till', .16]], acc = 0, left = [];
-        steps.forEach(function (s, i) { var m = i === steps.length - 1 ? v.done - acc : Math.max(1, Math.round(v.done * s[1])); acc += m; left.push([s[0], m + ' min']); });
+        var left = r.left.map(function (x) { return [x[0], x[1] + ' min']; });
         left.push(['Done to out the door', v.done + ' min']);
-        return { title: 'One table, tonight.', intro: 'A party of four finishes dinner. What happens next, today and with Aalayna.', left: left,
-                 right: [['Scan the QR, the bill is already there', '1 min'], ['Split on their phones, evenly, by item or an amount', '2 min'], ['Pay by Whish or card, tip in one tap', '1 min'], ['Cash: note declared, change brought with the receipt', '0 extra'], ['Done to out the door', AFTER_MIN + ' min']] };
+        return { title: 'One table, tonight, paying cash.', intro: 'A party of four finishes dinner. What happens next, today and with Aalayna. The change trip is the same in both.', left: left,
+                 right: [['Scan the QR, the bill is already there', '1 min'], ['Split on their phones, evenly, by item or an amount', '2 min'], ['Declare the note they are paying with, tip in one tap', '1 min'], ['Waiter brings the change with the receipt, one trip', r.change + ' min'], ['Done to out the door', r.after + ' min']] };
       },
       proof: ['Share of bills settled through Aalayna, week by week.', 'Median minutes from bill opened to paid, on your own tables.', 'Table time on busy nights against the baseline you give us in week zero.'],
       note: 'Extra tables only exist on services where guests wait or are turned away. On a quiet night the minutes saved are staff time and a better exit, not sales.'
