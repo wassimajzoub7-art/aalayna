@@ -4,66 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aalayna: the numbers</title>
-<meta name="description" content="Type your restaurant's figures and see what changes at the end of the meal: minutes, tips, reviews, guests who come back. Every number is labelled as yours, a public benchmark, or an assumption we replace with pilot data.">
+<meta name="description" content="Type your restaurant's figures and see the result for one outcome: faster tables, more tips, more reviews, or guests who come back. The arithmetic is shown under every number.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="website.css?v=3">
+<link rel="stylesheet" href="website.css?v=4">
 <style>
-  .num-wrap{width:min(1120px,calc(100% - 3rem));margin-inline:auto;padding-block:2.5rem 4rem}
-  .num-head h1{font-size:clamp(2rem,4vw,3rem);line-height:1.1;letter-spacing:-.04em;max-width:38rem}
-  .num-head p{max-width:40rem;margin-top:1rem}
-  .legend{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;margin-top:1.2rem;font-size:.8125rem;color:var(--sub)}
-  .tag{display:inline-block;font-size:.6875rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.15rem .45rem;border-radius:.3rem;vertical-align:middle}
-  .tag.yours{background:#E4EFEA;color:#245C3D}.tag.bench{background:#E7EEF7;color:#26327A}.tag.assume{background:var(--brand-bg);color:var(--brand)}
-  .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:2.5rem;margin-top:2.5rem;align-items:start}
-  .inputs{background:var(--surface);border:1px solid var(--line);border-radius:1rem;padding:1.5rem;position:sticky;top:5.5rem}
-  .inputs h2{font-size:1.1rem;margin-bottom:.5rem}
-  .field{display:grid;grid-template-columns:1fr 6.5rem;gap:.75rem;align-items:center;padding:.55rem 0;border-bottom:1px solid var(--line)}
-  .field:last-of-type{border-bottom:0}
-  .field label{font-size:.875rem;color:var(--ink);line-height:1.35}
-  .field label small{display:block;color:var(--sub);font-size:.75rem;margin-top:.1rem}
-  .field input{width:100%;font:inherit;font-size:1rem;padding:.45rem .6rem;border:1px solid var(--line);border-radius:.5rem;background:var(--bg);text-align:right}
-  .field input:focus{outline:2px solid var(--brand);outline-offset:1px}
-  .inputs .actions{margin-top:1.2rem}
-  .story{background:var(--petrol);color:#fff;border-radius:1rem;padding:1.75rem}
-  .story h2{font-size:1.3rem;color:#fff}.story p{color:#D7E3E2}
-  .timelines{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.25rem}
-  .tl h3{font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase;color:var(--peach);margin-bottom:.6rem}
+  .num-wrap{width:min(1040px,calc(100% - 3rem));margin-inline:auto;padding-block:2rem 4rem}
+  .result{background:var(--petrol);color:#fff;border-radius:1.25rem;padding:2rem 2.25rem}
+  .result .eyebrow{color:var(--peach)}
+  .result .figure{font-size:clamp(3rem,8vw,5.2rem);font-weight:700;letter-spacing:-.05em;line-height:1;margin-top:.4rem;font-variant-numeric:tabular-nums}
+  .result .figure sup{font-size:.35em;vertical-align:top;color:var(--peach);margin-left:.1em}
+  .result .unit{font-size:1.15rem;color:#D7E3E2;margin-top:.5rem}
+  .result .unit b{color:#fff;font-weight:600}
+  .result .star{font-size:.875rem;color:#B9C7C4;margin-top:1rem}
+  .inputs{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid #ffffff2a}
+  .inputs label{font-size:.8125rem;color:#D7E3E2;display:flex;flex-direction:column;gap:.3rem;min-width:9rem;flex:1}
+  .inputs input{font:inherit;font-size:1.05rem;font-weight:600;padding:.5rem .7rem;border:1px solid #ffffff33;border-radius:.6rem;background:#ffffff14;color:#fff;width:100%}
+  .inputs input:focus{outline:2px solid var(--peach);outline-offset:1px}
+  .inputs .hint{font-size:.75rem;color:#B9C7C4;font-weight:400}
+  .how{margin-top:1.5rem;background:var(--surface);border:1px solid var(--line);border-radius:1.25rem;padding:1.75rem 2rem}
+  .how h2{font-size:1.15rem}
+  .steps{list-style:none;margin:1rem 0 0;padding:0;counter-reset:s}
+  .steps li{display:grid;grid-template-columns:2rem 1fr auto;gap:1rem;align-items:baseline;padding:.75rem 0;border-top:1px solid var(--line);font-size:.95rem}
+  .steps li::before{counter-increment:s;content:counter(s);font-weight:600;color:var(--brand)}
+  .steps li span:last-child{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--petrol)}
+  .steps li.final{border-top:2px solid var(--petrol)}
+  .steps li.final span:last-child{font-size:1.15rem}
+  .steps small{display:block;color:var(--sub);font-size:.8125rem;margin-top:.15rem}
+  .story{margin-top:1.5rem;border:1px solid var(--line);border-radius:1.25rem;padding:1.75rem 2rem;background:var(--surface)}
+  .story h2{font-size:1.15rem}.story p{margin-top:.4rem}
+  .timelines{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1rem}
+  .tl h3{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);margin-bottom:.5rem}
   .tl ol{list-style:none;padding:0;margin:0}
-  .tl li{display:flex;justify-content:space-between;gap:1rem;padding:.4rem 0;border-top:1px solid #ffffff22;font-size:.9rem}
-  .tl li span:last-child{white-space:nowrap;color:var(--peach);font-variant-numeric:tabular-nums}
-  .tl li.total{border-top:2px solid #ffffff55;font-weight:600;margin-top:.3rem}
-  .tl li.total span:last-child{color:#fff;font-size:1.05rem}
-  .verdict{margin-top:1.25rem;padding-top:1rem;border-top:1px solid #ffffff33;font-size:1.05rem;color:#fff}
-  .verdict b{color:var(--peach)}
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.5rem}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:1rem;padding:1.4rem}
-  .card h3{font-size:1rem;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
-  .big{font-size:2.1rem;font-weight:600;letter-spacing:-.04em;color:var(--petrol);line-height:1.15;margin-top:.5rem;font-variant-numeric:tabular-nums}
-  .big small{font-size:.9rem;font-weight:400;letter-spacing:0;color:var(--sub);margin-left:.3rem}
-  .card p{font-size:.875rem;margin-top:.5rem}
-  .card .how{font-size:.8125rem;color:var(--sub);margin-top:.75rem;padding-top:.6rem;border-top:1px solid var(--line)}
-  .summary{grid-column:1/-1;background:var(--brand-bg);border-color:#F3D3CD}
-  .summary .row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:.75rem}
-  .summary .row div{font-size:.8125rem;color:var(--sub)}
-  .summary .row strong{display:block;font-size:1.35rem;color:var(--ink);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-  .proof{margin-top:2.5rem;padding:1.5rem;border:1px solid var(--line);border-radius:1rem;background:var(--surface)}
-  .proof h2{font-size:1.2rem}.proof ul{margin:.75rem 0 0;padding-left:1.2rem;font-size:.9rem;color:var(--sub)}.proof li{margin:.3rem 0}
-  .sources{margin-top:1.5rem;font-size:.8125rem;color:var(--sub);line-height:1.6}
-  .pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem}
+  .tl li{display:flex;justify-content:space-between;gap:1rem;padding:.4rem 0;border-top:1px solid var(--line);font-size:.9rem}
+  .tl li span:last-child{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums;color:var(--petrol)}
+  .tl li.total{border-top:2px solid var(--petrol);font-weight:600}
+  .proof{margin-top:1.5rem;padding:1.5rem 2rem;border:1px solid var(--line);border-radius:1.25rem;background:var(--surface)}
+  .proof h2{font-size:1.15rem}.proof ul{margin:.6rem 0 0;padding-left:1.2rem;font-size:.9rem;color:var(--sub)}.proof li{margin:.3rem 0}
+  .proof .actions{margin-top:1.2rem}
+  .other{margin-top:2rem}.other p{font-size:.9rem;color:var(--sub)}
+  .pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
   .pills a{text-decoration:none;font-size:.875rem;font-weight:500;padding:.45rem .9rem;border:1px solid var(--line);border-radius:2rem;background:var(--surface);color:var(--ink)}
   .pills a.on{background:var(--petrol);border-color:var(--petrol);color:#fff}
-  .pills a:hover{border-color:var(--brand)}
-  .card.focused{grid-column:1/-1;border-color:var(--petrol);box-shadow:0 12px 40px #173e4314}
-  .card.focused .big{font-size:2.8rem}
-  .rest-h{grid-column:1/-1;font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase;color:var(--sub);margin-top:.5rem}
-  .field[hidden]{display:none}
-  .other{margin-top:2rem}.other p{font-size:.9rem;color:var(--sub)}.other .pills{margin-top:.6rem}
-  .other[hidden]{display:none}
-  @media(max-width:900px){.layout{grid-template-columns:1fr}.inputs{position:static}.cards,.timelines{grid-template-columns:1fr}.summary .row{grid-template-columns:1fr 1fr}}
-  @media print{.site-nav,.inputs .actions,.legend{display:none}.layout{grid-template-columns:1fr}.story{color:#000;background:#fff;border:1px solid #999}.story h2,.story p,.tl li span:last-child,.verdict,.verdict b,.tl h3{color:#000}}
+  .sources{margin-top:1.5rem;font-size:.8125rem;color:var(--sub);line-height:1.6}
+  .section+.section{margin-top:3rem;padding-top:3rem;border-top:1px solid var(--line)}
+  @media(max-width:720px){.result{padding:1.5rem}.how,.story,.proof{padding:1.25rem}.timelines{grid-template-columns:1fr}.steps li{grid-template-columns:1.5rem 1fr;gap:.5rem}.steps li span:last-child{grid-column:2;white-space:normal}}
+  @media print{.site-nav,.other,.proof .actions{display:none}.result{color:#000;background:#fff;border:1px solid #999}.result .eyebrow,.result .unit,.result .unit b,.result .star,.result .figure sup,.inputs label,.inputs .hint{color:#000}.inputs input{color:#000;background:#fff;border-color:#999}}
 </style>
 </head>
 <body>
@@ -71,305 +59,195 @@
   <nav class="wrap nav-in" aria-label="Main navigation">
     <a class="logo" href="index.html" aria-label="Aalayna home">aalay<b>na</b></a>
     <div class="nav-links"><a href="index.html">Home</a><a href="book.html">Book a conversation</a></div>
-    <button class="btn compact" type="button" onclick="window.print()">Print this page</button>
+    <button class="btn compact" type="button" onclick="window.print()">Print</button>
   </nav>
 </header>
-<main class="num-wrap" id="main">
-  <div class="num-head">
-    <p class="eyebrow" id="h-eyebrow">What changes at the end of the meal</p>
-    <h1 id="h-title">Your restaurant, in numbers.</h1>
-    <p id="h-intro">Type your own figures on the left. Everything on the right recalculates. Nothing here is a promise: each number is tagged so you can see where it comes from, and the two-month pilot replaces every assumption with your own data.</p>
-    <nav class="pills" aria-label="Choose an outcome">
-      <a href="?focus=turns" data-focus="turns">Faster tables</a>
-      <a href="?focus=tips" data-focus="tips">Tips</a>
-      <a href="?focus=reviews" data-focus="reviews">Reviews</a>
-      <a href="?focus=guests" data-focus="guests">Guests who return</a>
-      <a href="?focus=all" data-focus="all">Everything</a>
-    </nav>
-    <div class="legend"><span><span class="tag yours">Yours</span> what you typed</span><span><span class="tag bench">Benchmark</span> reported publicly by pay-at-table platforms abroad</span><span><span class="tag assume">Assumption</span> our estimate, measured in the pilot</span></div>
-  </div>
-
-  <div class="layout">
-    <aside class="inputs" aria-label="Your figures">
-      <h2>Your figures</h2>
-      <div class="field" data-for="turns"><label for="i-tables">Tables<small>seats in use on a full night</small></label><input id="i-tables" type="number" min="1" value="30"></div>
-      <div class="field" data-for="turns tips guests"><label for="i-check">Average bill per table<small>USD, food and drinks</small></label><input id="i-check" type="number" min="1" value="45"></div>
-      <div class="field" data-for="tips reviews guests"><label for="i-paid">Bills paid per week<small>all services</small></label><input id="i-paid" type="number" min="1" value="360"></div>
-      <div class="field" data-for="turns"><label for="i-peak">Services per week with a wait<small>nights you turn people away</small></label><input id="i-peak" type="number" min="0" max="14" value="2"></div>
-      <div class="field" data-for="turns"><label for="i-sit">Average sitting at peak<small>minutes, arrival to departure</small></label><input id="i-sit" type="number" min="30" value="90"></div>
-      <div class="field" data-for="turns"><label for="i-done">Done eating to out the door<small>minutes today</small></label><input id="i-done" type="number" min="1" value="18"></div>
-      <div class="field" data-for="tips"><label for="i-tiprate">Tip today, when guests tip<small>% of the bill</small></label><input id="i-tiprate" type="number" min="0" max="30" value="5"></div>
-      <div class="field" data-for="tips"><label for="i-tipshare">Tables that tip today<small>%</small></label><input id="i-tipshare" type="number" min="0" max="100" value="60"></div>
-      <div class="field" data-for="reviews"><label for="i-reviews">Google reviews per month today</label><input id="i-reviews" type="number" min="0" value="4"></div>
-      <div class="field" data-for="turns"><label for="i-cash">Bills paid in cash<small>%</small></label><input id="i-cash" type="number" min="0" max="100" value="60"></div>
-      <div class="field" data-for="turns tips reviews guests"><label for="i-share">Bills settled through Aalayna <span class="tag assume">Assumption</span><small>% by month two of the pilot</small></label><input id="i-share" type="number" min="0" max="100" value="35"></div>
-      <div class="actions"><a class="btn full" data-track="booking_click" data-placement="numbers" href="book.html">Check these numbers on a call</a></div>
-    </aside>
-
-    <section aria-label="Results">
-      <div class="story" id="story">
-        <h2 id="st-title">One table, tonight.</h2>
-        <p id="st-intro">A party of four finishes dinner. Here is what happens next, today and with Aalayna.</p>
-        <div class="timelines" id="st-turns">
-          <div class="tl"><h3>Today <span class="tag yours">Yours</span></h3><ol id="tl-before"></ol></div>
-          <div class="tl"><h3>With Aalayna <span class="tag bench">Benchmark</span></h3>
-            <ol>
-              <li><span>Scan the QR, the bill is already there</span><span>1 min</span></li>
-              <li><span>Split on their phones: evenly, by item, or an amount</span><span>2 min</span></li>
-              <li><span>Pay by Whish or card, tip in one tap</span><span>1 min</span></li>
-              <li><span>Cash: note declared, change brought with the receipt</span><span>0 extra</span></li>
-              <li class="total"><span>Done to out the door</span><span>4 min</span></li>
-            </ol>
-          </div>
-        </div>
-        <div class="timelines" id="st-alt" hidden>
-          <div class="tl"><h3 id="alt-left-h">Today <span class="tag yours">Yours</span></h3><ol id="alt-left"></ol></div>
-          <div class="tl"><h3 id="alt-right-h">With Aalayna <span class="tag assume">Assumption</span></h3><ol id="alt-right"></ol></div>
-        </div>
-        <p class="verdict" id="verdict"></p>
-      </div>
-
-      <div class="cards" id="cards">
-        <div class="card" data-focus="turns">
-          <h3>Tables turned at peak <span class="tag bench">Benchmark</span></h3>
-          <div class="big" id="o-turns"></div>
-          <p id="o-turns-p"></p>
-          <div class="how">Only counts the services where you turn people away. Minutes saved per table divided by the average sitting, times the tables in play. Platforms abroad report 12 to 15 minutes saved and up to 19% more turnover at peak.</div>
-        </div>
-        <div class="card" data-focus="tips">
-          <h3>Tips for your servers <span class="tag assume">Assumption</span></h3>
-          <div class="big" id="o-tips"></div>
-          <p id="o-tips-p"></p>
-          <div class="how">On bills settled through Aalayna, a one-tap prompt with 10% preselected. We assume three tables in four tip, at 9% on average. Platforms abroad report tips up two to three times when the prompt appears at payment.</div>
-        </div>
-        <div class="card" data-focus="reviews">
-          <h3>Google reviews <span class="tag assume">Assumption</span></h3>
-          <div class="big" id="o-reviews"></div>
-          <p id="o-reviews-p"></p>
-          <div class="how">One tap to rate after paying; happy guests are sent to your Google page. We assume 4% of settled tables leave a review. Platforms abroad report five times more reviews.</div>
-        </div>
-        <div class="card" data-focus="guests">
-          <h3>Guests you can reach again <span class="tag assume">Assumption</span></h3>
-          <div class="big" id="o-guests"></div>
-          <p id="o-guests-p"></p>
-          <div class="how">At the receipt, guests can leave a number or email and separately agree to offers. We assume one in five settled tables opts in, and 8% of a list returns when invited.</div>
-        </div>
-        <div class="card" data-focus="turns-extra">
-          <h3>Waiter trips saved <span class="tag assume">Assumption</span></h3>
-          <div class="big" id="o-trips"></div>
-          <p id="o-trips-p"></p>
-          <div class="how">Bringing the bill, coming back for the payment, and the walk to the till for change: three trips of about two minutes each on a table that settles itself.</div>
-        </div>
-        <div class="card" data-focus="turns-extra">
-          <h3>Cash, declared ahead <span class="tag yours">Yours</span></h3>
-          <div class="big" id="o-cash"></div>
-          <p id="o-cash-p"></p>
-          <div class="how">Cash tables tell the floor which note is coming, so change arrives with the receipt. Same cash, one trip instead of two, and no "we'll bring it right back".</div>
-        </div>
-        <div class="card summary" data-focus="all">
-          <h3>Put together, per month</h3>
-          <div class="row">
-            <div>Extra revenue at peak<strong id="s-rev"></strong></div>
-            <div>Extra tips to staff<strong id="s-tips"></strong></div>
-            <div>Return visits from the list<strong id="s-list"></strong></div>
-            <div>Aalayna fee<strong id="s-fee"></strong></div>
-          </div>
-          <p id="s-line" style="margin-top:1rem;color:var(--ink)"></p>
-        </div>
-      </div>
-
-      <div class="proof">
-        <h2>How the pilot proves or disproves this</h2>
-        <p style="margin-top:.4rem">Two months, no fee. From the first service the dashboard records, on your own bills:</p>
-        <ul>
-          <li>Share of bills settled through Aalayna, and the median time from bill opened to paid.</li>
-          <li>Digital tips per server, per week.</li>
-          <li>Ratings left and Google reviews per week against your baseline.</li>
-          <li>Receipt and offer sign-ups per paid bill.</li>
-          <li>From month two: how many first-month guests came back within 30 days.</li>
-        </ul>
-        <p style="margin-top:.75rem">In week seven we sit down with these numbers and yours from above, side by side. You decide with evidence, not with this page.</p>
-      </div>
-      <div class="other" id="other" hidden>
-        <p>Look at another outcome with the same figures:</p>
-        <nav class="pills" aria-label="Other outcomes">
-          <a href="?focus=turns" data-focus="turns">Faster tables</a>
-          <a href="?focus=tips" data-focus="tips">Tips</a>
-          <a href="?focus=reviews" data-focus="reviews">Reviews</a>
-          <a href="?focus=guests" data-focus="guests">Guests who return</a>
-          <a href="?focus=all" data-focus="all">Everything</a>
-        </nav>
-      </div>
-      <p class="sources">Benchmarks are figures reported publicly by leading pay-at-table platforms in Europe, Asia and the Gulf, not Lebanese data. Assumptions are Aalayna's estimates and are shown so they can be challenged. Extra revenue at peak only exists on services where guests are turned away or wait for a table; on quiet nights the saving is time and staff effort, not sales. Tips go to your staff under your own policy; Aalayna never handles them.</p>
-    </section>
-  </div>
-</main>
+<main class="num-wrap" id="main"></main>
 <footer class="wrap footer"><a class="logo" href="index.html">aalay<b>na</b></a><p>© 2026 Aalayna · For restaurants in Lebanon</p><a data-track="whatsapp_click" data-placement="numbers_footer" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20go%20through%20the%20numbers%20for%20my%20restaurant">Contact us on WhatsApp</a></footer>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
 (function () {
-  var $ = function (id) { return document.getElementById(id); };
-  var ids = ['tables','check','paid','peak','sit','done','tiprate','tipshare','reviews','cash','share'];
-  // prefill from the link so a page can be sent with an owner's own numbers
+  var WEEKS = 4.33, AFTER_MIN = 4, TIP_RATE = 0.09, TIP_SHARE = 0.75, REVIEW_RATE = 0.04, OPTIN = 0.20, RETURN = 0.08;
   var q = new URLSearchParams(location.search);
-  ids.forEach(function (k) { var v = q.get(k); if (v !== null && v !== '' && isFinite(+v)) $('i-' + k).value = +v; });
-  function n(k) { var v = parseFloat($('i-' + k).value); return isFinite(v) ? v : 0; }
-  // outputs may have been removed in a focused view; writing to a detached node is harmless
-  function out(id) { return $(id) || document.createElement('div'); }
-  function usd(v) { return '$' + Math.round(v).toLocaleString('en-US'); }
-  function int(v) { return Math.round(v).toLocaleString('en-US'); }
-  var WEEKS = 4.33, AFTER = 4, TIP_SHARE_AFTER = 0.75, TIP_RATE_AFTER = 0.09, REVIEW_RATE = 0.04, OPTIN = 0.20, RETURN = 0.08, TRIP_MIN = 2, TRIPS = 3, FEE = 150;
+  var focus = (q.get('focus') || 'turns').replace(/[^a-z]/g, '');
+  var ORDER = ['turns', 'tips', 'reviews', 'guests'];
+  if (ORDER.indexOf(focus) < 0 && focus !== 'all') focus = 'turns';
 
-  function paint() {
-    var tables = n('tables'), check = n('check'), paid = n('paid'), peak = n('peak'), sit = Math.max(30, n('sit')), done = Math.max(1, n('done'));
-    var tipRate = n('tiprate') / 100, tipShare = n('tipshare') / 100, reviews = n('reviews'), cash = n('cash') / 100, share = Math.min(1, Math.max(0, n('share') / 100));
-
-    // one table tonight: the owner's total, split across the usual steps
-    var steps = [['Catching the waiter\'s eye', .22], ['Bill printed and brought over', .17], ['The table works out who pays what', .28], ['Waiter comes back for the money', .17], ['Card machine, or change from the till', .16]];
-    var ol = $('tl-before'); ol.innerHTML = '';
-    var acc = 0;
-    steps.forEach(function (s, i) {
-      var m = i === steps.length - 1 ? done - acc : Math.max(1, Math.round(done * s[1]));
-      acc += m;
-      var li = document.createElement('li'); li.innerHTML = '<span></span><span></span>';
-      li.children[0].textContent = s[0]; li.children[1].textContent = m + ' min';
-      ol.appendChild(li);
-    });
-    var tot = document.createElement('li'); tot.className = 'total'; tot.innerHTML = '<span>Done to out the door</span><span>' + done + ' min</span>'; ol.appendChild(tot);
-    var saved = Math.max(0, done - AFTER);
-    $('verdict').innerHTML = saved > 0
-      ? '<b>' + saved + ' minutes</b> given back on every table that settles itself. On a night with a queue, that is the next party seated ' + saved + ' minutes sooner.'
-      : 'Your checkout is already as fast as a phone. The value for you is in the other cards.';
-
-    // turns at peak
-    var settledTables = tables * share;
-    var extraTurnsPerService = settledTables * (saved / sit);
-    var extraTurnsMonth = extraTurnsPerService * peak * WEEKS;
-    var extraRevenue = extraTurnsMonth * check;
-    out('o-turns').innerHTML = '+' + extraTurnsPerService.toFixed(1) + '<small>tables per busy service</small>';
-    out('o-turns-p').textContent = peak > 0
-      ? 'Across ' + peak + ' busy services a week: about ' + int(extraTurnsMonth) + ' extra tables a month, ' + usd(extraRevenue) + ' at your average bill.'
-      : 'You said no service has a wait, so there is no extra table to seat. The minutes saved are staff time and a better exit, not revenue.';
-
-    // tips
-    var tipsToday = paid * check * tipRate * tipShare;
-    var settledBills = paid * share;
-    var tipsSettled = settledBills * check * TIP_SHARE_AFTER * TIP_RATE_AFTER;
-    var tipsSettledToday = settledBills * check * tipRate * tipShare;
-    var tipUplift = Math.max(0, tipsSettled - tipsSettledToday);
-    out('o-tips').innerHTML = '+' + usd(tipUplift * WEEKS) + '<small>per month</small>';
-    out('o-tips-p').textContent = 'Today about ' + usd(tipsToday * WEEKS) + ' a month in tips at ' + Math.round(tipRate * 100) + '% from ' + Math.round(tipShare * 100) + '% of tables. On the ' + Math.round(share * 100) + '% of bills settled through Aalayna, that share rises to 75% at 9%.';
-
-    // reviews
-    var reviewsAfter = settledBills * REVIEW_RATE * WEEKS;
-    out('o-reviews').innerHTML = '+' + int(reviewsAfter) + '<small>reviews per month</small>';
-    out('o-reviews-p').textContent = reviews > 0
-      ? 'From ' + int(reviews) + ' a month today to about ' + int(reviews + reviewsAfter) + ', ' + (((reviews + reviewsAfter) / reviews)).toFixed(1) + ' times as many.'
-      : 'From none today to about ' + int(reviewsAfter) + ' a month.';
-
-    // guests
-    var contactsMonth = settledBills * OPTIN * WEEKS;
-    var list3 = contactsMonth * 3;
-    var returnsPerCampaign = list3 * RETURN;
-    out('o-guests').innerHTML = int(contactsMonth) + '<small>contacts per month</small>';
-    out('o-guests-p').textContent = 'About ' + int(list3) + ' guests on your list after three months. One invitation to that list brings back about ' + int(returnsPerCampaign) + ' tables, ' + usd(returnsPerCampaign * check) + ' at your average bill.';
-
-    // trips
-    var tripsWeek = settledBills * TRIPS;
-    var hoursWeek = tripsWeek * TRIP_MIN / 60;
-    out('o-trips').innerHTML = int(hoursWeek) + '<small>hours a week</small>';
-    out('o-trips-p').textContent = int(tripsWeek) + ' fewer trips to the table and the till each week. Time your floor spends on guests who are still eating.';
-
-    // cash
-    var cashBills = settledBills * cash;
-    out('o-cash').innerHTML = int(cashBills) + '<small>cash tables a week</small>';
-    out('o-cash-p').textContent = 'Each one tells the floor its note before the waiter walks over. No second trip for change, no waiting with coats on.';
-
-    // summary
-    var listValueMonth = returnsPerCampaign * check / 3;   // one campaign per quarter, spread
-    out('s-rev').textContent = usd(extraRevenue);
-    out('s-tips').textContent = usd(tipUplift * WEEKS);
-    out('s-list').textContent = usd(listValueMonth);
-    out('s-fee').textContent = usd(FEE);
-    var ratio = (extraRevenue + listValueMonth) / FEE;
-    out('s-line').textContent = extraRevenue + listValueMonth > 0
-      ? 'Revenue effects alone cover the fee ' + ratio.toFixed(1) + ' times over, before counting tips, reviews and staff time. Free for the first two months, so the first number you see is your own.'
-      : 'With no busy services and no list yet, the case rests on tips, reviews and staff time. The pilot is free, so the first number you see is your own.';
-  }
-  /* ---- focus: one outcome at a time, the rest one tap away ---- */
-  var focus = (q.get('focus') || 'all').replace(/[^a-z]/g, '');
-  if (['turns','tips','reviews','guests','all'].indexOf(focus) < 0) focus = 'all';
-  var HEAD = {
-    turns:   ['Tables turn faster', 'Fourteen minutes back on every table.', 'How long does a table sit between finishing and leaving? Type it, and see what a phone at the table changes on a busy night.'],
-    tips:    ['Servers earn more', 'Tips, when the prompt is one tap away.', 'Guests tip more when the choice is in front of them at the moment they pay. Type what your tables tip today and see the difference on the bills that settle through Aalayna.'],
-    reviews: ['Reviews that write themselves', 'A rating one tap after paying.', 'Happy guests rarely go looking for your Google page. Asked at the receipt, some of them do. Type your reviews today and see what a prompt adds.'],
-    guests:  ['Guests who come back', 'The list your restaurant fills at the table.', 'A number or an email left at the receipt, with permission for offers, becomes a list you own. Type your bills per week and see how fast it grows and what one invitation is worth.'],
-    all:     ['What changes at the end of the meal', 'Your restaurant, in numbers.', 'Type your own figures on the left. Everything on the right recalculates. Nothing here is a promise: each number is tagged so you can see where it comes from, and the two-month pilot replaces every assumption with your own data.']
+  /* the owner's figures: one shared set, prefilled from the link */
+  var FIELDS = {
+    tables:  { label: 'Tables in use on a full night', def: 30, min: 1 },
+    check:   { label: 'Average bill per table', hint: 'USD, food and drinks', def: 45, min: 1 },
+    paid:    { label: 'Bills paid per week', hint: 'all services', def: 360, min: 1 },
+    peak:    { label: 'Busy services per week', hint: 'nights you turn people away', def: 2, min: 0, max: 14 },
+    sit:     { label: 'Average sitting at peak', hint: 'minutes, arrival to departure', def: 90, min: 30 },
+    done:    { label: 'Done eating to out the door', hint: 'minutes, today', def: 18, min: 1 },
+    tiprate: { label: 'Tip today, when guests tip', hint: '% of the bill', def: 5, min: 0, max: 30 },
+    tipshare:{ label: 'Tables that tip today', hint: '%', def: 60, min: 0, max: 100 },
+    reviews: { label: 'Google reviews per month today', def: 4, min: 0 }
   };
-  $('h-eyebrow').textContent = HEAD[focus][0]; $('h-title').textContent = HEAD[focus][1]; $('h-intro').textContent = HEAD[focus][2];
-  document.querySelectorAll('.pills a').forEach(function (a) {
-    a.classList.toggle('on', a.dataset.focus === focus);
-    // carry the typed figures across focus switches
-    a.addEventListener('click', function (e) {
-      e.preventDefault();
-      var p = new URLSearchParams(); p.set('focus', a.dataset.focus);
-      ids.forEach(function (k) { p.set(k, $('i-' + k).value); });
-      location.href = '?' + p.toString();
-    });
-  });
-  var PROOF = {
-    turns:   ['Share of bills settled through Aalayna, week by week.', 'Median minutes from bill opened to paid, on your own tables.', 'Table time on busy nights against the baseline you give us in week zero.'],
-    tips:    ['Digital tips per server, per week, from the first service.', 'Share of settled bills that included a tip, and the average rate.', 'Side by side with what your servers declared before the pilot.'],
-    reviews: ['Ratings left on the receipt screen, per week.', 'Google reviews per week against your count from the month before.', 'Private notes from unhappy guests, so you see what never reached Google.'],
-    guests:  ['Receipt and offer sign-ups per paid bill.', 'The list, with each guest\'s visits and spend, in your dashboard.', 'From month two: how many first-month guests came back within 30 days.']
-  };
-  if (focus !== 'all') {
-    document.querySelectorAll('.field[data-for]').forEach(function (f) { f.hidden = f.dataset.for.split(' ').indexOf(focus) < 0; });
-    // one outcome, one page: everything that is not this outcome leaves
-    document.querySelectorAll('#cards .card').forEach(function (c) { if (c.dataset.focus !== focus) c.remove(); });
-    $('cards').querySelector('.card').classList.add('focused');
-    var ul = document.querySelector('.proof ul'); ul.innerHTML = '';
-    PROOF[focus].forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
-    document.querySelector('.proof p:last-child').textContent = 'In week seven we put this number next to the one you typed above. You decide with your own figure, not with this page.';
-    $('other').hidden = false;
-  }
-  function altStory(title, intro, leftH, left, rightH, right, verdict) {
-    $('st-title').textContent = title; $('st-intro').textContent = intro;
-    $('st-turns').hidden = true; $('st-alt').hidden = false;
-    $('alt-left-h').childNodes[0].textContent = leftH + ' '; $('alt-right-h').childNodes[0].textContent = rightH + ' ';
-    [['alt-left', left], ['alt-right', right]].forEach(function (pair) {
-      var ol = $(pair[0]); ol.innerHTML = '';
-      pair[1].forEach(function (row, i) { var li = document.createElement('li'); if (i === pair[1].length - 1) li.className = 'total'; li.innerHTML = '<span></span><span></span>'; li.children[0].textContent = row[0]; li.children[1].textContent = row[1]; ol.appendChild(li); });
-    });
-    $('verdict').innerHTML = verdict;
-  }
-  var basePaint = paint;
-  paint = function () {
-    basePaint();
-    var check = n('check'), paid = n('paid'), tipRate = n('tiprate') / 100, tipShare = n('tipshare') / 100, reviews = n('reviews'), share = Math.min(1, Math.max(0, n('share') / 100));
-    if (focus === 'tips') {
-      var today = check * tipRate * tipShare, after = check * TIP_RATE_AFTER * TIP_SHARE_AFTER;
-      altStory('One bill of ' + usd(check) + '.', 'What the server takes home from it, today and when the tip is one tap at payment.',
-        'Today', [['Guests who leave a tip', Math.round(tipShare * 100) + '%'], ['When they do, they leave', Math.round(tipRate * 100) + '%'], ['Expected tip on this bill', '$' + today.toFixed(2)]],
-        'With Aalayna', [['Tip options shown at payment, 10% preselected', '3 taps'], ['Guests who leave a tip', '75%'], ['When they do, they leave', '9%'], ['Expected tip on this bill', '$' + after.toFixed(2)]],
-        '<b>$' + Math.max(0, after - today).toFixed(2) + ' more per bill</b> for the server, on every bill that settles through Aalayna. Platforms abroad report tips two to three times higher once the prompt sits at the payment step.');
-    } else if (focus === 'reviews') {
-      var tablesWeek = paid, promptWeek = paid * share, reviewsWeek = promptWeek * REVIEW_RATE;
-      altStory(int(tablesWeek) + ' tables this week.', 'How many of them end up as a Google review, today and with a rating one tap after paying.',
-        'Today', [['Tables served', int(tablesWeek)], ['Guests who go and find your Google page', 'a few'], ['Reviews per week', (reviews / WEEKS).toFixed(1)]],
-        'With Aalayna', [['Tables that settle through Aalayna', int(promptWeek)], ['Asked to rate, one tap, on the receipt screen', 'all of them'], ['Happy ones sent straight to your Google page', '4% leave a review'], ['Reviews per week', reviewsWeek.toFixed(1)]],
-        '<b>' + int(reviewsWeek * WEEKS) + ' more reviews a month</b>, recent and from real tables. Unhappy guests are offered a private note to you instead, so the problem reaches the manager, not Google.');
-    } else if (focus === 'guests') {
-      var settled = paid * share, contacts = settled * OPTIN;
-      altStory(int(paid) + ' tables this week.', 'How many of them you could invite back, today and with a receipt that asks.',
-        'Today', [['Tables served', int(paid)], ['Guests whose number or email you have', 'the ones you know by face'], ['Ways to reach them next Ramadan', 'Instagram, to whoever follows']],
-        'With Aalayna', [['Tables that settle through Aalayna', int(settled)], ['Offered a receipt and, separately, your offers', 'all of them'], ['One in five says yes', int(contacts) + ' contacts a week'], ['On your list after three months', int(contacts * WEEKS * 3)]],
-        '<b>' + int(contacts * WEEKS * 3) + ' guests you can reach directly</b> after one quarter, each linked to what they spent and when they last came. One invitation at 8% brings back ' + int(contacts * WEEKS * 3 * RETURN) + ' tables.');
+  var v = {};
+  Object.keys(FIELDS).forEach(function (k) { var p = q.get(k); v[k] = (p !== null && p !== '' && isFinite(+p)) ? +p : FIELDS[k].def; });
+  function usd(x) { return '$' + Math.round(x).toLocaleString('en-US'); }
+  function int(x) { return Math.round(x).toLocaleString('en-US'); }
+  function pct(x) { return Math.round(x * 100) + '%'; }
+
+  /* ---- each outcome: which inputs, the headline, the arithmetic, the story ---- */
+  var OUTCOMES = {
+    turns: {
+      eyebrow: 'Tables turn faster', inputs: ['done', 'tables', 'sit', 'peak', 'check'],
+      compute: function () {
+        var saved = Math.max(0, v.done - AFTER_MIN), perService = v.tables * saved / v.sit, month = perService * v.peak * WEEKS;
+        return { saved: saved, perService: perService, month: month, revenue: month * v.check };
+      },
+      headline: function (r) { return { figure: '+' + int(r.month), unit: '<b>extra tables a month</b> on your busy nights, worth ' + usd(r.revenue) + ' at your average bill' }; },
+      steps: function (r) { return [
+        ['Minutes from done to out the door today', 'what you typed', v.done + ' min'],
+        ['With the bill, the split and the payment on the phone', 'measured at 3 to 5 minutes by pay-at-table platforms abroad; we use 4', AFTER_MIN + ' min'],
+        ['Minutes given back on every table', v.done + ' minus ' + AFTER_MIN, r.saved + ' min'],
+        ['Share of a sitting that frees up', r.saved + ' of ' + v.sit + ' minutes', pct(r.saved / v.sit)],
+        ['Extra tables per busy service', v.tables + ' tables times ' + pct(r.saved / v.sit), r.perService.toFixed(1)],
+        ['Extra tables a month', r.perService.toFixed(1) + ' times ' + v.peak + ' busy services times 4.33 weeks', int(r.month), true],
+        ['At your average bill', int(r.month) + ' times ' + usd(v.check), usd(r.revenue), true]
+      ]; },
+      story: function (r) {
+        var steps = [['Catching the waiter\'s eye', .22], ['Bill printed and brought over', .17], ['The table works out who pays what', .28], ['Waiter comes back for the money', .17], ['Card machine, or change from the till', .16]], acc = 0, left = [];
+        steps.forEach(function (s, i) { var m = i === steps.length - 1 ? v.done - acc : Math.max(1, Math.round(v.done * s[1])); acc += m; left.push([s[0], m + ' min']); });
+        left.push(['Done to out the door', v.done + ' min']);
+        return { title: 'One table, tonight.', intro: 'A party of four finishes dinner. What happens next, today and with Aalayna.', left: left,
+                 right: [['Scan the QR, the bill is already there', '1 min'], ['Split on their phones, evenly, by item or an amount', '2 min'], ['Pay by Whish or card, tip in one tap', '1 min'], ['Cash: note declared, change brought with the receipt', '0 extra'], ['Done to out the door', AFTER_MIN + ' min']] };
+      },
+      proof: ['Share of bills settled through Aalayna, week by week.', 'Median minutes from bill opened to paid, on your own tables.', 'Table time on busy nights against the baseline you give us in week zero.'],
+      note: 'Extra tables only exist on services where guests wait or are turned away. On a quiet night the minutes saved are staff time and a better exit, not sales.'
+    },
+    tips: {
+      eyebrow: 'Servers earn more tips', inputs: ['check', 'paid', 'tiprate', 'tipshare'],
+      compute: function () {
+        var today = v.check * (v.tiprate / 100) * (v.tipshare / 100), after = v.check * TIP_RATE * TIP_SHARE;
+        var perBill = Math.max(0, after - today);
+        return { today: today, after: after, perBill: perBill, month: perBill * v.paid * WEEKS, todayMonth: today * v.paid * WEEKS };
+      },
+      headline: function (r) { return { figure: '+' + usd(r.month), unit: '<b>more in tips a month</b> for your servers, on top of the ' + usd(r.todayMonth) + ' they collect today' }; },
+      steps: function (r) { return [
+        ['Expected tip on one bill today', usd(v.check) + ' times ' + v.tiprate + '% times ' + v.tipshare + '% of tables that tip', '$' + r.today.toFixed(2)],
+        ['Tip options at the payment step, 10% preselected', 'guests choose 5%, 10%, 15% or their own amount in one tap', ''],
+        ['Tables that tip when the choice is in front of them', 'our working rate; platforms abroad report two to three times more tips', pct(TIP_SHARE)],
+        ['Average tip when they do', 'our working rate, with 10% preselected', pct(TIP_RATE)],
+        ['Expected tip on one bill with Aalayna', usd(v.check) + ' times ' + pct(TIP_RATE) + ' times ' + pct(TIP_SHARE), '$' + r.after.toFixed(2)],
+        ['More per bill', '$' + r.after.toFixed(2) + ' minus $' + r.today.toFixed(2), '$' + r.perBill.toFixed(2)],
+        ['More per month', '$' + r.perBill.toFixed(2) + ' times ' + int(v.paid) + ' bills times 4.33 weeks', usd(r.month), true]
+      ]; },
+      story: function (r) { return { title: 'One bill of ' + usd(v.check) + '.', intro: 'What the server takes home from it.',
+        left: [['Guests who leave a tip', v.tipshare + '%'], ['When they do, they leave', v.tiprate + '%'], ['Expected tip', '$' + r.today.toFixed(2)]],
+        right: [['Tip options shown at payment', '3 taps'], ['Guests who leave a tip', pct(TIP_SHARE)], ['When they do, they leave', pct(TIP_RATE)], ['Expected tip', '$' + r.after.toFixed(2)]] }; },
+      proof: ['Digital tips per server, per week, from the first service.', 'Share of settled bills that included a tip, and the average rate.', 'Side by side with what your servers declared before the pilot.'],
+      note: 'Tips go to your staff under your own policy. Aalayna records who earned what and never handles the money.'
+    },
+    reviews: {
+      eyebrow: 'More Google reviews', inputs: ['paid', 'reviews'],
+      compute: function () { var week = v.paid * REVIEW_RATE, month = week * WEEKS; return { week: week, month: month, total: month + v.reviews, mult: v.reviews > 0 ? (month + v.reviews) / v.reviews : null }; },
+      headline: function (r) { return { figure: '+' + int(r.month), unit: '<b>Google reviews a month</b>, from ' + int(v.reviews) + ' today to about ' + int(r.total) + (r.mult ? ', ' + r.mult.toFixed(1) + ' times as many' : '') }; },
+      steps: function (r) { return [
+        ['Bills paid per week', 'what you typed', int(v.paid)],
+        ['Every guest is asked to rate the visit, one tap, on the receipt screen', 'no app, no login, the rating is the last thing they see', ''],
+        ['Happy guests are sent straight to your Google page', 'unhappy guests are offered a private note to you instead', ''],
+        ['Tables that go on to leave a Google review', 'our working rate; platforms abroad report five times more reviews after adding the prompt', pct(REVIEW_RATE)],
+        ['New reviews per week', int(v.paid) + ' times ' + pct(REVIEW_RATE), r.week.toFixed(1)],
+        ['New reviews per month', r.week.toFixed(1) + ' times 4.33 weeks', int(r.month), true],
+        ['Reviews per month, all in', int(v.reviews) + ' today plus ' + int(r.month), int(r.total), true]
+      ]; },
+      story: function (r) { return { title: int(v.paid) + ' tables this week.', intro: 'How many of them end up as a Google review.',
+        left: [['Tables served', int(v.paid)], ['Guests who go and find your Google page', 'a few'], ['Reviews per week', (v.reviews / WEEKS).toFixed(1)]],
+        right: [['Asked to rate, one tap, after paying', 'all of them'], ['Happy ones sent to your Google page', pct(REVIEW_RATE) + ' leave a review'], ['Unhappy ones send a private note to you', 'not to Google'], ['Reviews per week', r.week.toFixed(1)]] }; },
+      proof: ['Ratings left on the receipt screen, per week.', 'Google reviews per week against your count from the month before.', 'Private notes from unhappy guests, so you see what never reached Google.'],
+      note: 'Reviews are written by guests in their own words. Aalayna only opens the door; it never writes or filters a public review.'
+    },
+    guests: {
+      eyebrow: 'Guests who come back', inputs: ['paid', 'check'],
+      compute: function () { var week = v.paid * OPTIN, month = week * WEEKS, quarter = month * 3, back = quarter * RETURN; return { week: week, month: month, quarter: quarter, back: back, value: back * v.check }; },
+      headline: function (r) { return { figure: int(r.quarter), unit: '<b>guests on your own list</b> after three months, each linked to what they spent and when they last came' }; },
+      steps: function (r) { return [
+        ['Bills paid per week', 'what you typed', int(v.paid)],
+        ['At the receipt, guests can leave a number or email, and separately agree to your offers', 'two separate choices, both optional, recorded with the wording they saw', ''],
+        ['Tables that leave a contact', 'our working rate for a receipt asked at the moment of payment', pct(OPTIN)],
+        ['Contacts per week', int(v.paid) + ' times ' + pct(OPTIN), int(r.week)],
+        ['Contacts per month', int(r.week) + ' times 4.33 weeks', int(r.month)],
+        ['On your list after three months', int(r.month) + ' times 3', int(r.quarter), true],
+        ['Tables that come back from one invitation', int(r.quarter) + ' times ' + pct(RETURN) + ', the share of a list that returns when invited', int(r.back)],
+        ['Worth, at your average bill', int(r.back) + ' times ' + usd(v.check), usd(r.value), true]
+      ]; },
+      story: function (r) { return { title: int(v.paid) + ' tables this week.', intro: 'How many of them you could invite back.',
+        left: [['Tables served', int(v.paid)], ['Guests whose number or email you have', 'the ones you know by face'], ['Ways to reach them before Ramadan', 'Instagram, to whoever follows']],
+        right: [['Offered a receipt and, separately, your offers', 'all of them'], ['One in five says yes', int(r.week) + ' a week'], ['On your list after a quarter', int(r.quarter)], ['Back from one invitation', int(r.back) + ' tables']] }; },
+      proof: ['Receipt and offer sign-ups per paid bill.', 'The list, with each guest\'s visits and spend, in your dashboard.', 'From month two: how many first-month guests came back within 30 days.'],
+      note: 'The list is yours. Aalayna never shares one restaurant\'s guests with another and never uses them for its own marketing.'
     }
   };
-  ids.forEach(function (k) { $('i-' + k).addEventListener('input', paint); });
-  paint();
+
+  var main = document.getElementById('main');
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function pills(active) {
+    var nav = el('nav', 'pills'); nav.setAttribute('aria-label', 'Outcomes');
+    [['turns', 'Faster tables'], ['tips', 'Tips'], ['reviews', 'Reviews'], ['guests', 'Guests who return'], ['all', 'Everything']].forEach(function (p) {
+      var a = el('a', p[0] === active ? 'on' : '', p[1]); a.href = '?focus=' + p[0];
+      a.addEventListener('click', function (e) { e.preventDefault(); var s = new URLSearchParams(); s.set('focus', p[0]); Object.keys(v).forEach(function (k) { s.set(k, v[k]); }); location.href = '?' + s.toString(); });
+      nav.appendChild(a);
+    });
+    return nav;
+  }
+  function section(key, showPills) {
+    var o = OUTCOMES[key], wrap = el('section', 'section'); wrap.dataset.key = key;
+    var res = el('div', 'result');
+    res.appendChild(el('p', 'eyebrow', o.eyebrow));
+    var fig = el('div', 'figure'), unit = el('p', 'unit'), star = el('p', 'star', '* Assuming every bill at your restaurant is settled through Aalayna. Fewer bills, proportionally fewer.');
+    res.appendChild(fig); res.appendChild(unit); res.appendChild(star);
+    var inputs = el('div', 'inputs');
+    o.inputs.forEach(function (k) {
+      var f = FIELDS[k], lab = el('label', '', f.label + (f.hint ? ' <span class="hint">' + f.hint + '</span>' : ''));
+      var inp = el('input'); inp.type = 'number'; inp.min = f.min; if (f.max != null) inp.max = f.max; inp.value = v[k]; inp.setAttribute('aria-label', f.label);
+      inp.addEventListener('input', function () { var x = parseFloat(inp.value); if (isFinite(x)) { v[k] = x; document.querySelectorAll('input[data-key="' + k + '"]').forEach(function (i) { if (i !== inp) i.value = x; }); paintAll(); } });
+      inp.dataset.key = k; lab.appendChild(inp); inputs.appendChild(lab);
+    });
+    res.appendChild(inputs); wrap.appendChild(res);
+    var how = el('div', 'how'); how.appendChild(el('h2', '', 'How we get to this number')); var ol = el('ol', 'steps'); how.appendChild(ol); wrap.appendChild(how);
+    var st = el('div', 'story'); wrap.appendChild(st);
+    var proof = el('div', 'proof'); proof.appendChild(el('h2', '', 'How the pilot proves it, on your own tables'));
+    var ul = el('ul'); o.proof.forEach(function (t) { ul.appendChild(el('li', '', t)); }); proof.appendChild(ul);
+    proof.appendChild(el('p', '', 'Two months, no fee. In week seven we put the measured number next to the one above. You decide with your own figure.'));
+    var act = el('div', 'actions'); var a = el('a', 'btn', 'Check this number on a call'); a.href = 'book.html'; a.dataset.track = 'booking_click'; a.dataset.placement = 'numbers_' + key; act.appendChild(a); proof.appendChild(act);
+    wrap.appendChild(proof);
+    wrap.appendChild(el('p', 'sources', o.note + ' Rates marked "our working rate" are Aalayna\'s estimates, shown so you can challenge them; "platforms abroad" refers to figures published by leading pay-at-table platforms in Europe, Asia and the Gulf, not to Lebanese data.'));
+    if (showPills) { var other = el('div', 'other'); other.appendChild(el('p', '', 'Look at another outcome with the same figures:')); other.appendChild(pills(key)); wrap.appendChild(other); }
+    wrap._parts = { fig: fig, unit: unit, ol: ol, st: st };
+    return wrap;
+  }
+  function paintSection(wrap) {
+    var key = wrap.dataset.key, o = OUTCOMES[key], r = o.compute(), h = o.headline(r), p = wrap._parts;
+    p.fig.innerHTML = h.figure + '<sup>*</sup>'; p.unit.innerHTML = h.unit;
+    p.ol.innerHTML = '';
+    o.steps(r).forEach(function (s) {
+      var li = el('li', s[3] ? 'final' : ''); li.appendChild(el('span', '', s[0] + (s[1] ? '<small>' + s[1] + '</small>' : ''))); li.appendChild(el('span', '', s[2])); p.ol.appendChild(li);
+    });
+    var s = o.story(r); p.st.innerHTML = '';
+    p.st.appendChild(el('h2', '', s.title)); p.st.appendChild(el('p', '', s.intro));
+    var tl = el('div', 'timelines');
+    [['Today', s.left], ['With Aalayna', s.right]].forEach(function (side) {
+      var d = el('div', 'tl'); d.appendChild(el('h3', '', side[0])); var ol = el('ol');
+      side[1].forEach(function (row, i) { var li = el('li', i === side[1].length - 1 ? 'total' : ''); li.appendChild(el('span', '', row[0])); li.appendChild(el('span', '', row[1])); ol.appendChild(li); });
+      d.appendChild(ol); tl.appendChild(d);
+    });
+    p.st.appendChild(tl);
+  }
+  var sections = [];
+  if (focus === 'all') {
+    var head = el('div', '', '<p class="eyebrow">Everything, with the same figures</p><h1 style="font-size:2rem;letter-spacing:-.04em;line-height:1.1">Four numbers, one restaurant.</h1>');
+    head.appendChild(pills('all')); main.appendChild(head);
+    ORDER.forEach(function (k) { var s = section(k, false); main.appendChild(s); sections.push(s); });
+  } else {
+    var s1 = section(focus, true); main.appendChild(s1); sections.push(s1);
+  }
+  function paintAll() { sections.forEach(paintSection); }
+  paintAll();
 })();
 </script>
 </body>
