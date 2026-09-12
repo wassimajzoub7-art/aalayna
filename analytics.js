@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
   var KEY = 'aal.marketing.events';
-  var allowed = ['demo_start', 'demo_open', 'demo_complete', 'demo_cash_requested', 'whatsapp_click', 'booking_click', 'booking_page_view', 'booking_calendar_click'];
+  var allowed = ['demo_start', 'demo_open', 'demo_complete', 'demo_cash_requested', 'whatsapp_click', 'booking_click', 'booking_page_view', 'booking_calendar_click', 'numbers_click'];
   var privacyOptOut = global.navigator.doNotTrack === '1' || global.navigator.globalPrivacyControl === true;
   function events() {
     try { var data = JSON.parse(global.localStorage.getItem(KEY) || '[]'); return Array.isArray(data) ? data : []; }

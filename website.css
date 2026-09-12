@@ -20,3 +20,11 @@
 .retention-footer{display:flex;align-items:center;justify-content:space-between;gap:2rem;margin-top:1.5rem}.retention-footer p{max-width:35rem}.retention-footer a{flex-shrink:0}
 @media(max-width:960px){.retention-heading{gap:2rem}.retention-steps{gap:1.5rem}.retention-footer{align-items:flex-start;flex-direction:column;gap:1rem}.nav-links{flex-wrap:wrap}}
 @media(max-width:720px){.retention-heading,.retention-steps{grid-template-columns:1fr;gap:1.5rem}.retention-steps{margin-top:2rem}.retention-status{flex-direction:column;gap:.75rem;padding:1.25rem}.retention-heading>p{font-size:1rem}.nav-links{gap:.5rem 1.2rem}.retention-footer a{flex-shrink:1}}
+
+/* Outcomes band: four measurable claims, each with its own calculator link. */
+.benefits.outcomes{grid-template-columns:repeat(4,minmax(0,1fr));gap:2rem}
+.calc-link{display:inline-block;margin-top:.9rem;color:var(--peach);font-weight:600;font-size:.9375rem;text-underline-offset:.25rem}
+.calc-link::after{content:' \2192'}
+.outcomes-note{color:#B9C7C4;margin-top:2rem}
+@media(max-width:960px){.benefits.outcomes{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.benefits.outcomes{grid-template-columns:1fr}}
