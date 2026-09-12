@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=18"></script>
+<script src="aalayna-store.js?v=19"></script>
 <script src="restaurant-growth.js?v=3"></script>
-<script src="owner-metrics.js?v=3"></script>
+<script src="owner-metrics.js?v=4"></script>
 <script src="aalayna-config.js"></script>
 <script src="aalayna-sync.js?v=1"></script>
 
@@ -354,6 +354,8 @@
         <div class="journey-grid" id="journey-metrics"></div>
         <h4 class="journey-sub">Viewed, never on a bill</h4>
         <div id="journey-never"></div>
+        <h4 class="journey-sub">How guests use it</h4>
+        <div id="journey-usage"></div>
         <p class="cs journey-note">Computed from recorded events on this device. Scans and views are client-fired and may be incomplete.</p>
       </div>
       <div class="card" id="data-health">
@@ -481,7 +483,7 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=5"></script>
+<script src="restaurant-ops.js?v=6"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];

@@ -102,6 +102,25 @@
       medianBillToPaymentMs:median(gaps), timedSessions:gaps.length,
       payments:payments.length, identifiedPayments:identified, captureRate:ratio(identified,payments.length)};
   };
+  /* ---- how guests use the interface, from ui_action events, per session (last choice wins) ---- */
+  A.uiUsage=function(range,at){
+    at=at==null?Date.now():at;
+    var w=A.ownerWindow(range,at), last={};
+    A.events().forEach(function(e){
+      if(e.eventType!=='ui_action'||!within(Date.parse(e.createdAt),w))return;
+      var a=e.payload.action, key=e.sessionId+'|'+a;
+      if(a==='filter'||a==='option'){ var c=last[key]=last[key]||{action:a,values:{}}; c.values[e.payload.value]=(c.values[e.payload.value]||0)+1; }
+      else last[key]={action:a,value:e.payload.value};
+    });
+    var out={};
+    Object.keys(last).forEach(function(k){
+      var r=last[k], bucket=out[r.action]=out[r.action]||{sessions:0,values:{}};
+      bucket.sessions++;
+      if(r.values)Object.keys(r.values).forEach(function(v){ bucket.values[v]=(bucket.values[v]||0)+1; });
+      else bucket.values[r.value]=(bucket.values[r.value]||0)+1;
+    });
+    return out;
+  };
   /* ---- data-health check (spec §9): one row per restaurant per ISO week ---- */
   function isoWeek(at){
     var d=new Date(at); d.setUTCHours(0,0,0,0); d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));

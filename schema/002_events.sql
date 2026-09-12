@@ -9,7 +9,7 @@ CREATE TABLE events (
   customer_id   uuid,            -- nullable; backfilled by identity linking
   event_type    text NOT NULL CHECK (event_type IN (
                   'qr_scan','item_view','bill_requested','order_placed','payment_completed',
-                  'payment_refunded','payment_cancelled','receipt_requested','review_submitted')),
+                  'payment_refunded','payment_cancelled','receipt_requested','review_submitted','ui_action')),
   payload       jsonb NOT NULL DEFAULT '{}',
   created_at    timestamptz NOT NULL DEFAULT now()
 );
@@ -44,3 +44,4 @@ CREATE TRIGGER events_append_only BEFORE UPDATE OR DELETE ON events
 --   payment_completed  {order_id, payment_request_id, amount, currency, fx_rate_used, amount_usd, rail, payer_ref?, tip?} server
 --   receipt_requested  {channel: email|whatsapp, contact_hash}             server
 --   review_submitted   {rating, comment?}                                  server
+--   ui_action          {action, value}  language, currency, filter, split, tip, rail, note, option   client

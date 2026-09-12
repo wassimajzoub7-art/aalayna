@@ -166,3 +166,14 @@ test('§10 dashboard metrics come from the event stream', ()=>{
   assert.equal(m.medianBillToPaymentMs,4*MIN);
   assert.equal(m.captureRate,1);
 });
+
+test('ui_action events summarise how guests use the interface, one vote per session', ()=>{
+  const env=setup(), a=env.a;
+  a.logEvent('ui_action',{action:'split',value:'even'}); a.logEvent('ui_action',{action:'split',value:'item'});   // last choice wins
+  a.logEvent('ui_action',{action:'tip',value:'10%'}); a.logEvent('ui_action',{action:'filter',value:'veg:on'});
+  a.newSession(); a.logEvent('ui_action',{action:'split',value:'item'}); a.logEvent('ui_action',{action:'language',value:'ar'});
+  const u=a.uiUsage('7');
+  assert.equal(u.split.sessions,2); assert.equal(u.split.values.item,2); assert.equal(u.split.values.even,undefined);
+  assert.equal(u.tip.values['10%'],1); assert.equal(u.language.values.ar,1); assert.equal(u.filter.values['veg:on'],1);
+  assert.throws(()=>a.logEvent('ui_tap',{}),/Unknown event type/);
+});

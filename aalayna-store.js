@@ -392,7 +392,8 @@
      Never updated, never deleted (customer_id backfill is the one sanctioned
      exception, and it is done by the identity layer). */
   var EVENT_TYPES = ['qr_scan', 'item_view', 'bill_requested', 'order_placed', 'payment_completed',
-                     'payment_refunded', 'payment_cancelled', 'receipt_requested', 'review_submitted'];
+                     'payment_refunded', 'payment_cancelled', 'receipt_requested', 'review_submitted',
+                     'ui_action'];   // how guests use the interface: {action, value}; client-fired, accept loss
   function logEvent(type, payload, extra) {
     if (EVENT_TYPES.indexOf(type) < 0) throw new Error('Unknown event type: ' + type);
     extra = extra || {};

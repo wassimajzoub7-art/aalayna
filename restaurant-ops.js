@@ -166,7 +166,17 @@ function paintGuestJourney(){
   var list=$('journey-never'); list.replaceChildren();
   if(!m.neverOrdered.length)list.appendChild(opsEl('p','No viewed item is missing from every bill in this period.','ops-empty'));
   m.neverOrdered.forEach(function(x){ var row=opsEl('div',null,'journey-item'); row.append(opsEl('span',x.name),opsEl('strong',opsCount(x.views,'view'))); list.appendChild(row); });
+  var usage=Aalayna.uiUsage($('report-period').value), ub=$('journey-usage');
+  if(ub){ ub.replaceChildren();
+    var LAB={language:'Language',currency:'Currency shown',split:'Split chosen',tip:'Tip chosen',rail:'Payment method chosen',note:'Cash note declared',filter:'Filters used',option:'Dish options picked'};
+    var keys=Object.keys(LAB).filter(function(k){ return usage[k]; });
+    if(!keys.length)ub.appendChild(opsEl('p','No interface choices recorded yet. They appear as guests use the menu on their phones.','ops-empty'));
+    keys.forEach(function(k){ var u=usage[k], vals=Object.keys(u.values).sort(function(a,b){ return u.values[b]-u.values[a]; }).slice(0,6);
+      var row=opsEl('div',null,'journey-item'); row.append(opsEl('strong',LAB[k]),opsEl('span',vals.map(function(v){ return v+' '+Math.round(100*u.values[v]/u.sessions)+'%'; }).join(' · ')+' · '+opsCount(u.sessions,'session')));
+      ub.appendChild(row); });
+  }
 }
+
 function paintDataHealth(){
   var box=$('health-rows'); if(!box)return; box.replaceChildren();
   var report=Aalayna.healthReport();

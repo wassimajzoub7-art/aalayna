@@ -917,7 +917,7 @@
   cash option. Public reviews and private feedback are offered equally, for every rating. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=18"></script>
+<script src="aalayna-store.js?v=19"></script>
 <script src="restaurant-growth.js?v=3"></script>
 <script src="aalayna-config.js"></script>
 <script src="aalayna-sync.js?v=1"></script>
@@ -1039,8 +1039,10 @@ function price(v){
   if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE() / 1000) * 1000).toLocaleString('en-US');
   return '$' + v.toFixed(2);
 }
-function setLang(v){ LANG = v; renderMenu(); }
-function setCcy(v){ CCY = v; renderMenu(); }
+/* how guests use the interface: one small event per choice, never a keystroke */
+function ui(action, value){ try { Aalayna.logEvent('ui_action', { action: action, value: value }, { tableId: TABLE }); } catch(e) {} }
+function setLang(v){ LANG = v; ui('language', v); renderMenu(); }
+function setCcy(v){ CCY = v; ui('currency', v); renderMenu(); }
 function renderMenu(){
   var m = $('v-menu');
   m.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
@@ -1219,6 +1221,7 @@ function fitSwap(m){
 }
 function togF(k){
   filt[k] = !filt[k];
+  ui('filter', k + (filt[k] ? ':on' : ':off'));
   document.getElementById('f-' + k).classList.toggle('on', filt[k]);
   applyF();
 }
@@ -1283,6 +1286,7 @@ function openItem(m){
       row.className = 'add' + (g.type === 'one' && ci === 0 ? ' on' : '');
       row.dataset.g = gi;
       row.onclick = function(){
+        ui('option', g.name + ':' + c.n);
         if (g.type === 'one'){
           curSel[gi] = ci;
           box.querySelectorAll('[data-g="' + gi + '"]').forEach(function(r, k){
@@ -1410,6 +1414,7 @@ function buildPick(){
   });
 }
 function mode(m){
+  if (m !== splitMode) ui('split', m);
   splitMode = m;
   ['even','item','amt','all'].forEach(function(k){ $('s-' + k).classList.toggle('on', k === m); });
   $('evenwrap').style.display = (m === 'even') ? 'block' : 'none';
@@ -1449,6 +1454,7 @@ function calcShare(){
 }
 /* ---------------- pay ---------------- */
 function setTip(el, r){
+  ui('tip', String(Math.round(r * 100)) + '%');
   tipRate = r; tipFlat = null;
   $('tipcw').style.display = 'none';
   document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
@@ -1456,6 +1462,7 @@ function setTip(el, r){
   paintPay();
 }
 function tipCustom(el){
+  ui('tip', 'custom');
   document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
   el.classList.add('on');
   $('tipcw').style.display = 'flex';
@@ -1468,6 +1475,7 @@ function tipTyped(){
   paintPay();
 }
 function pick(el, k){
+  if (k !== kind) ui('rail', k);
   kind = k;
   document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on');p.setAttribute('aria-pressed','false'); });
   el.classList.add('on');el.setAttribute('aria-pressed','true');
@@ -1476,6 +1484,7 @@ function pick(el, k){
   paintPay();
 }
 function setNote(el, n){
+  ui('note', n === 0 ? 'exact' : String(n));
   note = n;
   document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
   el.classList.add('on');
