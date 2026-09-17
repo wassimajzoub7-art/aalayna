@@ -153,26 +153,36 @@
   ];
 
   /* ---------- plumbing ---------------------------------------------------- */
+  var activeScope = null, activeVenue = null;
+  function storageKey(k) {
+    if (!activeScope || [K.venue, K.device, K.devices].indexOf(k) >= 0) return k;
+    return 'aal.scope:' + activeScope + ':' + k;
+  }
   function read(k, fallback) {
-    try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; }
+    try { var v = localStorage.getItem(storageKey(k)); return v ? JSON.parse(v) : fallback; }
     catch (e) { return fallback; }
   }
   /* afterWrite hooks let a sync layer mirror writes elsewhere; rawWrite is the
      path that layer uses to land remote state locally without echoing it back. */
   var hooks = { afterWrite: [] };
   function write(k, v) {
-    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+    try { localStorage.setItem(storageKey(k), JSON.stringify(v)); } catch (e) {}
     fire(k);
     hooks.afterWrite.forEach(function (h) { try { h(k, v); } catch (e) {} });
   }
   function rawWrite(k, v) {
-    try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+    try { localStorage.setItem(storageKey(k), JSON.stringify(v)); } catch (e) {}
     fire(k);
   }
   var subs = [];
   function fire(k) { subs.forEach(function (f) { try { f(k); } catch (e) {} }); }
   // storage events only fire in OTHER tabs, which is exactly the cross-app case
-  global.addEventListener('storage', function (e) { if (e.key && e.key.indexOf('aal.') === 0) fire(e.key); });
+  global.addEventListener('storage', function (e) {
+    var prefix = activeScope ? 'aal.scope:' + activeScope + ':' : '';
+    if (!e.key) return;
+    if (prefix && e.key.indexOf(prefix) === 0) fire(e.key.slice(prefix.length));
+    else if (!prefix && e.key.indexOf('aal.') === 0 && e.key.indexOf('aal.scope:') !== 0) fire(e.key);
+  });
 
   function centsEqual(value, amount) { return Math.round(Number(value) * 100) === amount; }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
@@ -277,7 +287,7 @@
              m.items[m.items.indexOf(have)] = normalise(have); }
       write(key, m);
     });
-    try { localStorage.setItem('aal.schema', JSON.stringify(SCHEMA)); } catch (e) {}
+    try { localStorage.setItem(storageKey('aal.schema'), JSON.stringify(SCHEMA)); } catch (e) {}
   }
 
   function seedIfEmpty() {
@@ -604,6 +614,7 @@
         currency: 'USD', fxRateUsed: rate, amountUsd: amount / 100,
         note: s.rail === 'cash' ? cashNote / 100 : 0, change: s.rail === 'cash' && cashNote > 0 ? (cashNote - amount) / 100 : 0,
         status: status,
+        expiresAt: status === 'initiated' ? new Date(Date.now() + 10 * 60000).toISOString() : null,
         ts: new Date().toISOString()
       };
       if (status === 'confirmed') { row.confirmedAt = row.ts; }
@@ -631,6 +642,8 @@
       if (row.externalRef === ref && A.settlementStatus(row) === 'confirmed') return row;   // duplicate callback
       if (A.settlementStatus(row) !== 'initiated') throw new Error('This request is ' + A.settlementStatus(row) + ' and cannot be confirmed.');
       if (all.some(function (x) { return x.externalRef === ref && x.id !== row.id; })) throw new Error('This provider reference already confirmed another request.');
+      if (row.expiresAt && Date.parse(row.expiresAt) <= Date.now()) throw new Error('This payment reservation expired. Please start again.');
+      if (row.checkId && A.validateCheckPayment) A.validateCheckPayment(row, cents(row.amount) - cents(row.tip || 0), row.id);
       row.status = 'confirmed'; row.confirmedAt = now(); row.externalRef = ref;
       if (cb.payerRef) row.payerRef = contactHash(String(cb.payerRef));
       write(K.settle, all);
@@ -654,6 +667,7 @@
     },
     settlementStatus: function (s) {
       if (s.refunded) return 'refunded';
+      if (s.status === 'initiated' && s.expiresAt && Date.parse(s.expiresAt) <= Date.now()) return 'expired';
       if (s.cancelled) return 'cancelled';
       return s.status || (s.rail === 'cash' ? 'pending' : 'confirmed');
     },
@@ -733,11 +747,12 @@
       return JSON.stringify([v.name.trim().toLowerCase(), (v.place || '').trim().toLowerCase()]);
     },
     venue: function () {
+      if (activeVenue) return clone(activeVenue);
       var u = venueFromURL();
       if (u) { if (JSON.stringify(read(K.venue, null)) !== JSON.stringify(u)) write(K.venue, u); return u; }
       return read(K.venue, null) || DEFAULT_VENUE;
     },
-    setVenue: function (v) { write(K.venue, v); },
+    setVenue: function (v) { if(activeScope)throw new Error('Open a separate restaurant link to change venue.'); write(K.venue, v); },
     /* ---- guests: the venue's own list, built at the receipt moment ----
        Two separate consents, both explicit. Lists are per venue and are never
        joined across venues. Marketing sends require an active marketing consent. */
@@ -818,13 +833,13 @@
     /* ---- plumbing ---- */
     on: function (fn) { subs.push(fn); },
     notify: function (key) { fire(key); },
-    util: { read: read, write: write, rawWrite: rawWrite, hooks: hooks, uid: uid, now: now, cents: cents, clone: clone },
+    util: { storageKey: storageKey, activateScope: function (scope) { activeVenue = clone(A.venue()); activeScope = scope; seedIfEmpty(); migrate(); }, read: read, write: write, rawWrite: rawWrite, hooks: hooks, uid: uid, now: now, cents: cents, clone: clone },
     reset: function () {
-      try { localStorage.removeItem('aal.pack'); } catch (e) {}
-      try { localStorage.removeItem(K.guests); localStorage.removeItem(K.campaigns); } catch (e) {}
+      try { localStorage.removeItem(storageKey('aal.pack')); } catch (e) {}
+      try { localStorage.removeItem(storageKey(K.guests)); localStorage.removeItem(storageKey(K.campaigns)); } catch (e) {}
       [K.draft, K.live, K.settle, K.tips, 'aal.checks', K.events, K.identities, K.identityKeys, K.deviceLinks,
        K.merges, K.editLog, K.webhooks, K.admin, K.rateMeta].forEach(function (k) {
-        try { localStorage.removeItem(k); } catch (e) {}
+        try { localStorage.removeItem(storageKey(k)); } catch (e) {}
       });
       seedIfEmpty();
       fire('reset');
@@ -878,7 +893,7 @@
       }
       var q = new URLSearchParams(global.location.search);
       var pack = (q.get('menu') || '').replace(/[^a-z0-9-]/g, '');
-      if (pack && localStorage.getItem('aal.pack') !== pack) {
+      if (pack && localStorage.getItem(storageKey('aal.pack')) !== pack) {
         fetch('venues/' + pack + '.json').then(function (res) {
           if (!res.ok) throw 0;
           return res.json();
@@ -887,7 +902,7 @@
           d.sections = m.sections; d.items = m.items;
           A.saveDraft(d);
           A.publish();
-          localStorage.setItem('aal.pack', pack);
+          localStorage.setItem(storageKey('aal.pack'), pack);
           global.location.reload();
         }).catch(function () {});
       }

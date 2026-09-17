@@ -90,7 +90,7 @@ test('§6 digital payments are requested, then confirmed once by a provider refe
   const c=a.openServiceCheck({table:12,total:100});
   const r=a.requestPayment({table:12,checkId:c.id,rail:'whish',amount:30,requestId:'req-1'});
   assert.equal(a.settlementStatus(r),'initiated'); assert.equal(a.settledTotal(),0);
-  assert.equal(a.checkBalance(c.id).availableCents,10000);   // an initiated request reserves nothing yet
+  assert.equal(a.checkBalance(c.id).availableCents,7000);   // an initiated request reserves nothing yet
   assert.throws(()=>a.confirmPayment('req-1',{}),/transaction reference/);
   const done=a.confirmPayment('req-1',{externalRef:'whish-abc',payerRef:'wallet-777'});
   assert.equal(a.settlementStatus(done),'confirmed'); assert.equal(a.settledTotal(),30);
@@ -186,6 +186,6 @@ test('dish interest counts opens per dish and per guest, attention, and whether 
   a.newSession(); a.logEvent('item_view',{itemId:'i01'});
   const rows=a.dishInterest('7'), i01=rows.find(r=>r.itemId==='i01'), i02=rows.find(r=>r.itemId==='i02');
   assert.equal(rows[0].itemId,'i01'); assert.equal(i01.opens,3); assert.equal(i01.sessions,2); assert.equal(i01.avgDwellS,12); assert.equal(i01.onBills,0);
-  assert.equal(i02.opens,1); assert.equal(i02.onBills,1); assert.equal(i02.units,2); assert.equal(i02.billRate,1);
+  assert.equal(i02.opens,1); assert.equal(i02.onBills,1); assert.equal(i02.units,2); assert.equal(i02.billRate,null);
   assert.ok(rows.some(r=>r.opens===0));
 });

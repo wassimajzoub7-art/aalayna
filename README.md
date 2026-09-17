@@ -6,7 +6,7 @@ The public homepage and booking page contain no interactive demos or app preview
 
 ## Demo limits
 
-Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider, POS backend, shared database, or staff authentication is connected. The pages share `localStorage` between tabs on one browser and origin; they do not synchronize across guest devices. Do not use the demo to collect real payments, real card details, or guest contact data.
+Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider or POS is connected. Without a configured bill/owner key the pages share only local demo data. Shared mode requires the Supabase migrations below and uses bearer credentials; individual staff accounts are not implemented. Do not use the demo to collect real payments, real card details, or guest contact data.
 
 Cash selection creates a pending collection request. It is excluded from confirmed revenue and digital tips. After receiving the cash, tap **Confirm cash received** once in the dashboard. The guest tab refreshes on storage updates and when returning to the tab; its own receipt also survives a reload in that tab. Both pages must use the same browser profile and origin. Guests can close the screen while awaiting collection; this does not mark a request paid. Requests can be cancelled; confirmed payments can be marked refunded. These are simulation records, not actual financial operations.
 
@@ -16,7 +16,7 @@ Tapping any receipt star opens one compact review panel with a comment field and
 
 `analytics.js` records `demo_start`, `demo_open`, `demo_complete`, `demo_cash_requested`, `whatsapp_click`, `booking_click`, `booking_page_view`, and `booking_calendar_click`. A cash request is not a completed payment; `demo_complete` occurs after simulated digital confirmation or staff cash confirmation while the guest tab is open.
 
-The default configuration records a maximum of 300 events **in this browser only**. In the browser console, use `AalaynaAnalytics.events()` to inspect or export the local records and `AalaynaAnalytics.clear()` to clear them. This is instrumentation and local verification, not a cross-visitor analytics service.
+The local buffer records up to 300 events. With the supplied Supabase configuration, allowlisted website events are also appended to `site_events`. In the browser console, use `AalaynaAnalytics.events()` to inspect or export the local records and `AalaynaAnalytics.clear()` to clear them. This is instrumentation and local verification, not a cross-visitor analytics service.
 
 To collect events across visitors, provision an HTTPS collector and set its URL in `analytics-config.js`. It must accept a text/plain POST containing JSON (`name`, `placement`, `path`, `at`) and should validate the event-name allowlist, apply rate limits and appropriate retention, and configure CORS for the website origin. No secret belongs in this public configuration. The integration uses `sendBeacon` with a keepalive-fetch fallback; it is best-effort and does not guarantee delivery or replay old local events. No external request is made with the default empty endpoint.
 
@@ -24,7 +24,7 @@ Events do not contain contact information, query strings, bill amounts, or persi
 
 ## Data and payments layer
 
-The store implements the engineering spec for data integrity, event logging, identity and payment orchestration, on localStorage, with the same rules a Postgres backend enforces. The DDL lives in `schema/` (one file per spec section) and `schema/README.md` maps every localStorage key to its table and API.
+The store implements the engineering spec for data integrity, event logging, identity and payment orchestration, on localStorage, with matching server checks for protected shared payment operations. The DDL lives in `schema/` (one file per spec section) and `schema/README.md` maps every localStorage key to its table and API.
 
 - Menu item ids are immutable. Deleting archives (`archivedAt`); archived dishes leave the guest menu but stay resolvable in history. A dish without an ingredient record is `incomplete`: it stays on the menu and is excluded from dietary filters. The 86 toggle (`available`) is a tier-1 edit. Every mutation is written to a field-level edit log with its tier.
 - `aal.events` is append-only: qr_scan, item_view and bill_requested are client-fired (accept loss); order_placed, payment_completed, receipt_requested and review_submitted are emitted by the data layer. Each event carries device_id, session_id (one per scan), restaurant_id, table_id and, once known, customer_id.
@@ -33,9 +33,20 @@ The store implements the engineering spec for data integrity, event logging, ide
 - Digital payments are two-step: a request is created when the guest hands over to the provider and is confirmed once by a provider reference (duplicate callbacks are idempotent, raw callbacks are logged). Cash stays a first-class pending-then-confirmed path.
 - `admin.html` is the internal view: weekly health reports, admin notifications, edit log, identity merges and payment callbacks. Nothing there is for restaurants.
 
-## Shared store (pilot backend, phase 1)
+## Shared store
 
-`aalayna-sync.js` mirrors the store to Supabase so a guest's phone and the owner's dashboard share one venue. Apply `supabase/migration.sql` once in the Supabase SQL editor, register each venue with `select * from aal_register_venue('Name','Place')`, put the guest key in the QR links (`?k=gst_...`, the QR generator has a field for it) and open the dashboard and editor once with the owner key (`?k=own_...`). Without a key the apps stay local, which is what the public demos do. Row-level security decides what each key may read or write: guests add payments, checks, events and receipt sign-ups and read bill state; only the owner key reads the guest list, the event stream, or writes the menu. `aalayna-config.js` holds the project URL and the anon key, which is public by design. Remote wins on first load; local writes are pushed within a second; other devices poll every four seconds. Server-side validation of balances and item claims is phase 2 (`schema/`).
+The shared mode uses Supabase with restaurant/credential-scoped caches, a durable
+retry outbox and protected server operations. **Apply the September 15 database
+migration before opening shared restaurant links.** See
+[supabase/README.md](supabase/README.md) for the exact installation sequence,
+bill-link workflow, key rotation and acceptance tests.
+
+Guest keys now identify one bill. Staff open the bill and generate its guest link
+from Live floor. Guests can request cash; only the owner credential can confirm
+collection. Digital reservations are validated on the server, but shared card and
+Whish payment actions remain disabled until a verified provider is connected.
+The local no-key demo still simulates payments. Shared mode never uploads demo
+history or falls back to simulated payment confirmation.
 
 ## Validation
 
@@ -59,7 +70,7 @@ The owner dashboard now includes customer profiles with confirmed visit history 
 
 The guest flow uses a persistent check ID; restarting lets another payer use the same bill. Close a fully settled bill in the owner dashboard before starting the next table session. Contact capture attaches to a confirmed payment, including staff-confirmed cash. Repeated receipt submissions do not create visits.
 
-See [INTEGRATIONS.md](INTEGRATIONS.md) for definitions, report format and the exact live POS, payment, authentication and messaging prerequisites. These features remain local prototype workflows, not a connected production service.
+See [INTEGRATIONS.md](INTEGRATIONS.md) for definitions, report format and the exact live POS, payment, authentication and messaging prerequisites. Local demos and shared cash workflows have different authority boundaries; the Supabase rollout guide is authoritative for shared mode. This is not yet a production payment service.
 
 ### Product visual update
 

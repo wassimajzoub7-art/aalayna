@@ -136,7 +136,7 @@ test('reload restores this tab’s exact receipt, including confirmation receive
 test('one explicit staff action confirms cash and stale actions show feedback',()=>{
   const a=setup(),cash=a.settle({rail:'cash',amount:42});
   const html=fs.readFileSync(path.join(__dirname,'../dashboard.html'),'utf8');
-  const code=html.slice(html.indexOf('function confirmCashReceived(id){'),html.indexOf('/* Refunds retain'));
+  const code=html.slice(html.indexOf('async function confirmCashReceived(id){'),html.indexOf('/* Refunds retain'));
   const messages=[];let refreshed=0;
   const ctx={Aalayna:a,toast:message=>messages.push(message),paintRows:()=>refreshed++};
   vm.createContext(ctx);vm.runInContext(code,ctx);ctx.confirmCashReceived(cash.id);

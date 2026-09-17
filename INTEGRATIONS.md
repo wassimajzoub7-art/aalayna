@@ -8,9 +8,9 @@ The marketing website has no interactive demos or links into the apps.
 
 ## Runtime boundary
 
-This repository is served by GitHub Pages. Its operational data is stored in localStorage, in one browser and origin. It has no authenticated server, shared database, delivery service, POS connection or real payment processing. Branch keys are data organisation, not authentication or a tenant security boundary. Never store real customer or payment data in this public prototype. Cross-tab updates are best effort; simultaneous browser tabs cannot guarantee atomic payment reservations. A live system must enforce all these rules on a server using database transactions and access controls.
+This repository is served by GitHub Pages. No-key demos use localStorage and simulated payments. Shared mode uses the Supabase contract in `supabase/hardening-2026-09-15.sql`: scoped caches, durable retry, bill-specific guest access and server-validated cash/payment reservations. See `supabase/README.md` for installation; publishing static files does not install the migration.
 
-The payment buttons still simulate digital confirmation. Cash requests require an operator confirmation. Campaign approval and audience export never send messages. No receipt delivery or unsubscribe web endpoint is connected.
+Shared digital payment confirmation is disabled in the browser. It requires a verified provider adapter with server credentials. Shared cash confirmation requires an owner credential. No actual POS, payment gateway, individual staff accounts, receipt sender or marketing sender is connected. Campaign approval/export never sends messages. Continue to use fictional data during guided demos; run live acceptance checks before onboarding real diners.
 
 ## Customer and campaign definitions
 
@@ -61,7 +61,7 @@ Sending new online orders to a POS does not prove support for these existing-bil
 2. Create a payment intent against an authoritative check version and reserve only the bill principal being paid. Store amounts as integer minor units with an explicit currency and rate snapshot for any conversion.
 3. Verify signed provider callbacks server-side; match merchant, payment intent, currency and amount. A redirect, button click, screenshot or client claim is not confirmation.
 4. Persist the provider result and POS writeback separately. If money is received but POS writeback fails, show a reconciliation exception and retry idempotently. Do not ask the diner to pay again.
-5. Release expired/failed reservations. Cash reservations remain pending until an authenticated operator confirms collection or cancels them. The prototype prevents sequential overpayment but cannot provide cross-device atomicity.
+5. Release expired/failed reservations. Cash reservations remain pending until an authenticated operator confirms collection or cancels them. The local demo checks reservations within one browser; the shared migration serializes reservations and state transitions on the server. Provider/POS acceptance tests are still required.
 6. Test cash plus card/Whish, repeated callbacks, two simultaneous payers, changed bills, partial refunds, network loss and recovery before taking real money.
 
 ## Messaging and authenticated operations

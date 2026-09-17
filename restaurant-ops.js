@@ -126,16 +126,25 @@ function paintCheckBalances() {
   $('live-cash').textContent=money(Aalayna.pendingCash().reduce(function(sum,x){return sum+x.amount;},0));
   $('live-paid').textContent=money(opsReport().current.grossCents/100);
   var active=checks.filter(function(c){return !c.closedAt || Aalayna.checkBalance(c.id).remainingCents>0;});
+  if(Aalayna.sync && Aalayna.sync.enabled && Aalayna.sync.state().role==='owner')box.appendChild(opsButton('Open a staff-entered bill',async function(){
+    var table=window.prompt('Table number'),total=table&&window.prompt('Bill total in USD, copied from the POS');
+    if(!table||!total)return;
+    if(!Number.isInteger(Number(table))||Number(table)<1||!Number.isFinite(Number(total))||Number(total)<=0){toast('Enter a valid table and bill total.');return;}
+    try{await Aalayna.openServiceCheck({table:Number(table),total:Number(total),lines:[]});toast('Bill opened. Use Guest bill link to share it.');}catch(error){toast(error.message);}
+  }));
   if(!active.length)box.appendChild(opsEl('p',checks.length?'All recorded bills are closed. No outstanding balances.':'No bills recorded yet. Opening the guest experience creates a sample bill; a live POS connection will supply real checks.','ops-empty'));
   active.forEach(function(c){var b=Aalayna.checkBalance(c.id),row=opsEl('article',null,'ops-row'),body=opsEl('div');
     var head=opsEl('div',null,'ops-heading');head.appendChild(opsEl('h3','Table '+c.table));
-    var state=c.closedAt?(b.remainingCents?'Review refund':'Closed'):(b.pendingCents?'Cash pending':(b.remainingCents?'Open':'Ready to close'));
+    var state=c.closedAt?(b.remainingCents?'Review refund':'Closed'):(b.pendingCents?'Payment reserved':(b.remainingCents?'Open':'Ready to close'));
     head.appendChild(opsEl('span',state,'status-badge '+(b.pendingCents?'pending':c.closedAt?'draft':'approved')));body.appendChild(head);
     var balance=opsEl('p',null,'bill-balance');balance.append(opsEl('strong',money(b.remainingCents/100)),opsEl('span',' outstanding'));body.appendChild(balance);
     body.appendChild(opsEl('p','Collected '+money(b.confirmedCents/100)+' of '+money(c.totalCents/100),'cs'));
-    if(b.pendingCents)body.appendChild(opsEl('p',money(b.pendingCents/100)+' awaiting cash · '+money(b.availableCents/100)+' available to pay','cs'));
+    if(b.pendingCents)body.appendChild(opsEl('p',money(b.pendingCents/100)+' reserved · '+money(b.availableCents/100)+' available to pay','cs'));
     var detail=opsEl('details',null,'ops-help');detail.appendChild(opsEl('summary','Bill details'));detail.appendChild(opsEl('p','Opened '+opsDate(c.openedAt)+' · bill '+c.id.slice(-8)+' · Cash '+money(b.methods.cash/100)+' · Whish '+money(b.methods.whish/100)+' · Card '+money(b.methods.card/100)+' · Tips '+money(b.tipCents/100),'cs'));body.appendChild(detail);row.appendChild(body);
-    if(!c.closedAt&&!b.remainingCents&&!b.pendingCents)row.appendChild(opsButton('Close settled bill',function(){Aalayna.closeServiceCheck(c.id);toast('Bill closed. The next guest session can open a new bill.');}));box.appendChild(row);
+    if(Aalayna.sync && Aalayna.sync.enabled && Aalayna.sync.state().role==='owner' && !c.closedAt)row.appendChild(opsButton('Guest bill link',async function(){
+      try{var issued=await Aalayna.sync.issueCheckKey(c.id),v=Aalayna.venue(),url=new URL('guest.html',location.href);url.search=new URLSearchParams({venue:v.name,place:v.place||'',k:issued.key}).toString();window.prompt('Copy this bill link. It only opens this bill.',url.href);}catch(error){toast(error.message);}
+    }));
+    if(!c.closedAt&&!b.remainingCents&&!b.pendingCents)row.appendChild(opsButton('Close settled bill',async function(){try{await Aalayna.closeServiceCheck(c.id);toast('Bill closed.');}catch(error){toast(error.message);}}));box.appendChild(row);
   });
 }
 
@@ -156,11 +165,11 @@ function opsMetric(label,value,definition){ var b=opsEl('div',null,'journey-metr
 function paintDishInterest(){
   var body=$('dish-rows'); if(!body)return;
   var rows=Aalayna.dishInterest($('report-period').value), w=Aalayna.ownerWindow($('report-period').value);
-  $('dish-period').textContent=w.label+' · which dishes guests open, how long they look, and whether the dish reaches a bill. From recorded events on this device.';
+  $('dish-period').textContent=w.label+' · dish views and distinct bills containing each dish. These are separate counts, not a conversion rate. Viewing sessions are not unique people.';
   body.replaceChildren();
   var seen=rows.filter(function(r){ return r.opens>0; }), unseen=rows.filter(function(r){ return r.opens===0; });
-  seen.slice(0,25).forEach(function(r){ var tr=opsEl('tr'); [r.name,String(r.opens),String(r.sessions),r.avgDwellS==null?'—':r.avgDwellS+' s',String(r.onBills),r.billRate==null?'—':Math.round(r.billRate*100)+'%'].forEach(function(t,i){ tr.appendChild(opsEl('td',t,i?'num':null)); }); body.appendChild(tr); });
-  if(!seen.length){ var tr=opsEl('tr'); var td=opsEl('td','No dish opened yet in this period. Rows appear as guests browse the menu on their phones.','ops-empty'); td.colSpan=6; tr.appendChild(td); body.appendChild(tr); }
+  seen.slice(0,25).forEach(function(r){ var tr=opsEl('tr'); [r.name,String(r.opens),String(r.sessions),r.avgDwellS==null?'—':r.avgDwellS+' s',String(r.onBills)].forEach(function(t,i){ tr.appendChild(opsEl('td',t,i?'num':null)); }); body.appendChild(tr); });
+  if(!seen.length){ var tr=opsEl('tr'); var td=opsEl('td','No dish opened yet in this period. Rows appear as guests browse the menu on their phones.','ops-empty'); td.colSpan=5; tr.appendChild(td); body.appendChild(tr); }
   $('dish-none').textContent=unseen.length?'Not opened at all in this period: '+unseen.slice(0,12).map(function(r){ return r.name; }).join(', ')+(unseen.length>12?' and '+(unseen.length-12)+' more':'')+'.':'';
 }
 function paintGuestJourney(){

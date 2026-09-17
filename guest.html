@@ -599,7 +599,7 @@
     </div>
     <div class="land-body">
       <div class="greet">Ahla w sahla</div>
-      <div class="tbl"><span class="dot"></span>Table 12 &middot; sample bill</div>
+      <div class="tbl" id="guest-table-label"><span class="dot"></span>Table 12 &middot; sample bill</div>
       <div class="note">
         Explore the menu. When you’re ready, split the bill your way and pay from your table.
       </div>
@@ -640,7 +640,7 @@
   <div class="view" id="v-bill">
     <button class="back" onclick="go('v-menu')">&#8592;</button>
     <div class="scroll b-body">
-      <div class="b-title">Table 12</div>
+      <div class="b-title" id="bill-table-label">Table 12</div>
       <div class="b-sub">4 guests &middot; opened 8:42 pm</div>
       <div class="receipt">
         <div class="r-crest" id="v-name-receipt">HALLAB 1881</div>
@@ -704,7 +704,7 @@
     <button class="back" onclick="go('v-settle')">&#8592;</button>
     <div class="scroll" style="padding:88px 20px 130px">
       <div class="amt">
-        <div class="who">Total to pay &middot; Table 12</div>
+        <div class="who" id="pay-table-label">Total to pay &middot; Table 12</div>
         <div class="display big" id="bigamt">$38.13</div>
         <div class="ll" id="bigll">&asymp; LL 3,408,522</div>
         <div class="pay-breakdown"><span>Bill share<b id="pay-share">$38.13</b></span><span>Tip<b id="pay-tip">$3.81</b></span></div>
@@ -917,10 +917,10 @@
   cash option. Public reviews and private feedback are offered equally, for every rating. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=19"></script>
-<script src="restaurant-growth.js?v=3"></script>
+<script src="aalayna-store.js?v=20"></script>
+<script src="restaurant-growth.js?v=4"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=1"></script>
+<script src="aalayna-sync.js?v=2"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -952,8 +952,15 @@ function loadMenu(){
             available:x.available !== false, status:x.status || 'incomplete',
             opts:x.opts||[], tr:x.tr};
   });
-  BILL = Aalayna.check().map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
-  TOTAL = Aalayna.checkTotal();
+  if (Aalayna.sync && Aalayna.sync.enabled) {
+    CHECK = Aalayna.sync.boundCheck();
+    if (CHECK) TABLE = CHECK.table;
+    BILL = CHECK ? (CHECK.lines || []).map(function(l){var item=m.items.find(function(x){return x.id===l.id;});return {id:l.id,n:item?item.name:(l.name||'Item'),q:l.q,p:l.p};}) : [];
+    TOTAL = CHECK ? CHECK.totalCents / 100 : 0;
+  } else {
+    BILL = Aalayna.check().map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
+    TOTAL = Aalayna.checkTotal();
+  }
 }
 loadMenu();
 
@@ -1048,7 +1055,7 @@ function renderMenu(){
   m.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
   $('langsel').value = LANG;
   $('ccysel').value = CCY;
-  $('m-sub').textContent = t('sub');
+  $('m-sub').textContent = t('sub').replace(/12/g,String(TABLE||12));
   $('pill-tot').textContent = price(TOTAL);
   $('land-tot').textContent = price(TOTAL);
   var f = t('filters');
@@ -1557,6 +1564,12 @@ function restoreReceipt(){
   go('v-done');
 }
 function refreshGuest(){
+  if (Aalayna.sync && Aalayna.sync.enabled && !lastSettlementId) {
+    var pending;
+    try { pending=sessionStorage.getItem(receiptSessionKey()+':pending'); } catch(e) {}
+    var recovered=pending&&Aalayna.settlements().find(function(s){return s.requestId===pending;});
+    if(recovered){paymentRequestId=pending;paymentBusy=true;completeSettle(recovered,recovered.rail);}
+  }
   paintSettlementResult();
   var before = MENU_V;
   loadMenu();
@@ -1586,7 +1599,13 @@ function paymentFields(rail){
 /* a store rejection is shown to the guest and the bill is repainted; the next tap
    is a fresh request, never a retry of the rejected one */
 function paymentFailed(error){
-  try { Aalayna.failPayment(paymentRequestId, 'failed'); } catch(e) {}
+  if (!(Aalayna.sync && Aalayna.sync.enabled)) { try { Aalayna.failPayment(paymentRequestId, 'failed'); } catch(e) {} }
+  if (error.queued) {
+    try { sessionStorage.setItem(receiptSessionKey()+':pending',paymentRequestId); } catch(e) {}
+    paymentBusy = true;
+    alert('Your request is waiting for a connection and will retry automatically. Please do not submit another payment.');
+    return;
+  }
   paymentRequestId = newRequestId();
   paymentBusy = false;
   buildBill(); buildPick(); calcShare();
@@ -1595,7 +1614,8 @@ function paymentFailed(error){
 /* Digital rails are two-step (spec section 6): the request is created when the
    guest hands over to the provider, and only the provider's confirmation settles it.
    Cash stays single-step and pending until staff confirm collection. */
-function settle(){
+async function settle(){
+  if (!CHECK) { alert("Ask your server to open this bill first."); return; }
   if (paymentBusy) return;
   paintPay();
   var t = tipAmt(), tot = share + t;
@@ -1604,7 +1624,7 @@ function settle(){
     finishSettle('cash');
     return;
   }
-  try { Aalayna.requestPayment(paymentFields(kind)); }
+  try { var requested = Aalayna.requestPayment(paymentFields(kind)); if(requested && typeof requested.then === "function") await requested; }
   catch(error) { paymentFailed(error); return; }
   if (kind === 'whish'){
     $('wh-amt').textContent = 'Pay ' + usd(tot);
@@ -1641,13 +1661,14 @@ function providerConfirm(rail, ovId, btnId, label){
 function whishConfirm(){ providerConfirm('whish', 'ov-whish', 'wh-btn', 'Confirming with Whish…'); }
 function cardConfirm(){ providerConfirm('card', 'ov-card', 'card-btn', 'Processing…'); }
 var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
-function finishSettle(rail){
+async function finishSettle(rail){
   var record;
-  try { record = Aalayna.settle(paymentFields(rail)); }
+  try { record = Aalayna.settle(paymentFields(rail)); if (record && typeof record.then === "function") record = await record; }
   catch(error) { paymentFailed(error); return; }
   completeSettle(record, rail);
 }
 function completeSettle(record, rail){
+  try { sessionStorage.removeItem(receiptSessionKey()+':pending'); } catch(e) {}
   lastSettlementId = record.id;
   lastSettlementStatus = null;
   go('v-done');
@@ -1671,7 +1692,7 @@ function paintSettlementResult(){
   $('method-label').textContent = confirmed ? 'Paid via' : 'Requested via';
   $('payment-status').textContent = status === 'pending'
     ? 'Your server will collect the cash. You can close this screen; not marked paid until collection is confirmed.'
-    : confirmed ? 'Demo payment confirmed · no money moved.' : 'This request was ' + status + '. Please speak with your server.';
+    : confirmed ? (Aalayna.sync && Aalayna.sync.enabled ? 'Cash collection confirmed by your server.' : 'Demo payment confirmed · no money moved.') : 'This request was ' + status + '. Please speak with your server.';
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
   if (record.rail === 'cash' && lastSettlementStatus === 'pending' && confirmed && window.AalaynaAnalytics) {
     AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
@@ -1738,14 +1759,14 @@ function syncReceiptViewport(){
   if (window.visualViewport) document.documentElement.style.setProperty('--app-height',window.visualViewport.height+'px');
 }
 /* optional, after payment — never a gate. Simulated like the payments. */
-function sendReceipt(){
+async function sendReceipt(){
   var v = $('mail-in').value.trim();
   var isMail = /^\S+@\S+\.\S+$/.test(v);
   var isPhone = /^(\+|00)[0-9 ().-]{8,22}$/.test(v);
   if (!isMail && !isPhone){ alert('Enter an email or a WhatsApp number with its country code. Numbers from any country are welcome.'); $('mail-in').focus(); return; }
   var mkt = $('c-mkt').checked;
   /* The button requests a receipt; restaurant offers remain a separate, optional choice. */
-  try { Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:true, marketing:mkt }); }
+  try { await Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:true, marketing:mkt }); }
   catch(error) { alert(error.message); return; }
   $('consents').classList.add('done');
   var btn = document.querySelector('.mailbtn');
@@ -1753,7 +1774,7 @@ function sendReceipt(){
   btn.classList.add('sent');
   btn.onclick = null;
   $('mail-in').disabled = true;
-  $('payment-status').textContent = 'Preferences saved locally. No receipt or message sent.';
+  $('payment-status').textContent = (Aalayna.sync && Aalayna.sync.enabled ? 'Preferences saved to the restaurant.' : 'Preferences saved locally.') + ' No receipt or message sent.';
 }
 /* demo only: flip between a venue that has finished confirming its menu and one that
    hasn't. Note what the second state does NOT contain — no warnings, no badges, no
@@ -1770,7 +1791,7 @@ function restart(){
   Aalayna.newSession();            // start over = a new scan, a new session
   billRequested = false;
   paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null; paymentRequestId = newRequestId();
-  CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
+  CHECK = Aalayna.sync && Aalayna.sync.enabled ? Aalayna.sync.boundCheck() : Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
   logScan();
   $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
@@ -1821,7 +1842,7 @@ function logBillRequested(){
   try { Aalayna.logEvent('bill_requested', {}, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
 }
 logScan();
-CHECK = Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
+CHECK = Aalayna.sync && Aalayna.sync.enabled ? Aalayna.sync.boundCheck() : Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paintServer(){
   SERVER = Aalayna.serverFor(TABLE);
@@ -1843,13 +1864,20 @@ function paintVenue(){
   set('v-review-sub', v.heritage ? '144 years, one review at a time' : 'One review at a time');
   document.querySelectorAll('.v-short').forEach(function(el){ el.textContent = short; });
   var ms = document.getElementById('m-sub');
-  if (ms && LANG === 'en') ms.textContent = 'Table 12 · ' + (v.place || v.name);
+  if (ms && LANG === 'en') ms.textContent = 'Table '+TABLE+' · ' + (v.place || v.name);
+  set('guest-table-label','Table '+TABLE+(Aalayna.sync && Aalayna.sync.enabled?' · shared bill':' · sample bill'));
+  set('bill-table-label','Table '+TABLE);set('pay-table-label','Total to pay · Table '+TABLE);
 }
 buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue();
 $('staff-demo').href = 'dashboard.html' + window.location.search;
 staggered = true;
 restoreReceipt();
 watchGuestChanges();
+if (Aalayna.sync && Aalayna.sync.enabled) {
+  Aalayna.sync.ready.then(function(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();}).catch(function(){
+    $('payment-status').textContent='Unable to connect to this bill. Please speak with your server.';
+  });
+}
 </script>
 </body>
 </html>

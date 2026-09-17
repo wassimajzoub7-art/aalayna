@@ -38,20 +38,20 @@
                { sessionId:c.sessionId, deviceId:c.deviceId, tableId:c.table });
     return c;
   };
-  A.checkBalance = function (id) {
+  A.checkBalance = function (id, excludePaymentId) {
     var c = A.serviceChecks().find(function(x){ return x.id === id; });
     if (!c) throw new Error('This bill is not available for this restaurant.');
     var confirmed = 0, pending = 0, tips = 0, methods = { cash:0, card:0, whish:0 }, items = {};
-    A.settlements().filter(function(s){ return s.venueId === c.venueId && s.checkId === c.id; }).forEach(function(s){
+    A.settlements().filter(function(s){ return s.venueId === c.venueId && s.checkId === c.id && s.id !== excludePaymentId; }).forEach(function(s){
       var state = A.settlementStatus(s), net = cents(s.amount) - cents(s.tip || 0);
       if (state === 'confirmed') { confirmed += net; tips += cents(s.tip || 0); methods[s.rail] += net; }
-      if (state === 'pending') pending += net;
-      if (state === 'pending' || state === 'confirmed') Object.keys(s.items || {}).forEach(function(k){ items[k] = (items[k] || 0) + s.items[k]; });
+      if (state === 'pending' || state === 'initiated') pending += net;
+      if (state === 'pending' || state === 'initiated' || state === 'confirmed') Object.keys(s.items || {}).forEach(function(k){ items[k] = (items[k] || 0) + s.items[k]; });
     });
     return { check:c, confirmedCents:confirmed, pendingCents:pending, tipCents:tips, remainingCents:Math.max(0,c.totalCents-confirmed), availableCents:Math.max(0,c.totalCents-confirmed-pending), methods:methods, items:items };
   };
-  A.validateCheckPayment = function (s, net) {
-    var b = A.checkBalance(s.checkId);
+  A.validateCheckPayment = function (s, net, excludePaymentId) {
+    var b = A.checkBalance(s.checkId, excludePaymentId);
     if (b.check.closedAt || Number(s.table) !== b.check.table) throw new Error('This bill is closed or belongs to a different table.');
     if (net > b.availableCents) throw new Error('The bill changed. Refresh your share; another payment or cash request already covers part of it.');
     var sum = 0;

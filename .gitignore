@@ -38,3 +38,5 @@
 !supabase/
 !supabase/*
 !numbers.html
+
+!numbers-model.js

@@ -63,41 +63,28 @@ create or replace function aal_role(rid text) returns text language sql stable s
     when exists (select 1 from venue_keys v where v.restaurant_id = rid and v.guest_key = aal_key() and aal_key() <> '') then 'guest'
     else null end
 $$;
-revoke all on venue_keys from anon, authenticated;
+revoke all on venue_keys from public, anon, authenticated;
 
 alter table kv_docs enable row level security;
 alter table kv_rows enable row level security;
 
 drop policy if exists docs_read on kv_docs;
 create policy docs_read on kv_docs for select
-  using (aal_role(restaurant_id) in ('owner','guest'));
+  using (aal_role(restaurant_id)='owner' or (aal_role(restaurant_id)='guest' and key in ('aal.live','aal.rate','aal.rate_meta')));
 drop policy if exists docs_write on kv_docs;
 create policy docs_write on kv_docs for all
   using (aal_role(restaurant_id) = 'owner') with check (aal_role(restaurant_id) = 'owner');
 
--- Guests: read bill state, plus only their own device's events and sign-ups;
--- never another guest's contact details or the venue's event stream.
+-- Fresh installations start closed; hardening-2026-09-15.sql installs the
+-- supported bill RPCs and fine-grained owner write policies.
 drop policy if exists rows_read on kv_rows;
-create policy rows_read on kv_rows for select
-  using (aal_role(restaurant_id) = 'owner'
-      or (aal_role(restaurant_id) = 'guest' and collection in ('aal.checks','aal.settle'))
-      or (aal_role(restaurant_id) = 'guest' and collection in ('aal.events','aal.guests')
-          and aal_device() <> '' and body->>'deviceId' = aal_device()));
+create policy rows_read on kv_rows for select using (aal_role(restaurant_id)='owner');
 drop policy if exists rows_insert on kv_rows;
-create policy rows_insert on kv_rows for insert
-  with check (aal_role(restaurant_id) = 'owner'
-      or (aal_role(restaurant_id) = 'guest' and collection in ('aal.checks','aal.settle','aal.events','aal.guests')));
+create policy rows_insert on kv_rows for insert with check (false);
 drop policy if exists rows_update on kv_rows;
-create policy rows_update on kv_rows for update
-  using (aal_role(restaurant_id) = 'owner'
-      or (aal_role(restaurant_id) = 'guest' and collection in ('aal.checks','aal.settle'))
-      or (aal_role(restaurant_id) = 'guest' and collection = 'aal.guests' and aal_device() <> '' and body->>'deviceId' = aal_device()))
-  with check (aal_role(restaurant_id) = 'owner'
-      or (aal_role(restaurant_id) = 'guest' and collection in ('aal.checks','aal.settle'))
-      or (aal_role(restaurant_id) = 'guest' and collection = 'aal.guests' and aal_device() <> '' and body->>'deviceId' = aal_device()));
+create policy rows_update on kv_rows for update using (false) with check (false);
 drop policy if exists rows_delete on kv_rows;
-create policy rows_delete on kv_rows for delete
-  using (aal_role(restaurant_id) = 'owner');
+create policy rows_delete on kv_rows for delete using (false);
 
 grant select, insert, update, delete on kv_docs, kv_rows to anon;
 
@@ -114,7 +101,7 @@ begin
   on conflict (restaurant_id) do nothing;
   return query select v.restaurant_id, v.owner_key, v.guest_key from venue_keys v where v.restaurant_id = rid;
 end $$;
-revoke all on function aal_register_venue(text, text) from anon, authenticated;
+revoke all on function aal_register_venue(text, text) from public, anon, authenticated;
 
 -- Example (edit the names, run, copy the two keys it prints):
 -- select * from aal_register_venue('Kababji', 'Lebanese Grill');
