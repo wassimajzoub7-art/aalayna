@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <script src="qr-lib.js"></script>
+<script src="aalayna-config.js"></script>
 <style>
   :root{
     --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
@@ -61,10 +62,26 @@
   .tent .how{font-size:10.5px;color:var(--sub);line-height:1.55;padding:0 18px}
   .tent .foot{font-size:10px;color:var(--faint);padding:12px 0 14px}
   .tent .foot b{color:var(--sub);font-weight:600}
+  .tent .tno{font-size:15px;font-weight:600;margin-top:10px;letter-spacing:.02em}
+
+  /* ── live venue: table codes ── */
+  .tables{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+  .trow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px}
+  .trow .tn{font-weight:600;min-width:64px}
+  .trow .td{color:var(--faint);flex:1;font-size:11px}
+  .trow button,.tadd button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;
+    padding:6px 9px;font-size:11.5px;font-family:inherit;cursor:pointer}
+  .trow button.rv{color:#B4423A}
+  .tadd{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:12px;color:var(--sub)}
+  .tadd .in{width:90px;flex:none}
+  .tlink{width:300px;font-size:10.5px;color:var(--faint);word-break:break-all;margin-top:6px}
+  .tcard{display:flex;flex-direction:column;align-items:center}
+  .tstatus{min-height:1em}
+  .tstatus.err{color:#B4423A}
 
   @media print{
     body{background:#fff;padding:0}
-    header,.panel .card:first-child,.noprint{display:none !important}
+    header,.panel .card:first-child,.noprint,.tlink{display:none !important}
     .panel{display:block}
     .sheet{gap:8mm}
     .tent{box-shadow:none;border:1px dashed #bbb;page-break-inside:avoid}
@@ -97,9 +114,6 @@
       <input class="in" id="f-font" value="" oninput="paint()" placeholder="Montserrat">
     </div>
     <div class="fld">
-      <label class="lb" for="f-key">Bill access key (shared venues only)</label>
-      <input class="in" id="f-key" value="" oninput="paint()" placeholder="chk_&hellip; from the dashboard bill link">
-      <div class="hint">Leave blank for a demo. A bill key only opens that bill; create a fresh link for each new party. Never use an owner key here.</div>
       <div class="hint">One hex from their logo re-skins the whole demo; the font swaps the
         typography. Pull both from their menu PDF or Instagram.</div>
       <div class="lb">Demo base URL</div>
@@ -109,6 +123,33 @@
       <button class="btn" onclick="window.print()">Print cards</button>
       <button class="btn line" onclick="copyLink()">Copy demo link</button>
       <div class="hint" id="linkout" style="word-break:break-all;margin-top:10px"></div>
+
+      <div class="tables noprint">
+        <div id="owner-entry">
+        <label class="lb" for="f-owner">Owner key <span style="font-weight:400;text-transform:none;letter-spacing:0">(live venues only)</span></label>
+        <input class="in" id="f-owner" type="password" autocomplete="off" spellcheck="false" placeholder="own_&hellip; from admin">
+        <div class="hint">Leave blank for demo cards. With the owner key, each card opens that table's
+          current bill. The key stays in this tab only (never in a link). Venue name and area above
+          must match the registration exactly.</div>
+        <button class="btn line" onclick="connectTables()">Show table codes</button>
+        </div>
+        <div id="tables-panel" hidden>
+          <div class="lb">Tables</div>
+          <div id="tables-list"></div>
+          <div class="tadd">
+            <label for="f-table">Table</label>
+            <input class="in" id="f-table" type="number" min="1" max="9999" inputmode="numeric">
+            <button onclick="issueOne()">Issue code</button>
+          </div>
+          <div class="tadd">
+            <label for="f-upto">Tables 1 to</label>
+            <input class="in" id="f-upto" type="number" min="1" max="200" inputmode="numeric">
+            <button onclick="issueRange()">Issue missing codes</button>
+          </div>
+          <button class="btn line" onclick="forgetOwner()">Forget owner key</button>
+        </div>
+        <div class="hint tstatus" id="tables-status" role="status" aria-live="polite"></div>
+      </div>
     </div>
 
     <div class="sheet" id="sheet"></div>
@@ -135,11 +176,18 @@ function demoURL(){
   if (g) q.push('gplace=' + encodeURIComponent(g));
   if (br) q.push('brand=' + encodeURIComponent(br));
   if (ft) q.push('font=' + encodeURIComponent(ft));
-  var gk = document.getElementById('f-key').value.trim();
-  if (/^chk_[0-9a-f]{12,64}$/.test(gk)) q.push('k=' + gk);
   return q.length ? u + '?' + q.join('&') : u;
 }
-function tent(url, name, place){
+function baseURL(){
+  var base = document.getElementById('f-base').value.trim() || DEFAULT_BASE;
+  return /\/$/.test(base) ? base : base + '/';
+}
+/* A live table card: the printed code opens that table's current bill
+   (guest.html table QR; supabase/sessions-2026-09-24.sql). */
+function tableURL(t){
+  return baseURL() + 'guest.html?v=' + encodeURIComponent(LIVE.slug) + '&t=' + t.table + '&s=' + t.token;
+}
+function tent(url, name, place, table){
   var q = qrcode(0, 'M');
   q.addData(url);
   q.make();
@@ -148,14 +196,16 @@ function tent(url, name, place){
     '<div class="top"><div class="vn">' + esc(name) + '</div>' +
     (place ? '<div class="vp">' + esc(place) + '</div>' : '') +
     '<div class="rule"></div></div>' +
+    (table ? '<div class="tno">Table ' + table + '</div>' : '') +
     '<div class="mid"><div class="cta">See the menu · split the bill · pay</div>' +
     '<div class="cta-ar">شوف المنيو · اقسم الحساب · ادفع</div></div>' +
     '<div class="qr">' + svg + '</div>' +
     '<div class="how">Point your camera at the code — no app, no account. English, français, عربي.</div>' +
     '<div class="foot">powered by <b>Aalayna</b></div></div>';
 }
-function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paint(){
+  if (LIVE) return paintTables();
   var n = document.getElementById('f-name').value.trim() || 'Your restaurant';
   var p = document.getElementById('f-place').value.trim();
   var url = demoURL();
@@ -187,9 +237,122 @@ function markSwatch(){
     el.classList.toggle('on', i === 0 ? v === '' : (SWATCHES[i-1]||'').toLowerCase() === v);
   });
 }
+/* ── live venue: table codes ──
+   With an owner key, qr.html lists, issues and revokes the venue's table codes through
+   aal_table_tokens and prints one card per table. Without one it is the demo above. */
+var LIVE = null, OWNER = 'aal.qr.owner';
+function status(text, err){
+  var el = document.getElementById('tables-status');
+  el.textContent = text || ''; el.className = 'hint tstatus' + (err ? ' err' : '');
+}
+function ownerRPC(rid, key, body){
+  var cfg = window.AalaynaConfig || {};
+  if (!cfg.supabaseUrl || !cfg.anonKey) return Promise.reject(new Error('This page has no restaurant connection configured.'));
+  return fetch(cfg.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/aal_table_tokens', {
+    method: 'POST',
+    headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'x-aalayna-key': key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p_rid: rid, p_body: body })
+  }).then(function(r){
+    return r.text().then(function(t){
+      var b = null; try { b = t ? JSON.parse(t) : null; } catch (e) {}
+      if (r.status === 404) throw new Error('Table codes are not installed on the server yet (supabase/sessions-2026-09-24.sql).');
+      if (!r.ok) throw new Error(b && b.message || 'The restaurant could not be reached (' + r.status + ').');
+      return b;
+    });
+  });
+}
+function remember(v){ try { if (v) sessionStorage.setItem(OWNER, JSON.stringify(v)); else sessionStorage.removeItem(OWNER); } catch (e) {} }
+function connectTables(){
+  var key = document.getElementById('f-owner').value.trim();
+  var name = document.getElementById('f-name').value.trim(), place = document.getElementById('f-place').value.trim();
+  if (!/^own_[0-9a-f]{12,64}$/.test(key)) { status('Paste the owner key (it starts with own_).', true); return; }
+  var rid = JSON.stringify([name.toLowerCase(), place.toLowerCase()]);
+  status('Connecting\u2026');
+  ownerRPC(rid, key, { op: 'list' }).then(function(res){
+    remember({ key: key, name: name, place: place });
+    show(rid, key, res);
+    status(res.slug ? 'Connected to ' + LIVE.name + (LIVE.place ? ', ' + LIVE.place : '') + '.' : 'This venue has no link name (slug) yet. Set its profile in admin first.', !res.slug);
+  }, function(e){
+    status(/Owner key required/.test(e.message)
+      ? 'This owner key does not open ' + (name || 'this venue') + (place ? ', ' + place : '') + '. Check the key, and that name and area match the registration exactly.'
+      : e.message, true);
+  });
+}
+function show(rid, key, res){
+  LIVE = { rid: rid, key: key, slug: res.slug, name: res.name || document.getElementById('f-name').value.trim(), place: res.place || '', tokens: res.tokens || [] };
+  document.getElementById('tables-panel').hidden = false;
+  document.getElementById('owner-entry').hidden = true;
+  document.getElementById('f-owner').value = '';
+  paint();
+}
+function forgetOwner(){
+  LIVE = null; remember(null);
+  document.getElementById('tables-panel').hidden = true;
+  document.getElementById('owner-entry').hidden = false;
+  status('');
+  paint();
+}
+function tableOp(body){
+  return ownerRPC(LIVE.rid, LIVE.key, body).then(function(res){ LIVE.tokens = res.tokens || []; if (res.slug) LIVE.slug = res.slug; paint(); return res; });
+}
+function has(table){ return LIVE.tokens.some(function(t){ return t.table === table; }); }
+function tableNo(id, max){
+  var n = Number(document.getElementById(id).value);
+  return n === Math.floor(n) && n >= 1 && n <= max ? n : null;
+}
+function issueOne(){
+  var n = tableNo('f-table', 9999);
+  if (!n) { status('Type a table number from 1 to 9999.', true); return; }
+  if (has(n) && !confirm('Issue a new code for table ' + n + '? Its printed card stops working at once; print the new one.')) return;
+  status('Issuing\u2026');
+  tableOp({ op: 'issue', table: n }).then(function(){ status('Table ' + n + ' has a new code.'); }, function(e){ status(e.message, true); });
+}
+function reissue(n){ document.getElementById('f-table').value = n; issueOne(); }
+function revoke(n){
+  if (!confirm('Revoke the code for table ' + n + '? Its printed card stops working at once.')) return;
+  status('Revoking\u2026');
+  tableOp({ op: 'revoke', table: n }).then(function(){ status('Table ' + n + ' has no code now.'); }, function(e){ status(e.message, true); });
+}
+function issueRange(){
+  var upto = tableNo('f-upto', 200);
+  if (!upto) { status('Type the last table number, from 1 to 200.', true); return; }
+  var todo = [], done = 0;
+  for (var n = 1; n <= upto; n++) if (!has(n)) todo.push(n);
+  if (!todo.length) { status('Tables 1 to ' + upto + ' already have codes.'); return; }
+  (function next(){
+    if (!todo.length) { status('Issued ' + done + ' code' + (done === 1 ? '' : 's') + '.'); return; }
+    status('Issuing table ' + todo[0] + '\u2026');
+    tableOp({ op: 'issue', table: todo.shift() }).then(function(){ done++; next(); }, function(e){ status(e.message, true); });
+  })();
+}
+function paintTables(){
+  var rows = LIVE.tokens.map(function(t){
+    return '<div class="trow"><span class="tn">Table ' + t.table + '</span><span class="td">since ' +
+      esc(String(t.created_at || '').slice(0, 10)) + '</span>' +
+      '<button onclick="reissue(' + t.table + ')">New code</button><button class="rv" onclick="revoke(' + t.table + ')">Revoke</button></div>';
+  });
+  document.getElementById('tables-list').innerHTML = rows.length ? rows.join('') : '<div class="hint">No table codes yet. Issue one below.</div>';
+  document.getElementById('sheet').innerHTML = LIVE.slug ? LIVE.tokens.map(function(t){
+    var url = tableURL(t);
+    return '<div class="tcard">' + tent(url, LIVE.name, LIVE.place, t.table) + '<div class="tlink">' + esc(url) + '</div></div>';
+  }).join('') : '';
+  document.getElementById('linkout').textContent = LIVE.tokens.length
+    ? LIVE.tokens.length + ' table card' + (LIVE.tokens.length === 1 ? '' : 's') + '. Each opens that table\'s current bill.'
+    : '';
+}
 document.getElementById('f-base').value = DEFAULT_BASE;
 markSwatch();
 paint();
+(function(){
+  var saved = null;
+  try { saved = JSON.parse(sessionStorage.getItem(OWNER) || 'null'); } catch (e) {}
+  if (!saved || !saved.key) return;
+  document.getElementById('f-name').value = saved.name || '';
+  document.getElementById('f-place').value = saved.place || '';
+  document.getElementById('f-owner').value = saved.key;
+  paint();
+  connectTables();
+})();
 </script>
 </body>
 </html>

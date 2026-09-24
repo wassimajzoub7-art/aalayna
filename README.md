@@ -64,6 +64,21 @@ the bill from its **Guest bill link** (`chk_` key); the table comes from that
 check. With a key the guest page offers cash only until a payment provider is
 connected.
 
+### Table QR
+
+A printed table card opens `guest.html?v=<slug>&t=<table>&s=<code>`. Run
+`supabase/sessions-2026-09-24.sql` after the September 24 hardening file and
+`admin.sql`. In `qr.html` paste the owner key (kept in that tab only) to issue,
+reissue or revoke one code per table and print one card per table; without a key
+`qr.html` still makes demo cards. On a scan, `aal_table_session` checks the code and,
+when the table has an open bill, returns a fresh `chk_` key for it; the page reloads
+once as that bill link. Before the waiter enters the bill the guest sees the menu and
+"Your bill appears here once your server enters it.", and the bill view asks again
+every 10 seconds, then attaches the bill in place. A card is a standing credential
+for its table: anyone with a photo of it can open that table's current bill, so
+revoke and reissue a lost or copied card. Keys minted this way never expire (the
+same limit as bill links).
+
 ## Validation
 
 Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.

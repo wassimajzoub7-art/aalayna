@@ -924,7 +924,151 @@
 <script src="aalayna-store.js?v=22"></script>
 <script src="restaurant-growth.js?v=6"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=3"></script>
+<script>
+/* ---------------- table QR ----------------
+   A printed table card opens guest.html?v=<slug>&t=<table>&s=<code> (qr.html, Tables;
+   supabase/sessions-2026-09-24.sql). Approach, chosen for the least special-casing:
+   1. Resolve. This first load stays hidden and inert. s is read, kept in this tab's
+      sessionStorage only and stripped from the address (as the sync layer strips k).
+      The shared-store config is withheld from the sync layer for this load, so a key
+      stored for another venue never wakes up, and aal_table_session is asked. Its answer
+      rewrites the location once, to guest.html?venue=&place=(&gplace&brand&bg&font), plus
+      k=<chk key> when the table has an open bill. From there the page is exactly a staff
+      bill link: the existing sync path holds the key and TABLE comes from the check.
+   2. Waiting (no open bill yet). The reloaded page has the venue and no key. It runs in
+      its own local scope holding the server's published menu, never in demo mode, and
+      the bill reads "Your bill appears here once your server enters it." While the bill
+      view is open it re-asks aal_table_session every 10 seconds; once a bill exists the
+      returned chk_ key is attached in place (Aalayna.sync.attach), without a reload.
+   TABLE is the table from the server's answer (then the check's), never the demo 12.
+   The venue's menu pack is not put in the link: a live venue's menu is its aal.live. */
+var AalaynaTableQR = (function (global) {
+  var STORE = 'aal.table-qr', POLL_MS = 10000, DOCS = ['aal.live', 'aal.rate', 'aal.rate_meta'];
+  var NOT_ACTIVE = 'This table code is not active. Ask your server for the bill.';
+  var A = global.Aalayna, cfg = global.AalaynaConfig || {}, doc = global.document;
+  var q = new URLSearchParams(global.location.search), timer = null, busy = false;
+  function load() { try { return JSON.parse(global.sessionStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
+  function save(s) { try { global.sessionStorage.setItem(STORE, JSON.stringify(s)); } catch (e) {} }
+  var session = load();
+  var api = { holding: false, waiting: false, table: null, onAttach: null, ask: ask, poll: poll, start: start, stop: stop };
+
+  function ask() {
+    if (!cfg.supabaseUrl || !cfg.anonKey) return Promise.reject(new Error('This page is not connected to a restaurant.'));
+    return global.fetch(cfg.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/aal_table_session', {
+      method: 'POST',
+      headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_slug: session.v, p_table: session.t, p_token: session.s })
+    }).then(function (r) {
+      return r.text().then(function (t) {
+        var body = null; try { body = t ? JSON.parse(t) : null; } catch (e) {}
+        if (!r.ok) { var e = new Error(body && body.message || 'The restaurant could not be reached (' + r.status + ').'); e.status = r.status; throw e; }
+        return body;
+      });
+    });
+  }
+  /* a full-screen line over the page: while resolving, and when a code is refused */
+  function notice(text, retry) {
+    var box = doc.getElementById('tq-note');
+    if (!box) {
+      var st = doc.createElement('style');
+      st.textContent = 'html.tq-hold body>*:not(#tq-note){display:none!important}' +
+        '#tq-note{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;text-align:center;font:15px/1.5 system-ui,sans-serif;color:var(--ink);background:var(--bg)}' +
+        'html.tq-hold #tq-note{display:flex}#tq-note button{border:0;border-radius:10px;padding:12px 18px;font:600 14px system-ui,sans-serif;background:var(--green);color:#fff}';
+      doc.head.appendChild(st);
+      box = doc.createElement('div'); box.id = 'tq-note'; box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
+      doc.body.appendChild(box);
+    }
+    doc.documentElement.classList.add('tq-hold');
+    box.innerHTML = '';
+    var p = doc.createElement('p'); p.textContent = text; box.appendChild(p);
+    if (retry) { var b = doc.createElement('button'); b.textContent = 'Try again'; b.onclick = retry; box.appendChild(b); }
+    api.message = text;
+  }
+  function refused(e) { return e && e.status >= 400 && e.status < 500; }
+  function land(docs) {
+    if (!docs) return;
+    var live = false;
+    docs.forEach(function (d) { if (d && DOCS.indexOf(d.key) >= 0 && d.body != null) { A.util.rawWrite(d.key, d.body); if (d.key === 'aal.live') live = true; } });
+    // a venue with nothing published shows an empty menu, never the demo seed
+    if (!live) A.util.rawWrite('aal.live', { version: 0, sections: [], items: [], at: 'server' });
+  }
+  function resolve() {
+    notice('Opening your table…');
+    ask().then(function (res) {
+      var v = res && res.venue || {}, name = String(v.name || '').trim(), place = String(v.place || '').trim();
+      var rid = JSON.stringify([name.toLowerCase(), place.toLowerCase()]);
+      // the store derives the venue id from name and place; they must name this restaurant
+      if (!name || rid !== res.restaurant_id || !(res.table > 0)) { notice(NOT_ACTIVE); return; }
+      var p = new URLSearchParams();
+      p.set('venue', name); if (place) p.set('place', place);
+      if (v.gplace) p.set('gplace', v.gplace);
+      if (v.brand) p.set('brand', String(v.brand).replace(/^#/, ''));
+      if (v.bg) p.set('bg', String(v.bg).replace(/^#/, ''));
+      if (v.font) p.set('font', v.font);
+      session = { v: session.v, t: session.t, s: session.s, rid: rid, table: res.table, waiting: !res.key, docs: res.key ? null : (res.docs || []) };
+      save(session);
+      if (res.key) p.set('k', res.key);
+      // no bill: a bill key remembered for this venue belongs to another party
+      else try { global.localStorage.removeItem('aal.access:' + rid + ':guest'); } catch (e) {}
+      global.location.replace(global.location.pathname + '?' + p.toString());
+    }, function (e) {
+      if (refused(e)) notice(e.message === NOT_ACTIVE ? NOT_ACTIVE : 'This table code cannot be opened right now. Ask your server for the bill.');
+      else notice('We could not reach the restaurant. Check your connection and try again.', resolve);
+    });
+  }
+  function stop() { if (timer) { global.clearInterval(timer); timer = null; } }
+  function start() { if (api.waiting && !timer) timer = global.setInterval(poll, POLL_MS); }
+  /* while waiting: re-ask on the bill view; attach the key once the bill exists */
+  function poll() {
+    if (!api.waiting || busy || doc.visibilityState === 'hidden') return Promise.resolve();
+    var view = doc.getElementById('v-bill');
+    if (!view || !view.classList.contains('on')) return Promise.resolve();
+    busy = true;
+    return ask().then(function (res) {
+      if (!api.waiting) return;
+      if (res && res.key) {
+        api.waiting = false; stop();
+        session.waiting = false; save(session);
+        return A.sync.attach(res.key, res.docs).then(function () { if (api.onAttach) api.onAttach(); },
+          function (e) { if (api.onAttach) api.onAttach(e); });
+      }
+      land(res && res.docs);
+    }, function (e) {
+      // a revoked code stops here; a lost connection tries again on the next tick
+      if (refused(e)) { api.waiting = false; stop(); notice(e.message === NOT_ACTIVE ? NOT_ACTIVE : 'This table code cannot be opened right now. Ask your server for the bill.'); }
+    }).then(function () { busy = false; }, function () { busy = false; });
+  }
+
+  var v = (q.get('v') || '').trim(), t = (q.get('t') || '').trim(), s = (q.get('s') || '').trim();
+  if (v || s) {
+    // 1. a table card was scanned: this load only resolves it
+    api.holding = true;
+    if (!s && session && session.v === v && String(session.t) === t) s = session.s;   // reloaded mid-resolve
+    if (q.has('s') && global.history && global.history.replaceState) {
+      q.delete('s'); global.history.replaceState(null, '', global.location.pathname + (q.toString() ? '?' + q.toString() : ''));
+    }
+    global.AalaynaConfig = null;   // the sync layer stays off for this hidden load
+    session = { v: v, t: Number(t), s: s };
+    save(session);
+    if (!/^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$/.test(v) || !/^[1-9][0-9]{0,3}$/.test(t) || !/^tbl_[0-9a-f]{48}$/.test(s)) notice(NOT_ACTIVE);
+    else resolve();
+  } else if (A && session && session.rid && session.rid === A.venueId()) {
+    // after the rewrite: this tab's table, for this venue
+    api.table = session.table;
+    if (session.waiting && !q.get('k')) {
+      // 2. no bill yet: a local scope of its own, with the server's menu, never the demo
+      api.waiting = true;
+      try { global.localStorage.removeItem('aal.access:' + session.rid + ':guest'); } catch (e) {}
+      A.util.activateScope(JSON.stringify([session.rid, 'table', session.table]));
+      land(session.docs);
+      if (session.docs) { session.docs = null; save(session); }
+      A.demoMode = function () { return false; };
+    } else if (session.waiting) { session.waiting = false; save(session); }
+  }
+  return api;
+})(window);
+</script>
+<script src="aalayna-sync.js?v=4"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -969,8 +1113,9 @@ function loadMenu(){
    while the venue has no staff bills, the sample.
    Shared mode (a chk_ bill link from the dashboard): the key names exactly one
    check. aal_snapshot delivers that check into this device's store and TABLE is
-   taken from the check, never from the page or the guest. A static per-table QR
-   session is later work; until then each party gets the bill link. */
+   taken from the check, never from the page or the guest.
+   Table QR (guest.html?v=&t=&s=, see the table QR script): TABLE is the table the
+   server resolved from the printed code; its bill arrives as a chk_ key. */
 function sharedCheck(){
   if (!(Aalayna.sync && Aalayna.sync.enabled)) return null;
   var bound = Aalayna.sync.boundCheck();
@@ -1925,7 +2070,8 @@ if(window.visualViewport)window.visualViewport.addEventListener('resize',syncRec
 syncReceiptViewport();
 /* ---------------- boot ---------------- */
 /* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
-var TABLE = 12, SERVER = 'Abou Karim';
+/* TABLE: the demo's table 12, or, from a table QR, the table the server named */
+var TABLE = AalaynaTableQR.table != null ? AalaynaTableQR.table : 12, SERVER = 'Abou Karim';
 /* client-side events (spec section 4): the scan, each dish opened, the first look at the bill */
 var billRequested = false;
 function logScan(){
@@ -1936,8 +2082,8 @@ function logBillRequested(){
   billRequested = true;
   try { Aalayna.logEvent('bill_requested', {}, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
 }
-logScan();
-openTableBill();
+// a table QR being resolved logs and opens nothing: this hidden load is replaced
+if (!AalaynaTableQR.holding) { logScan(); openTableBill(); }
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paintServer(){
   SERVER = Aalayna.serverFor(TABLE);
@@ -1965,11 +2111,20 @@ $('staff-demo').href = 'dashboard.html' + window.location.search;
 staggered = true;
 restoreReceipt();
 watchGuestChanges();
+function sharedReady(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();}
+function sharedFailed(){ $('payment-status').textContent='Unable to connect to this bill. Please speak with your server.'; }
 if (Aalayna.sync && Aalayna.sync.enabled) {
-  Aalayna.sync.ready.then(function(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();}).catch(function(){
-    $('payment-status').textContent='Unable to connect to this bill. Please speak with your server.';
-  });
+  Aalayna.sync.ready.then(sharedReady).catch(sharedFailed);
 }
+/* table QR without a bill yet: poll on the bill view; once attached, the scan and the
+   look at the bill are recorded against the bill (the waiting scope is local only) */
+AalaynaTableQR.onAttach = function(error){
+  if (error) return sharedFailed();
+  sharedReady();
+  billRequested = false; logScan();
+  if ($('v-bill').classList.contains('on')) logBillRequested();
+};
+AalaynaTableQR.start();
 </script>
 </body>
 </html>

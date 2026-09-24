@@ -108,8 +108,24 @@
     return result;
   }
   A.sync={state:view,key:function(){return key;},enabled:!!key,subscribe:function(f){observers.push(f);f(view());},pull:pull,retry:async function(){Object.values(queue).forEach(function(j){delete j.blocked;});persist();try{await pull();await run();}catch(e){fail(e);}},boundCheck:function(){return state.checkId?A.serviceChecks().find(function(c){return c.id===state.checkId;}):null;},mutate:mutate};
+  /* Table QR (guest.html, supabase/sessions-2026-09-24.sql): a table whose bill is not
+     entered yet opens without a key; once staff open the bill, aal_table_session mints
+     a chk_ key and the page attaches it here, without a reload. The key is held exactly
+     as a ?k= bill link on a guest page would hold it. docs are the menu/rate documents
+     from the same response, landed at once so the new scope never shows the seed menu
+     while the first snapshot is on its way. */
+  A.sync.attach=function(k,docs){
+    if(key)throw new Error('This page already has a bill key.');
+    if(!guestPage||!/^chk_[0-9a-f]{12,64}$/.test(k||''))throw new Error('Only a bill key can be attached on a guest page.');
+    key=k;headers['x-aalayna-key']=k;state.role='guest';A.sync.enabled=true;
+    try{global.localStorage.setItem(credentialKey,k);}catch(e){}
+    start(docs);return A.sync.ready;
+  };
   if(!key){A.sync.ready=Promise.resolve();return;}
+  start();
+  function start(docs){
   A.util.activateScope(JSON.stringify([rid,state.role,key]));
+  (docs||[]).forEach(function(d){if(d&&['aal.live','aal.rate','aal.rate_meta'].indexOf(d.key)>=0&&d.body!=null)A.util.rawWrite(d.key,d.body);});
   try{queue=JSON.parse(global.localStorage.getItem(A.util.storageKey('aal.outbox'))||'{}');}catch(e){queue={};}
   // Seed/local-only history is intentionally not queued on boot.
   A.util.hooks.afterWrite.push(function(k,v){
@@ -171,4 +187,5 @@
     A.sync.subscribe(function(s){label.textContent=s.status==='live'?'Saved':s.status==='starting'?'Connecting…':s.status==='offline'?'Connection lost · '+s.pending+' changes waiting':s.status==='error'?s.failed+' changes need attention':'Syncing '+s.pending+' changes…';node.title=s.lastError||'';retry.hidden=s.status!=='offline'&&s.status!=='error';});
   }
   if(global.document.body)mount();else global.document.addEventListener('DOMContentLoaded',mount);
+  }
 })(window);
