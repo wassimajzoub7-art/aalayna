@@ -92,6 +92,11 @@
     #venues-table td{border-top:0;padding:3px 0}#venues-table tr:not(.detail){border-top:1px solid var(--line);padding:10px 0}
     #venues-table td.num{text-align:left;padding-top:8px}.vd{padding:4px 12px 12px}}
   /* ==== T6 Venues (onboarding) styles: end ==== */
+  /* ==== T4 staff styles: start ==== */
+  .staff-invite .in{flex:1;min-width:200px}
+  .staff-invite select.in,.line select.in{flex:0 0 auto;min-width:130px;width:auto}
+  .line.revoked .u{color:var(--faint)}
+  /* ==== T4 staff styles: end ==== */
 </style>
 </head>
 <body>
@@ -260,6 +265,103 @@ function paintAll(){ paintFunnel(); paintHealth(); paintNotifications(); paintEd
 paintAll();
 Aalayna.on(function(){ paintAll(); });
 </script>
+<!-- ==== T4 staff (admin) script: start ==== -->
+<script>
+/* Staff (T4): per venue, the people who sign in to the dashboard and editor with a
+   one-time code sent to their email (supabase/auth-2026-09-24.sql). Calls aal_staff
+   with the venue's owner key from the listing, in x-aalayna-key, exactly as the
+   dashboard would. The T6 venue panel mounts section(v) and repaints it freely;
+   the state lives here, per venue, so a repaint never loses a list or a draft. */
+(function(){
+  'use strict';
+  var ROLES=[['owner','Owner'],['manager','Manager'],['waiter','Waiter']];
+  var ROLE_NOTE='Owner and manager: everything on the dashboard and editor; only an owner manages staff. Waiter: the Live floor, bills, bill links, cash collection and cancelling cash requests; no refunds, closing bills, menu changes or customer list.';
+  var ST={};
+  function el(tag,text,cls){ var n=document.createElement(tag); if(text!=null)n.textContent=text; if(cls)n.className=cls; return n; }
+  function button(text,cls,fn){ var b=el('button',text,'btn small'+(cls?' '+cls:'')); b.type='button'; b.onclick=fn; return b; }
+  function when(v){ return v?new Date(v).toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',year:'numeric'}):''; }
+  function label(r){ for(var i=0;i<ROLES.length;i++)if(ROLES[i][0]===r)return ROLES[i][1]; return r; }
+  function roleSelect(value,id){
+    var s=el('select',null,'in'); if(id)s.id=id;
+    ROLES.forEach(function(r){ var o=el('option',r[1]); o.value=r[0]; s.appendChild(o); }); s.value=value||'waiter'; return s;
+  }
+  function state(rid){ return ST[rid]||(ST[rid]={list:null,busy:false,msg:null,confirm:null,email:'',role:'waiter',node:null,key:''}); }
+  function staffRpc(v,body){
+    var cfg=window.AalaynaConfig||{};
+    if(!cfg.supabaseUrl||!cfg.anonKey)return Promise.reject(new Error('No shared store is configured in aalayna-config.js.'));
+    return fetch(cfg.supabaseUrl.replace(/\/$/,'')+'/rest/v1/rpc/aal_staff',{method:'POST',cache:'no-store',
+      headers:{apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey,'x-aalayna-key':v.owner_key,'Content-Type':'application/json'},
+      body:JSON.stringify({p_rid:v.restaurant_id,p_body:body})})
+    .then(function(res){ return res.text().then(function(t){
+      var j=null; try{ j=t?JSON.parse(t):null; }catch(e){}
+      if(!res.ok){
+        if(j&&j.code==='PGRST202')throw new Error('Staff sign-in is not on the shared store yet. Run supabase/auth-2026-09-24.sql in the Supabase SQL editor.');
+        throw new Error(j&&j.message?j.message:'The shared store answered '+res.status+'.');
+      }
+      return j; }); },function(){ throw new Error('Could not reach the shared store. Check the connection and try again.'); });
+  }
+  function run(v,body,okText){
+    var st=state(v.restaurant_id); st.busy=true; st.msg=null; paint(v);
+    return staffRpc(v,body).then(function(r){
+      st.busy=false; st.list=r&&r.staff?r.staff:[]; st.confirm=null; st.msg=okText?{text:okText,kind:'ok'}:null; paint(v); return true;
+    },function(e){ st.busy=false; st.msg={text:e.message,kind:'err'}; paint(v); return false; });
+  }
+  function paint(v){ var st=state(v.restaurant_id); if(st.node)fill(st.node,v); }
+  function fill(box,v){
+    var rid=v.restaurant_id, st=state(rid), busy=st.busy;
+    box.replaceChildren();
+    box.appendChild(el('h3','Staff'));
+    box.appendChild(el('p','People sign in to the dashboard and editor with a six-digit code sent to their email; no password, no key in a link. '+ROLE_NOTE,'hint'));
+    if(!st.list){ if(busy)box.appendChild(el('p','Loading staff...','status')); else box.appendChild(button('Load staff','',function(){ run(v,{op:'list'}); })); }
+    else if(!st.list.length){ box.appendChild(el('p','Nobody is on the staff list yet. The owner links above keep working meanwhile.','hint')); }
+    else st.list.forEach(function(m){
+      var d=el('div',null,'line'+(m.revoked_at?' revoked':'')), u=el('div',null,'u p');
+      u.textContent=m.email+' · '+(m.revoked_at?'Revoked '+when(m.revoked_at):label(m.role)+' since '+when(m.created_at))+(m.invited_by?' · invited by '+m.invited_by:'');
+      d.append(el('div',m.revoked_at?'Former staff':label(m.role),'t'),u);
+      if(!m.revoked_at){
+        var sel=roleSelect(m.role); sel.disabled=busy; sel.setAttribute('aria-label','Role for '+m.email);
+        sel.onchange=function(){ run(v,{op:'change_role',email:m.email,role:sel.value},m.email+' is now '+label(sel.value).toLowerCase()+'.'); };
+        var rev=button('Revoke','danger',function(){ st.confirm=m.email; paint(v); }); rev.disabled=busy;
+        d.append(sel,rev);
+      }
+      box.appendChild(d);
+      if(st.confirm===m.email){
+        var c=el('div',null,'confirm'); c.appendChild(el('div','Revoke '+m.email+'? Their next request to the shared store is refused, even on a device that is already signed in.'));
+        var row=el('div',null,'row');
+        var yes=button(busy?'Revoking...':'Revoke access','danger',function(){ run(v,{op:'revoke',email:m.email},m.email+' no longer has access.'); }); yes.disabled=busy;
+        row.append(yes,button('Cancel','',function(){ st.confirm=null; paint(v); }));
+        c.appendChild(row); box.appendChild(c);
+      }
+    });
+    var form=el('form',null,'row staff-invite'); form.noValidate=true;
+    var idx=Object.keys(ST).indexOf(rid), emailId='staff-email-'+idx, roleId='staff-role-'+idx;
+    var lab=el('label','Invite','lbl'); lab.htmlFor=emailId; lab.style.flexBasis='100%'; lab.style.marginBottom='0';
+    var email=el('input',null,'in'); email.id=emailId; email.type='email'; email.placeholder='name@restaurant.com'; email.autocomplete='off'; email.spellcheck=false; email.value=st.email;
+    email.oninput=function(){ st.email=email.value; };
+    var role=roleSelect(st.role,roleId); role.setAttribute('aria-label','Role for the invited email'); role.onchange=function(){ st.role=role.value; };
+    var go=el('button',busy?'Saving...':'Invite','btn small primary'); go.type='submit'; go.disabled=busy;
+    form.append(lab,email,role,go);
+    form.onsubmit=function(e){
+      e.preventDefault();
+      var addr=String(email.value||'').replace(/^\s+|\s+$/g,'').toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)){ st.msg={text:'Enter a valid email address.',kind:'err'}; paint(v); return; }
+      run(v,{op:'invite',email:addr,role:role.value},addr+' is invited as '+label(role.value).toLowerCase()+'. They open the dashboard or editor, enter this email and the code it receives.').then(function(ok){ if(ok){ st.email=''; st.role='waiter'; paint(v); } });
+    };
+    box.appendChild(form);
+    if(st.msg){ var p=el('p',st.msg.text,'status '+st.msg.kind); p.setAttribute('role','status'); box.appendChild(p); }
+  }
+  function section(v){
+    var st=state(v.restaurant_id), box=el('div');
+    box.setAttribute('data-staff-venue',v.restaurant_id); st.node=box;
+    // (re)load when first shown, and again after the owner key was rotated
+    if(st.key!==v.owner_key&&!st.busy){ st.key=v.owner_key; run(v,{op:'list'}); }
+    else fill(box,v);
+    return box;
+  }
+  window.AalaynaAdminStaff={section:section,state:function(rid){ return ST[rid]; }};
+})();
+</script>
+<!-- ==== T4 staff (admin) script: end ==== -->
 <!-- ==== T6 Venues (onboarding) script: start ==== -->
 <script>
 /* Venues: onboarding with an admin key (supabase/admin.sql).
@@ -519,6 +621,9 @@ Aalayna.on(function(){ paintAll(); });
       }
     });
 
+    /* ==== T4 staff hook: start ==== */
+    if(window.AalaynaAdminStaff)box.appendChild(window.AalaynaAdminStaff.section(v));
+    /* ==== T4 staff hook: end ==== */
     box.appendChild(el('h3','Demo payments'));
     var demoText=p.demo?'On: the venue is marked as still using simulated payments.':'Off: the venue is marked as using its real payment provider.';
     var toggle=button(p.demo?'Switch demo payments off':'Switch demo payments on','',function(){ saveProfile(v,{demo_payments:!p.demo},'Demo payments switched '+(p.demo?'off.':'on.')); });

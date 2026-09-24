@@ -310,12 +310,28 @@
     .sec-items{transition:none}
     .cta:active,.it.dragging{transform:none}
   }
+  /* ==== T4 staff sign-in: start ==== */
+  .staff-gate{position:fixed;inset:0;z-index:10000;background:var(--bg);overflow:auto;display:flex;
+    justify-content:center;align-items:flex-start;padding:14vh 16px 40px}
+  .staff-gate[hidden],.staff-gate [hidden],.staff-bar[hidden]{display:none}
+  .staff-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 18px}
+  .staff-card .cta{margin-top:12px}
+  .staff-card #staff-msg{margin-top:12px}
+  .staff-card #staff-msg:empty{display:none}
+  .staff-card #staff-msg[data-kind=err]{color:var(--red)}
+  .staff-card #staff-msg[data-kind=ok]{color:var(--green)}
+  .staff-card a,.staff-bar a{color:var(--green);font-weight:500}
+  .staff-card ul{margin:10px 0 0 18px;line-height:1.8}
+  .staff-links{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
+  .staff-bar{font-size:11.5px;color:var(--sub);margin-top:6px}
+  /* ==== T4 staff sign-in: end ==== */
 </style>
 </head>
 <body>
 <div class="stage">
   <div class="t">aalay<b>na</b> — menu editor</div>
   <div class="s">what the restaurant sees</div>
+  <div class="staff-bar" id="staff-bar" hidden><span id="staff-bar-who"></span> · <a href="#" id="staff-bar-action"></a></div>
 </div>
 <div class="phone"><div class="screen">
   <div class="hd">
@@ -489,7 +505,48 @@
 </div>
 <script src="aalayna-store.js?v=22"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=3"></script>
+<script src="aalayna-sync.js?v=5"></script>
+<!-- ==== T4 staff sign-in: start ==== -->
+<div class="staff-gate" id="staff-gate" role="dialog" aria-modal="true" aria-label="Staff sign-in">
+  <div class="staff-card">
+    <section id="staff-signin">
+      <div class="sh-t">Staff sign-in</div>
+      <p class="sh-s">Enter the email address the restaurant invited. We email you a six-digit code; there is no password.</p>
+      <form id="staff-email-form" novalidate>
+        <div class="fld"><label class="lb" for="staff-email">Email</label>
+          <input class="in" id="staff-email" type="email" autocomplete="email" inputmode="email" spellcheck="false" autocapitalize="off"></div>
+        <button class="cta cta-green" id="staff-send" type="submit">Send me a code</button>
+      </form>
+      <form id="staff-code-form" novalidate hidden>
+        <div class="fld"><label class="lb" for="staff-code">Six-digit code</label>
+          <input class="in" id="staff-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></div>
+        <button class="cta cta-green" id="staff-verify" type="submit">Sign in</button>
+      </form>
+      <p class="sh-s" id="staff-msg" role="status" aria-live="polite"></p>
+      <div class="staff-links sh-s"><a href="#" id="staff-demo" hidden>Continue with the demo</a><a href="#" id="staff-key" hidden>Continue with the owner link</a></div>
+    </section>
+    <section id="staff-wait" hidden><div class="sh-t">Staff sign-in</div><p class="sh-s">Checking your restaurants...</p></section>
+    <section id="staff-refusal" hidden>
+      <div class="sh-t" id="staff-refusal-title"></div>
+      <p class="sh-s" id="staff-refusal-text"></p>
+      <ul class="sh-s" id="staff-venues" hidden></ul>
+      <button class="cta cta-line" id="staff-retry" type="button" hidden>Try again</button>
+      <button class="cta cta-line" id="staff-refusal-out" type="button">Sign out</button>
+    </section>
+  </div>
+</div>
+<script>
+/* Staff sign-in (T4). The menu editor is for owners and managers; a waiter who
+   signs in is told so. The demo (no key, no session) and an owner link can
+   continue without signing in. */
+(function(){
+  if(!window.AalaynaAuth){ document.getElementById('staff-gate').hidden = true; return; }
+  window.staffGate = AalaynaAuth.gate({ roles: ['owner', 'manager'],
+    roleTitle: 'The menu editor is for owners and managers',
+    roleText: 'You are signed in as a waiter. Ask the owner or a manager to change the menu. Bills and cash are on the dashboard.' });
+})();
+</script>
+<!-- ==== T4 staff sign-in: end ==== -->
 <script>
 /* Service windows. Restaurants think in dayparts ("we stop serving breakfast at 11:30"),
    so the window lives on the SECTION, not the item. */

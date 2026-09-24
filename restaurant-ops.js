@@ -126,9 +126,13 @@ function paintCheckBalances() {
   $('live-cash').textContent=money(Aalayna.pendingCash().reduce(function(sum,x){return sum+x.amount;},0));
   $('live-paid').textContent=money(opsReport().current.grossCents/100);
   var active=checks.filter(function(c){return !c.closedAt || Aalayna.checkBalance(c.id).remainingCents>0;});
-  var liveOwner=!!(Aalayna.sync && Aalayna.sync.enabled && Aalayna.sync.state().role==='owner');
+  /* T4 roles: live staff (owner, or a signed-in waiter) open bills and issue bill links; closing a bill stays
+     with the owner in shared mode (aal_mutate refuses it for a waiter), and with anyone in the local demo.
+     Until the first server read names the role ('staff'), neither shows. */
+  var liveRole=Aalayna.sync && Aalayna.sync.enabled ? Aalayna.sync.state().role : null;
+  var liveStaff=liveRole==='owner'||liveRole==='waiter', ownerControls=!(Aalayna.sync && Aalayna.sync.enabled)||liveRole==='owner';
   /* shared mode keeps upstream's quick path for a bill that only has a POS total; itemised bills use Bills above */
-  if(liveOwner)box.appendChild(opsButton('Open a bill from a POS total',async function(){
+  if(liveStaff)box.appendChild(opsButton('Open a bill from a POS total',async function(){
     var table=window.prompt('Table number'),total=table&&window.prompt('Bill total in USD, copied from the POS');
     if(!table||!total)return;
     if(!Number.isInteger(Number(table))||Number(table)<1||!Number.isFinite(Number(total))||Number(total)<=0){toast('Enter a valid table and bill total.');return;}
@@ -145,10 +149,10 @@ function paintCheckBalances() {
     var detail=opsEl('details',null,'ops-help');detail.appendChild(opsEl('summary','Bill details'));detail.appendChild(opsEl('p','Opened '+opsDate(c.openedAt)+' · bill '+c.id.slice(-8)+' · Cash '+money(b.methods.cash/100)+' · Whish '+money(b.methods.whish/100)+' · Card '+money(b.methods.card/100)+' · Tips '+money(b.tipCents/100),'cs'));body.appendChild(detail);row.appendChild(body);
     var actions=opsEl('div',null,'ops-actions bill-row-actions');
     if(!c.closedAt)actions.appendChild(opsButton('Edit bill',function(){billPickTable(c.table);$('bills-card').scrollIntoView({block:'start',behavior:'smooth'});}));
-    if(liveOwner && !c.closedAt)actions.appendChild(opsButton('Guest bill link',async function(){
+    if(liveStaff && !c.closedAt)actions.appendChild(opsButton('Guest bill link',async function(){
       try{var issued=await Aalayna.sync.issueCheckKey(c.id),v=Aalayna.venue(),url=new URL('guest.html',location.href);url.search=new URLSearchParams({venue:v.name,place:v.place||'',k:issued.key}).toString();window.prompt('Copy this bill link. It only opens this bill.',url.href);}catch(error){toast(error.message);}
     }));
-    if(!c.closedAt&&!b.remainingCents&&!b.pendingCents)actions.appendChild(opsButton('Close settled bill',async function(){try{await Aalayna.closeServiceCheck(c.id);toast(liveOwner?'Bill closed.':'Bill closed. The next guest session can open a new bill.');}catch(error){toast(error.message);}}));
+    if(ownerControls&&!c.closedAt&&!b.remainingCents&&!b.pendingCents)actions.appendChild(opsButton('Close settled bill',async function(){try{await Aalayna.closeServiceCheck(c.id);toast(liveStaff?'Bill closed.':'Bill closed. The next guest session can open a new bill.');}catch(error){toast(error.message);}}));
     if(actions.childNodes.length)row.appendChild(actions);box.appendChild(row);
   });
 }

@@ -11,7 +11,7 @@
 <script src="restaurant-growth.js?v=6"></script>
 <script src="owner-metrics.js?v=7"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=3"></script>
+<script src="aalayna-sync.js?v=5"></script>
 
 <style>
   :root{
@@ -230,6 +230,25 @@
   }
 </style>
 <link rel="stylesheet" href="restaurant-ops.css?v=6">
+<style>
+  /* ==== T4 staff sign-in: start ==== */
+  .staff-gate{position:fixed;inset:0;z-index:10000;background:var(--bg);overflow:auto;display:flex;
+    justify-content:center;align-items:flex-start;padding:14vh 16px 40px}
+  .staff-gate[hidden]{display:none}
+  .staff-gate>.card{width:100%;max-width:400px}
+  .staff-gate .cf{margin-top:14px}
+  .staff-gate .cf .btn{align-self:flex-start}
+  .staff-gate #staff-msg:empty{display:none}
+  .staff-gate #staff-msg{margin-top:12px}
+  .staff-gate #staff-msg[data-kind=err]{color:var(--red)}
+  .staff-gate #staff-msg[data-kind=ok]{color:var(--green)}
+  .staff-gate a,.staff-bar a{color:var(--green);font-weight:500}
+  .staff-gate ul{margin:10px 0 0 18px;line-height:1.8}
+  .staff-links{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
+  .staff-bar{font-size:12.5px;color:var(--sub);padding:0 0 14px}
+  [data-staff-role=waiter] [data-owner-only]{display:none !important}
+  /* ==== T4 staff sign-in: end ==== */
+</style>
 </head>
 <body>
 
@@ -240,16 +259,17 @@
   </div>
   <nav>
     <button class="ni on" onclick="go(this,'tonight')">Service</button>
-    <button class="ni" onclick="go(this,'week')">Overview</button>
-    <button class="ni" onclick="go(this,'guests')">Customers</button>
-    <button class="ni" onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
-    <button class="ni" onclick="go(this,'team')">Team</button>
+    <button class="ni" data-owner-only onclick="go(this,'week')">Overview</button>
+    <button class="ni" data-owner-only onclick="go(this,'guests')">Customers</button>
+    <button class="ni" data-owner-only onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
+    <button class="ni" data-owner-only onclick="go(this,'team')">Team</button>
   </nav>
   <div class="side-f">Insights use recorded activity. Messaging and POS connections are not configured.</div>
 </aside>
 
 <main>
   <div style="font-size:14px;padding:12px 0 20px;color:var(--sub)">Interactive demo · sample data · no real payments or messages. <a href="index.html">Back to website</a></div>
+  <div class="staff-bar" id="staff-bar" hidden><span id="staff-bar-who"></span> · <a href="#" id="staff-bar-action"></a></div>
 
   <div class="report-toolbar" id="report-toolbar">
     <label for="report-period">Reporting period <select id="report-period" onchange="paintTonight()"><option value="today">Today</option><option value="7" selected>Last 7 days</option><option value="30">Last 30 days</option></select></label>
@@ -264,11 +284,11 @@
         <span class="status-badge pending" id="incomplete-badge" hidden></span>
       </div>
       <div class="actions">
-        <button class="btn" onclick="exportCSV()">Export CSV</button>
+        <button class="btn" data-owner-only onclick="exportCSV()">Export CSV</button>
       </div>
     </div>
 
-    <nav class="ops-tabs" aria-label="Service views"><button type="button" aria-pressed="true" data-group="service" data-panel="service-live" onclick="opsPanel('service','service-live')">Live floor</button><button type="button" aria-pressed="false" data-group="service" data-panel="service-report" onclick="opsPanel('service','service-report')">Settlement report</button></nav>
+    <nav class="ops-tabs" aria-label="Service views"><button type="button" aria-pressed="true" data-group="service" data-panel="service-live" onclick="opsPanel('service','service-live')">Live floor</button><button type="button" aria-pressed="false" data-group="service" data-panel="service-report" data-owner-only onclick="opsPanel('service','service-report')">Settlement report</button></nav>
     <section id="service-live" data-panel-group="service">
       <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Collected in period · incl. tips</span><strong id="live-paid">$0.00</strong></div></div>
       <div class="card attention-card"><div class="ops-heading"><div><h3>Needs attention</h3><p class="cs">Confirm cash only after it reaches your hands.</p></div><span class="status-badge pending" id="cash-count">0 waiting</span></div><div id="cash-queue" aria-live="polite"></div></div>
@@ -500,7 +520,46 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=9"></script>
+<!-- ==== T4 staff sign-in: start ==== -->
+<div class="staff-gate" id="staff-gate" role="dialog" aria-modal="true" aria-label="Staff sign-in">
+  <div class="card">
+    <section id="staff-signin">
+      <h3>Staff sign-in</h3>
+      <p class="cs">Enter the email address the restaurant invited. We email you a six-digit code; there is no password.</p>
+      <form id="staff-email-form" class="cf" novalidate>
+        <label class="ops-label" for="staff-email">Email</label>
+        <input class="in" id="staff-email" type="email" autocomplete="email" inputmode="email" spellcheck="false" autocapitalize="off">
+        <button class="btn primary" id="staff-send" type="submit">Send me a code</button>
+      </form>
+      <form id="staff-code-form" class="cf" novalidate hidden>
+        <label class="ops-label" for="staff-code">Six-digit code</label>
+        <input class="in" id="staff-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}">
+        <button class="btn primary" id="staff-verify" type="submit">Sign in</button>
+      </form>
+      <p class="cs" id="staff-msg" role="status" aria-live="polite"></p>
+      <div class="staff-links cs"><a href="#" id="staff-demo" hidden>Continue with the demo</a><a href="#" id="staff-key" hidden>Continue with the owner link</a></div>
+    </section>
+    <section id="staff-wait" hidden><h3>Staff sign-in</h3><p class="cs">Checking your restaurants...</p></section>
+    <section id="staff-refusal" hidden>
+      <h3 id="staff-refusal-title"></h3>
+      <p class="cs" id="staff-refusal-text"></p>
+      <ul class="cs" id="staff-venues" hidden></ul>
+      <div class="actions mt"><button class="btn" id="staff-retry" type="button" hidden>Try again</button><button class="btn" id="staff-refusal-out" type="button">Sign out</button></div>
+    </section>
+  </div>
+</div>
+<script>
+/* Staff sign-in (T4). With no session the panel covers the dashboard; the demo
+   (no key, no session) and an owner link can continue without it. Signed in, the
+   dashboard opens only for a member of this venue's staff list (aal_staff 'mine').
+   Waiters see the Live floor without owner-only controls. */
+(function(){
+  if(!window.AalaynaAuth){ document.getElementById('staff-gate').hidden = true; return; }
+  window.staffGate = AalaynaAuth.gate({ roles: ['owner', 'manager', 'waiter'] });
+})();
+</script>
+<!-- ==== T4 staff sign-in: end ==== -->
+<script src="restaurant-ops.js?v=10"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
@@ -689,6 +748,7 @@ function paintRows(){
       d.appendChild(cancel);
     } else if (Aalayna.isConfirmed(x)) {
       var refund = document.createElement('button'); refund.className = 'rfb'; refund.textContent = 'Refund';
+      refund.setAttribute('data-owner-only', '');   // T4: refunds are for owners and managers
       refund.onclick = function(){ refundRow(refund,x.id); }; d.appendChild(refund);
     }
     if (x.rail === 'cash' && Aalayna.settlementStatus(x) === 'pending') {
@@ -810,9 +870,14 @@ function paintTeam(){
 /* ───────── boot ───────── */
 (function(){ var v = Aalayna.venue();
   document.getElementById('v-sub').textContent = (v.name + (v.place ? ' · ' + v.place : '')).toUpperCase(); })();
-Aalayna.recordHealth();
+/* T4: the health report is an owner write. In shared mode it waits for the first server read, which
+   names the role (owner or waiter): an owner's report is then queued, a waiter's is never sent, and the
+   repaint shows the controls for that role. Without a key or session it runs at once, as before. */
+var healthAfterRead = !!(Aalayna.sync && Aalayna.sync.enabled && Aalayna.sync.onReady);
+if (!healthAfterRead) Aalayna.recordHealth();
 paintTonight();
 paintTips();
+if (healthAfterRead) Aalayna.sync.onReady(function(){ Aalayna.recordHealth(); paintTonight(); paintTips(); });
 Aalayna.on(function(){ paintTonight(); paintTips(); });
 simpleBars('rtrend','rtrend-ax','rtrend-v', RTREND.map(function(r){return {d:r.d,v:r.v};}), function(v){ return v.toFixed(1); });
 paintReviews();

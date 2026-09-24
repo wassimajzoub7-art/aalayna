@@ -6,7 +6,20 @@ The public homepage and booking page contain no interactive demos or app preview
 
 ## Demo limits
 
-Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider or POS is connected. Without a configured bill/owner key the pages share only local demo data. Shared mode requires the Supabase migrations below and uses bearer credentials; individual staff accounts are not implemented. Do not use the demo to collect real payments, real card details, or guest contact data.
+Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider or POS is connected. Without a configured bill/owner key the pages share only local demo data. Shared mode requires the Supabase migrations below. Staff sign in to the dashboard and editor with a one-time email code and a role (owner, manager, waiter); the owner key remains a bearer fallback and guests use per-bill and table keys. Do not use the demo to collect real payments, real card details, or guest contact data.
+
+**Staff login.** Run `supabase/auth-2026-09-24.sql` after the sessions file, with Supabase Auth set up
+as its header says (email provider on, **Confirm email kept on**, `{{ .Token }}` in the
+Magic Link and Confirm signup templates, a custom SMTP sender). The dashboard and editor
+then open on a sign-in panel: staff enter their email, receive a six-digit code and sign
+in; the session is kept in this browser (`aal.session`) and sent as a bearer token
+instead of the owner key. Access comes from the venue's staff list, managed per venue
+under **Staff** in `admin.html` (or `aal_staff` with the owner key): owners and managers
+can do everything, only owners manage staff, and waiters get the Live floor (open and
+change bills, bill links, confirm or cancel cash) but no refunds, bill closing, menu
+editing, customer list or event stream. Revoking someone takes effect on their next
+request. The owner key still works as a fallback ("Continue with the owner link"), and
+the no-key demo stays open through "Continue with the demo".
 
 Cash selection creates a pending collection request. It is excluded from confirmed revenue and digital tips. After receiving the cash, tap **Confirm cash received** once in the dashboard. The guest tab refreshes on storage updates and when returning to the tab; its own receipt also survives a reload in that tab. Both pages must use the same browser profile and origin. Guests can close the screen while awaiting collection; this does not mark a request paid. Requests can be cancelled; confirmed payments can be marked refunded. These are simulation records, not actual financial operations.
 
@@ -63,6 +76,24 @@ sample bill until the venue has a staff bill. With a venue key, saves go through
 the bill from its **Guest bill link** (`chk_` key); the table comes from that
 check. With a key the guest page offers cash only until a payment provider is
 connected.
+
+### Offline
+
+The guest page registers `sw.js` with the scope `guest.html`, so no other page is
+touched. It keeps the guest app shell on the phone: `guest.html` and its scripts are
+network first (a deploy is picked up whenever the phone is online; the cached copy
+answers when the network fails or takes over six seconds), Google Fonts and images are
+cache first, and the Supabase API and every non-GET request are never cached. Bump
+`VERSION` in `sw.js` when it or its shell list changes; activate deletes older caches.
+The bill and menu come from the phone's scoped store, so a page opened with no
+connection shows the bill as of the last good read (kept per bill key). A thin banner
+says so while the phone reports no connection or after two failed reads in a row, and
+hides after the next good read. A cash request made offline waits in the sync outbox:
+the receipt says it is saved on this phone, then reads "Cash requested." once the
+outbox has sent it; a request the restaurant refuses sends the guest back to Pay with
+the reason. The demo shows the same banner and keeps working locally. `sw.js` must
+never get a long HTTP cache lifetime (GitHub Pages sends ten minutes, and the page
+registers it with `updateViaCache: 'none'`). See `tests/offline.test.cjs`.
 
 ### Table QR
 

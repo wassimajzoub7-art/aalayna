@@ -579,6 +579,12 @@
   @media(max-width:380px){.m-head{padding-inline-end:20px;padding-top:66px}.sels{inset-inline-end:16px}.mi{gap:8px;padding-inline:16px}.menu-photo{width:48px;height:48px}.mi .item-end{gap:5px}.seg button{font-size:13px}}
   @container receipt (max-height:600px){.receipt-mode .consents{gap:6px}}
 
+  /* Offline banner: over the preview band at the top of the screen; the views move down
+     under it while it shows. The sync status chip hides meanwhile: one message, not two. */
+  .net-banner{position:absolute;inset:0 0 auto;z-index:61;min-height:28px;padding:6px 16px;background:var(--amber-bg);color:#5C4611;border-bottom:1px solid var(--amber-line);font-size:12.5px;line-height:1.4;text-align:center}
+  .net-banner[hidden]{display:none}
+  html.aal-offline .view{top:var(--net-h,44px)}
+  html.aal-offline #aal-sync-status{display:none}
   .b-title{font-size:23px;line-height:1.3}.b-sub{font-size:14px;margin-top:5px}.r-crest{font-size:12px;letter-spacing:.1em}.r-item{font-size:15px;line-height:1.45;padding:13px 0}.r-item .q{font-size:14px}.r-item .p{white-space:nowrap}.r-total .l{font-size:12px;letter-spacing:.04em}.r-total .a{font-size:28px}.r-ll{font-size:14px}.billpill{font-size:15px;min-height:48px}
 </style>
 </head>
@@ -589,6 +595,7 @@
   <p style="font-size:14px;margin:12px 0"><a href="index.html">Back to website</a> · <a id="staff-demo" href="dashboard.html" target="_blank" rel="noopener">Open staff demo</a></p>
 </div>
 <div class="phone"><div class="screen">
+  <div class="net-banner" id="net-banner" role="status" aria-live="polite" hidden></div>
   <!-- ================= 1. LANDING ================= -->
   <div class="view on" id="v-land">
     <div class="hero">
@@ -780,7 +787,7 @@
           <div class="rc-amt" id="rc-amt">$41.94</div>
           <div class="rc-rows">
             <div class="rc-r"><span id="method-label">Paid via</span><b id="rc-method">Whish Money</b></div>
-            <div class="rc-r"><span>Table</span><b>12</b></div>
+            <div class="rc-r"><span>Table</span><b id="rc-table">12</b></div>
           </div>
           <div class="rc-note" id="payment-status" role="status" aria-live="polite">Demo payment confirmed</div>
         </div>
@@ -1068,7 +1075,7 @@ var AalaynaTableQR = (function (global) {
   return api;
 })(window);
 </script>
-<script src="aalayna-sync.js?v=4"></script>
+<script src="aalayna-sync.js?v=5"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -1803,10 +1810,9 @@ function restoreReceipt(){
 }
 function refreshGuest(){
   if (Aalayna.sync && Aalayna.sync.enabled && !lastSettlementId) {
-    var pending;
-    try { pending=sessionStorage.getItem(receiptSessionKey()+':pending'); } catch(e) {}
-    var recovered=pending&&Aalayna.settlements().find(function(s){return s.requestId===pending;});
-    if(recovered){paymentRequestId=pending;paymentBusy=true;completeSettle(recovered,recovered.rail);}
+    var pending = readPending();
+    var recovered = pending && Aalayna.settlements().find(function(s){ return s.requestId === pending.requestId; });
+    if (recovered) { paymentRequestId = pending.requestId; paymentBusy = true; completeSettle(recovered, recovered.rail); }
   }
   paintSettlementResult();
   var before = MENU_V;
@@ -1836,11 +1842,13 @@ function paymentFields(rail){
 }
 /* a store rejection is shown to the guest and the bill is repainted; the next tap
    is a fresh request, never a retry of the rejected one */
-function paymentFailed(error){
+function paymentFailed(error, fields){
   if (!(Aalayna.sync && Aalayna.sync.enabled)) { try { Aalayna.failPayment(paymentRequestId, 'failed'); } catch(e) {} }
   if (error.queued) {
-    try { sessionStorage.setItem(receiptSessionKey()+':pending',paymentRequestId); } catch(e) {}
+    // kept in the sync outbox, sent when the connection returns (see "offline" below)
+    savePending(fields);
     paymentBusy = true;
+    if (fields) { go('v-done'); paintQueued(); return; }
     alert('Your request is waiting for a connection and will retry automatically. Please do not submit another payment.');
     return;
   }
@@ -1901,9 +1909,9 @@ function whishConfirm(){ providerConfirm('whish', 'ov-whish', 'wh-btn', 'Confirm
 function cardConfirm(){ providerConfirm('card', 'ov-card', 'card-btn', 'Processing…'); }
 var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
 async function finishSettle(rail){
-  var record;
-  try { record = Aalayna.settle(paymentFields(rail)); if (record && typeof record.then === "function") record = await record; }
-  catch(error) { paymentFailed(error); return; }
+  var record, fields = paymentFields(rail);
+  try { record = Aalayna.settle(fields); if (record && typeof record.then === "function") record = await record; }
+  catch(error) { paymentFailed(error, fields); return; }
   completeSettle(record, rail);
 }
 function completeSettle(record, rail){
@@ -1925,6 +1933,7 @@ function paintSettlementResult(){
   if (!record) return;
   var status = Aalayna.settlementStatus(record), confirmed = status === 'confirmed';
   $('rc-amt').textContent = usd(record.amount);
+  if ($('rc-table')) $('rc-table').textContent = String(record.table != null ? record.table : TABLE);
   $('rc-method').textContent = RAIL_NAMES[record.rail] + (record.rail === 'cash' && record.change > 0 ? ' · ' + usd(record.change) + ' change' : '');
   $('result-title').textContent = confirmed ? 'Shukran.' : status === 'pending' ? 'Cash requested.' : 'Request updated.';
   $('result-seal').textContent = confirmed ? '✓' : '…';
@@ -2112,7 +2121,11 @@ staggered = true;
 restoreReceipt();
 watchGuestChanges();
 function sharedReady(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();}
-function sharedFailed(){ $('payment-status').textContent='Unable to connect to this bill. Please speak with your server.'; }
+function sharedFailed(){
+  // opened without a connection: the bill this phone last saw stays on screen, with the banner
+  if (CHECK || readPending()) { paintNet(); return; }
+  $('payment-status').textContent='Unable to connect to this bill. Please speak with your server.';
+}
 if (Aalayna.sync && Aalayna.sync.enabled) {
   Aalayna.sync.ready.then(sharedReady).catch(sharedFailed);
 }
@@ -2125,6 +2138,77 @@ AalaynaTableQR.onAttach = function(error){
   if ($('v-bill').classList.contains('on')) logBillRequested();
 };
 AalaynaTableQR.start();
+/* ---------------- offline ----------------
+   The banner shows while the phone reports no connection, or once two reads of the
+   bill in a row have failed (Aalayna.sync.onState); a good read hides it. Its time is
+   the last good read of this bill, kept on the phone so it survives a reload without
+   a connection; without one (the demo, whose bill lives on this phone) it is the
+   moment the connection dropped. A cash request made offline waits in the sync
+   outbox (aalayna-sync.js): its receipt says it is saved on this phone, and turns
+   into the normal "Cash requested." once the outbox has sent it. */
+var NET = { lastReadAt: null, readFailures: 0, off: false, droppedAt: null };
+function two(n){ return (n < 10 ? '0' : '') + n; }
+function clock(at){ var d = new Date(at); return two(d.getHours()) + ':' + two(d.getMinutes()); }
+function paintNet(){
+  var off = navigator.onLine === false || NET.readFailures >= 2, b = $('net-banner');
+  if (off && !NET.off) NET.droppedAt = Date.now();
+  NET.off = off;
+  b.textContent = 'No connection. Your bill is as of ' + clock(NET.lastReadAt || NET.droppedAt || Date.now()) + '; we will send your payment when you are back online.';
+  b.hidden = !off;
+  document.documentElement.classList.toggle('aal-offline', off);
+  if (off) document.documentElement.style.setProperty('--net-h', b.offsetHeight + 'px');
+  paintQueued();
+}
+function pendingKey(){ return receiptSessionKey() + ':pending'; }
+function readPending(){
+  var raw = null;
+  try { raw = sessionStorage.getItem(pendingKey()); } catch(e) {}
+  if (!raw) return null;
+  try { var p = JSON.parse(raw); if (p && p.requestId) return p; } catch(e) {}
+  return { requestId: raw };   // an id alone, as earlier versions of this page kept it
+}
+function savePending(fields){
+  try { sessionStorage.setItem(pendingKey(), JSON.stringify({ requestId: paymentRequestId, amount: fields ? fields.amount : null, change: fields ? fields.change : 0 })); } catch(e) {}
+}
+/* the receipt of a cash request this phone holds; the sent record replaces it (refreshGuest) */
+function paintQueued(){
+  var p = readPending();
+  if (!p || lastSettlementId) return false;
+  var job = Aalayna.sync && Aalayna.sync.job ? Aalayna.sync.job('op:reserve:' + p.requestId) : 'pending';
+  if (job === 'blocked') {
+    // refused by the restaurant: never "saved" again; the guest may make a new request
+    try { sessionStorage.removeItem(pendingKey()); } catch(e) {}
+    go('v-pay');
+    paymentFailed(new Error('The restaurant did not accept this cash request. Please speak with your server.'));
+    return false;
+  }
+  var sent = job === null;
+  $('rc-amt').textContent = p.amount != null ? usd(p.amount) : '';
+  $('rc-method').textContent = 'Cash' + (p.change > 0 ? ' \u00b7 ' + usd(p.change) + ' change' : '');
+  $('method-label').textContent = 'Requested via';
+  $('result-seal').textContent = '\u2026';
+  $('result-title').textContent = sent ? 'Cash requested.' : 'Saved on this phone.';
+  $('payment-status').textContent = sent
+    ? 'Your server will collect the cash. You can close this screen; not marked paid until collection is confirmed.'
+    : 'Cash request saved on this phone. It reaches the restaurant as soon as you are back online.';
+  ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = 'none'; });
+  return true;
+}
+window.addEventListener('online', paintNet);
+window.addEventListener('offline', paintNet);
+window.addEventListener('resize', function(){ if (NET.off) paintNet(); });
+if (Aalayna.sync && Aalayna.sync.onState) Aalayna.sync.onState(function(s){ NET.lastReadAt = s.lastReadAt; NET.readFailures = s.readFailures; paintNet(); });
+else paintNet();
+// reloaded while a cash request still waits on this phone: its receipt, not the pay screen
+if (!lastSettlementId && readPending()) { paymentBusy = true; go('v-done'); refreshGuest(); paintQueued(); }
+</script>
+<script>
+/* Offline: sw.js keeps the guest app shell on the phone (README "Offline"). Its scope
+   is this page only; updateViaCache 'none' makes the browser always ask the server
+   for sw.js itself, so a new worker is never held back by the HTTP cache. */
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  navigator.serviceWorker.register('sw.js', { scope: 'guest.html', updateViaCache: 'none' }).catch(function(){});
+}
 </script>
 </body>
 </html>
