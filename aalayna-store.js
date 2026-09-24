@@ -573,16 +573,44 @@
       return JSON.stringify({ s: d.sections, i: d.items }) !== JSON.stringify({ s: l.sections, i: l.items });
     },
 
-    /* ---- the open check ---- */
-    check: function () {
-      var m = A.published();
-      return SEED_CHECK.map(function (l) {
+    /* Demo mode = no venue key in this browser: none stored by the sync layer and
+       no ?k= in the link. With a key the apps talk to a live venue, where the
+       sample bill must never appear and a guest never opens a check. */
+    demoMode: function () {
+      /* The sync layer holds this page's credential per venue and page role and
+         removes ?k= from the address once read, so when it is loaded it decides. */
+      if (A.sync) return !A.sync.enabled;
+      var key = '', k = '', access = '';
+      try { key = localStorage.getItem('aal.key') || ''; } catch (e) {}
+      try { access = localStorage.getItem('aal.access:' + A.venueId() + ':guest') || localStorage.getItem('aal.access:' + A.venueId() + ':owner') || ''; } catch (e) {}
+      try { k = new URLSearchParams(global.location.search).get('k') || ''; } catch (e) {}
+      return !String(key).trim() && !String(k).trim() && !String(access).trim();
+    },
+    /* The sample bill is allowed only in demo mode AND while the venue has never
+       had a staff-entered check. Checks the guest app opened from the sample keep
+       source 'prototype' and do not count, so a demo venue can close a bill and
+       start the next session. */
+    sampleAllowed: function () {
+      if (!A.demoMode()) return false;
+      var scope = A.venueId();
+      return !read('aal.checks', []).some(function (c) { return c.venueId === scope && c.source && c.source !== 'prototype'; });
+    },
+    /* ---- the open check ----
+       A table's bill is the open check a waiter (or, later, the POS) entered for
+       it: that check's lines, or none. Where the sample is not allowed, a leftover
+       sample check (source 'prototype') is not shown to a guest either. */
+    check: function (table) {
+      var m = A.published(), scope = A.venueId(), sample = A.sampleAllowed();
+      var open = table == null ? null : read('aal.checks', []).filter(function (c) { return c.venueId === scope && c.table === Number(table) && !c.closedAt; })[0];
+      if (open && !sample && (open.source || 'prototype') === 'prototype') open = null;
+      var lines = open ? (open.lines || []) : (sample ? SEED_CHECK : []);
+      return lines.map(function (l) {
         var item = m.items.filter(function (x) { return x.id === l.id; })[0];
-        return { id: l.id, q: l.q, p: l.p, name: item ? item.name : '(removed)' };
+        return { id: l.id, q: l.q, p: l.p, name: item ? item.name : (l.name || '(removed)') };
       });
     },
-    checkTotal: function () {
-      return A.check().reduce(function (a, b) { return a + b.p; }, 0);
+    checkTotal: function (table) {
+      return A.check(table).reduce(function (a, b) { return a + cents(b.p); }, 0) / 100;
     },
 
     /* ---- settlement ----

@@ -189,3 +189,20 @@ test('dish interest counts opens per dish and per guest, attention, and whether 
   assert.equal(i02.opens,1); assert.equal(i02.onBills,1); assert.equal(i02.units,2); assert.equal(i02.billRate,null);
   assert.ok(rows.some(r=>r.opens===0));
 });
+
+test('a bill edited by staff counts once: dish interest and never-ordered use the latest revision', ()=>{
+  const env=setup(), a=env.a;
+  a.logEvent('item_view',{itemId:'i01'}); a.logEvent('item_view',{itemId:'i02'}); a.logEvent('item_view',{itemId:'i05'});
+  const c=a.openServiceCheck({table:5,lines:[{id:'i02',q:1,p:7},{id:'i05',q:1,p:6}],source:'staff'});
+  env.advance(MIN); a.updateServiceCheck(c.id,[{id:'i02',q:2,p:14}]);                      // i05 taken off before payment
+  env.advance(MIN); a.updateServiceCheck(c.id,[{id:'i02',q:2,p:14},{id:'i01',q:1,p:5.5}]);  // i01 added
+  assert.equal(a.events().filter(e=>e.eventType==='order_placed').length,3);             // the log keeps every revision
+  const rows=a.dishInterest('7'), row=id=>rows.find(r=>r.itemId===id);
+  assert.equal(row('i02').onBills,1); assert.equal(row('i02').units,2);
+  assert.equal(row('i01').onBills,1); assert.equal(row('i05').onBills,0);
+  const m=a.eventMetrics('7');
+  assert.equal(JSON.stringify(m.neverOrdered.map(x=>x.itemId)),JSON.stringify(['i05']));
+  // two different bills are still two bills
+  a.openServiceCheck({table:6,lines:[{id:'i02',q:1,p:7}],source:'staff'});
+  assert.equal(a.dishInterest('7').find(r=>r.itemId==='i02').onBills,2);
+});

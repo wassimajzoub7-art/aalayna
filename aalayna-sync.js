@@ -6,6 +6,7 @@
   var COLLECTIONS=['aal.checks','aal.settle','aal.events','aal.guests','aal.campaigns','aal.edit_log','aal.webhook_log','aal.admin_notifications','aal.health_reports','aal.identity_merges'];
   var DOCS=['aal.draft','aal.live','aal.rate','aal.rate_meta','aal.floor','aal.tips'];
   var CLIENT_EVENTS=['qr_scan','item_view','bill_requested','ui_action','review_submitted'];
+  var BILL_OPS=['open_check','update_check'];
   var OWNER_ROWS=['aal.guests','aal.campaigns','aal.edit_log','aal.admin_notifications','aal.health_reports','aal.identity_merges'];
   function rowId(c,r){return r&&typeof r==='object'?(r.id!=null?String(r.id):r.eventId!=null?String(r.eventId):c==='aal.health_reports'&&r.week?String(r.week):null):null;}
   function inVenue(row,rid){return !!row && (!row.venueId || row.venueId===rid) && (!row.restaurantId || row.restaurantId===rid) && (row.venueId===rid || row.restaurantId===rid);}
@@ -40,7 +41,7 @@
   function call(path,body,method){return fetch(base+path,{method:method||'POST',headers:headers,body:body==null?undefined:JSON.stringify(body)}).then(function(r){return r.text().then(function(t){if(!r.ok){var e=new Error('The server could not save this change ('+r.status+').');e.status=r.status;try{e.message=JSON.parse(t).message||e.message;}catch(ignore){}throw e;}return t?JSON.parse(t):null;});});}
   function rpc(op,body,token){return call('rpc/aal_mutate',{p_rid:rid,p_op:op,p_body:body,p_token:token||''});}
   function applyRow(c,row){if(!row||!rowId(c,row)||!inVenue(row,rid))return;var rows=A.util.read(c,[]).filter(function(r){return inVenue(r,rid);});A.util.rawWrite(c,mergeRows(c,rows,[{id:rowId(c,row),body:row}]));}
-  function applyResult(job,result){if(job.kind!=='op')return;if(['reserve','confirm_cash','cancel','refund'].indexOf(job.op)>=0)applyRow('aal.settle',result);if(['open_check','close_check'].indexOf(job.op)>=0)applyRow('aal.checks',result);}
+  function applyResult(job,result){if(job.kind!=='op')return;if(['reserve','confirm_cash','cancel','refund'].indexOf(job.op)>=0)applyRow('aal.settle',result);if(['open_check','update_check','close_check'].indexOf(job.op)>=0)applyRow('aal.checks',result);}
   function pull(){
     return call('rpc/aal_snapshot',{p_rid:rid}).then(function(res){
       if(!res||res.version!==2)throw new Error('The shared database needs the September 15 migration.');
@@ -82,7 +83,9 @@
         }catch(e){
           var permanent=e.status>=400&&e.status<500&&e.status!==408&&e.status!==429;
           e.queued=!permanent;
-          if(permanent&&queue[id])queue[id].blocked=e.message;
+          // A refused bill save was shown to the staff member who made it and their draft reloads;
+          // it can never succeed on retry (the bill changed), so it does not stay blocked in the outbox.
+          if(permanent&&queue[id]){if(job.kind==='op'&&BILL_OPS.indexOf(job.op)>=0&&job.waiter&&waiters[job.waiter])delete queue[id];else queue[id].blocked=e.message;}
           fail(e);persist();
           if(job.waiter&&waiters[job.waiter]){waiters[job.waiter].reject(e);delete waiters[job.waiter];}
           if(!permanent)break;
@@ -136,9 +139,23 @@
   A.failPayment=function(requestId){var p=A.settlements().find(function(s){return s.requestId===requestId;});return p?mutate('cancel',{id:p.id},payerToken(p.id)):Promise.resolve();};
   A.optIn=function(input){var c=A.normaliseContact(input.contact);return mutate('receipt',Object.assign({},input,{id:input.settlementId,requestId:A.util.uid(),contact:c.contact,channel:c.channel}),payerToken(input.settlementId));};
   A.closeServiceCheck=function(id){return mutate('close_check',{checkId:id});};
+  /* Bills. open_check takes either a POS total or itemised lines {id,q,p,name}
+     (p the line total in dollars); with lines the server folds them by id and
+     computes totalCents itself. update_check changes an open bill's lines under the
+     same rules as the demo store (supabase/hardening-2026-09-24.sql). Both are
+     checked here first for an immediate answer; the server decides. */
+  function billLines(lines){if(!A.checkLines)throw new Error('Bill entry is not available on this page.');return A.checkLines(lines);}
   A.openServiceCheck=function(input){
     if(state.role!=='owner'){var c=A.sync.boundCheck();if(!c)throw new Error('This bill is not available. Ask your server for its current link.');return c;}
-    var rate=A.rate();return mutate('open_check',{id:A.util.uid(),table:Number(input.table),totalCents:A.util.cents(input.total),lines:input.lines||[],currency:'USD',fxRateUsed:rate,amountUsd:Number(input.total)});
+    var lines=input.lines&&input.lines.length?billLines(input.lines):[];
+    var total=lines.length?lines.reduce(function(n,l){return n+A.util.cents(l.p);},0):A.util.cents(input.total);
+    if(!Number.isSafeInteger(total)||total<=0||!Number.isInteger(Number(input.table))||Number(input.table)<1)throw new Error('A check needs a table and a positive total.');
+    var rate=A.rate();return mutate('open_check',{id:A.util.uid(),table:Number(input.table),totalCents:total,lines:lines,currency:'USD',fxRateUsed:rate,amountUsd:total/100,sessionId:A.session(),deviceId:A.device()});
+  };
+  A.updateServiceCheck=function(id,lines){
+    if(state.role!=='owner')throw new Error('Only staff may change a bill.');
+    var plan=A.planCheckUpdate(id,lines);
+    return mutate('update_check',{checkId:id,requestId:A.util.uid(),baseRevision:plan.check.revision||1,lines:plan.lines,sessionId:A.session(),deviceId:A.device()});
   };
   A.sync.issueCheckKey=function(id){return mutate('issue_key',{checkId:id});};
   A.reset=function(){throw new Error('Shared restaurant records cannot be reset from a demo control.');};

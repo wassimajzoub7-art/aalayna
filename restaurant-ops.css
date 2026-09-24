@@ -84,3 +84,32 @@ textarea.in{resize:vertical;min-height:132px}.in::placeholder{color:#69776E;opac
 @media(max-width:760px){.journey-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.journey-metric .v{font-size:22px}.health-row{flex-wrap:wrap}.health-label{flex-basis:100%}}
 
 .dish-table{width:100%;border-collapse:collapse;font-size:14px}.dish-table th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);text-align:left;padding:6px 0;border-bottom:1px solid var(--line)}.dish-table td{padding:8px 0;border-bottom:1px solid var(--line-soft)}.dish-table .num{text-align:right;font-variant-numeric:tabular-nums;padding-left:12px}.dish-table th.num{text-align:right}
+
+/* Bills: waiter bill entry on the Live floor. Hairline rows, same controls as the rest of the owner view. */
+.bill-entry{margin-top:6px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.bill-entry-top{display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);gap:0 14px;align-items:end}
+.bill-entry-top select.in{appearance:auto}
+.bill-results{margin-top:8px}
+.bill-results .ops-empty{padding:8px 0 4px;font-size:14px}
+.bill-result{display:flex;width:100%;justify-content:space-between;gap:12px;align-items:center;min-height:44px;padding:10px 12px;font:inherit;font-size:15px;text-align:left;color:var(--ink);background:var(--surface);border:0;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.bill-result:first-child{border-top:1px solid var(--line-soft)}
+.bill-result:hover{background:var(--green-bg)}
+.bill-result:focus-visible{outline:3px solid var(--green);outline-offset:-3px}
+.bill-result-price{color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums}
+#bill-state{margin-top:14px}
+.bill-lines{margin-top:8px}
+.bill-line{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-top:1px solid var(--line)}
+.bill-line-info{min-width:0}.bill-line-info strong{display:block;font-weight:600;overflow-wrap:anywhere}.bill-line-info .cs{display:block;margin-top:2px}
+.bill-line-end{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.bill-step{display:flex;align-items:center;gap:6px}
+.bill-step .icon-btn{font-size:20px;line-height:1}
+.bill-qty{min-width:28px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.bill-line-total{min-width:76px;text-align:right;font-variant-numeric:tabular-nums}
+.bill-remove{color:var(--red)}
+.bill-remove,.bill-line-end .status-badge{min-width:88px;justify-content:center}
+.bill-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+.bill-foot .bill-balance{margin:0}.bill-foot .ops-actions{margin-top:0}
+.bill-open-title{margin-top:22px}
+.bill-row-actions{flex-direction:column;align-items:stretch;margin-top:0}
+#check-balances .ops-row>.bill-row-actions{width:auto;flex-shrink:0}
+@media(max-width:760px){.bill-entry-top{grid-template-columns:1fr}.bill-line{flex-direction:column;align-items:stretch;gap:8px}.bill-line-end{justify-content:space-between;flex-wrap:wrap}.bill-foot .ops-actions{width:100%}.bill-foot .ops-actions .btn{flex:1}#check-balances .ops-row>.bill-row-actions{flex-direction:row;width:100%}}

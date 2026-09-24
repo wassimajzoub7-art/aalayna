@@ -22,22 +22,84 @@
     return { contact:s, channel:'whatsapp' };
   };
   A.serviceChecks = function () { return read('aal.checks').filter(same); };
+  A.openCheckFor = function (table) {
+    return A.serviceChecks().find(function(c){ return c.table === Number(table) && !c.closedAt; }) || null;
+  };
+  /* Check lines are {id, q, p, name}: q whole units, p the LINE total in dollars.
+     Repeated item ids fold into one line, because payments claim units by id. */
+  function checkLines(lines) {
+    if (!Array.isArray(lines)) throw new Error('A bill needs a list of items.');
+    var out = [], at = {};
+    lines.forEach(function(l){
+      var id = l && l.id != null ? String(l.id) : '', q = Number(l && l.q), p = cents(l && l.p);
+      if (!id || !Number.isInteger(q) || q < 1 || q > 999 || !Number.isSafeInteger(p) || p < 0) throw new Error('Each bill item needs a dish, a whole quantity and a price.');
+      if (at[id] == null) { at[id] = out.length; out.push({ id:id, q:0, pc:0, name:String(l.name || '').slice(0, 120) }); }
+      out[at[id]].q += q; out[at[id]].pc += p;
+    });
+    return out.map(function(l){ return { id:l.id, q:l.q, p:l.pc / 100, name:l.name }; });
+  }
+  function linesTotal(lines) { return lines.reduce(function(n, l){ return n + cents(l.p); }, 0); }
+  /* In this prototype the check IS the order (bills come from the waiter/POS,
+     Aalayna takes no orders). Every open or change appends an event carrying the
+     full line list; the latest revision per orderId is the current bill. */
+  function orderEvent(c, change) {
+    A.logEvent('order_placed', { orderId:c.id, revision:c.revision || 1, change:change, source:c.source,
+                                 items:c.lines.map(function(l){ return { itemId:l.id, qty:l.q, unitPrice:Math.round(l.p / l.q * 100) / 100, currency:'USD' }; }),
+                                 total:c.totalCents / 100, currency:'USD', fxRateUsed:c.fxRateUsed, amountUsd:c.totalCents / 100 },
+               { sessionId:change === 'opened' ? c.sessionId : A.session(), deviceId:change === 'opened' ? c.deviceId : A.device(), tableId:c.table });
+  }
   A.openServiceCheck = function (input) {
-    var total = cents(input.total);
+    var lines = input.lines == null ? [] : checkLines(input.lines);
+    var total = input.total == null ? linesTotal(lines) : cents(input.total);
     if (!Number.isSafeInteger(total) || total <= 0 || !Number.isInteger(Number(input.table)) || Number(input.table) < 1) throw new Error('A check needs a table and a positive total.');
-    var existing = A.serviceChecks().find(function(c){ return c.table === Number(input.table) && !c.closedAt; });
+    var existing = A.openCheckFor(input.table);
     if (existing) return existing;
     var rate = A.rate();
-    var c = { id:uid('check-'), venueId:A.venueId(), table:Number(input.table), totalCents:total, openedAt:now(), lines:input.lines || [], source:'prototype',
+    var c = { id:uid('check-'), venueId:A.venueId(), table:Number(input.table), totalCents:total, openedAt:now(), lines:lines, source:input.source === 'staff' ? 'staff' : 'prototype', revision:1,
               currency:'USD', fxRateUsed:rate, amountUsd:total / 100, sessionId:input.sessionId || A.session(), deviceId:input.deviceId || A.device() };
     var all = read('aal.checks'); all.push(c); save('aal.checks', all);
-    /* In this prototype the check IS the order (bills come from the waiter/POS,
-       Aalayna takes no orders). The event carries the lines the way a POS would. */
-    A.logEvent('order_placed', { orderId:c.id, items:c.lines.map(function(l){ return { itemId:l.id, qty:l.q, unitPrice:Math.round(l.p / l.q * 100) / 100, currency:'USD' }; }),
-                                 total:total / 100, currency:'USD', fxRateUsed:rate, amountUsd:total / 100 },
-               { sessionId:c.sessionId, deviceId:c.deviceId, tableId:c.table });
+    orderEvent(c, 'opened');
     return c;
   };
+  /* A waiter changes an open bill. Before any payment the lines may change
+     freely. Once a payment exists (pending cash, a digital payment in progress, or
+     confirmed), items can only be added: no line may disappear, shrink or change
+     price, so a paid item never vanishes from the bill it was paid against.
+     planCheckUpdate applies these rules without writing; the shared mode uses it
+     to refuse early, and the server (aal_mutate update_check) applies the same
+     rules again under its lock. */
+  A.planCheckUpdate = function (id, lines) {
+    var b = A.checkBalance(id), c = b.check;
+    if (c.closedAt) throw new Error('This bill is closed. Open a new bill for the table instead.');
+    var next = checkLines(lines), byId = {}, old = c.lines || [];
+    next.forEach(function(l){ byId[l.id] = l; });
+    function label(l) { var item = A.published().items.find(function(x){ return x.id === l.id; }); return item ? item.name : (l.name || 'This item'); }
+    old.forEach(function(o){
+      var claimed = b.items[o.id] || 0, n = byId[o.id];
+      if (claimed && (!n || n.q < claimed)) throw new Error(label(o) + ' is covered by a payment and cannot be removed.');
+    });
+    if (b.confirmedCents || b.pendingCents) {
+      old.forEach(function(o){
+        var n = byId[o.id];
+        if (!n || n.q < o.q) throw new Error('A payment is recorded on this bill. Items can be added, not removed or reduced.');
+        if (cents(n.p) * o.q !== cents(o.p) * n.q) throw new Error('A payment is recorded on this bill. Prices of existing items cannot change.');
+      });
+    }
+    var total = linesTotal(next);
+    if (!Number.isSafeInteger(total) || total < b.confirmedCents + b.pendingCents) throw new Error('The new total is below what has already been paid.');
+    return { check:c, lines:next, totalCents:total };
+  };
+  A.updateServiceCheck = function (id, lines) {
+    var plan = A.planCheckUpdate(id, lines);
+    var all = read('aal.checks'), row = all.find(function(x){ return x.id === id && same(x); });
+    row.lines = plan.lines; row.totalCents = plan.totalCents; row.amountUsd = plan.totalCents / 100;
+    row.revision = (row.revision || 1) + 1; row.updatedAt = now(); row.source = 'staff';
+    save('aal.checks', all);
+    orderEvent(row, 'updated');
+    return row;
+  };
+  /* shared mode validates and folds lines before sending them to the server */
+  A.checkLines = checkLines;
   A.checkBalance = function (id, excludePaymentId) {
     var c = A.serviceChecks().find(function(x){ return x.id === id; });
     if (!c) throw new Error('This bill is not available for this restaurant.');

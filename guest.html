@@ -332,6 +332,9 @@
     border-bottom:1px solid var(--line-soft);transition:background .12s}
   .pm:last-child{border-bottom:none}
   .pm.on{background:var(--green-bg)}
+  .pm[hidden]{display:none}
+  .rails-note{padding:10px 13px;font-size:12px;line-height:1.4;color:var(--sub)}
+  .rails-note[hidden]{display:none}
   .mark{width:36px;height:23px;border-radius:5px;display:flex;align-items:center;justify-content:center;
     font-size:8px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.02em}
   .pm .pn{font-size:12.5px;font-weight:600}
@@ -599,7 +602,7 @@
     </div>
     <div class="land-body">
       <div class="greet">Ahla w sahla</div>
-      <div class="tbl" id="guest-table-label"><span class="dot"></span>Table 12 &middot; sample bill</div>
+      <div class="tbl" id="land-tbl"><span class="dot"></span>Table 12 &middot; sample bill</div>
       <div class="note">
         Explore the menu. When you’re ready, split the bill your way and pay from your table.
       </div>
@@ -640,7 +643,7 @@
   <div class="view" id="v-bill">
     <button class="back" onclick="go('v-menu')">&#8592;</button>
     <div class="scroll b-body">
-      <div class="b-title" id="bill-table-label">Table 12</div>
+      <div class="b-title" id="bill-title">Table 12</div>
       <div class="b-sub">4 guests &middot; opened 8:42 pm</div>
       <div class="receipt">
         <div class="r-crest" id="v-name-receipt">HALLAB 1881</div>
@@ -704,7 +707,7 @@
     <button class="back" onclick="go('v-settle')">&#8592;</button>
     <div class="scroll" style="padding:88px 20px 130px">
       <div class="amt">
-        <div class="who" id="pay-table-label">Total to pay &middot; Table 12</div>
+        <div class="who" id="pay-who">Total to pay &middot; Table 12</div>
         <div class="display big" id="bigamt">$38.13</div>
         <div class="ll" id="bigll">&asymp; LL 3,408,522</div>
         <div class="pay-breakdown"><span>Bill share<b id="pay-share">$38.13</b></span><span>Tip<b id="pay-tip">$3.81</b></span></div>
@@ -727,21 +730,22 @@
         </div>
       </div>
       <div class="pays">
-        <div class="pm on" role="button" tabindex="0" aria-pressed="true" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'whish')">
+        <div id="pm-whish" class="pm on" role="button" tabindex="0" aria-pressed="true" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'whish')">
           <div class="mark" style="background:#E4002B">whish</div>
           <div><div class="pn">Whish Money</div><div class="pd">Opens with the amount filled in</div></div>
           <div class="radio"></div>
         </div>
-        <div class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'card')">
+        <div id="pm-card" class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'card')">
           <div class="mark" style="background:#1A1F71">VISA</div>
           <div><div class="pn">Card</div><div class="pd">Visa, Mastercard, Amex</div></div>
           <div class="radio"></div>
         </div>
-        <div class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'cash')">
+        <div id="pm-cash" class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'cash')">
           <div class="mark" style="background:#3F8F6B">CASH</div>
           <div><div class="pn">Paying cash</div><div class="pd">Staff confirm after collection</div></div>
           <div class="radio"></div>
         </div>
+        <div class="rails-note" id="rails-note" hidden>Card and Whish arrive with the payment provider.</div>
       </div>
       <div class="chg" id="chg">
         <div class="chg-q">What are you handing over?</div>
@@ -917,10 +921,10 @@
   cash option. Public reviews and private feedback are offered equally, for every rating. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=20"></script>
-<script src="restaurant-growth.js?v=4"></script>
+<script src="aalayna-store.js?v=22"></script>
+<script src="restaurant-growth.js?v=6"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=2"></script>
+<script src="aalayna-sync.js?v=3"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -952,15 +956,87 @@ function loadMenu(){
             available:x.available !== false, status:x.status || 'incomplete',
             opts:x.opts||[], tr:x.tr};
   });
-  if (Aalayna.sync && Aalayna.sync.enabled) {
-    CHECK = Aalayna.sync.boundCheck();
-    if (CHECK) TABLE = CHECK.table;
-    BILL = CHECK ? (CHECK.lines || []).map(function(l){var item=m.items.find(function(x){return x.id===l.id;});return {id:l.id,n:item?item.name:(l.name||'Item'),q:l.q,p:l.p};}) : [];
-    TOTAL = CHECK ? CHECK.totalCents / 100 : 0;
-  } else {
-    BILL = Aalayna.check().map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
-    TOTAL = Aalayna.checkTotal();
+  loadBill();
+}
+/* The table's bill is the open check the waiter entered for TABLE (Aalayna.check).
+   A bill that closed while this guest was on it stays on screen, fully covered,
+   until a new one opens. The first loadMenu() runs before boot sets TABLE, so
+   boot loads the bill itself through openTableBill(). */
+/* How TABLE is set.
+   Demo mode (no venue key): TABLE is this page's table (12 in the prototype; to
+   try another table, set TABLE in the console, then openTableBill() and
+   refreshGuest()). Its bill is the open check staff entered for that table, or,
+   while the venue has no staff bills, the sample.
+   Shared mode (a chk_ bill link from the dashboard): the key names exactly one
+   check. aal_snapshot delivers that check into this device's store and TABLE is
+   taken from the check, never from the page or the guest. A static per-table QR
+   session is later work; until then each party gets the bill link. */
+function sharedCheck(){
+  if (!(Aalayna.sync && Aalayna.sync.enabled)) return null;
+  var bound = Aalayna.sync.boundCheck();
+  if (bound) TABLE = bound.table;
+  return bound;
+}
+function loadBill(){
+  var shared = !!(Aalayna.sync && Aalayna.sync.enabled);
+  if (shared){
+    // the bound check, open or closed; no bound check (not loaded yet, or not a bill link) means no bill
+    CHECK = sharedCheck();
+    if (!CHECK) { BILL = []; TOTAL = 0; if (picked) picked = {}; paintTableLabels(); return; }
   }
+  if (TABLE == null) return;
+  // where the sample is not allowed (a venue key, or staff bills exist), a leftover sample check is not this table's bill
+  var noSample = !Aalayna.sampleAllowed();
+  function usable(c){ return c && !(noSample && (c.source || 'prototype') === 'prototype') ? c : null; }
+  var open = shared ? null : usable(Aalayna.openCheckFor(TABLE));
+  if (open) CHECK = open;
+  else if (CHECK && !shared) CHECK = usable(Aalayna.serviceChecks().filter(function(c){ return c.id === CHECK.id && c.table === Number(TABLE); })[0]);
+  var items = Aalayna.published().items;
+  // a guest only ever sees the lines of a check that exists: no check, no bill (and nothing payable)
+  var lines = !CHECK ? [] : CHECK.closedAt ? (CHECK.lines || []).map(function(l){
+    var item = items.filter(function(x){ return x.id === l.id; })[0];
+    return {id:l.id, q:l.q, p:l.p, name:item ? item.name : (l.name || '(removed)')};
+  }) : Aalayna.check(TABLE);
+  var before = BILL, held = {};
+  if (picked) before.forEach(function(b, i){ if (picked[i]) held[b.id] = picked[i]; });
+  BILL = lines.map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
+  TOTAL = BILL.reduce(function(a, b){ return a + Math.round(b.p * 100); }, 0) / 100;
+  // a bill staff opened from a POS total carries no items: its total is the bill
+  if (CHECK && !BILL.length) TOTAL = CHECK.totalCents / 100;
+  // a waiter edit can reorder lines: keep each guest's picks on the same dish
+  if (picked){ picked = {}; BILL.forEach(function(b, i){ if (held[b.id]) picked[i] = Math.min(held[b.id], b.q); }); }
+  paintTableLabels();
+}
+/* Table labels follow TABLE. "Sample bill" shows only while the bill is the demo
+   sample; a staff-entered bill shows the plain table number, in every language. */
+var TABLE_WORD = {en:'Table', fr:'Table', ar:'\u0637\u0627\u0648\u0644\u0629'};
+var SAMPLE_WORD = {en:'sample bill', fr:"addition d'exemple", ar:'\u0641\u0627\u062a\u0648\u0631\u0629 \u062a\u062c\u0631\u064a\u0628\u064a\u0629'};
+function tableLabel(){
+  var n = String(TABLE);
+  if (LANG === 'ar') n = n.replace(/[0-9]/g, function(d){ return String.fromCharCode(0x0660 + Number(d)); });
+  return TABLE_WORD[LANG] + ' ' + n;
+}
+function paintTableLabels(){
+  if (TABLE == null || !document.getElementById('land-tbl')) return;
+  var v = Aalayna.venue(), label = tableLabel();
+  var sample = !!CHECK && CHECK.source !== 'staff' && Aalayna.sampleAllowed();
+  var place = v.heritage && LANG === 'ar' ? '\u0642\u0635\u0631 \u0627\u0644\u062d\u0644\u0648' : (v.place || v.name);
+  $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + SAMPLE_WORD[LANG] : ''));
+  $('m-sub').textContent = label + ' \u00b7 ' + place;
+  $('bill-title').textContent = label;
+  $('pay-who').textContent = 'Total to pay \u00b7 ' + label;
+}
+/* open the table's bill at a scan or a restart: the waiter's check, or, in demo
+   mode only, the sample. With a venue key a guest never opens a check; only staff do. */
+function openTableBill(){
+  loadBill();
+  if (Aalayna.sync && Aalayna.sync.enabled) return;   // shared mode: the bill link decides the check
+  if (!CHECK || CHECK.closedAt){
+    var lines = Aalayna.demoMode() ? Aalayna.check(TABLE) : [];
+    if (lines.length) CHECK = Aalayna.openServiceCheck({table:TABLE, lines:lines, sessionId:Aalayna.session()});
+    else CHECK = null;
+  }
+  loadBill();
 }
 loadMenu();
 
@@ -1004,7 +1080,7 @@ var T = {
   en:{filters:['Vegetarian','No nuts','No dairy','Under 400 kcal','High protein'],
       cats:['Breakfast','Mezze & Grill','Knefeh & Sweets','Drinks'],
       more:'For more details', of:'of', work:'dishes work for you', works:'dish works for you',
-      clear:'Clear', whatsin:"What's in it", table:'Table 12', sub:'Table 12 · Kasr El Helou',
+      clear:'Clear', whatsin:"What's in it",
       rMeat:'has meat', rNuts:'contains nuts', rDairy:'contains dairy',
       rSwap:'works with', rUnk:'ingredients not confirmed, ask staff', soldOut:'Sold out',
       disc:'Always confirm allergies with staff.',
@@ -1014,7 +1090,7 @@ var T = {
   fr:{filters:['Végétarien','Sans noix','Sans lactose','Moins de 400 kcal','Riche en protéines'],
       cats:['Petit-déjeuner','Mezzé & grillades','Knefeh & douceurs','Boissons'],
       more:'Plus de détails', of:'sur', work:'plats vous conviennent', works:'plat vous convient',
-      clear:'Effacer', whatsin:'Composition', table:'Table 12', sub:'Table 12 · Kasr El Helou',
+      clear:'Effacer', whatsin:'Composition',
       rMeat:'contient de la viande', rNuts:'contient des noix', rDairy:'contient du lactose',
       rSwap:'possible avec', rUnk:'ingrédients non confirmés, demandez au personnel', soldOut:'Épuisé',
       disc:'Confirmez toujours vos allergies auprès du personnel.',
@@ -1024,7 +1100,7 @@ var T = {
   ar:{filters:['نباتي','بدون مكسرات','بدون ألبان','أقل من ٤٠٠ سعرة','غني بالبروتين'],
       cats:['فطور','مازة ومشاوي','كنافة وحلويات','مشروبات'],
       more:'تفاصيل أكثر', of:'من', work:'أطباق تناسبك', works:'طبق يناسبك',
-      clear:'مسح', whatsin:'المكوّنات', table:'طاولة ١٢', sub:'طاولة ١٢ · قصر الحلو',
+      clear:'مسح', whatsin:'المكوّنات',
       rMeat:'يحتوي على لحم', rNuts:'يحتوي على مكسرات', rDairy:'يحتوي على ألبان',
       rSwap:'متاح مع', rUnk:'المكوّنات غير مؤكدة، اسأل الموظفين', soldOut:'نفد',
       disc:'تأكّد دائماً من الحساسية مع الموظفين.',
@@ -1055,7 +1131,7 @@ function renderMenu(){
   m.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
   $('langsel').value = LANG;
   $('ccysel').value = CCY;
-  $('m-sub').textContent = t('sub').replace(/12/g,String(TABLE||12));
+  paintTableLabels();
   $('pill-tot').textContent = price(TOTAL);
   $('land-tot').textContent = price(TOTAL);
   var f = t('filters');
@@ -1360,6 +1436,7 @@ function calcItem(){
 /* ---------------- bill ---------------- */
 function buildBill(){
   var box = $('r-items'); box.innerHTML = '';
+  if (!BILL.length) box.innerHTML = '<div class="r-item"><div>' + (CHECK && TOTAL > 0 ? 'Your server entered this bill as a total, without items.' : 'Your bill appears here once your server enters it.') + '</div></div>';
   BILL.forEach(function(b){
     var d = document.createElement('div');
     var paid = paidUnits(b), full = paid >= b.q;
@@ -1494,6 +1571,22 @@ function pick(el, k){
   $('chg').classList.toggle('on', k === 'cash');
   paintPay();
 }
+/* Rails by mode. Demo mode simulates Whish and card end to end. With a venue key
+   only cash can complete: a digital payment needs a verified provider callback
+   (aal_mutate confirm_digital), which no guest device can supply, so card and
+   Whish are not offered until the payment provider is connected. */
+function applyRails(){
+  var cashOnly = !Aalayna.demoMode();
+  ['whish','card'].forEach(function(r){ $('pm-' + r).hidden = cashOnly; });
+  $('rails-note').hidden = !cashOnly;
+  if (cashOnly && kind !== 'cash'){
+    kind = 'cash';
+    document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on'); p.setAttribute('aria-pressed','false'); });
+    $('pm-cash').classList.add('on'); $('pm-cash').setAttribute('aria-pressed','true');
+    $('cashnote').style.display = 'block';
+    $('chg').classList.add('on');
+  }
+}
 function setNote(el, n){
   ui('note', n === 0 ? 'exact' : String(n));
   note = n;
@@ -1617,6 +1710,7 @@ function paymentFailed(error){
 async function settle(){
   if (!CHECK) { alert("Ask your server to open this bill first."); return; }
   if (paymentBusy) return;
+  applyRails();   // with a venue key only cash is payable
   paintPay();
   var t = tipAmt(), tot = share + t;
   if (kind === 'cash'){
@@ -1791,7 +1885,7 @@ function restart(){
   Aalayna.newSession();            // start over = a new scan, a new session
   billRequested = false;
   paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null; paymentRequestId = newRequestId();
-  CHECK = Aalayna.sync && Aalayna.sync.enabled ? Aalayna.sync.boundCheck() : Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
+  openTableBill();
   logScan();
   $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
@@ -1808,6 +1902,7 @@ function restart(){
   clearF();
   $('chg').classList.remove('on');
   $('cashnote').style.display = 'none';
+  applyRails();
   document.querySelectorAll('#dstars .star').forEach(function(st){ st.classList.remove('on'); st.setAttribute('aria-pressed','false'); });
   $('mail-in').value = ''; $('mail-in').disabled = false;
   $('consents').classList.remove('done'); $('c-mkt').checked = false;
@@ -1842,7 +1937,7 @@ function logBillRequested(){
   try { Aalayna.logEvent('bill_requested', {}, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
 }
 logScan();
-CHECK = Aalayna.sync && Aalayna.sync.enabled ? Aalayna.sync.boundCheck() : Aalayna.openServiceCheck({table:TABLE,total:TOTAL,lines:Aalayna.check(),sessionId:Aalayna.session()});
+openTableBill();
 function esc(x){ return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function paintServer(){
   SERVER = Aalayna.serverFor(TABLE);
@@ -1863,12 +1958,9 @@ function paintVenue(){
   set('v-est2', v.heritage ? 'Est. 1881 · Tripoli' : v.name);
   set('v-review-sub', v.heritage ? '144 years, one review at a time' : 'One review at a time');
   document.querySelectorAll('.v-short').forEach(function(el){ el.textContent = short; });
-  var ms = document.getElementById('m-sub');
-  if (ms && LANG === 'en') ms.textContent = 'Table '+TABLE+' · ' + (v.place || v.name);
-  set('guest-table-label','Table '+TABLE+(Aalayna.sync && Aalayna.sync.enabled?' · shared bill':' · sample bill'));
-  set('bill-table-label','Table '+TABLE);set('pay-table-label','Total to pay · Table '+TABLE);
+  paintTableLabels();
 }
-buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue();
+buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue(); applyRails();
 $('staff-demo').href = 'dashboard.html' + window.location.search;
 staggered = true;
 restoreReceipt();

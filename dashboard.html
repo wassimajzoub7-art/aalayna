@@ -7,11 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<script src="aalayna-store.js?v=20"></script>
-<script src="restaurant-growth.js?v=4"></script>
-<script src="owner-metrics.js?v=6"></script>
+<script src="aalayna-store.js?v=22"></script>
+<script src="restaurant-growth.js?v=6"></script>
+<script src="owner-metrics.js?v=7"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=2"></script>
+<script src="aalayna-sync.js?v=3"></script>
 
 <style>
   :root{
@@ -229,7 +229,7 @@
     .btn:active{transform:none}
   }
 </style>
-<link rel="stylesheet" href="restaurant-ops.css?v=4">
+<link rel="stylesheet" href="restaurant-ops.css?v=6">
 </head>
 <body>
 
@@ -273,7 +273,18 @@
       <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Collected in period · incl. tips</span><strong id="live-paid">$0.00</strong></div></div>
       <div class="card attention-card"><div class="ops-heading"><div><h3>Needs attention</h3><p class="cs">Confirm cash only after it reaches your hands.</p></div><span class="status-badge pending" id="cash-count">0 waiting</span></div><div id="cash-queue" aria-live="polite"></div></div>
       <div class="card attention-card mt" id="feedback-attention" hidden><div class="ops-heading"><div><h3>Guest feedback needing attention</h3><p class="cs">Ratings of 2 or lower recorded in the selected period. Follow up with the table where you can.</p></div><span class="status-badge pending" id="feedback-count">0 to review</span></div><div id="feedback-rows" class="ops-list"></div></div>
-      <div class="grid live-grid mt">    <div class="card"><h3>Balances by bill</h3><div class="cs">Bill amounts exclude tips. Pending cash reserves a share but does not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
+      <div class="grid live-grid mt">    <div class="card" id="bills-card"><h3>Bills</h3><div class="cs">Enter each table's bill as it is served. Guests at that table see it on their phone as soon as you save.</div>
+      <div class="bill-entry">
+        <div class="bill-entry-top">
+          <div><label class="ops-label" for="bill-table">Table</label><select class="in" id="bill-table" onchange="billPickTable(this.value)"></select></div>
+          <div class="bill-entry-search"><label class="ops-label" for="bill-search">Add an item</label><input class="in" id="bill-search" type="search" placeholder="Search the published menu" autocomplete="off" oninput="paintBillSearch()" onkeydown="billSearchKey(event)"></div>
+        </div>
+        <div id="bill-results" class="bill-results" aria-live="polite"></div>
+        <p class="cs" id="bill-state"></p>
+        <div id="bill-lines" class="bill-lines"></div>
+        <div class="bill-foot"><p class="bill-balance"><strong id="bill-total">$0.00</strong><span id="bill-total-label"> bill total</span></p><div class="ops-actions"><button type="button" class="btn" id="bill-discard" onclick="billDiscard()">Discard changes</button><button type="button" class="btn primary" id="bill-save" onclick="billSave()">Save bill</button></div></div>
+      </div>
+      <h3 class="bill-open-title">Open bills</h3><div class="cs">Bill amounts exclude tips. Pending cash and payments in progress reserve a share but do not count as collected.</div><div id="check-balances" class="ops-list"></div></div>
     <div class="card">
       <h3>Floor tonight</h3>
       <details class="ops-help"><summary>Assign servers &amp; arrange tables</summary><p>Select a server, then tap their tables. Drag tables to match your room. Assignments determine who receives tips; a connected POS will supply these later.</p></details>
@@ -489,7 +500,7 @@
 
 <div class="toast" id="toast"><span id="toast-t"></span></div>
 
-<script src="restaurant-ops.js?v=8"></script>
+<script src="restaurant-ops.js?v=9"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];

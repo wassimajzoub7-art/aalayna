@@ -66,11 +66,24 @@
     return {window:w,previousWindow:previous,current:summary(w),previous:summary(previous)};
   };
   /* ---- dashboard v2: everything below is computed from the event stream ---- */
+  /* A bill is logged again on every waiter edit (append-only). The current bill
+     is the highest revision per orderId; earlier revisions must not count twice. */
+  function latestOrders(events){
+    var best={}, order=[];
+    events.forEach(function(e){
+      if(e.eventType!=='order_placed')return;
+      var id=e.payload.orderId==null?e.eventId:e.payload.orderId, r=e.payload.revision||1;
+      if(!best.hasOwnProperty(id))order.push(id);
+      if(!best[id]||r>=(best[id].payload.revision||1))best[id]=e;
+    });
+    return order.map(function(id){ return best[id]; });
+  }
   function median(list){ if(!list.length)return null; var a=list.slice().sort(function(x,y){return x-y;}),m=Math.floor(a.length/2); return a.length%2?a[m]:(a[m-1]+a[m])/2; }
   A.eventMetrics=function(range,at){
     at=at==null?Date.now():at;
     var w=A.ownerWindow(range,at), events=A.events().filter(function(e){ return within(Date.parse(e.createdAt),w); });
     var byType={}; events.forEach(function(e){ (byType[e.eventType]=byType[e.eventType]||[]).push(e); });
+    byType.order_placed=latestOrders(events);
     function sessions(type){ var s=new Set(); (byType[type]||[]).forEach(function(e){ s.add(e.sessionId); }); return s; }
     var scans=sessions('qr_scan'), paid=sessions('payment_completed'), paidScanned=0;
     paid.forEach(function(id){ if(scans.has(id))paidScanned++; });
@@ -106,12 +119,14 @@
   A.dishInterest=function(range,at){
     at=at==null?Date.now():at;
     var w=A.ownerWindow(range,at), byId={};
+    /* Upstream: one count per distinct bill, orderless events ignored. T1: of the
+       append-only revisions of a bill only the latest counts. Both apply. */
     A.published().items.forEach(function(x){ if(!x.archivedAt) byId[x.id]={itemId:x.id,name:x.name,section:x.sec,opens:0,sessions:{},dwell:[],onBills:0,units:0,billIds:{}}; });
-    A.events().forEach(function(e){
-      if(!within(Date.parse(e.createdAt),w))return;
+    var inWindow=A.events().filter(function(e){ return within(Date.parse(e.createdAt),w); }), current=new Set(latestOrders(inWindow));
+    inWindow.forEach(function(e){
       if(e.eventType==='item_view'&&byId[e.payload.itemId]){ var d=byId[e.payload.itemId]; d.opens++; d.sessions[e.sessionId]=1; }
       else if(e.eventType==='ui_action'&&e.payload.action==='dwell'&&byId[e.payload.value]&&Number.isFinite(e.payload.n)){ byId[e.payload.value].dwell.push(e.payload.n); }
-      else if(e.eventType==='order_placed'){ (e.payload.items||[]).forEach(function(i){ var d=byId[i.itemId]; if(d && e.payload.orderId && !d.billIds[e.payload.orderId]){ d.billIds[e.payload.orderId]=true; d.onBills++; d.units+=i.qty||1; } }); }
+      else if(e.eventType==='order_placed'&&current.has(e)){ (e.payload.items||[]).forEach(function(i){ var d=byId[i.itemId]; if(d && e.payload.orderId && !d.billIds[e.payload.orderId]){ d.billIds[e.payload.orderId]=true; d.onBills++; d.units+=i.qty||1; } }); }
     });
     return Object.keys(byId).map(function(k){ var d=byId[k], n=Object.keys(d.sessions).length;
       return {itemId:d.itemId,name:d.name,section:d.section,opens:d.opens,sessions:n,avgDwellS:d.dwell.length?Math.round(d.dwell.reduce(function(a,b){return a+b;},0)/d.dwell.length):null,onBills:d.onBills,units:d.units,billRate:null};
@@ -147,7 +162,7 @@
     var items=A.published().items.filter(function(x){ return !x.archivedAt; }), events=A.events(), since30=at-30*DAY;
     var viewed=new Set(); events.forEach(function(e){ if(e.eventType==='item_view'&&Date.parse(e.createdAt)>=since30)viewed.add(e.payload.itemId); });
     var archived={}; A.published().items.forEach(function(x){ if(x.archivedAt)archived[x.id]=1; });
-    var ordersOnArchived=events.filter(function(e){ return e.eventType==='order_placed'&&Date.parse(e.createdAt)>=since30&&(e.payload.items||[]).some(function(i){ return archived[i.itemId]&&Date.parse(e.createdAt)>=Date.parse(A.published().items.filter(function(x){return x.id===i.itemId;})[0].archivedAt); }); }).length;
+    var ordersOnArchived=latestOrders(events.filter(function(e){ return Date.parse(e.createdAt)>=since30; })).filter(function(e){ return (e.payload.items||[]).some(function(i){ return archived[i.itemId]&&Date.parse(e.createdAt)>=Date.parse(A.published().items.filter(function(x){return x.id===i.itemId;})[0].archivedAt); }); }).length;
     var payments=events.filter(function(e){ return e.eventType==='payment_completed'&&Date.parse(e.createdAt)>=since30; });
     var identified=payments.filter(function(e){ return !!e.customerId; }).length;
     var rate=A.rateInfo(at), menuAt=Date.parse(A.published().at||'')||null;

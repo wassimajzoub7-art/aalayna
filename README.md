@@ -48,6 +48,22 @@ Whish payment actions remain disabled until a verified provider is connected.
 The local no-key demo still simulates payments. Shared mode never uploads demo
 history or falls back to simulated payment confirmation.
 
+### Bills
+
+Staff enter each table's bill under **Bills** on the Live floor: pick the table,
+search the published menu, set quantities, save. Once a payment exists on a bill
+(pending cash, a digital payment in progress, or confirmed), existing items can
+only be added to, never removed, reduced or repriced, and the total never drops
+below what is paid. Every save appends an `order_placed` event with a revision;
+reports count the latest revision per bill. In the no-key demo this runs in the
+browser and the guest page (table 12, or `TABLE` set in the console) shows the
+sample bill until the venue has a staff bill. With a venue key, saves go through
+`aal_mutate` (`open_check` with lines, `update_check`); run
+`supabase/hardening-2026-09-24.sql` after the September 15 file. A guest opens
+the bill from its **Guest bill link** (`chk_` key); the table comes from that
+check. With a key the guest page offers cash only until a payment provider is
+connected.
+
 ## Validation
 
 Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
