@@ -371,6 +371,9 @@ Aalayna.on(function(){ paintAll(); });
 (function(){
   'use strict';
   var ADMIN_STORE='aal.adminKey';
+  /* Fallback only: loadMenuPacks() refills this list in place from venues/index.json
+     (written by tools/import-menu.js). In place, because FIELDS and the check in
+     validateProfile hold this same array. */
   var MENU_PACKS=[{v:'',t:'None'},{v:'kababji',t:'Kababji (venues/kababji.json)'}];
   var SWATCHES=['#EA312B','#B4423A','#E8555B','#E07B39','#D9962E','#6B4A2F','#0F4B3A','#3E7C4F','#6B7A3A','#173E43','#26327A','#5B3E82','#1A1A1A'];
   var FIELDS=[
@@ -725,10 +728,38 @@ Aalayna.on(function(){ paintAll(); });
   $('register-form').addEventListener('submit',register);
   $('venue-base').value=defaultBase();
   $('venue-base').addEventListener('input',function(){ paintVenues(); });
+  /* ---- menu packs from venues/index.json; any failure keeps the fallback list ---- */
+  function loadMenuPacks(){
+    if(!window.fetch)return;
+    fetch('venues/index.json',{cache:'no-store'}).then(function(res){
+      if(!res.ok)throw new Error('manifest '+res.status);
+      return res.json();
+    }).then(function(list){
+      if(Object.prototype.toString.call(list)!=='[object Array]')throw new Error('manifest is not a list');
+      var packs=[{v:'',t:'None'}], seen={};
+      list.forEach(function(p){
+        var slug=p&&typeof p.slug==='string'?p.slug:'';
+        if(slug.length>40||!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(slug)||seen[slug])return;
+        seen[slug]=1;
+        packs.push({v:slug,t:(trimmed(p.name)||slug)+' (venues/'+slug+'.json)'});
+      });
+      if(packs.length<2)throw new Error('manifest has no packs');
+      MENU_PACKS.splice.apply(MENU_PACKS,[0,MENU_PACKS.length].concat(packs));
+      /* the register form is already built: refill its select, keeping the choice */
+      Array.prototype.forEach.call(document.querySelectorAll('select[data-f="menu"]'),function(s){
+        var keep=s.value; s.replaceChildren();
+        MENU_PACKS.forEach(function(o){ var op=el('option',o.t); op.value=o.v; s.appendChild(op); });
+        s.value=keep;
+      });
+      paintVenues();
+    }).catch(function(){});
+  }
+
   registerFields();
   VS.key=storedKey();
   paintVenues();
   if(VS.key)loadVenues();
+  loadMenuPacks();
   window.AalaynaAdminVenues={venueLinks:venueLinks,validateProfile:validateProfile,slugify:slugify};
 })();
 </script>

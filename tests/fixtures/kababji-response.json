@@ -1,0 +1,1034 @@
+[
+ {
+  "id": "msg_01KbjFixturePagesOneTwo",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-opus-5-5",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "EqQBCkYIBhgCKkDfixture0signature0not0a0real0one"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01KbjFixturePagesOneTwo",
+    "name": "record_menu",
+    "input": {
+     "currency_seen": "USD",
+     "sections": [
+      {
+       "name": "Salads",
+       "window": "not_stated"
+      },
+      {
+       "name": "Appetizers",
+       "window": "not_stated"
+      }
+     ],
+     "items": [
+      {
+       "section": "Salads",
+       "name": "Fattoush",
+       "description": "Rocca, lettuce, tomatoes, cucumbers, purslane, radish, lemon juice, olive oil, garlic, pomegranate syrup",
+       "price": 4.75,
+       "ingredients": [
+        "Rocca",
+        "Lettuce",
+        "Tomato",
+        "Cucumber",
+        "Radish",
+        "Lemon",
+        "Olive oil",
+        "Garlic",
+        "Pomegranate syrup",
+        "Bread"
+       ],
+       "allergens": [
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "فتوش",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 4.75
+          },
+          {
+           "name": "Full portion",
+           "price": 8
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Salads",
+       "name": "Tabbouleh",
+       "description": "Fresh parsley, tomatoes, cracked wheat, onions, lemon juice and virgin olive oil",
+       "price": 5,
+       "ingredients": [
+        "parsley",
+        "tomato",
+        "cracked wheat",
+        "onion",
+        "lemon",
+        "olive oil"
+       ],
+       "allergens": [
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "تبولة",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 5
+          },
+          {
+           "name": "Full portion",
+           "price": 8
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Salads",
+       "name": "Raheb Salad",
+       "description": "Charcoal-grilled eggplant with diced tomatoes, bell peppers, parsley, garlic, onions, lemon and olive oil",
+       "price": 7,
+       "ingredients": [
+        "eggplant",
+        "tomato",
+        "bell pepper",
+        "parsley",
+        "garlic",
+        "onion",
+        "lemon",
+        "olive oil"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "سلطة راهب",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "Appetizers",
+       "name": "Hummus",
+       "description": "Blended chickpeas, tahini and lemon juice topped with virgin olive oil",
+       "price": 4,
+       "ingredients": [
+        "Chickpeas",
+        "Tahini",
+        "Lemon",
+        "Olive oil"
+       ],
+       "allergens": [
+        "sesame"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "حمص",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 4
+          },
+          {
+           "name": "Full portion",
+           "price": 7.5
+          },
+          {
+           "name": "As a sandwich",
+           "price": 5.5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Appetizers",
+       "name": "Hummus Meat and Almond",
+       "description": "Hummus topped with sauteed minced meat, almonds and virgin olive oil",
+       "price": 13,
+       "ingredients": [
+        "chickpeas",
+        "tahini",
+        "minced meat",
+        "almonds",
+        "olive oil"
+       ],
+       "allergens": [
+        "sesame",
+        "nuts"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "حمص مع لحمة ولوز",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "Appetizers",
+       "name": "Moutabal Eggplant",
+       "description": "Charcoal-grilled eggplant mashed with tahini and lemon, topped with olive oil",
+       "price": 4,
+       "ingredients": [
+        "eggplant",
+        "tahini",
+        "lemon",
+        "olive oil"
+       ],
+       "allergens": [
+        "sesame"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "متبل باذنجان",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 4
+          },
+          {
+           "name": "Full portion",
+           "price": 7.5
+          },
+          {
+           "name": "As a sandwich",
+           "price": 5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Appetizers",
+       "name": "Warak Enab",
+       "description": "Hand-rolled stuffed grape leaves flavored with pomegranate syrup",
+       "price": 4.5,
+       "ingredients": [
+        "grape leaves",
+        "rice",
+        "pomegranate syrup"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "ورق عنب",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 4.5
+          },
+          {
+           "name": "Full portion",
+           "price": 8.5
+          },
+          {
+           "name": "As a sandwich",
+           "price": 5.5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Appetizers",
+       "name": "Mouhamara",
+       "description": "Bread crumbs, hot pepper paste and spices with walnuts",
+       "price": 7.5,
+       "ingredients": [
+        "bread crumbs",
+        "hot pepper paste",
+        "walnuts",
+        "spices"
+       ],
+       "allergens": [
+        "gluten",
+        "nuts"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "محمرة",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "Appetizers",
+       "name": "Hindbeh",
+       "description": "Chicory topped with sauteed onions",
+       "price": 5,
+       "ingredients": [
+        "chicory",
+        "onion",
+        "olive oil"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "هندبة",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 5
+          },
+          {
+           "name": "Full portion",
+           "price": 8.5
+          },
+          {
+           "name": "As a sandwich",
+           "price": 5.5
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   }
+  ],
+  "stop_reason": "tool_use",
+  "stop_sequence": null,
+  "usage": {
+   "input_tokens": 6184,
+   "cache_creation_input_tokens": 0,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 3912
+  }
+ },
+ {
+  "id": "msg_01KbjFixturePageThree",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-opus-5-5",
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "",
+    "signature": "EqQBCkYIBhgCKkDfixture0signature0not0a0real0one"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_01KbjFixturePageThree",
+    "name": "record_menu",
+    "input": {
+     "currency_seen": "USD",
+     "sections": [
+      {
+       "name": "Appetizers",
+       "window": "not_stated"
+      },
+      {
+       "name": "All Day Breakfast",
+       "window": "all_day"
+      },
+      {
+       "name": "Desserts",
+       "window": "not_stated"
+      }
+     ],
+     "items": [
+      {
+       "section": "Appetizers",
+       "name": "Hindbeh",
+       "description": "Chicory topped with sauteed onions",
+       "price": 5,
+       "ingredients": [
+        "chicory",
+        "onion",
+        "olive oil"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "هندبة",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 5
+          },
+          {
+           "name": "Full portion",
+           "price": 8.5
+          },
+          {
+           "name": "As a sandwich",
+           "price": 5.5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Appetizers",
+       "name": "Batata w Kezbara",
+       "description": "Fried potato cubes with herbs, coriander, spices and olive oil",
+       "price": 6.5,
+       "ingredients": [
+        "potato",
+        "coriander",
+        "spices",
+        "olive oil"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "بطاطا وكزبرة",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "Appetizers",
+       "name": "Grilled Potatoes",
+       "description": "Diced potatoes grilled over charcoal",
+       "price": 3.5,
+       "ingredients": [
+        "potato"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "بطاطا مشوية",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Portion",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Half portion",
+           "price": 3.5
+          },
+          {
+           "name": "Full portion",
+           "price": 6
+          },
+          {
+           "name": "As a sandwich",
+           "price": 5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Appetizers",
+       "name": "French Fries",
+       "description": "Golden fries",
+       "price": 6,
+       "ingredients": [
+        "potato"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "بطاطا مقلية",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Serve it",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Portion",
+           "price": 6
+          },
+          {
+           "name": "As a sandwich",
+           "price": 5.5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Appetizers",
+       "name": "Cheese Rkakat",
+       "description": "House-made dough filled with a special mix of cheeses, herbs and spices. Per piece",
+       "price": 2.25,
+       "ingredients": [
+        "dough",
+        "cheese",
+        "herbs"
+       ],
+       "allergens": [
+        "gluten",
+        "dairy"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "رقاقات جبنة",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Preparation",
+         "type": "one",
+         "prices_are": "no_price_change",
+         "choices": [
+          {
+           "name": "Fried",
+           "price": null
+          },
+          {
+           "name": "Grilled",
+           "price": null
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Fattet Hummus",
+       "description": "Chickpeas with yogurt-tahini sauce, pine seeds, pomegranate, garlic and cayenne, served with fried bread",
+       "price": 9.5,
+       "ingredients": [
+        "Chickpeas",
+        "Yogurt",
+        "Tahini",
+        "Pine nuts",
+        "Bread",
+        "Garlic"
+       ],
+       "allergens": [
+        "dairy",
+        "sesame",
+        "nuts",
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "فتة حمص",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Fattet Eggplant",
+       "description": "Fried eggplant, yogurt-tahini sauce, chickpeas, roasted pine nuts, pomegranate molasses, fried bread",
+       "price": 9.5,
+       "ingredients": [
+        "eggplant",
+        "yogurt",
+        "tahini",
+        "chickpeas",
+        "pine nuts",
+        "bread"
+       ],
+       "allergens": [
+        "dairy",
+        "sesame",
+        "nuts",
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "فتة باذنجان",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Fattet Eggplant and Kabab",
+       "description": "Fattet eggplant topped with kabab, served with fried bread",
+       "price": 13,
+       "ingredients": [
+        "eggplant",
+        "yogurt",
+        "tahini",
+        "kabab",
+        "pine nuts",
+        "bread"
+       ],
+       "allergens": [
+        "dairy",
+        "sesame",
+        "nuts",
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "فتة باذنجان وكباب",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Balila",
+       "description": "Whole chickpeas with spices, garlic and virgin olive oil",
+       "price": 7,
+       "ingredients": [
+        "chickpeas",
+        "garlic",
+        "olive oil"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "بليلة",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Extras",
+         "type": "many",
+         "prices_are": "amount_added",
+         "choices": [
+          {
+           "name": "Add almonds",
+           "price": 1
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Foul Kababji",
+       "description": "Fava beans with tomatoes, onions, spices, lemon and olive oil",
+       "price": 8,
+       "ingredients": [
+        "fava beans",
+        "tomato",
+        "onion",
+        "lemon",
+        "olive oil"
+       ],
+       "allergens": [],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "فول كبابجي",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Lahme Ba'ajine Lebanese",
+       "description": "House-made dough topped with seasoned meat, tomatoes and parsley. Mini per piece",
+       "price": 1.25,
+       "ingredients": [
+        "dough",
+        "minced meat",
+        "tomato",
+        "parsley"
+       ],
+       "allergens": [
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "لحم بعجين لبناني",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Size",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Mini, per piece",
+           "price": 1.25
+          },
+          {
+           "name": "Portion",
+           "price": 3.5
+          }
+         ]
+        },
+        {
+         "name": "Extras",
+         "type": "many",
+         "prices_are": "amount_added",
+         "choices": [
+          {
+           "name": "Make it a sandwich: rocca, tomatoes, pickles",
+           "price": 0.5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Lahme Ba'ajine Kababji",
+       "description": "Dough topped with seasoned meat, fresh tomatoes, green chili and hot pepper paste",
+       "price": 1.25,
+       "ingredients": [
+        "dough",
+        "minced meat",
+        "tomato",
+        "green chili",
+        "hot pepper paste"
+       ],
+       "allergens": [
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "لحم بعجين كبابجي",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Size",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Mini, per piece",
+           "price": 1.25
+          },
+          {
+           "name": "Portion",
+           "price": 3.5
+          }
+         ]
+        },
+        {
+         "name": "Extras",
+         "type": "many",
+         "prices_are": "amount_added",
+         "choices": [
+          {
+           "name": "Make it a sandwich: rocca, tomatoes, pickles",
+           "price": 0.5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "All Day Breakfast",
+       "name": "Lahme Ba'ajine Halabi",
+       "description": "Dough topped with seasoned meat mixed with pomegranate syrup and spices",
+       "price": 1.5,
+       "ingredients": [
+        "dough",
+        "minced meat",
+        "pomegranate syrup"
+       ],
+       "allergens": [
+        "gluten"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "لحم بعجين حلبي",
+         "description": ""
+        }
+       },
+       "options": [
+        {
+         "name": "Size",
+         "type": "one",
+         "prices_are": "full_dish_price",
+         "choices": [
+          {
+           "name": "Mini, per piece",
+           "price": 1.5
+          },
+          {
+           "name": "Portion",
+           "price": 4.5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "section": "Desserts",
+       "name": "Tamrieh",
+       "description": "Phyllo pastry filled with semolina, milk and rose water",
+       "price": 7,
+       "ingredients": [
+        "phyllo",
+        "semolina",
+        "milk",
+        "rose water"
+       ],
+       "allergens": [
+        "gluten",
+        "dairy"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "تمرية",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "Desserts",
+       "name": "Chocolate Fondant",
+       "description": "With vanilla ice cream",
+       "price": 9,
+       "ingredients": [
+        "chocolate",
+        "flour",
+        "eggs",
+        "milk"
+       ],
+       "allergens": [
+        "gluten",
+        "dairy",
+        "egg"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "فوندان بالشوكولا",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "Desserts",
+       "name": "Mouhalabieh",
+       "description": "Milk pudding with rose water",
+       "price": 3.5,
+       "ingredients": [
+        "milk",
+        "rose water"
+       ],
+       "allergens": [
+        "dairy"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "مهلبية",
+         "description": ""
+        }
+       },
+       "options": []
+      },
+      {
+       "section": "Desserts",
+       "name": "Lazy Cake",
+       "description": "Chocolate biscuit cake. Per piece",
+       "price": 7.5,
+       "ingredients": [
+        "chocolate",
+        "biscuits",
+        "butter"
+       ],
+       "allergens": [
+        "gluten",
+        "dairy"
+       ],
+       "translations": {
+        "fr": {
+         "name": "",
+         "description": ""
+        },
+        "ar": {
+         "name": "بسكويت بالشوكولا",
+         "description": ""
+        }
+       },
+       "options": []
+      }
+     ]
+    }
+   }
+  ],
+  "stop_reason": "tool_use",
+  "stop_sequence": null,
+  "usage": {
+   "input_tokens": 4527,
+   "cache_creation_input_tokens": 0,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 5286
+  }
+ }
+]

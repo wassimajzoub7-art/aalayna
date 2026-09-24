@@ -125,6 +125,99 @@ follow the device from an owner link to a staff sign-in and back. Signed-in wait
 save the floor plan (`aal.floor`) and nothing else among the venue documents. See
 `tests/followups.test.cjs`.
 
+## Importing a menu
+
+`tools/import-menu.js` turns a restaurant's menu, as a PDF or as photos, into a menu
+pack in `venues/<slug>.json` (the format of `venues/kababji.json`) and adds it to
+`venues/index.json`, which fills the **Menu pack** list in `admin.html`. It needs Node
+18 or later and an Anthropic API key in `ANTHROPIC_API_KEY` (never written to disk):
+
+```sh
+node tools/import-menu.js --name "Kababji" --slug kababji --currency USD menu.pdf
+node tools/import-menu.js --name "Em Sherif" --slug em-sherif --currency LBP page1.jpg page2.jpg
+```
+
+The model only transcribes; ids, service windows, allergen filtering and price
+arithmetic are done by the script. LBP prices are converted to USD at `--rate`
+(default 89,500): set the venue rate to the same value. It refuses to replace an
+existing pack without `--force`; `--dry-run` prints the report and writes nothing;
+`--fixture <file>` replays a saved response (`--save-response <file>` saves one) with
+no API call. The first real run should be Kababji's PDF with `--save-response` and
+`--dry-run`, and its report compared with `venues/kababji.json` (75 items, 9 sections).
+`--strict` and `--effort <level>` are opt-in; a model that refuses one of them, or a
+forced tool choice, is retried once without it. Before loading the pack, read the report and fix: items with no price
+(the app stores them as 0, and loading a pack publishes it), names that appear twice
+(often one dish on two overlapping photos), empty sections, sections on the
+breakfast window (hidden outside 7:00 to 11:30) and any currency warning. Imported
+dishes carry `conf: 0`, so they stay out of guest allergen filters until the owner
+confirms each one in the editor. See `tests/import-menu.test.cjs`.
+
+## Onboarding a venue
+
+`tools/onboard.js` takes a signed restaurant to live in one command (Node 18 or later,
+no packages):
+
+```sh
+export AALAYNA_ADMIN_KEY=...      # the adm_ key from admin.sql (steps register, theme)
+export ANTHROPIC_API_KEY=...      # steps theme, menu, welcome
+node tools/onboard.js --name "Em Sherif" --place "Beirut" --slug em-sherif --currency USD \
+  --tables 24 --owner owner@emsherif.com \
+  --staff "sara@emsherif.com:manager,ali@emsherif.com:waiter" menu.pdf
+```
+
+The Supabase URL and anon key come from `aalayna-config.js`. The seven steps, one
+module each in `tools/steps/`, run in order and print one line each:
+
+1. **register** the venue with the admin key (profile: slug, menu pack, demo payments
+   off); the owner key goes into the state file.
+2. **theme**: the model reads the menu and picks the brand colour, a light background
+   and a font from a fixed list of Google Fonts; `--brand`, `--bg`, `--font` override it,
+   `--no-theme` skips it.
+3. **menu**: `tools/import-menu.js` writes `venues/<slug>.json` and its report is
+   printed. **The run stops here.** Read and fix the file, then run
+   `node tools/onboard.js --slug em-sherif --approve-menu`: the file is published to
+   the venue (draft and live menu, exactly as the editor's Publish makes them) and read
+   back from the server. A pack with an item without a price is refused.
+4. **tables**: a code for tables 1 to N and `onboarding/<slug>-table-cards.html`, the
+   print sheet with the same cards as `qr.html`.
+5. **staff**: the owner and each `--staff` email go on the staff list. No email is
+   sent; each person signs in with their email and gets a six-digit code then.
+6. **verify**: a live test on table 9999: a $1.00 bill, two scans (same key), a cash
+   request as the guest, confirmation and close as owner, the closed bill read with the
+   guest key, a receipt request to an example.com address, a scan with no key, and table
+   9999's code revoked. Each check prints pass or fail. The closed test bill, its payment
+   and a guest record for `onboarding-check@example.com` stay as the audit trail and show
+   in that day's dashboard figures.
+7. **welcome**: `onboarding/<slug>-welcome.md`, a note for the owner (links, sign-in,
+   staff, cards, day one, a placeholder for your WhatsApp). The model writes the prose,
+   the links and instructions are fixed text. It is never sent; `--no-welcome` skips it.
+
+**Resuming and idempotence.** Progress is kept in `onboarding/<slug>.json` (gitignored,
+readable by you only: it holds the owner key and the table codes, never the admin key).
+A re-run needs only `--slug` and continues at the first step not done. `--from <step>`
+and `--only <step>` run steps again; `--reset` forgets the state file (it asks first,
+`--yes` skips the question) and leaves Supabase as it is. Every step checks the server
+before it changes anything: an existing venue with the slug is reused and its keys are
+not rotated; a table that has a live code keeps it (codes are never reissued, a printed
+card would stop working; only a table without a live code gets one, and a replaced
+revoked code is named so you reprint that card); staff already on the list are not
+invited again, and a revoked person is not brought back. An existing
+`venues/<slug>.json` is never extracted again unless `--reimport` is given. A step that
+needs a missing environment variable fails with one sentence and the run stops;
+Supabase refusals are shown with the server's message. `--dry-run` prints what each
+step would do and calls nothing. `--fixture-dir <dir>` replays saved model answers
+(`theme.json`, `welcome.json`, and `import-menu.json` for the importer). The model
+steps force their tool for every model; `--strict` and `--effort <level>` are opt-in and
+reach the importer too. A model that refuses a forced tool choice, `strict` or the
+effort setting is asked once more without it, as `tools/import-menu.js` does. See
+`tests/onboard.test.cjs`.
+
+**By hand afterwards** (the tool prints this list): print the card sheet on card
+stock; add your WhatsApp number to the welcome note and send it; set the Google place
+id in `admin.html` if the venue wants Google reviews (there is no Places API key here);
+check the brand colour, background and font against their Instagram. Demo payments are
+already off.
+
 ## Validation
 
 Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
