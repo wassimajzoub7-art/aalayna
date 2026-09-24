@@ -110,6 +110,21 @@ for its table: anyone with a photo of it can open that table's current bill, so
 revoke and reissue a lost or copied card. Keys minted this way never expire (the
 same limit as bill links).
 
+**Pilot follow-ups (T8).** Run `supabase/followups-2026-09-24.sql` after the auth file
+(its header lists every change; untested against the live project). This replaces the
+note above that keys never expire: a bill's `chk_` keys keep working for 24 hours after
+the bill closes (the guest can still read it, ask for the receipt or cancel), then stop
+and are cleared at the next table scan; a scan reuses the open bill's newest key instead
+of minting one per scan. A guest page whose bill closes shows "This bill is closed. Scan
+the table code again for a new bill." (a guest on a payment receipt stays there, receipt
+box usable), drops its key only once the server refuses it and, when it came from a
+table card, waits for the table's next bill. A change the server refuses with a
+definite answer leaves the outbox and its message shows once in the status line
+(Dismiss); Retry only resends changes that failed for network reasons. Unsent changes
+follow the device from an owner link to a staff sign-in and back. Signed-in waiters can
+save the floor plan (`aal.floor`) and nothing else among the venue documents. See
+`tests/followups.test.cjs`.
+
 ## Validation
 
 Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.

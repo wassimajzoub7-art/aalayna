@@ -71,8 +71,8 @@ schema; do not apply them as an alternative to these shared-store migrations.
   require the future provider integration. These rows are operational records,
   not proof that money moved. Messaging, real POS synchronization, staff accounts
   and production monitoring are still separate rollout work.
-- Rejected outbox changes remain visible with **Retry**. Fix the cause before
-  retrying. No silent deletion or fallback to demo payments occurs.
+- A change the server refuses (4xx with a message) leaves the outbox; its message shows once until **Dismiss**, and it
+  stays on record. **Retry** resends only changes that failed for network reasons. No fallback to demo payments occurs.
 
 ## Tests
 

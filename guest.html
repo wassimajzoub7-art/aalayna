@@ -651,7 +651,7 @@
     <button class="back" onclick="go('v-menu')">&#8592;</button>
     <div class="scroll b-body">
       <div class="b-title" id="bill-title">Table 12</div>
-      <div class="b-sub">4 guests &middot; opened 8:42 pm</div>
+      <div class="b-sub" id="bill-sub">4 guests &middot; opened 8:42 pm</div>
       <div class="receipt">
         <div class="r-crest" id="v-name-receipt">HALLAB 1881</div>
         <div id="r-items"></div>
@@ -957,7 +957,7 @@ var AalaynaTableQR = (function (global) {
   function load() { try { return JSON.parse(global.sessionStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
   function save(s) { try { global.sessionStorage.setItem(STORE, JSON.stringify(s)); } catch (e) {} }
   var session = load();
-  var api = { holding: false, waiting: false, table: null, onAttach: null, ask: ask, poll: poll, start: start, stop: stop };
+  var api = { holding: false, waiting: false, table: null, onAttach: null, ask: ask, poll: poll, start: start, stop: stop, reopen: reopen };
 
   function ask() {
     if (!cfg.supabaseUrl || !cfg.anonKey) return Promise.reject(new Error('This page is not connected to a restaurant.'));
@@ -1024,6 +1024,20 @@ var AalaynaTableQR = (function (global) {
     });
   }
   function stop() { if (timer) { global.clearInterval(timer); timer = null; } }
+  /* T8: the bill this page held was closed (Aalayna.sync.onClosed).
+     A page that came from this tab's table code waits for the table's next bill exactly
+     as a scan of a table without a bill does: the poll asks aal_table_session again and
+     attaches the new key. The menu on screen is kept for a reload. False otherwise. */
+  function reopen() {
+    if (!A || !session || !session.s || !session.rid || session.rid !== A.venueId()) return false;
+    api.waiting = true;
+    session.waiting = true;
+    session.docs = DOCS.map(function (k) { return { key: k, body: A.util.read(k, null) }; }).filter(function (d) { return d.body != null; });
+    save(session);
+    start();
+    poll();
+    return true;
+  }
   function start() { if (api.waiting && !timer) timer = global.setInterval(poll, POLL_MS); }
   /* while waiting: re-ask on the bill view; attach the key once the bill exists */
   function poll() {
@@ -1034,6 +1048,8 @@ var AalaynaTableQR = (function (global) {
     return ask().then(function (res) {
       if (!api.waiting) return;
       if (res && res.key) {
+        // T8: after a closed bill, its unsent changes (a receipt request) go out with its key first
+        if (A.sync && A.sync.key && A.sync.key() && A.sync.state().pending) return;
         api.waiting = false; stop();
         session.waiting = false; save(session);
         return A.sync.attach(res.key, res.docs).then(function () { if (api.onAttach) api.onAttach(); },
@@ -1075,7 +1091,7 @@ var AalaynaTableQR = (function (global) {
   return api;
 })(window);
 </script>
-<script src="aalayna-sync.js?v=5"></script>
+<script src="aalayna-sync.js?v=6"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -1089,6 +1105,8 @@ function serving(win){
 }
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
 var CHECK = null;
+/* T8: this page's bill was closed (Aalayna.sync.onClosed, below) */
+var BILL_ENDED = !!(Aalayna.sync && Aalayna.sync.closed && Aalayna.sync.closed()), BILL_ENDED_MSG = 'This bill is closed. Scan the table code again for a new bill.';
 function paidUnits(l){ return CHECK ? (Aalayna.checkBalance(CHECK.id).items[l.id] || 0) : 0; }
 function linePaid(l){ return paidUnits(l) >= l.q; }
 function remaining(){ return CHECK ? Aalayna.checkBalance(CHECK.id).availableCents / 100 : TOTAL; }
@@ -1131,6 +1149,8 @@ function sharedCheck(){
 }
 function loadBill(){
   var shared = !!(Aalayna.sync && Aalayna.sync.enabled);
+  // T8: a closed bill leaves nothing to show or pay until the table's next bill is attached
+  if (BILL_ENDED) { CHECK = null; BILL = []; TOTAL = 0; if (picked) picked = {}; paintTableLabels(); return; }
   if (shared){
     // the bound check, open or closed; no bound check (not loaded yet, or not a bill link) means no bill
     CHECK = sharedCheck();
@@ -1177,6 +1197,21 @@ function paintTableLabels(){
   $('m-sub').textContent = label + ' \u00b7 ' + place;
   $('bill-title').textContent = label;
   $('pay-who').textContent = 'Total to pay \u00b7 ' + label;
+  paintPartySize();
+}
+/* T8: the demo keeps its illustrative line; a live bill shows its party size when the
+   check carries one (partySize, or covers from a POS), else nothing */
+var PARTY_WORD = {en:['guest','guests'], fr:['convive','convives']};
+function paintPartySize(){
+  var sub = $('bill-sub');
+  if (!sub || Aalayna.demoMode()) return;
+  var n = CHECK ? Number(CHECK.partySize != null ? CHECK.partySize : CHECK.covers) : NaN, text = '';
+  if (n >= 1 && n < 100 && n === Math.floor(n)) {
+    if (LANG === 'ar') text = '\u0639\u062f\u062f \u0627\u0644\u0623\u0634\u062e\u0627\u0635: ' + String(n).replace(/[0-9]/g, function(d){ return String.fromCharCode(0x0660 + Number(d)); });
+    else text = n + ' ' + (PARTY_WORD[LANG] || PARTY_WORD.en)[n === 1 ? 0 : 1];
+  }
+  sub.textContent = text;
+  sub.hidden = !text;
 }
 /* open the table's bill at a scan or a restart: the waiter's check, or, in demo
    mode only, the sample. With a venue key a guest never opens a check; only staff do. */
@@ -1588,7 +1623,7 @@ function calcItem(){
 /* ---------------- bill ---------------- */
 function buildBill(){
   var box = $('r-items'); box.innerHTML = '';
-  if (!BILL.length) box.innerHTML = '<div class="r-item"><div>' + (CHECK && TOTAL > 0 ? 'Your server entered this bill as a total, without items.' : 'Your bill appears here once your server enters it.') + '</div></div>';
+  if (!BILL.length) box.innerHTML = '<div class="r-item"><div>' + (CHECK && TOTAL > 0 ? 'Your server entered this bill as a total, without items.' : BILL_ENDED && !CHECK ? BILL_ENDED_MSG : 'Your bill appears here once your server enters it.') + '</div></div>';
   BILL.forEach(function(b){
     var d = document.createElement('div');
     var paid = paidUnits(b), full = paid >= b.q;
@@ -1861,7 +1896,7 @@ function paymentFailed(error, fields){
    guest hands over to the provider, and only the provider's confirmation settles it.
    Cash stays single-step and pending until staff confirm collection. */
 async function settle(){
-  if (!CHECK) { alert("Ask your server to open this bill first."); return; }
+  if (!CHECK) { alert(BILL_ENDED ? BILL_ENDED_MSG : "Ask your server to open this bill first."); return; }
   if (paymentBusy) return;
   applyRails();   // with a venue key only cash is payable
   paintPay();
@@ -2122,6 +2157,7 @@ restoreReceipt();
 watchGuestChanges();
 function sharedReady(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();}
 function sharedFailed(){
+  if (BILL_ENDED) return;   // T8: the closed-bill message is already on screen
   // opened without a connection: the bill this phone last saw stays on screen, with the banner
   if (CHECK || readPending()) { paintNet(); return; }
   $('payment-status').textContent='Unable to connect to this bill. Please speak with your server.';
@@ -2133,11 +2169,26 @@ if (Aalayna.sync && Aalayna.sync.enabled) {
    look at the bill are recorded against the bill (the waiting scope is local only) */
 AalaynaTableQR.onAttach = function(error){
   if (error) return sharedFailed();
+  BILL_ENDED = false;   // T8: the table's next bill
   sharedReady();
   billRequested = false; logScan();
   if ($('v-bill').classList.contains('on')) logBillRequested();
 };
 AalaynaTableQR.start();
+/* T8: when the bill this page holds is closed, the sync layer calls this: the bill view
+   says so, a payment in progress goes back to the bill, and a page from a table code asks
+   for the table's next bill (the table QR poll). A guest on the receipt of a payment
+   stays there: the key keeps working for 24 hours after the close, so the receipt box
+   still sends. The key is dropped only when the server refuses it. Never the demo. */
+function billClosed(message){
+  BILL_ENDED = true; BILL_ENDED_MSG = message || BILL_ENDED_MSG;
+  CHECK = null; BILL = []; TOTAL = 0; if (picked) picked = {};
+  // a payment in progress, or a cash request that never reached the restaurant, goes back to the bill
+  if ($('v-settle').classList.contains('on') || $('v-pay').classList.contains('on') || ($('v-done').classList.contains('on') && !lastSettlementId)) { paymentBusy = false; go('v-bill'); }
+  buildBill(); buildPick(); calcShare(); paintTableLabels();
+  AalaynaTableQR.reopen();
+}
+if (Aalayna.sync && Aalayna.sync.onClosed) Aalayna.sync.onClosed(billClosed);
 /* ---------------- offline ----------------
    The banner shows while the phone reports no connection, or once two reads of the
    bill in a row have failed (Aalayna.sync.onState); a good read hides it. Its time is
@@ -2175,9 +2226,12 @@ function paintQueued(){
   var p = readPending();
   if (!p || lastSettlementId) return false;
   var job = Aalayna.sync && Aalayna.sync.job ? Aalayna.sync.job('op:reserve:' + p.requestId) : 'pending';
-  if (job === 'blocked') {
-    // refused by the restaurant: never "saved" again; the guest may make a new request
+  if (job === 'blocked' || job === 'refused') {
+    // refused by the restaurant: never "saved" again; the guest may make a new request.
+    // T8: the sync layer dropped the refused job and keeps its message; it is shown here, once.
     try { sessionStorage.removeItem(pendingKey()); } catch(e) {}
+    if (Aalayna.sync.dismiss) Aalayna.sync.dismiss('op:reserve:' + p.requestId);
+    if (BILL_ENDED || (Aalayna.sync.closed && Aalayna.sync.closed())) { paymentBusy = false; return false; }   // the closed-bill message says it
     go('v-pay');
     paymentFailed(new Error('The restaurant did not accept this cash request. Please speak with your server.'));
     return false;

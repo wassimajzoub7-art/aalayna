@@ -6,7 +6,6 @@
   var COLLECTIONS=['aal.checks','aal.settle','aal.events','aal.guests','aal.campaigns','aal.edit_log','aal.webhook_log','aal.admin_notifications','aal.health_reports','aal.identity_merges'];
   var DOCS=['aal.draft','aal.live','aal.rate','aal.rate_meta','aal.floor','aal.tips'];
   var CLIENT_EVENTS=['qr_scan','item_view','bill_requested','ui_action','review_submitted'];
-  var BILL_OPS=['open_check','update_check'];
   var OWNER_ROWS=['aal.guests','aal.campaigns','aal.edit_log','aal.admin_notifications','aal.health_reports','aal.identity_merges'];
   function rowId(c,r){return r&&typeof r==='object'?(r.id!=null?String(r.id):r.eventId!=null?String(r.eventId):c==='aal.health_reports'&&r.week?String(r.week):null):null;}
   function inVenue(row,rid){return !!row && (!row.venueId || row.venueId===rid) && (!row.restaurantId || row.restaurantId===rid) && (row.venueId===rid || row.restaurantId===rid);}
@@ -184,8 +183,15 @@
   }catch(e){}
   // A signed-in member is 'staff' until the first snapshot names the role (owner or waiter): nothing is
   // queued as an owner write before the server has said so, so a waiter never gets a refused change.
-  var state={status:key||signedIn?'starting':'no-key',role:signedIn?'staff':key.indexOf('own_')===0?'owner':key?'guest':null,checkId:null,lastPull:null,lastPush:null,pending:0,failed:0,errors:0,lastError:null};
+  var state={status:key||signedIn?'starting':'no-key',role:signedIn?'staff':key.indexOf('own_')===0?'owner':key?'guest':null,checkId:null,lastPull:null,lastPush:null,pending:0,failed:0,errors:0,lastError:null,lastRefusal:null};
   var queue={},running=null,paused=false,ready=false,online=false,observers=[],docSnap={},rowSnap={};
+  /* T8: refused outbox jobs. A job the server refuses with a definite answer (a 4xx with a
+     message) can never succeed on a resend, so it leaves the outbox and is kept here, per
+     credential scope, with the server's message. failed in state() counts the refusals
+     nobody has seen yet; the status line shows the latest once, until dismissed. A refusal
+     that its caller already received (a live mutate promise) or a client event is recorded
+     as already shown. Only jobs that failed for network reasons stay queued and retried. */
+  var refused={},errorFns=[],REFUSED_KEEP=20;
   var base=cfg.supabaseUrl.replace(/\/$/,'')+'/rest/v1/';
   var headers={apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey,'x-aalayna-key':key,'Content-Type':'application/json'};
   // T4: with a session the JWT is the credential; the anon key stays the apikey and no venue key is sent.
@@ -196,14 +202,45 @@
     return Auth.token().then(function(t){if(!t){var e=new Error('Your sign-in has ended. Sign in again to keep saving.');throw e;}headers.Authorization='Bearer '+t;});
   }
   function view(){return JSON.parse(JSON.stringify(state));}
+  /* The status line's words (T8: "1 change", never "1 changes"). */
+  function changes(n){return n+(n===1?' change':' changes');}
+  function statusText(s){
+    if(s.status==='live')return 'Saved';
+    if(s.status==='starting')return 'Connecting…';
+    if(s.status==='no-key')return '';
+    if(s.status==='offline')return 'Connection lost'+(s.pending?' · '+changes(s.pending)+' waiting':'');
+    if(s.status==='error')return (s.failed===1?'Not saved: ':changes(s.failed)+' not saved. Latest: ')+s.lastRefusal;
+    return 'Syncing '+changes(s.pending)+'…';
+  }
+  function unseen(){return Object.keys(refused).map(function(id){return refused[id];}).filter(function(r){return !r.shown;}).sort(function(a,b){return a.at<b.at?-1:a.at>b.at?1:0;});}
+  function loadRefused(){try{refused=JSON.parse(global.localStorage.getItem(A.util.storageKey('aal.outbox.refused'))||'{}')||{};}catch(e){refused={};}}
+  function saveRefused(){
+    var ids=Object.keys(refused).sort(function(a,b){return refused[a].at<refused[b].at?-1:1;});
+    ids.slice(0,Math.max(0,ids.length-REFUSED_KEEP)).forEach(function(id){delete refused[id];});
+    try{global.localStorage.setItem(A.util.storageKey('aal.outbox.refused'),JSON.stringify(refused));}catch(e){}
+  }
+  function refuse(id,job,message,shown){
+    var r={id:id,kind:job.kind,op:job.op||null,target:job.kind==='doc'?job.body.key:(job.collection||null),message:String(message||'The restaurant did not accept this change.'),at:new Date().toISOString(),shown:!!shown};
+    refused[id]=r;saveRefused();
+    errorFns.forEach(function(f){try{f(JSON.parse(JSON.stringify(r)));}catch(e){}});
+    return r;
+  }
+  /* A definite refusal: the server answered 4xx with a message. Not 401 (the sign-in, not the
+     change), 404 (a missing function or table: the SQL is not installed yet), 408 or 429. */
+  function definitive(e){return !!e&&e.serverMessage===true&&e.status>=400&&e.status<500&&[401,404,408,429].indexOf(e.status)<0;}
+  function httpError(status,text,fallback){
+    var e=new Error(fallback);e.status=status;
+    try{var j=JSON.parse(text);if(j&&j.message){e.message=/row-level security/.test(j.message)?'Your role cannot save this change for this restaurant.':String(j.message);e.serverMessage=true;e.code=j.code;}}catch(ignore){}
+    return e;
+  }
   function update(){
-    var jobs=Object.values(queue);state.pending=jobs.filter(function(j){return !j.blocked;}).length;state.failed=jobs.filter(function(j){return j.blocked;}).length;
+    var open=unseen();state.pending=Object.keys(queue).length;state.failed=open.length;state.lastRefusal=open.length?open[open.length-1].message:null;
     state.status=!key&&!signedIn?'no-key':!ready?(state.errors?'offline':'starting'):!online?'offline':state.failed?'error':state.pending?'syncing':'live';
     observers.forEach(function(f){f(view());});
   }
   function persist(){try{global.localStorage.setItem(A.util.storageKey('aal.outbox'),JSON.stringify(queue));}catch(e){state.lastError='Device storage is full. Keep this page open until changes are saved.';}update();}
   function fail(e){state.errors++;state.lastError=e.message||String(e);online=false;update();}
-  function call(path,body,method){return authorize().then(function(){return fetch(base+path,{method:method||'POST',headers:headers,body:body==null?undefined:JSON.stringify(body)});}).then(function(r){return r.text().then(function(t){if(!r.ok){var e=new Error('The server could not save this change ('+r.status+').');e.status=r.status;try{e.message=JSON.parse(t).message||e.message;}catch(ignore){}throw e;}return t?JSON.parse(t):null;});});}
+  function call(path,body,method){return authorize().then(function(){return fetch(base+path,{method:method||'POST',headers:headers,body:body==null?undefined:JSON.stringify(body)});}).then(function(r){return r.text().then(function(t){if(!r.ok)throw httpError(r.status,t,'The server could not save this change ('+r.status+').');return t?JSON.parse(t):null;});});}
   function rpc(op,body,token){return call('rpc/aal_mutate',{p_rid:rid,p_op:op,p_body:body,p_token:token||''});}
   function applyRow(c,row){if(!row||!rowId(c,row)||!inVenue(row,rid))return;var rows=A.util.read(c,[]).filter(function(r){return inVenue(r,rid);});A.util.rawWrite(c,mergeRows(c,rows,[{id:rowId(c,row),body:row}]));}
   function applyResult(job,result){if(job.kind!=='op')return;if(['reserve','confirm_cash','cancel','refund'].indexOf(job.op)>=0)applyRow('aal.settle',result);if(['open_check','update_check','close_check'].indexOf(job.op)>=0)applyRow('aal.checks',result);}
@@ -241,20 +278,23 @@
           if(job.kind==='doc'||job.kind==='row'){
             await authorize();
             var response=await fetch(base+(job.kind==='doc'?'kv_docs?on_conflict=restaurant_id,key':'kv_rows?on_conflict=restaurant_id,collection,id'),{method:'POST',headers:Object.assign({},headers,{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify([job.body])});
-            if(!response.ok){var t=await response.text();var error=new Error('Change was rejected ('+response.status+').');error.status=response.status;try{error.message=JSON.parse(t).message||error.message;}catch(ignore){}throw error;}
+            if(!response.ok)throw httpError(response.status,await response.text(),'Change was rejected ('+response.status+').');
           }else result=await transmit(job);
           if(JSON.stringify(queue[id])===sent)delete queue[id];
           applyResult(job,result);online=true;state.lastPush=new Date().toISOString();persist();
           if(job.waiter&&waiters[job.waiter]){waiters[job.waiter].resolve(result);delete waiters[job.waiter];}
         }catch(e){
-          var permanent=e.status>=400&&e.status<500&&e.status!==408&&e.status!==429;
-          e.queued=!permanent;
-          // A refused bill save was shown to the staff member who made it and their draft reloads;
-          // it can never succeed on retry (the bill changed), so it does not stay blocked in the outbox.
-          if(permanent&&queue[id]){if(job.kind==='op'&&BILL_OPS.indexOf(job.op)>=0&&job.waiter&&waiters[job.waiter])delete queue[id];else queue[id].blocked=e.message;}
-          fail(e);persist();
-          if(job.waiter&&waiters[job.waiter]){waiters[job.waiter].reject(e);delete waiters[job.waiter];}
-          if(!permanent)break;
+          // T8: a definite refusal leaves the outbox and is recorded (see refuse above); a network
+          // failure keeps the job queued and stops this run, so the order of changes is kept.
+          var hard=definitive(e),live=!!(job.waiter&&waiters[job.waiter]);
+          e.queued=!hard;
+          if(hard){
+            if(JSON.stringify(queue[id])===sent)delete queue[id];
+            refuse(id,job,e.message,live||job.kind==='event');
+            online=true;state.lastError=e.message;persist();
+          }else{fail(e);persist();}
+          if(live){waiters[job.waiter].reject(e);delete waiters[job.waiter];}
+          if(!hard)break;
         }
       }
     })().finally(function(){running=null;update();});return running;
@@ -277,17 +317,27 @@
     try{await pull();}catch(e){fail(e);}
     return result;
   }
-  A.sync={state:view,key:function(){return key;},enabled:!!key||signedIn,signedIn:signedIn,subscribe:function(f){observers.push(f);f(view());},pull:pull,retry:async function(){Object.values(queue).forEach(function(j){delete j.blocked;});persist();try{await pull();await run();}catch(e){fail(e);}},boundCheck:function(){return state.checkId?A.serviceChecks().find(function(c){return c.id===state.checkId;}):null;},mutate:mutate};
+  A.sync={state:view,key:function(){return key;},enabled:!!key||signedIn,signedIn:signedIn,subscribe:function(f){observers.push(f);f(view());},pull:pull,retry:function(){return pull().then(function(){return run();}).catch(fail);},boundCheck:function(){return state.checkId?A.serviceChecks().find(function(c){return c.id===state.checkId;}):null;},mutate:mutate};
   /* Table QR (guest.html, supabase/sessions-2026-09-24.sql): a table whose bill is not
      entered yet opens without a key; once staff open the bill, aal_table_session mints
      a chk_ key and the page attaches it here, without a reload. The key is held exactly
      as a ?k= bill link on a guest page would hold it. docs are the menu/rate documents
      from the same response, landed at once so the new scope never shows the seed menu
      while the first snapshot is on its way. */
+  /* T8 refusals: onError(fn) fires with {id, kind, op, target, message, at, shown} for every
+     refused job; refusals() lists the ones not shown yet; dismiss(id) (or all, without id)
+     marks them shown. Retry only resends jobs that are still queued, which are the ones
+     that failed for network reasons. */
+  A.sync.onError=function(f){errorFns.push(f);};
+  A.sync.refusals=function(){return JSON.parse(JSON.stringify(unseen()));};
+  A.sync.dismiss=function(id){(id?[refused[id]]:unseen()).forEach(function(r){if(r)r.shown=true;});saveRefused();update();};
+  A.sync.statusText=statusText;
   A.sync.attach=function(k,docs){
-    if(key)throw new Error('This page already has a bill key.');
+    // T8: a key whose bill is closed (kept for the receipt) gives way to the table's next bill
+    if(key&&!closedNow)throw new Error('This page already has a bill key.');
     if(!guestPage||!/^chk_[0-9a-f]{12,64}$/.test(k||''))throw new Error('Only a bill key can be attached on a guest page.');
-    key=k;headers['x-aalayna-key']=k;state.role='guest';A.sync.enabled=true;
+    key=k;headers['x-aalayna-key']=k;state.role='guest';state.checkId=null;ready=false;A.sync.enabled=true;
+    closedNow=false;closedFor=null;try{global.sessionStorage.removeItem(CLOSED);}catch(e){}
     try{global.localStorage.setItem(credentialKey,k);}catch(e){}
     start(docs);return A.sync.ready;
   };
@@ -296,21 +346,30 @@
      time of the last good read are kept in this scope's storage (per venue, role and
      key), so a page opened without a connection shows the last known bill and a cash
      request made there waits in the outbox. onState(fn) fires {online, lastReadAt,
-     lastReadOk, readFailures, outboxPending} whenever one of them changes; job(id)
-     says whether an outbox entry is 'pending', 'blocked' or gone (null). */
+     lastReadOk, readFailures, outboxPending, refused, closed} whenever one of them
+     changes (refused: refusals not shown yet; closed: this page's bill closed, T8);
+     job(id) says whether an outbox entry is 'pending', 'refused' (T8, with its message
+     in refusals()) or gone (null). */
   var reads={ok:null,fails:0},stateFns=[],stateSent='',readOnce=pull;
   function lastRead(){try{return JSON.parse(global.localStorage.getItem(A.util.storageKey('aal.sync.read'))||'null')||{};}catch(e){return {};}}
-  function netState(){return {online:!(global.navigator&&global.navigator.onLine===false),lastReadAt:key?lastRead().at||null:null,lastReadOk:reads.ok,readFailures:reads.fails,outboxPending:Object.keys(queue).filter(function(id){return !queue[id].blocked;}).length};}
+  function netState(){return {online:!(global.navigator&&global.navigator.onLine===false),lastReadAt:key?lastRead().at||null:null,lastReadOk:reads.ok,readFailures:reads.fails,outboxPending:Object.keys(queue).length,refused:unseen().length,closed:closedNow};}
   function emitState(){var s=netState(),j=JSON.stringify(s);if(j===stateSent)return;stateSent=j;stateFns.forEach(function(f){try{f(s);}catch(e){}});}
-  pull=function(){return readOnce().then(function(res){
+  pull=function(){var held=key;return readOnce().then(function(res){
     reads.ok=true;reads.fails=0;
     try{global.localStorage.setItem(A.util.storageKey('aal.sync.read'),JSON.stringify({checkId:res.checkId||null,at:state.lastPull}));}catch(e){}
-    emitState();return res;
-  },function(e){reads.ok=false;reads.fails++;emitState();throw e;});};
+    if(!carried&&!guestPage){carried=true;carryOutbox();}
+    emitState();
+    // T8: a server without followups-2026-09-24.sql still answers for a closed bill
+    if(held&&held===key&&boundClosed(res))markClosed(res.checkId);
+    return res;
+  },function(e){
+    // T8: a bill key the server no longer accepts (its bill closed more than 24 hours ago)
+    if(held&&held===key&&guestPage&&held.indexOf('chk_')===0&&e.status===400&&e.code==='P0001'){billEnded();throw e;}
+    reads.ok=false;reads.fails++;emitState();throw e;});};
   A.sync.pull=pull;
   A.sync.boundCheck=function(){var id=state.checkId||(key&&state.role==='guest'?lastRead().checkId:null);return id?A.serviceChecks().find(function(c){return c.id===id;}):null;};
   A.sync.onState=function(f){stateFns.push(f);f(netState());};
-  A.sync.job=function(id){var j=queue[id];return j?(j.blocked?'blocked':'pending'):null;};
+  A.sync.job=function(id){return queue[id]?'pending':refused[id]?'refused':null;};
   observers.push(emitState);
   if(global.addEventListener){global.addEventListener('online',emitState);global.addEventListener('offline',emitState);}
   /* T4: fn runs once, after the first successful read, when the server has named this page's role, so an
@@ -318,16 +377,102 @@
   var readyFns=[],readyDone=!key&&!signedIn;
   A.sync.onReady=function(fn){if(readyDone)fn();else readyFns.push(fn);};
   observers.push(function(s){if(readyDone||!s.lastPull)return;readyDone=true;readyFns.splice(0).forEach(function(fn){Promise.resolve().then(fn).then(null,function(e){if(global.console)global.console.error(e);});});});
+  /* T8: bill keys and closed bills (supabase/followups-2026-09-24.sql). A bill key keeps
+     working for 24 hours after its bill closes, for the receipt and cancel paths.
+     - The check comes back closed: closed() turns true and onClosed(fn) fires once with the
+       message the page shows. The key is KEPT, so the receipt box still works; attach()
+       may then replace it with the table's next bill.
+     - The server refuses the key (400: the grace period is over, or the key never
+       existed): the key is dropped, unsent requests for that bill are recorded as refused,
+       onClosed fires if it had not, and this tab remembers it so a reload stays on the
+       message. The page stays live, never the demo.
+     A new key (a new bill link, or attach()) clears both. */
+  var CLOSED='aal.bill-closed:'+rid,CLOSED_MSG='This bill is closed. Scan the table code again for a new bill.',closedNow=false,closedFor=null,closedFns=[];
+  function announceClosed(){closedFns.forEach(function(f){try{f(CLOSED_MSG);}catch(e){}});}
+  function markClosed(cid){
+    if(closedNow&&closedFor===cid)return;
+    closedNow=true;closedFor=cid;update();announceClosed();
+  }
+  function boundClosed(res){
+    if(!guestPage||!res||!res.checkId)return false;
+    var c=(res.rows||[]).filter(function(r){return r.collection==='aal.checks'&&r.id===res.checkId;})[0];
+    return !!(c&&c.body&&c.body.closedAt);
+  }
+  function billEnded(){
+    if(!guestPage||key.indexOf('chk_')!==0)return;
+    var dead=key,told=closedNow;closedNow=true;
+    Object.keys(queue).forEach(function(id){refuse(id,queue[id],CLOSED_MSG,queue[id].kind==='event');});
+    queue={};persist();
+    key='';delete headers['x-aalayna-key'];state.role=null;state.checkId=null;ready=false;online=false;A.sync.enabled=false;
+    reads.ok=null;reads.fails=0;
+    try{if(global.localStorage.getItem(credentialKey)===dead)global.localStorage.removeItem(credentialKey);}catch(e){}
+    try{global.localStorage.removeItem(A.util.storageKey('aal.sync.read'));}catch(e){}
+    try{global.sessionStorage.setItem(CLOSED,'1');}catch(e){}
+    A.demoMode=function(){return false;};
+    update();
+    if(!told)announceClosed();
+  }
+  A.sync.onClosed=function(f){closedFns.push(f);if(closedNow)f(CLOSED_MSG);};
+  A.sync.closed=function(){return closedNow;};
+  if(guestPage){
+    if(key){try{global.sessionStorage.removeItem(CLOSED);}catch(e){}}
+    else{var closedMark='';try{closedMark=global.sessionStorage.getItem(CLOSED)||'';}catch(e){}if(closedMark){closedNow=true;A.demoMode=function(){return false;};}}
+  }
+  /* T8: a staff device that changes credential for this venue (an owner link to a signed-in
+     session, the reverse, or a replaced owner key) keeps its unsent changes. After the first
+     read names this credential's role, the outbox of the venue's other staff credentials on
+     this device moves into this one: everything for an owner; for a waiter, what a waiter may
+     send (bill entry, bill links, cash, events, the floor plan), the rest stays where it was.
+     A signed-in page takes over owner-link outboxes only, never another person's session. */
+  var carried=false,WAITER_OPS=['open_check','update_check','issue_key','confirm_cash','cancel'];
+  function sendable(j){
+    if(state.role==='owner')return true;
+    if(state.role!=='waiter'||!j)return false;
+    return j.kind==='event'||(j.kind==='doc'&&j.body&&j.body.key==='aal.floor')||(j.kind==='op'&&WAITER_OPS.indexOf(j.op)>=0);
+  }
+  function carryOutbox(){
+    if(guestPage)return 0;
+    var here=A.util.storageKey('aal.outbox'),found=[],moved=0,i,k;
+    try{for(i=0;i<global.localStorage.length;i++){k=global.localStorage.key(i);if(k&&k!==here&&k.indexOf('aal.scope:')===0&&k.slice(-11)===':aal.outbox')found.push(k);}}catch(e){return 0;}
+    found.forEach(function(k){
+      var scope,jobs,left={};
+      try{scope=JSON.parse(k.slice(10,-11));}catch(e){return;}
+      if(Object.prototype.toString.call(scope)!=='[object Array]'||scope[0]!==rid)return;
+      if(!((scope[1]==='owner'&&/^own_/.test(scope[2]||''))||(scope[1]==='staff'&&!signedIn)))return;
+      try{jobs=JSON.parse(global.localStorage.getItem(k)||'{}')||{};}catch(e){return;}
+      Object.keys(jobs).forEach(function(id){
+        var j=jobs[id];if(!j)return;
+        if(!sendable(j)){left[id]=j;return;}
+        if(queue[id])return;
+        delete j.waiter;delete j.blocked;queue[id]=j;moved++;
+      });
+      try{if(Object.keys(left).length)global.localStorage.setItem(k,JSON.stringify(left));else global.localStorage.removeItem(k);}catch(e){}
+    });
+    if(moved)persist();
+    return moved;
+  }
+  A.sync.carryOutbox=carryOutbox;
   if(!key&&!signedIn){A.sync.ready=Promise.resolve();return;}
+  var started=false;
   start();
   function start(docs){
   A.util.activateScope(JSON.stringify(signedIn?[rid,'staff',Auth.scope()]:[rid,state.role,key]));
   (docs||[]).forEach(function(d){if(d&&['aal.live','aal.rate','aal.rate_meta'].indexOf(d.key)>=0&&d.body!=null)A.util.rawWrite(d.key,d.body);});
-  try{queue=JSON.parse(global.localStorage.getItem(A.util.storageKey('aal.outbox'))||'{}');}catch(e){queue={};}
+  try{queue=JSON.parse(global.localStorage.getItem(A.util.storageKey('aal.outbox'))||'{}')||{};}catch(e){queue={};}
+  // T8: an older page kept refused jobs as blocked; each gets one more try under the rules above
+  Object.keys(queue).forEach(function(id){if(queue[id]&&queue[id].blocked)delete queue[id].blocked;});
+  loadRefused();
+  // T8: attach() after a closed bill starts again here; hooks, timers and the status line are set once
+  if(!started){started=true;once();}
+  A.sync.ready=pull().then(function(){return run();}).catch(function(e){fail(e);throw e;});
+  A.sync.ready.catch(function(){});
+  }
+  function once(){
   // Seed/local-only history is intentionally not queued on boot.
   A.util.hooks.afterWrite.push(function(k,v){
     if(paused||A.venueId()!==rid)return;
-    if(DOCS.indexOf(k)>=0&&state.role==='owner'){
+    // T8: a waiter's floor plan (table-to-server assignment) is sent too; docs_write admits it
+    if(DOCS.indexOf(k)>=0&&(state.role==='owner'||(state.role==='waiter'&&k==='aal.floor'))){
       if(v==null||v.at==='seed')return;
       if(JSON.stringify(v)!==docSnap[k])enqueue('doc:'+k,{kind:'doc',body:{restaurant_id:rid,key:k,body:v}});
     }else if(COLLECTIONS.indexOf(k)>=0){
@@ -372,16 +517,18 @@
   };
   A.sync.issueCheckKey=function(id){return mutate('issue_key',{checkId:id});};
   A.reset=function(){throw new Error('Shared restaurant records cannot be reset from a demo control.');};
-  A.sync.ready=pull().then(function(){return run();}).catch(function(e){fail(e);throw e;});
-  A.sync.ready.catch(function(){});
-  function tick(){if(paused||global.document.visibilityState==='hidden')return;pull().then(run).catch(fail);}
+  function tick(){if(paused||(!key&&!signedIn)||global.document.visibilityState==='hidden')return;pull().then(run).catch(fail);}
   setInterval(tick,4000);global.document.addEventListener('visibilitychange',function(){if(global.document.visibilityState==='visible')tick();});global.addEventListener('online',tick);
   // A compact status line; the receipt keeps its one-screen layout.
   function mount(){
     var node=global.document.createElement('div');node.id='aal-sync-status';node.setAttribute('role','status');node.setAttribute('aria-live','polite');
     node.style.cssText='position:fixed;right:8px;top:6px;z-index:9999;max-width:calc(100vw - 16px);font:11px system-ui;background:#fff8e9;color:#173e43;border:1px solid #ddd3c0;border-radius:6px;padding:5px 8px';
-    var label=global.document.createElement('span'),retry=global.document.createElement('button');retry.textContent='Retry';retry.style.marginLeft='8px';retry.onclick=function(){A.sync.retry();};node.append(label,retry);global.document.body.appendChild(node);
-    A.sync.subscribe(function(s){label.textContent=s.status==='live'?'Saved':s.status==='starting'?'Connecting…':s.status==='offline'?'Connection lost · '+s.pending+' changes waiting':s.status==='error'?s.failed+' changes need attention':'Syncing '+s.pending+' changes…';node.title=s.lastError||'';retry.hidden=s.status!=='offline'&&s.status!=='error';});
+    var label=global.document.createElement('span'),retry=global.document.createElement('button'),dismiss=global.document.createElement('button');
+    retry.textContent='Retry';retry.style.marginLeft='8px';retry.onclick=function(){A.sync.retry();};
+    // T8: a refusal is shown once, until dismissed; Retry is only for changes waiting on the network
+    dismiss.textContent='Dismiss';dismiss.style.marginLeft='8px';dismiss.onclick=function(){A.sync.dismiss();};
+    node.append(label,retry,dismiss);global.document.body.appendChild(node);
+    A.sync.subscribe(function(s){label.textContent=statusText(s);node.title=s.lastError||'';node.hidden=s.status==='no-key';retry.hidden=s.status!=='offline';dismiss.hidden=s.status!=='error';});
   }
   if(global.document.body)mount();else global.document.addEventListener('DOMContentLoaded',mount);
   }

@@ -150,9 +150,9 @@ function paintCheckBalances() {
     var actions=opsEl('div',null,'ops-actions bill-row-actions');
     if(!c.closedAt)actions.appendChild(opsButton('Edit bill',function(){billPickTable(c.table);$('bills-card').scrollIntoView({block:'start',behavior:'smooth'});}));
     if(liveStaff && !c.closedAt)actions.appendChild(opsButton('Guest bill link',async function(){
-      try{var issued=await Aalayna.sync.issueCheckKey(c.id),v=Aalayna.venue(),url=new URL('guest.html',location.href);url.search=new URLSearchParams({venue:v.name,place:v.place||'',k:issued.key}).toString();window.prompt('Copy this bill link. It only opens this bill.',url.href);}catch(error){toast(error.message);}
+      try{var issued=await Aalayna.sync.issueCheckKey(c.id),v=Aalayna.venue(),url=new URL('guest.html',location.href);url.search=new URLSearchParams({venue:v.name,place:v.place||'',k:issued.key}).toString();window.prompt('Copy this bill link. It only opens this bill, and stops working 24 hours after the bill is closed.',url.href);}catch(error){toast(error.message);}
     }));
-    if(ownerControls&&!c.closedAt&&!b.remainingCents&&!b.pendingCents)actions.appendChild(opsButton('Close settled bill',async function(){try{await Aalayna.closeServiceCheck(c.id);toast(liveStaff?'Bill closed.':'Bill closed. The next guest session can open a new bill.');}catch(error){toast(error.message);}}));
+    if(ownerControls&&!c.closedAt&&!b.remainingCents&&!b.pendingCents)actions.appendChild(opsButton('Close settled bill',async function(){try{await Aalayna.closeServiceCheck(c.id);toast(liveStaff?'Bill closed. Guests can still ask for their receipt for 24 hours; then its links stop working.':'Bill closed. The next guest session can open a new bill.');}catch(error){toast(error.message);}}));
     if(actions.childNodes.length)row.appendChild(actions);box.appendChild(row);
   });
 }
