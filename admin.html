@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <script src="aalayna-store.js?v=22"></script>
 <script src="restaurant-growth.js?v=6"></script>
-<script src="owner-metrics.js?v=6"></script>
+<script src="owner-metrics.js?v=7"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=2"></script>
+<script src="aalayna-sync.js?v=3"></script>
 <style>
   :root{
     --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
@@ -55,6 +55,43 @@
   .foot{color:var(--faint);font-size:13px;margin-top:20px;line-height:1.75}
   .foot a{color:var(--green)}
   @media(max-width:720px){main{padding:18px 16px 40px}.card{padding:18px}.heading{flex-direction:column}.btn{width:100%}}
+  /* ==== T6 Venues (onboarding) styles: start ==== */
+  .in{width:100%;font:inherit;font-size:14px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);color:var(--ink)}
+  .in:focus{outline:none;border-color:var(--green)}.in[aria-invalid="true"]{border-color:var(--red)}
+  .lbl{display:block;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);margin-bottom:6px}
+  .hint{font-size:12.5px;color:var(--faint);margin-top:5px;line-height:1.5}
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 18px;margin-top:14px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .row .in{flex:1;min-width:200px}
+  .status{font-size:14px;line-height:1.6;margin-top:12px;color:var(--sub)}.status:empty{display:none}
+  .status.err{color:var(--red)}.status.ok{color:var(--green)}
+  .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+  .btn.small{min-height:36px;padding:6px 12px;font-size:13px}
+  .btn.danger{border-color:var(--red);color:var(--red)}
+  .btn.done{border-color:var(--green-line);background:var(--green-bg);color:var(--green)}
+  .swatches{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .sw{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);cursor:pointer;padding:0}
+  .sw.none{background:var(--surface);border-style:dashed}
+  .sw.on{outline:2px solid var(--ink);outline-offset:2px}
+  .chip{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:-1px;margin-right:5px}
+  span.code{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+  tr.detail>td{border-top:0;padding-top:0}
+  .vd{border:1px solid var(--line);border-radius:12px;padding:4px 16px 14px;margin-bottom:6px}
+  .vd h3{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);font-weight:600;margin-top:16px}
+  .line{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line-soft)}
+  .line .t{flex:0 0 150px;font-size:13px;color:var(--sub)}
+  .line .u{flex:1;min-width:0;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;overflow-wrap:anywhere}
+  .line .u.p{font-family:inherit;font-size:13.5px;line-height:1.55}
+  .confirm{border:1px solid var(--amber-line);background:var(--amber-bg);border-radius:10px;padding:12px 14px;margin:4px 0 8px;font-size:14px;line-height:1.6}
+  .confirm .row{margin-top:10px}
+  .help{margin-top:18px;border-top:1px solid var(--line);padding-top:14px;font-size:14px;color:var(--sub);line-height:1.7}
+  .help summary{cursor:pointer;font-weight:600;color:var(--ink)}
+  .help ol{margin:8px 0 0 20px}
+  @media(max-width:720px){.line{flex-wrap:wrap}.line .t{flex-basis:100%}.line .btn,.row .btn.small,.sw{width:auto}
+    #venues-table thead{display:none}#venues-table tr,#venues-table td{display:block;width:100%}
+    #venues-table td{border-top:0;padding:3px 0}#venues-table tr:not(.detail){border-top:1px solid var(--line);padding:10px 0}
+    #venues-table td.num{text-align:left;padding-top:8px}.vd{padding:4px 12px 12px}}
+  /* ==== T6 Venues (onboarding) styles: end ==== */
 </style>
 </head>
 <body>
@@ -65,6 +102,46 @@
     <div class="sub" id="venue-line">Venue</div>
     <p class="notice">Local prototype data on this device, plus the shared store when this page was opened with an owner key.</p>
   </header>
+
+  <!-- ==== T6 Venues (onboarding): start ==== -->
+  <section class="card" id="venues">
+    <div class="heading"><div><h2>Venues</h2><p class="cs">Register a restaurant, set its look, and hand over its links and keys. Reads and writes the shared store with an admin key.</p></div><button class="btn" id="venues-refresh" type="button" hidden>Refresh</button></div>
+    <form id="admin-connect" autocomplete="off" novalidate>
+      <div class="row"><label class="lbl" for="admin-key" style="flex-basis:100%;margin-bottom:0">Admin key</label>
+        <input class="in" id="admin-key" type="password" autocomplete="off" spellcheck="false" placeholder="adm_...">
+        <button class="btn primary" type="submit">Connect</button></div>
+      <p class="cs" id="admin-explain">The admin key comes from the admin_keys table in the Supabase project. The founder creates it once in the SQL editor with the insert written at the top of supabase/admin.sql, then pastes it here. It is kept in this tab's session storage only: never in a link, never saved to disk, and gone when the tab closes. The rest of this page works without it.</p>
+    </form>
+    <div class="row" id="admin-session" hidden>
+      <span class="cs" style="margin:0">Connected with <span class="code" id="admin-session-key"></span> in this tab only.</span>
+      <button class="btn small" id="admin-forget" type="button">Forget key</button>
+    </div>
+    <p class="status" id="venues-status" role="status" aria-live="polite"></p>
+    <div id="venues-body" hidden>
+      <div class="row"><label class="lbl" for="venue-base" style="margin:0">Links point at</label><input class="in" id="venue-base" spellcheck="false"></div>
+      <div class="tbl" id="venues-table" hidden><table><thead><tr><th>Venue</th><th>Slug</th><th>Activity</th><th>Payments</th><th class="num"></th></tr></thead><tbody id="venue-rows"></tbody></table></div>
+      <p class="empty" id="venues-empty"></p>
+      <h2 style="margin-top:22px">Register a venue</h2>
+      <p class="cs">Name and place exactly as the restaurant writes them: together they make the venue id, so after registration only their capitalisation can change.</p>
+      <form id="register-form" novalidate>
+        <div id="register-fields"></div>
+        <div class="row"><button class="btn primary" id="register-submit" type="submit">Register venue</button></div>
+        <p class="status" id="register-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+    <details class="help">
+      <summary>How to onboard</summary>
+      <ol>
+        <li>Create an admin key once in the Supabase SQL editor (the insert is at the top of supabase/admin.sql) and connect with it here.</li>
+        <li>Register the venue. Take the brand colour, background and font from their menu or Instagram; pick a menu pack if one exists in venues/.</li>
+        <li>Open Manage on the new row. Send the owner editor and owner dashboard links to the owner only: each carries the owner key, and the page keeps it after the first visit.</li>
+        <li>Guests do not use a venue link. Staff open a bill on the dashboard's Live floor and send its Guest bill link, a chk_ key for that bill only. The venue's gst_ key only reads the published menu.</li>
+        <li>Demo payments stays on until the venue's payment provider confirms real payments; then switch it off here.</li>
+        <li>If a key leaks, rotate it in the venue's panel and send the new links. The old key stops working at once.</li>
+      </ol>
+    </details>
+  </section>
+  <!-- ==== T6 Venues (onboarding): end ==== -->
 
   <section class="card" id="funnel">
     <div class="heading"><div><h2>Website funnel</h2><p class="cs">Clicks and demo events from aalayna.com, read from the shared store with the owner key. Last 7 and last 30 days, by event and by where on the page it happened.</p></div></div>
@@ -183,5 +260,373 @@ function paintAll(){ paintFunnel(); paintHealth(); paintNotifications(); paintEd
 paintAll();
 Aalayna.on(function(){ paintAll(); });
 </script>
+<!-- ==== T6 Venues (onboarding) script: start ==== -->
+<script>
+/* Venues: onboarding with an admin key (supabase/admin.sql).
+   The admin key lives in sessionStorage only, travels in the x-aalayna-admin
+   header, and never goes into a link. Everything here is separate from the
+   store-backed sections above; it only reads window.AalaynaConfig. */
+(function(){
+  'use strict';
+  var ADMIN_STORE='aal.adminKey';
+  var MENU_PACKS=[{v:'',t:'None'},{v:'kababji',t:'Kababji (venues/kababji.json)'}];
+  var SWATCHES=['#EA312B','#B4423A','#E8555B','#E07B39','#D9962E','#6B4A2F','#0F4B3A','#3E7C4F','#6B7A3A','#173E43','#26327A','#5B3E82','#1A1A1A'];
+  var FIELDS=[
+    {f:'name',label:'Name',max:40,ph:'Kababji'},
+    {f:'place',label:'Place',max:40,ph:'Lebanese Grill'},
+    {f:'slug',label:'Slug',max:40,ph:'kababji',hint:'Lower-case letters, digits and hyphens. Left empty, it is made from the name.'},
+    {f:'gplace',label:'Google place id',max:60,ph:'ChIJ...',hint:'Optional. With it, five stars open their exact review box.'},
+    {f:'brand',label:'Brand colour',max:7,ph:'#EA312B',swatches:true},
+    {f:'bg',label:'Background',max:7,ph:'#F0EFEA',hint:'Optional. Six digit hex.'},
+    {f:'font',label:'Font',max:40,ph:'Montserrat',hint:'Optional. A Google Fonts name.'},
+    {f:'menu',label:'Menu pack',select:MENU_PACKS,hint:'Loaded once on each device that opens an owner link.'}
+  ];
+  var LINK_LABELS=[['ownerEditor','Owner editor'],['ownerDashboard','Owner dashboard'],['systemHub','System hub']];
+  var VS={key:'',venues:[],loaded:false,open:{},reveal:{},editing:{},drafts:{},confirm:{},msg:{},busy:{}};
+  function $(id){ return document.getElementById(id); }
+  function el(tag,text,cls){ var n=document.createElement(tag); if(text!=null)n.textContent=text; if(cls)n.className=cls; return n; }
+  function button(text,cls,fn){ var b=el('button',text,'btn small'+(cls?' '+cls:'')); b.type='button'; b.onclick=fn; return b; }
+  function when(v){ return v?new Date(v).toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):''; }
+  function trimmed(v){ return String(v==null?'':v).replace(/^\s+|\s+$/g,''); }
+  function mask(k){ k=String(k||''); return k.length>12?k.slice(0,4)+'••••••••'+k.slice(-4):k; }
+
+  /* ---- admin key: sessionStorage only ---- */
+  function storedKey(){ try{ return sessionStorage.getItem(ADMIN_STORE)||''; }catch(e){ return ''; } }
+  function storeKey(k){ try{ if(k)sessionStorage.setItem(ADMIN_STORE,k); else sessionStorage.removeItem(ADMIN_STORE); }catch(e){} }
+
+  /* ---- status lines (never alert) ---- */
+  function say(id,text,kind){ var n=$(id); n.textContent=text||''; n.className='status'+(kind?' '+kind:''); }
+
+  /* ---- RPC ---- */
+  function rpcMessage(status,text){
+    var j=null; try{ j=JSON.parse(text); }catch(e){}
+    if(j&&j.code==='PGRST202')return 'The admin functions are not on the shared store yet. Run supabase/admin.sql in the Supabase SQL editor, then connect again.';
+    if(j&&j.message==='Admin key required.')return 'Admin key required. This key is not in admin_keys: check it, or create one in the SQL editor.';
+    if(j&&j.message)return j.message;
+    return 'The shared store answered '+status+'.';
+  }
+  function adminRpc(fn,args){
+    var cfg=window.AalaynaConfig||{};
+    if(!cfg.supabaseUrl||!cfg.anonKey)return Promise.reject(new Error('No shared store is configured in aalayna-config.js.'));
+    if(!VS.key)return Promise.reject(new Error('Connect with an admin key first.'));
+    return fetch(cfg.supabaseUrl.replace(/\/$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',cache:'no-store',
+      headers:{apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey,'x-aalayna-admin':VS.key,'Content-Type':'application/json'},
+      body:JSON.stringify(args||{})})
+    .then(function(res){
+      return res.text().then(function(t){ if(!res.ok)throw new Error(rpcMessage(res.status,t)); return t?JSON.parse(t):null; });
+    },function(){ throw new Error('Could not reach the shared store. Check the connection and try again.'); });
+  }
+
+  /* ---- profile: one shape for the list, the links and both forms ---- */
+  function ridParts(rid){ try{ var a=JSON.parse(rid); if(Object.prototype.toString.call(a)==='[object Array]')return a; }catch(e){} return ['','']; }
+  function profileOf(v){
+    var p=v.profile||{}, ids=ridParts(v.restaurant_id);
+    return {name:p.name||v.name||ids[0]||'',place:p.place!=null?p.place:(ids[1]||''),slug:p.slug||'',gplace:p.gplace||'',
+            brand:p.brand||'',bg:p.bg||'',font:p.font||'',menu:p.menu_pack||'',demo:p.demo_payments!==false};
+  }
+  function slugify(name){
+    var s=String(name||'');
+    if(s.normalize)s=s.normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,36).replace(/-+$/,'');
+  }
+  var SLUG_RULE='Slug uses lower-case letters, digits and hyphens only, up to 40 characters, and cannot start or end with a hyphen.';
+  /* Same rules as aal_admin_field() in supabase/admin.sql and venueFromURL() in aalayna-store.js. */
+  function validateProfile(raw,rid){
+    var p={}, i, f, v;
+    function bad(field,message){ return {ok:false,field:field,message:message}; }
+    var names=[['name','Name'],['place','Place']];
+    for(i=0;i<names.length;i++){
+      f=names[i][0]; v=trimmed(raw[f]); p[f]=v;
+      if(v.length>40)return bad(f,names[i][1]+' is longer than 40 characters.');
+      if(/["\\\u0000-\u001f\u007f]/.test(v))return bad(f,names[i][1]+' cannot contain double quotes, backslashes or control characters.');
+    }
+    if(!p.name)return bad('name','Name is required.');
+    p.slug=trimmed(raw.slug);
+    if(p.slug&&(p.slug.length>40||!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(p.slug)))return bad('slug',SLUG_RULE);
+    p.gplace=trimmed(raw.gplace);
+    if(p.gplace&&!/^[A-Za-z0-9_-]{1,60}$/.test(p.gplace))return bad('gplace','Google place id uses letters, digits, hyphens and underscores only, up to 60 characters.');
+    var hexes=[['brand','Brand colour'],['bg','Background']];
+    for(i=0;i<hexes.length;i++){
+      f=hexes[i][0]; v=trimmed(raw[f]);
+      if(v&&!/^#?[0-9A-Fa-f]{6}$/.test(v))return bad(f,hexes[i][1]+' must be a six digit hex colour, like #EA312B.');
+      p[f]=v?'#'+v.replace(/^#/,'').toUpperCase():'';
+    }
+    p.font=trimmed(raw.font);
+    if(p.font&&!/^[A-Za-z0-9 +]{1,40}$/.test(p.font))return bad('font','Font must be a Google Fonts name: letters, digits and spaces, up to 40 characters.');
+    p.menu=trimmed(raw.menu);
+    if(!MENU_PACKS.some(function(m){ return m.v===p.menu; }))return bad('menu','Pick a menu pack from the list.');
+    if(rid){
+      var ids=ridParts(rid);
+      if(p.name.toLowerCase()!==ids[0]||p.place.toLowerCase()!==ids[1])
+        return bad('name','Name and place make the venue id, so only their capitalisation can change. Register a new venue for a new name or place.');
+    }
+    return {ok:true,profile:p};
+  }
+  function profilePayload(p){ return {name:p.name,place:p.place,slug:p.slug,gplace:p.gplace,brand:p.brand,bg:p.bg,font:p.font,menu_pack:p.menu}; }
+
+  /* ---- links ---- */
+  function defaultBase(){
+    var o=location.origin||'';
+    return o.indexOf('http')===0&&location.hostname!=='127.0.0.1'?o+location.pathname.replace(/[^\/]*$/,''):'https://aalayna.com/';
+  }
+  function linkBase(){ var b=trimmed($('venue-base').value)||defaultBase(); return /\/$/.test(b)?b:b+'/'; }
+  /* The one place venue links are composed. Guest links are per bill (chk_ keys
+     from the dashboard), so there is no venue-wide guest or QR link here. */
+  function venueLinks(v){
+    var p=profileOf(v), base=linkBase();
+    function query(pairs){
+      return pairs.filter(function(x){ return x[1]; }).map(function(x){ return x[0]+'='+encodeURIComponent(x[1]); }).join('&');
+    }
+    var theme=[['venue',p.name],['place',p.place],['brand',p.brand],['bg',p.bg],['font',p.font],['gplace',p.gplace]];
+    if(p.menu)theme.push(['menu',p.menu]);
+    var owner=query(theme.concat([['k',v.owner_key]]));
+    return {
+      ownerEditor:base+'editor.html?'+owner,
+      ownerDashboard:base+'dashboard.html?'+owner,
+      systemHub:base+'system.html?'+query(theme)
+    };
+  }
+
+  /* ---- copy with a visible copied state ---- */
+  function copyText(text,btn,statusId){
+    function done(){
+      var label=btn.getAttribute('data-label')||btn.textContent;
+      btn.setAttribute('data-label',label); btn.textContent='Copied'; btn.classList.add('done');
+      setTimeout(function(){ btn.textContent=label; btn.classList.remove('done'); },1600);
+    }
+    function fallback(){
+      var t=el('textarea'); t.value=text; t.setAttribute('readonly',''); t.style.position='fixed'; t.style.opacity='0';
+      document.body.appendChild(t); t.select(); var ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+      document.body.removeChild(t);
+      if(ok)done(); else say(statusId,'Copy did not work in this browser. Select the text and copy it by hand.','err');
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(done,fallback); else fallback();
+  }
+
+  /* ---- profile fields: one builder for the register and edit forms ---- */
+  function markSwatches(box,value){
+    var v=trimmed(value).replace(/^#/,'').toUpperCase();
+    Array.prototype.forEach.call(box.children,function(b){ b.classList.toggle('on',(b.getAttribute('data-hex')||'').replace(/^#/,'')===v); });
+  }
+  function buildFields(values,prefix,onInput){
+    var wrap=el('div',null,'fields');
+    FIELDS.forEach(function(d){
+      var box=el('div'), id=prefix+'-'+d.f, lab=el('label',d.label,'lbl'), input;
+      lab.htmlFor=id; box.appendChild(lab);
+      if(d.select){
+        input=el('select',null,'in');
+        d.select.forEach(function(o){ var op=el('option',o.t); op.value=o.v; input.appendChild(op); });
+      }else{
+        input=el('input',null,'in'); input.type='text'; input.maxLength=d.max; input.placeholder=d.ph; input.spellcheck=false; input.autocomplete='off';
+      }
+      input.id=id; input.setAttribute('data-f',d.f); input.value=values[d.f]||'';
+      box.appendChild(input);
+      if(d.swatches){
+        var sw=el('div',null,'swatches');
+        [''].concat(SWATCHES).forEach(function(hex){
+          var b=el('button',null,'sw'+(hex?'':' none')); b.type='button'; b.setAttribute('data-hex',hex);
+          b.setAttribute('aria-label',hex?'Brand colour '+hex:'No brand colour'); b.title=hex||'None';
+          if(hex)b.style.background=hex;
+          b.onclick=function(){ input.value=hex; markSwatches(sw,hex); input.dispatchEvent(new Event('input',{bubbles:true})); };
+          sw.appendChild(b);
+        });
+        input.addEventListener('input',function(){ markSwatches(sw,input.value); });
+        box.appendChild(sw); markSwatches(sw,input.value);
+      }
+      if(d.hint)box.appendChild(el('div',d.hint,'hint'));
+      if(onInput)input.addEventListener('input',onInput);
+      input.addEventListener('input',function(){ input.removeAttribute('aria-invalid'); });
+      wrap.appendChild(box);
+    });
+    return wrap;
+  }
+  function readFields(root){
+    var out={}; Array.prototype.forEach.call(root.querySelectorAll('[data-f]'),function(n){ out[n.getAttribute('data-f')]=n.value; }); return out;
+  }
+  function flagField(root,field){
+    var n=root.querySelector('[data-f="'+field+'"]'); if(n){ n.setAttribute('aria-invalid','true'); n.focus(); }
+  }
+
+  /* ---- list ---- */
+  function replaceVenue(v){
+    var found=false;
+    VS.venues=VS.venues.map(function(x){ if(x.restaurant_id===v.restaurant_id){ found=true; return v; } return x; });
+    if(!found)VS.venues.unshift(v);
+  }
+  function loadVenues(openRid){
+    say('venues-status','Loading venues...');
+    return adminRpc('aal_admin_list_venues',{}).then(function(list){
+      VS.venues=Object.prototype.toString.call(list)==='[object Array]'?list:[]; VS.loaded=true;
+      if(openRid)VS.open[openRid]=true;
+      say('venues-status',VS.venues.length===1?'1 venue.':VS.venues.length+' venues.');
+      paintVenues();
+    },function(e){ say('venues-status',e.message,'err'); paintVenues(); });
+  }
+  function paintVenues(){
+    var connected=!!VS.key;
+    $('admin-connect').hidden=connected; $('admin-session').hidden=!connected;
+    $('venues-body').hidden=!connected; $('venues-refresh').hidden=!connected;
+    $('admin-session-key').textContent=connected?mask(VS.key):'';
+    var body=$('venue-rows'); body.replaceChildren();
+    $('venues-table').hidden=!VS.venues.length; $('venues-empty').hidden=!!VS.venues.length;
+    $('venues-empty').textContent=VS.loaded?'No venues registered yet. Register the first one below.':'The venue list is not loaded. Refresh once the admin key and the admin functions are in place.';
+    VS.venues.forEach(function(v){ body.appendChild(venueRow(v)); if(VS.open[v.restaurant_id])body.appendChild(venueDetail(v)); });
+  }
+  function venueRow(v){
+    var p=profileOf(v), rid=v.restaurant_id, tr=el('tr'), td;
+    td=el('td'); td.append(el('div',p.name),el('div',p.place||'No place','d')); tr.appendChild(td);
+    tr.appendChild(el('td',p.slug||'none','code'));
+    td=el('td'); td.append(el('div',(v.checks||0)+' bills · '+(v.payments||0)+' payments'),el('div',v.last_activity?'Last '+when(v.last_activity):'No activity yet','d')); tr.appendChild(td);
+    td=el('td'); td.appendChild(el('span',p.demo?'Demo payments on':'Demo payments off','badge '+(p.demo?'flag':'ok'))); tr.appendChild(td);
+    td=el('td',null,'num');
+    var b=button(VS.open[rid]?'Close':'Manage','',function(){ VS.open[rid]=!VS.open[rid]; paintVenues(); });
+    b.setAttribute('aria-expanded',VS.open[rid]?'true':'false'); td.appendChild(b); tr.appendChild(td);
+    return tr;
+  }
+  function line(label,valueNode,buttons,prose){
+    var d=el('div',null,'line'), u=el('div',null,prose?'u p':'u');
+    if(typeof valueNode==='string')u.textContent=valueNode; else u.appendChild(valueNode);
+    d.append(el('div',label,'t'),u); buttons.forEach(function(b){ d.appendChild(b); }); return d;
+  }
+  function venueDetail(v){
+    var rid=v.restaurant_id, p=profileOf(v), busy=!!VS.busy[rid], statusId='venue-status-'+slugify(rid)+'-'+VS.venues.indexOf(v);
+    var tr=el('tr',null,'detail'), td=el('td'), box=el('div',null,'vd'); td.colSpan=5; tr.appendChild(td); td.appendChild(box);
+    var msg=el('p',VS.msg[rid]?VS.msg[rid].text:'','status'+(VS.msg[rid]&&VS.msg[rid].kind?' '+VS.msg[rid].kind:''));
+    msg.id=statusId; msg.setAttribute('role','status'); msg.setAttribute('aria-live','polite');
+
+    box.appendChild(el('h3','Links'));
+    box.appendChild(el('p','Owner links carry the owner key: send them to the owner only. Guest bill links come from the dashboard, one per bill.','hint'));
+    var links=venueLinks(v);
+    LINK_LABELS.forEach(function(l){
+      var url=links[l[0]], b=button('Copy link','',function(){ copyText(url,b,statusId); });
+      b.setAttribute('aria-label','Copy '+l[1].toLowerCase()+' link'); box.appendChild(line(l[1],url,[b]));
+    });
+
+    box.appendChild(el('h3','Keys'));
+    [['owner','Owner key',v.owner_key,'Every dashboard and editor that stored the old owner key loses access until it is opened with a new owner link.'],
+     ['guest','Guest key',v.guest_key,'The old guest key stops reading the published menu. Bill links (chk_ keys) are not affected.']].forEach(function(k){
+      var which=k[0], shown=VS.reveal[rid+'|'+which];
+      var copy=button('Copy','',function(){ copyText(k[2],copy,statusId); }); copy.setAttribute('aria-label','Copy '+k[1].toLowerCase());
+      var reveal=button(shown?'Hide':'Reveal','',function(){ VS.reveal[rid+'|'+which]=!shown; paintVenues(); });
+      var rot=button('Rotate','danger',function(){ VS.confirm[rid]=which; paintVenues(); }); rot.disabled=busy;
+      box.appendChild(line(k[1],shown?k[2]:mask(k[2]),[reveal,copy,rot]));
+      if(VS.confirm[rid]===which){
+        var c=el('div',null,'confirm'); c.appendChild(el('div','Rotate the '+which+' key for '+p.name+'? '+k[3]));
+        var row=el('div',null,'row');
+        var yes=button(busy?'Rotating...':'Rotate '+which+' key','danger',function(){ rotate(v,which); }); yes.disabled=busy;
+        row.append(yes,button('Cancel','',function(){ VS.confirm[rid]=null; paintVenues(); }));
+        c.appendChild(row); box.appendChild(c);
+      }
+    });
+
+    box.appendChild(el('h3','Demo payments'));
+    var demoText=p.demo?'On: the venue is marked as still using simulated payments.':'Off: the venue is marked as using its real payment provider.';
+    var toggle=button(p.demo?'Switch demo payments off':'Switch demo payments on','',function(){ saveProfile(v,{demo_payments:!p.demo},'Demo payments switched '+(p.demo?'off.':'on.')); });
+    toggle.disabled=busy;
+    box.appendChild(line('Status',demoText+' Stored with the profile; shared digital payments stay disabled until a provider callback is connected.',[toggle],true));
+
+    box.appendChild(el('h3','Profile'));
+    if(VS.editing[rid]){
+      var form=el('form'); form.noValidate=true;
+      form.appendChild(buildFields(VS.drafts[rid]||p,'edit-'+VS.venues.indexOf(v),function(){ VS.drafts[rid]=readFields(form); }));
+      form.appendChild(el('p','Name and place make the venue id: only their capitalisation can change here.','hint'));
+      var r=el('div',null,'row'), save=el('button',busy?'Saving...':'Save profile','btn primary'); save.type='submit'; save.disabled=busy;
+      r.append(save,button('Cancel','',function(){ VS.editing[rid]=false; delete VS.drafts[rid]; VS.msg[rid]=null; paintVenues(); }));
+      form.appendChild(r);
+      form.onsubmit=function(e){
+        e.preventDefault();
+        var check=validateProfile(readFields(form),rid);
+        if(!check.ok){ VS.drafts[rid]=readFields(form); say(statusId,check.message,'err'); flagField(form,check.field); return; }
+        saveProfile(v,profilePayload(check.profile),'Profile saved.',true);
+      };
+      box.appendChild(form);
+    }else{
+      var sum=el('div');
+      var chip=function(hex){ var s=el('span',null,'chip'); s.style.background=hex; return s; };
+      var parts=el('span');
+      parts.appendChild(document.createTextNode('Brand '));
+      if(p.brand)parts.appendChild(chip(p.brand));
+      parts.appendChild(document.createTextNode((p.brand||'none')+' · Background '));
+      if(p.bg)parts.appendChild(chip(p.bg));
+      parts.appendChild(document.createTextNode((p.bg||'none')+' · Font '+(p.font||'default')+' · Google place id '+(p.gplace||'none')+' · Menu pack '+(p.menu||'none')+(v.profile?'':' · No profile saved yet')));
+      sum.appendChild(parts);
+      box.appendChild(line('Look',sum,[button('Edit profile','',function(){ VS.editing[rid]=true; VS.msg[rid]=null; paintVenues(); })],true));
+    }
+    box.appendChild(line('Venue id',rid,[]));
+    box.appendChild(line('Registered',when(v.created_at),[],true));
+    box.appendChild(msg);
+    return tr;
+  }
+
+  /* ---- actions ---- */
+  function act(v,promise,okText,after){
+    var rid=v.restaurant_id; VS.busy[rid]=true; VS.msg[rid]=null; paintVenues();
+    promise.then(function(updated){
+      VS.busy[rid]=false; if(updated&&updated.restaurant_id)replaceVenue(updated);
+      if(after)after(); VS.msg[rid]={text:okText,kind:'ok'}; paintVenues();
+    },function(e){ VS.busy[rid]=false; VS.msg[rid]={text:e.message,kind:'err'}; paintVenues(); });
+  }
+  function saveProfile(v,payload,okText,closeForm){
+    act(v,adminRpc('aal_admin_update_profile',{p_rid:v.restaurant_id,p_profile:payload}),okText,function(){
+      if(closeForm){ VS.editing[v.restaurant_id]=false; delete VS.drafts[v.restaurant_id]; }
+    });
+  }
+  function rotate(v,which){
+    act(v,adminRpc('aal_admin_rotate_keys',{p_rid:v.restaurant_id,p_which:which}),
+      'New '+which+' key issued and shown above. '+(which==='owner'?'Send the owner the new owner links.':'The old guest key no longer reads the menu.'),
+      function(){ VS.confirm[v.restaurant_id]=null; VS.reveal[v.restaurant_id+'|'+which]=true; });
+  }
+
+  /* ---- register form ---- */
+  var slugTouched=false;
+  function registerFields(){
+    var box=$('register-fields'); box.replaceChildren();
+    box.appendChild(buildFields({},'reg',null));
+    var name=$('reg-name'), slug=$('reg-slug');
+    name.addEventListener('input',function(){ if(!slugTouched)slug.value=slugify(name.value); });
+    slug.addEventListener('input',function(){ slugTouched=slug.value!==''; });
+  }
+  function register(e){
+    e.preventDefault();
+    var form=$('register-form'), check=validateProfile(readFields(form),null);
+    if(!check.ok){ say('register-status',check.message,'err'); flagField(form,check.field); return; }
+    var p=check.profile, submit=$('register-submit'), payload=profilePayload(p);
+    delete payload.name; delete payload.place; delete payload.slug;
+    submit.disabled=true; submit.textContent='Registering...'; say('register-status','');
+    adminRpc('aal_admin_register_venue',{p_name:p.name,p_place:p.place,p_slug:p.slug,p_profile:payload}).then(function(r){
+      submit.disabled=false; submit.textContent='Register venue';
+      say('register-status',(r&&r.existed?p.name+' was already registered: its keys are unchanged and its profile is updated.':'Registered '+p.name+'.')+' Its links are in the list above.','ok');
+      slugTouched=false; registerFields();
+      return loadVenues(r&&r.restaurant_id);
+    },function(err){ submit.disabled=false; submit.textContent='Register venue'; say('register-status',err.message,'err'); });
+  }
+
+  /* ---- connect ---- */
+  function connect(e){
+    e.preventDefault();
+    var k=trimmed($('admin-key').value);
+    if(!/^adm_[0-9a-f]{12,64}$/.test(k)){ say('venues-status','An admin key starts with adm_ followed by lower-case hex characters.','err'); $('admin-key').setAttribute('aria-invalid','true'); $('admin-key').focus(); return; }
+    $('admin-key').value=''; $('admin-key').removeAttribute('aria-invalid');
+    VS.key=k; storeKey(k); VS.loaded=false; VS.venues=[]; paintVenues(); loadVenues();
+  }
+  function forget(){
+    storeKey(''); VS.key=''; VS.venues=[]; VS.loaded=false; VS.open={}; VS.reveal={}; VS.editing={}; VS.drafts={}; VS.confirm={}; VS.msg={};
+    say('venues-status','Admin key removed from this tab.'); say('register-status',''); paintVenues();
+  }
+
+  $('admin-connect').addEventListener('submit',connect);
+  $('admin-forget').onclick=forget;
+  $('venues-refresh').onclick=function(){ loadVenues(); };
+  $('register-form').addEventListener('submit',register);
+  $('venue-base').value=defaultBase();
+  $('venue-base').addEventListener('input',function(){ paintVenues(); });
+  registerFields();
+  VS.key=storedKey();
+  paintVenues();
+  if(VS.key)loadVenues();
+  window.AalaynaAdminVenues={venueLinks:venueLinks,validateProfile:validateProfile,slugify:slugify};
+})();
+</script>
+<!-- ==== T6 Venues (onboarding) script: end ==== -->
 </body>
 </html>
