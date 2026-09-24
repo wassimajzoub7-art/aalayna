@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aalayna onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?t={{TOKEN}}">
+<script src="app.js?t={{TOKEN}}" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="n">aalay<b>na</b></span><span class="t">Onboarding</span></div>
+  <button class="pill" id="keys-pill" type="button">Keys</button>
+</header>
+
+<div class="shell">
+  <aside class="side">
+    <button class="btn primary wide" id="new-btn" type="button">New venue</button>
+    <h2 class="lbl side-h">Venues</h2>
+    <ul class="vlist" id="venue-list"></ul>
+    <p class="empty" id="venue-empty">No venue yet. Each restaurant you start shows here, with how far it got.</p>
+  </aside>
+
+  <main class="main">
+    <p class="notice err" id="fatal" hidden></p>
+
+    <!-- keys -->
+    <section class="card" id="v-keys" hidden>
+      <h2>Keys for this session</h2>
+      <p class="cs">The tool needs two keys to register the venue and read the menu. They stay in the memory of the tool running on this computer until you press Ctrl+C in its window. They are not saved anywhere, and this page never gets them back: it only sees whether each one is set.</p>
+      <div class="fields">
+        <div>
+          <label class="lbl" for="k-admin">Admin key <span class="st" id="k-admin-st"></span></label>
+          <input class="in" id="k-admin" type="password" autocomplete="off" spellcheck="false">
+          <p class="hint">The admin key from admin.sql. It registers the venue and writes its colours.</p>
+        </div>
+        <div>
+          <label class="lbl" for="k-anthropic">Anthropic API key <span class="st" id="k-anthropic-st"></span></label>
+          <input class="in" id="k-anthropic" type="password" autocomplete="off" spellcheck="false">
+          <p class="hint">From console.anthropic.com. It reads the menu, picks the colours and drafts the welcome note.</p>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="k-save" type="button">Use for this session</button>
+        <button class="btn" id="k-later" type="button">Not now</button>
+      </div>
+      <p class="status" id="k-status" role="status"></p>
+    </section>
+
+    <!-- new venue -->
+    <section id="v-form" hidden>
+      <form class="card" id="form" novalidate>
+        <h2>New venue</h2>
+        <p class="cs">Fill this in once the restaurant has signed. The tool registers it, reads its colours and its menu, then stops so you can check the menu. After you approve it, it issues the table codes, adds the staff, runs a live test and drafts the welcome note.</p>
+
+        <div class="fields">
+          <div>
+            <label class="lbl" for="f-name">Restaurant name</label>
+            <input class="in" id="f-name" maxlength="40" autocomplete="off">
+            <p class="err-t" id="e-name"></p>
+          </div>
+          <div>
+            <label class="lbl" for="f-place">Place</label>
+            <input class="in" id="f-place" maxlength="40" autocomplete="off" placeholder="Beirut">
+            <p class="hint">The area or city. Name and place together identify the venue and cannot change later.</p>
+            <p class="err-t" id="e-place"></p>
+          </div>
+          <div>
+            <label class="lbl" for="f-slug">Short name</label>
+            <input class="in mono" id="f-slug" maxlength="40" autocomplete="off" spellcheck="false">
+            <p class="hint" id="h-slug">Filled from the name. It goes into the link on every table card, so it cannot change after the cards are printed.</p>
+            <p class="err-t" id="e-slug"></p>
+          </div>
+        </div>
+        <div class="notice" id="f-packnote" hidden>
+          <span id="f-packtext"></span>
+          <label class="check"><input type="checkbox" id="f-reimport"> Read the menu again from the files below and replace it</label>
+        </div>
+
+        <div class="fields">
+          <div>
+            <span class="lbl" id="l-cur">Menu prices are in</span>
+            <div class="seg" role="radiogroup" aria-labelledby="l-cur">
+              <label><input type="radio" name="cur" value="USD" checked><span>US dollars</span></label>
+              <label><input type="radio" name="cur" value="LBP"><span>Lebanese pounds</span></label>
+            </div>
+            <p class="err-t" id="e-currency"></p>
+          </div>
+          <div id="rate-box" hidden>
+            <label class="lbl" for="f-rate">LBP per US dollar</label>
+            <input class="in" id="f-rate" inputmode="numeric" autocomplete="off">
+            <p class="hint">Prices are converted to dollars at this rate. Set the same rate on the venue dashboard.</p>
+            <p class="err-t" id="e-rate"></p>
+          </div>
+          <div>
+            <label class="lbl" for="f-tables">Number of tables</label>
+            <input class="in" id="f-tables" type="number" min="1" max="200" step="1" inputmode="numeric">
+            <p class="hint">One card and one code per table, 1 to 200.</p>
+            <p class="err-t" id="e-tables"></p>
+          </div>
+          <div>
+            <label class="lbl" for="f-owner">Owner email</label>
+            <input class="in" id="f-owner" type="email" autocomplete="off" spellcheck="false">
+            <p class="hint">Signs in to the dashboard and the menu editor with this email.</p>
+            <p class="err-t" id="e-owner"></p>
+          </div>
+        </div>
+
+        <h3 class="sec-h">Staff</h3>
+        <p class="cs">Managers and waiters who sign in with their own email. No email is sent to them; they get a sign-in code when they open the dashboard. You can leave this empty.</p>
+        <div id="staff-rows"></div>
+        <button class="btn small" id="staff-add" type="button">Add a person</button>
+        <p class="err-t" id="e-staff"></p>
+
+        <h3 class="sec-h">Menu</h3>
+        <p class="cs">The menu as a PDF, or photos of its pages. Put the photos in page order: the order matters. PDF, JPG, PNG or WebP; photos up to 5 MB each; 40 MB in total.</p>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-t">
+          <p id="drop-t"><b>Drop the menu files here</b> or <span class="link">choose them</span></p>
+          <input type="file" id="f-files" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" hidden>
+        </div>
+        <ol class="files" id="file-list"></ol>
+        <p class="hint" id="file-total"></p>
+        <p class="err-t" id="e-files"></p>
+
+        <details class="more" id="more">
+          <summary>Colours and font (optional)</summary>
+          <p class="cs">Leave empty and the tool takes them from the menu. Fill all three and the model is not asked.</p>
+          <div class="fields">
+            <div>
+              <label class="lbl" for="f-brand">Brand colour</label>
+              <div class="color"><span class="swatch" id="s-brand"></span><input class="in mono" id="f-brand" placeholder="#EA312B" maxlength="7" autocomplete="off"></div>
+              <p class="err-t" id="e-brand"></p>
+            </div>
+            <div>
+              <label class="lbl" for="f-bg">Background</label>
+              <div class="color"><span class="swatch" id="s-bg"></span><input class="in mono" id="f-bg" placeholder="#F0EFEA" maxlength="7" autocomplete="off"></div>
+              <p class="err-t" id="e-bg"></p>
+            </div>
+            <div>
+              <label class="lbl" for="f-font">Font</label>
+              <input class="in" id="f-font" list="fonts" placeholder="Playfair Display" maxlength="40" autocomplete="off">
+              <datalist id="fonts"></datalist>
+              <p class="err-t" id="e-font"></p>
+            </div>
+          </div>
+        </details>
+
+        <p class="status err" id="f-status" role="alert"></p>
+        <div class="row">
+          <button class="btn primary" id="f-submit" type="submit">Start onboarding</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- one venue: steps, then the checkpoint or the done view, then the log -->
+    <section id="v-venue" hidden>
+      <div class="vhead">
+        <div>
+          <h1 id="vh-name"></h1>
+          <p class="sub" id="vh-sub"></p>
+        </div>
+        <div class="actions" id="vh-actions">
+          <button class="btn primary" id="a-resume" type="button" hidden>Run again</button>
+          <button class="btn danger" id="a-reset" type="button" hidden>Start over</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="heading">
+          <h2>Steps</h2>
+          <span class="badge" id="vh-status"></span>
+        </div>
+        <ol class="steps" id="steps"></ol>
+        <div class="notice err" id="fail-box" hidden>
+          <p id="fail-text"></p>
+          <p class="hint" id="fail-hint"></p>
+          <div class="row" id="fail-keys" hidden><button class="btn small" id="fail-keys-btn" type="button">Enter the keys</button></div>
+        </div>
+      </div>
+
+      <div class="card" id="check-card" hidden>
+        <div class="heading">
+          <div>
+            <h2>Check the menu before it goes live</h2>
+            <p class="cs" id="ck-intro"></p>
+          </div>
+          <span class="save" id="ck-save" role="status"></span>
+        </div>
+        <div class="flags" id="ck-flags"></div>
+        <div id="ck-table"></div>
+        <p class="notice" id="ck-block" hidden></p>
+        <p class="status err" id="ck-status" role="alert"></p>
+        <div class="row">
+          <button class="btn primary" id="ck-approve" type="button">Approve and publish</button>
+          <button class="btn" id="ck-reimport" type="button">Re-extract</button>
+        </div>
+        <details class="report" id="ck-report-box">
+          <summary>What the importer reported</summary>
+          <pre id="ck-report"></pre>
+        </details>
+      </div>
+
+      <div class="card" id="done-card" hidden>
+        <h2 id="dn-title"></h2>
+        <p class="cs">The menu is published, the table codes are issued, the staff are on the list and the live test ran. What is left is yours to do.</p>
+
+        <h3 class="sec-h">Live test on table 9999</h3>
+        <ul class="checks" id="dn-checks"></ul>
+
+        <h3 class="sec-h">Table cards</h3>
+        <p class="cs" id="dn-cards-t"></p>
+        <div class="row"><button class="btn primary" id="dn-print" type="button">Print table cards</button></div>
+
+        <h3 class="sec-h">Welcome note for the owner</h3>
+        <div id="dn-welcome-box">
+          <div class="row wa">
+            <div class="wa-f">
+              <label class="lbl" for="dn-wa">Your WhatsApp number</label>
+              <input class="in" id="dn-wa" inputmode="tel" autocomplete="tel" placeholder="+961 70 123 456">
+            </div>
+            <button class="btn primary" id="dn-copy" type="button">Copy</button>
+          </div>
+          <p class="status" id="dn-copy-st" role="status"></p>
+          <div class="note" id="dn-note"></div>
+        </div>
+        <p class="cs" id="dn-no-welcome" hidden>The welcome step was skipped, so there is no note to send.</p>
+
+        <h3 class="sec-h">Still to do by hand</h3>
+        <ul class="todo" id="dn-todo"></ul>
+      </div>
+
+      <details class="card log" id="log-box" open>
+        <summary>What the tool printed</summary>
+        <pre id="log" aria-live="polite"></pre>
+      </details>
+    </section>
+  </main>
+</div>
+
+<dialog id="dlg">
+  <h2 id="dlg-title"></h2>
+  <p class="cs" id="dlg-text"></p>
+  <div class="row end">
+    <button class="btn" id="dlg-cancel" type="button">Cancel</button>
+    <button class="btn danger" id="dlg-ok" type="button"></button>
+  </div>
+</dialog>
+</body>
+</html>

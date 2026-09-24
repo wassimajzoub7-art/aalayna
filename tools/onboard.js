@@ -13,7 +13,8 @@
 
    Environment: AALAYNA_ADMIN_KEY (register, theme), ANTHROPIC_API_KEY (theme, menu,
    welcome). The Supabase URL and anon key come from aalayna-config.js.
-   Run with --help for every flag. */
+   Run with --help for every flag. `node tools/onboard.js ui` runs the same pipeline from a
+   page in the browser (tools/onboard-ui.js). */
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -49,7 +50,9 @@ const HELP = [
   '  --fixture-dir DIR  replay saved model answers: DIR/theme.json, DIR/welcome.json,',
   '                     DIR/import-menu.json (passed to importMenu as its fixture)',
   '',
-  'Environment: AALAYNA_ADMIN_KEY (register, theme), ANTHROPIC_API_KEY (theme, menu, welcome).'
+  'Environment: AALAYNA_ADMIN_KEY (register, theme), ANTHROPIC_API_KEY (theme, menu, welcome).',
+  '',
+  'node tools/onboard.js ui [--port 8790] [--no-open]   the same steps from a page in the browser'
 ].join('\n');
 
 class Usage extends Error {}
@@ -163,6 +166,8 @@ function pad(s, n) { s = String(s); return s.length >= n ? s : s + ' '.repeat(n 
 async function main(argv, opts) {
   opts = opts || {};
   const out = opts.out || function (l) { process.stdout.write(l + '\n'); };
+  // optional, for tools/onboard-ui.js: {step, index, status, summary} at each step change
+  const progress = typeof opts.progress === 'function' ? opts.progress : function () {};
   const env = opts.env || process.env;
   const cwd = opts.cwd || ROOT;
   let parsed, flags;
@@ -253,18 +258,20 @@ async function main(argv, opts) {
     const s = STEPS[i], rec = state.steps[s.name];
     const head = '[' + (i + 1) + '/' + STEPS.length + '] ' + pad(s.name, 9);
     if (selected.indexOf(s.name) < 0) continue;
-    if (!forced && (rec.status === 'done' || rec.status === 'skipped')) { out(head + ' ' + pad(rec.status, 7) + ' (earlier) ' + (rec.summary || '')); continue; }
+    if (!forced && (rec.status === 'done' || rec.status === 'skipped')) { out(head + ' ' + pad(rec.status, 7) + ' (earlier) ' + (rec.summary || '')); progress({ step: s.name, index: i, status: rec.status, summary: rec.summary || '', earlier: true }); continue; }
     const skip = s.skip && s.skip(ctx);
     if (skip) {
       state.steps[s.name] = { status: 'skipped', finished_at: new Date().toISOString(), summary: skip, data: rec.data };
       writeState(paths.state, state);
       out(head + ' skipped ' + skip);
+      progress({ step: s.name, index: i, status: 'skipped', summary: skip });
       continue;
     }
     const fail = function (msg) {
       state.steps[s.name] = Object.assign({}, state.steps[s.name], { status: 'failed', finished_at: new Date().toISOString(), error: msg, summary: msg });
       writeState(paths.state, state);
       out(head + ' failed  ' + msg);
+      progress({ step: s.name, index: i, status: 'failed', summary: msg });
       code = 1;
     };
     if (s.name !== 'register' && !state.venue) { fail('The venue is not registered yet. Run the register step first.'); break; }
@@ -277,6 +284,7 @@ async function main(argv, opts) {
     current = s.name;
     state.steps[s.name] = Object.assign({}, rec, { status: 'pending', started_at: new Date().toISOString(), error: undefined });
     writeState(paths.state, state);
+    progress({ step: s.name, index: i, status: 'running', summary: '' });
     let r;
     try { r = await s.run(ctx); }
     catch (e) { r = { ok: false, summary: e.message }; }
@@ -292,6 +300,7 @@ async function main(argv, opts) {
     state.steps[s.name] = { status: r.pause ? 'pending' : 'done', started_at: state.steps[s.name].started_at, finished_at: new Date().toISOString(), summary: r.summary, data };
     writeState(paths.state, state);
     out(head + ' ' + pad(r.pause ? 'waiting' : 'done', 7) + ' ' + r.summary);
+    progress({ step: s.name, index: i, status: r.pause ? 'waiting' : 'done', summary: r.summary });
     (r.lines || []).forEach(function (l) { out('      ' + l); });
     if (r.pause) { paused = s.name; break; }
   }
@@ -314,27 +323,41 @@ async function main(argv, opts) {
     out('Not finished: ' + next.join(', ') + '. Run  node tools/onboard.js --slug ' + slug + '  to continue.');
     return 0;
   }
-  const st = state.steps, rel = function (p) { return path.relative(cwd, p); };
-  const theme = st.theme.status === 'done' ? st.theme.data : null;
-  const demoOff = !(st.register.data && st.register.data.demo_payments === true);
   out('');
   out(inputs.name + ' is live. Still to do by hand:');
-  out('  [ ] Print the table cards: open ' + rel(paths.cards) + ' in a browser and print on card stock');
-  out(st.welcome.status === 'done'
-    ? '  [ ] Send the welcome note: ' + rel(paths.welcome) + ' (add your WhatsApp number first)'
-    : '  [ ] Write and send the welcome note (the welcome step was skipped)');
-  out('  [ ] If they want Google reviews, set their Google place id in admin.html (Venues, ' + inputs.name + '); there is no Places API key here');
-  out(theme
-    ? '  [ ] Check brand ' + theme.brand + ', background ' + (theme.bg || 'default') + ' and font ' + (theme.font || 'default') + ' against their Instagram'
-    : '  [ ] Set brand colour, background and font in admin.html (the theme step was skipped)');
-  if (inputs.currency !== 'USD') out('  [ ] Prices were converted from ' + inputs.currency + ' by the menu import: set the venue exchange rate on the dashboard to the rate it used (its report says which)');
-  out(demoOff ? '  [x] Demo payments are off for this venue (set at registration)' : '  [ ] Demo payments are ON for this existing venue: turn them off in admin.html');
+  manualChecklist(state, cwd, paths).forEach(function (l) { out('  ' + l); });
   return 0;
 }
 
-module.exports = { main, parseArgs, resolveInputs, STEPS, NAMES, HELP };
+/* The list printed once every step is settled, one '[ ] ' or '[x] ' line each. Also read
+   by tools/onboard-ui.js for its done view. */
+function manualChecklist(state, cwd, paths) {
+  const st = state.steps, inputs = state.inputs, rel = function (p) { return path.relative(cwd, p); };
+  const theme = st.theme.status === 'done' ? st.theme.data : null;
+  const demoOff = !(st.register.data && st.register.data.demo_payments === true);
+  const L = [];
+  L.push('[ ] Print the table cards: open ' + rel(paths.cards) + ' in a browser and print on card stock');
+  L.push(st.welcome.status === 'done'
+    ? '[ ] Send the welcome note: ' + rel(paths.welcome) + ' (add your WhatsApp number first)'
+    : '[ ] Write and send the welcome note (the welcome step was skipped)');
+  L.push('[ ] If they want Google reviews, set their Google place id in admin.html (Venues, ' + inputs.name + '); there is no Places API key here');
+  L.push(theme
+    ? '[ ] Check brand ' + theme.brand + ', background ' + (theme.bg || 'default') + ' and font ' + (theme.font || 'default') + ' against their Instagram'
+    : '[ ] Set brand colour, background and font in admin.html (the theme step was skipped)');
+  if (inputs.currency !== 'USD') L.push('[ ] Prices were converted from ' + inputs.currency + ' by the menu import: set the venue exchange rate on the dashboard to the rate it used (its report says which)');
+  L.push(demoOff ? '[x] Demo payments are off for this venue (set at registration)' : '[ ] Demo payments are ON for this existing venue: turn them off in admin.html');
+  return L;
+}
 
-if (require.main === module) {
+module.exports = { main, parseArgs, resolveInputs, manualChecklist, Usage, STEPS, NAMES, HELP };
+
+if (require.main === module && process.argv[2] === 'ui') {
+  // node tools/onboard.js ui: the same pipeline from a local page (tools/onboard-ui.js)
+  require('./onboard-ui.js').cli(process.argv.slice(3)).then(function (c) { if (c) process.exitCode = c; }, function (e) {
+    process.stderr.write('onboard ui: ' + (e && e.message || e) + '\n');
+    process.exitCode = 1;
+  });
+} else if (require.main === module) {
   main(process.argv.slice(2)).then(function (c) { process.exitCode = c; }, function (e) {
     process.stderr.write('onboard: ' + (e && e.message || e) + '\n');
     process.exitCode = 1;

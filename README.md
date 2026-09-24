@@ -155,7 +155,25 @@ confirms each one in the editor. See `tests/import-menu.test.cjs`.
 ## Onboarding a venue
 
 `tools/onboard.js` takes a signed restaurant to live in one command (Node 18 or later,
-no packages):
+no packages).
+
+**With the page.** Run `node tools/onboard.js ui`. It starts a small server on
+127.0.0.1 only (port 8790, or the next free one), opens the page in your browser and
+prints its address. The page asks for the admin key and the Anthropic key when they are
+not in the environment; they stay in the tool's memory for the session (until Ctrl+C),
+are never written to disk and never sent back to the page. Then a form takes the
+restaurant (name, place, short name, currency and LBP rate, tables, owner, staff, the
+menu PDF or photos in page order, optional colours and font), and the page shows the
+seven steps below as they run, with the tool's own lines. At the menu check it shows the
+extracted menu as an editable table (every change is saved to `venues/<slug>.json`),
+then **Approve and publish** or **Re-extract**. At the end it shows the live test, a
+**Print table cards** button, the welcome note with a **Copy** button that fills in your
+WhatsApp number, and the list of what is left to do by hand. The venues on the left can
+be opened again, run again after a failure, or started over. The address carries a
+session key: another page in the browser cannot drive the tool. See
+`tests/onboard-ui.test.cjs`.
+
+**From the command line:**
 
 ```sh
 export AALAYNA_ADMIN_KEY=...      # the adm_ key from admin.sql (steps register, theme)

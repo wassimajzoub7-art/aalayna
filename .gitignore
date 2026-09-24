@@ -48,6 +48,9 @@
 !tools/steps/*
 !tools/lib/
 !tools/lib/*
+# the onboarding page (T11); its uploads stay under onboarding/, which is ignored
+!tools/ui/
+!tools/ui/*
 !tests/fixtures/
 !tests/fixtures/*
 # never shipped: onboarding/<slug>.json holds the owner key, the card sheet the table codes
