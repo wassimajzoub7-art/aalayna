@@ -5,10 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aalayna: scan, split, settle.</title>
 <meta name="description" content="QR menus, bill splitting and settlement designed for restaurants in Lebanon. Explore optional customer opt-ins, return-visit insights and a free two-month pilot.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Aalayna">
+<meta property="og:title" content="Aalayna: scan, split, settle.">
+<meta property="og:description" content="QR menus, bill splitting and settlement designed for restaurants in Lebanon. Guests view, split and pay from the table: one QR, their language, USD or LBP.">
+<meta property="og:url" content="https://aalayna.com/">
+<meta property="og:locale" content="en_GB">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:image" content="https://aalayna.com/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Aalayna payment screen on a phone: the guest's share, a tip, and Whish Money, card or cash.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://aalayna.com/">
+<link rel="alternate" hreflang="fr" href="https://aalayna.com/fr/">
+<link rel="alternate" hreflang="x-default" href="https://aalayna.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="website.css?v=4">
+<link rel="stylesheet" href="website.css?v=5">
 <script src="aalayna-config.js"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
@@ -18,8 +33,9 @@
 <header class="site-nav">
   <nav class="wrap nav-in" aria-label="Main navigation">
     <a class="logo" href="index.html" aria-label="Aalayna home">aalay<b>na</b></a>
-    <div class="nav-links"><a href="#how">How it works</a><a href="#return-visits">Bring guests back</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
-    <a class="btn compact" data-track="booking_click" data-placement="navigation" href="book.html">Let’s talk</a>
+    <div class="nav-links"><a href="#how">How it works</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
+    <a class="btn compact" data-track="booking_click" data-placement="navigation" href="book.html">Book a 15-min call</a>
+    <a href="fr/" hreflang="fr" lang="fr" aria-label="FR, version française" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;text-decoration:none">FR</a>
   </nav>
 </header>
 <main id="main">
@@ -27,49 +43,38 @@
     <div class="hero-copy">
       <p class="eyebrow">For restaurants in Lebanon</p>
       <h1 id="hero-title">The bill.<br>The split.<br><em>Aalayna.</em></h1>
-      <p class="lead">Let guests view, split and settle their bill from the table. One QR, in their language, with the way they want to pay. Then build a connection with guests who choose to hear from you.</p>
-      <p class="supporting">English · Français · العربية<br>Designed for Whish, card and cash · USD &amp; LBP</p>
+      <p class="lead">Guests view, split and pay from the table: one QR, their language, USD or LBP.</p>
+      <p class="supporting">English · Français · العربية<br>Designed for Whish, card and cash</p>
       <div class="actions">
-        <a class="btn" data-track="booking_click" data-placement="hero" href="book.html">Discuss a pilot</a>
-        <a class="btn outline" data-track="whatsapp_click" data-placement="hero" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20Aalayna%20for%20my%20restaurant">WhatsApp us</a>
+        <a class="btn" data-track="whatsapp_click" data-placement="hero" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20Aalayna%20for%20my%20restaurant">WhatsApp us</a>
+        <a class="btn outline" data-track="booking_click" data-placement="hero" href="book.html">Book a 15-min call</a>
       </div>
       <p class="fine">Two months free from go-live. Continue only if it works for your restaurant.</p>
     </div>
+    <figure class="hero-shot"><div class="phone"><picture><source srcset="images/guest-pay.webp" type="image/webp"><img src="images/guest-pay.png" width="780" height="1688" fetchpriority="high" alt="A guest's phone at table 12 showing $41.94 to pay, about LL 3,753,630, a 10% tip for the waiter, and a choice of Whish Money, card or paying cash."></picture></div></figure>
   </section>
 
   <section class="wrap section" id="how" aria-labelledby="how-title">
     <p class="eyebrow">From the first scan to the last payment</p><h2 id="how-title">Three steps. At their own pace.</h2>
     <div class="steps">
-      <article><span class="number">01</span><h3>Scan &amp; browse</h3><p>Open the restaurant’s menu from the table QR. Choose a language and view prices in dollars or lira.</p></article>
-      <article><span class="number">02</span><h3>View &amp; split</h3><p>See the bill. Pay for the whole table, split evenly, select items or choose an amount.</p></article>
-      <article><span class="number">03</span><h3>Settle your way</h3><p>Use a supported digital payment method, or request cash collection with the change needed. Staff confirm cash when it is collected.</p></article>
+      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-menu-plain.webp" type="image/webp"><img src="images/guest-menu-plain.png" width="780" height="1688" loading="lazy" alt="The menu on a guest's phone at table 12, with the language and currency switches at the top and dishes priced in dollars."></picture></div><figcaption>The table’s menu, in English and dollars.</figcaption></figure><span class="number">01 · Menu</span><h3>Scan &amp; browse</h3><p>Open the restaurant’s menu from the table QR. Choose a language and view prices in dollars or lira.</p></article>
+      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-split.webp" type="image/webp"><img src="images/guest-split.png" width="780" height="1688" loading="lazy" alt="The split screen: the bill divided evenly between 4 people, $38.13 each, about LL 3,412,635."></picture></div><figcaption>Split evenly between four: $38.13 each.</figcaption></figure><span class="number">02 · Bill</span><h3>View &amp; split</h3><p>See the bill. Pay for the whole table, split evenly, select items or choose an amount.</p></article>
+      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-pay-cash.webp" type="image/webp"><img src="images/guest-pay-cash.png" width="780" height="1688" loading="lazy" alt="The payment screen with paying cash selected and the guest choosing to hand over a $50 note for a $23.60 total."></picture></div><figcaption>Paying cash: the guest picks their note.</figcaption></figure><span class="number">03 · Payment</span><h3>Settle your way</h3><p>Use a supported digital payment method, or request cash collection with the change needed. Staff confirm cash when it is collected.</p></article>
     </div>
   </section>
 
   <section class="benefits-band" id="outcomes">
     <div class="wrap section" aria-labelledby="benefits-title">
       <p class="eyebrow">What changes, in numbers</p><h2 id="benefits-title">Four things owners can measure.</h2>
-      <div class="benefits outcomes">
-        <article><h3>Tables turn faster</h3><p>Fourteen minutes back on every table that settles itself: no waiting for the bill, the machine, or the change. On a night with a queue, that is the next party seated sooner.</p><a class="calc-link" data-track="numbers_click" data-placement="outcome_turns" href="numbers.html?focus=turns">Calculate it for your restaurant</a></article>
-        <article><h3>Servers earn more tips</h3><p>A tip prompt at the moment of payment, 10% preselected, three taps. Tables that never tipped start to, and the ones that did tip more.</p><a class="calc-link" data-track="numbers_click" data-placement="outcome_tips" href="numbers.html?focus=tips">Calculate it for your restaurant</a></article>
-        <article><h3>More Google reviews</h3><p>One tap to rate after paying. Happy guests go straight to your Google page; unhappy ones send a private note to you instead.</p><a class="calc-link" data-track="numbers_click" data-placement="outcome_reviews" href="numbers.html?focus=reviews">Calculate it for your restaurant</a></article>
-        <article><h3>Guests who come back</h3><p>A number or email left at the receipt, with separate permission for offers, becomes a list you own, linked to what each guest spent and when they last came.</p><a class="calc-link" data-track="numbers_click" data-placement="outcome_guests" href="numbers.html?focus=guests">Calculate it for your restaurant</a></article>
+      <div class="outcomes">
+        <article><p class="outcome-figure">13 min</p><p class="outcome-source"><span class="source-tag">Assumption</span> Calculator defaults: 20 min today, 4 min to settle on the phone, the same 3 min change trip in both.</p><h3>Tables turn faster</h3><p>Up to 13 minutes back per table (illustrative): no waiting to catch the waiter, for the printed bill or for the trip to the till. On a night with a queue, that is the next party seated sooner.</p></article>
+        <article><p class="outcome-figure">10%</p><p class="outcome-source"><span class="source-tag">Product</span> The tip preselected at payment. The calculator assumes 75% of tables tip, 9% on average.</p><h3>Servers earn more tips</h3><p>A tip prompt at the moment of payment, 10% preselected, three taps. Tables that never tipped start to, and the ones that did tip more.</p></article>
+        <article><p class="outcome-figure">1 tap</p><p class="outcome-source"><span class="source-tag">Product</span> To rate the visit after paying. The calculator assumes 4% of Aalayna bills lead to a Google review.</p><h3>More Google reviews</h3><p>One tap to rate after paying. Happy guests go straight to your Google page; unhappy ones send a private note to you instead.</p></article>
+        <article><p class="outcome-figure">your list</p><p class="outcome-source"><span class="source-tag">Product</span> Contacts guests choose to leave. The calculator assumes 20% leave one, and half of new ones agree to offers.</p><h3>Guests who come back</h3><p>A number or email left at the receipt, with separate permission for offers, becomes a list you own, linked to what each guest spent and when they last came.</p></article>
       </div>
-      <p class="fine outcomes-note">Figures on the calculator are labelled as yours, a public benchmark, or our assumption. The two-month pilot replaces every assumption with your own data.</p>
+      <a class="calc-link" data-track="numbers_click" data-placement="outcomes" href="numbers.html?focus=all">Calculate it for your restaurant</a>
+      <p class="fine outcomes-note">Figures on the calculator are either what you type or our assumption, and each assumption is labelled. The two-month pilot replaces every assumption with your own data.</p>
     </div>
-  </section>
-  <section class="wrap section retention-section" id="return-visits" aria-labelledby="retention-title">
-    <div class="retention-heading">
-      <div><p class="eyebrow">Beyond the bill</p><h2 id="retention-title">Bring guests back.</h2></div>
-      <p>A good visit can be the start of a lasting relationship. Give guests an optional way to stay in touch, understand their recorded visits and prepare a relevant invitation to return.</p>
-    </div>
-    <div class="retention-steps">
-      <article><span class="number">01 · Connect</span><h3>Build your own customer list.</h3><p>Guests can leave an email or WhatsApp number after a confirmed payment. Permission for offers is separate from their receipt, and always optional.</p></article>
-      <article><span class="number">02 · Understand</span><h3>See who comes back.</h3><p>Link opted-in customers to confirmed bills. Recognise first-time guests, regulars and customers who haven’t visited recently.</p></article>
-      <article><span class="number">03 · Invite</span><h3>Make the next visit relevant.</h3><p>Prepare an invitation for a specific group, review the audience and follow recorded return visits. Your team stays in control of each campaign.</p></article>
-    </div>
-    <div class="retention-status"><span class="retention-badge">In development</span><p>Customer history and campaign planning are available in the prototype. <strong>WhatsApp and email sending are upcoming.</strong> No messages are sent today.</p></div>
-    <div class="retention-footer"><p>Start with a simple question: how do we encourage a first-time guest to visit again?</p><a class="text-link" data-track="booking_click" data-placement="retention" href="book.html">Discuss repeat visits for your restaurant →</a></div>
   </section>
 
   <section class="wrap section" id="experience" aria-labelledby="experience-title">
@@ -81,12 +86,9 @@
         <h3 class="subheading">Make it easy to share feedback.</h3>
         <p>After payment, guests can rate their visit and choose public review or private feedback in one simple flow. Feedback stays optional.</p>
       </div>
-      <div class="conversation-card">
-        <p class="eyebrow">Let’s make it relevant to you</p>
-        <h3>Let’s talk about your floor.</h3>
-        <p>Tell us how your restaurant runs. We’ll discuss your team’s needs, POS compatibility and payment setup, then agree whether a pilot makes sense.</p>
-        <p>Bring your questions. We’ll focus on the parts that matter to your floor.</p>
-        <div class="actions"><a class="btn full" data-track="booking_click" data-placement="experience" href="book.html">Book a conversation</a></div>
+      <div class="both-sides">
+        <figure class="shot"><div class="phone small"><picture><source srcset="images/guest-menu.webp" type="image/webp"><img src="images/guest-menu.png" width="780" height="1688" loading="lazy" alt="The guest menu with the dietary filters open and Vegetarian selected: 58 of 72 dishes work for this guest."></picture></div><figcaption><strong>The guest’s menu</strong>Filtered to vegetarian dishes.</figcaption></figure>
+        <figure class="shot"><div class="panel"><picture><source srcset="images/editor-panel.webp" type="image/webp"><img src="images/editor-panel.png" width="960" height="1600" loading="lazy" alt="The restaurant's menu editor: the Kababji menu marked live, salads and appetizers with their prices, and a button to reprice the whole menu."></picture></div><figcaption><strong>Publish a price change in seconds.</strong>No app for the owner: it runs in the browser.</figcaption></figure>
       </div>
     </div>
   </section>
@@ -97,8 +99,8 @@
     <div class="pricing-grid">
       <div class="pilot">
         <span class="pill">Free two-month pilot</span><h3>A practical test with your team.</h3>
-        <ol><li><b>Check the fit.</b> Share your menu, POS and payment setup. We agree the supported workflow before scheduling.</li><li><b>Prepare your floor.</b> Menu setup, table QR cards and staff onboarding are included.</li><li><b>Look at the evidence.</b> Review guest usage, settlement time, staff workload, payment reconciliation and recorded customer opt-ins. Assess return visits over time where records are available.</li></ol>
-        <a class="btn" data-track="booking_click" data-placement="pilot" href="book.html">Discuss a pilot</a>
+        <ol class="pilot-steps"><li><span class="number">01 · Check the fit</span> Share your menu, POS and payment setup. We agree the supported workflow before scheduling.</li><li><span class="number">02 · Prepare your floor</span> Menu setup, table QR cards and staff onboarding are included.</li><li><span class="number">03 · Look at the evidence</span> Review guest usage, settlement time, staff workload, payment reconciliation and recorded customer opt-ins. Assess return visits over time where records are available.</li></ol>
+        <a class="btn" data-track="booking_click" data-placement="pilot" href="book.html">Book a 15-min call</a>
         <p class="fine">The two free months start at go-live, after POS and payment setup are ready. No automatic paid renewal: you choose whether to continue.</p>
       </div>
       <div class="price-card">
@@ -106,29 +108,42 @@
         <p class="founder">First 10 founding restaurants lock in <strong>$100/month per location.</strong></p>
         <ul><li>QR menu, bill splitting &amp; supported settlement methods</li><li>Menu editor &amp; service hours</li><li>Payment records, cash requests &amp; tip attribution</li><li>Optional customer opt-ins &amp; recorded visit history</li><li>Return-visit campaign planning &amp; weekly recommendations</li><li>Guest feedback</li><li>Menu setup &amp; staff onboarding</li></ul>
         <p class="price-note">No Aalayna commission on restaurant sales. WhatsApp and email sending are upcoming; messaging-provider charges will be confirmed before activation. Payment-provider fees may apply separately. Supported integrations and any additional setup costs are agreed before the pilot.</p>
-        <a class="btn light full" data-track="whatsapp_click" data-placement="pricing" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20check%20POS%20compatibility%20and%20pilot%20pricing.%20My%20restaurant%20is%3A%20">Check compatibility with us</a>
+        <a class="btn light full" data-track="whatsapp_click" data-placement="pricing" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20check%20POS%20compatibility%20and%20pilot%20pricing.%20My%20restaurant%20is%3A%20">WhatsApp us</a>
       </div>
     </div>
+  </section>
+
+  <section class="wrap section retention-section" id="return-visits" aria-labelledby="retention-title">
+    <div class="retention-heading">
+      <div><p class="eyebrow">Coming next</p><h2 id="retention-title">Bring guests back.</h2></div>
+      <p>A good visit can be the start of a lasting relationship. Give guests an optional way to stay in touch, understand their recorded visits and prepare a relevant invitation to return.</p>
+    </div>
+    <div class="retention-steps">
+      <article><span class="number">01 · Connect</span><h3>Build your own customer list.</h3><p>Guests can leave an email or WhatsApp number after a confirmed payment. Permission for offers is separate from their receipt, and always optional.</p></article>
+      <article><span class="number">02 · Understand</span><h3>See who comes back.</h3><p>Link opted-in customers to confirmed bills. Recognise first-time guests, regulars and customers who haven’t visited recently.</p></article>
+      <article><span class="number">03 · Invite</span><h3>Make the next visit relevant.</h3><p>Prepare an invitation for a specific group, review the audience and follow recorded return visits. Your team stays in control of each campaign.</p></article>
+    </div>
+    <div class="retention-status"><span class="retention-badge">In development</span><p>Customer history and campaign planning are available in the prototype. <strong>WhatsApp and email sending are upcoming.</strong> No messages are sent today.</p></div>
   </section>
 
   <section class="wrap section faq-section" id="faq" aria-labelledby="faq-title">
     <div><p class="eyebrow">Before you get started</p><h2 id="faq-title">Practical questions.<br>Clear answers.</h2></div>
     <div class="faq">
-      <details><summary>Is this ready to take real payments?</summary><p>Aalayna is currently in development. A live pilot requires a working POS connection and payment-provider setup, which we confirm with you before accepting real payments.</p></details>
       <details><summary>Will it work with my POS?</summary><p>Tell us the name and version of your POS. We need to check access to your live bills and how confirmed payments return to your records. Your POS remains the system of record; we confirm compatibility before agreeing a pilot.</p></details>
       <details><summary>What if a guest wants to pay cash?</summary><p>They can request cash collection and tell the floor which note they will hand over. The request remains pending until staff confirm collection. Guests can also ask their server for help as usual.</p></details>
+      <details><summary>Does every guest need an app or an account?</summary><p>No Aalayna download or account is needed to browse the menu or explore the guest flow. Paying with a wallet may require that provider’s app and account. Receipt and marketing sign-ups are optional and separate.</p></details>
       <details><summary>Where do payments and tips go?</summary><p>The intended setup uses the restaurant’s own supported merchant accounts. Settlement timing and processing charges depend on the provider and agreement. The restaurant manages tip distribution under its own policy; Aalayna records attribution and payout acknowledgements.</p></details>
+      <details><summary>Is this ready to take real payments?</summary><p>Cash, yes: a guest requests cash from the table, and the payment counts only once a staff member confirms they collected it. Card and Whish are not live yet. They need your payment provider connected first, and we set that up and test it with you before any guest can pay that way.</p></details>
       <details><summary>How do the two free months work?</summary><p>Your trial starts when your restaurant goes live, after POS and payment setup are ready. There is no Aalayna subscription fee for two months, and no automatic paid renewal. If you choose to continue, the price is $150/month per location, or $100/month per location for the first ten founding restaurants. Payment-provider fees are separate; any integration setup costs and future messaging charges are agreed in advance.</p></details>
       <details><summary>What is included in the price?</summary><p>The subscription is per location and includes the listed software features, menu setup and staff onboarding. The first ten founding restaurants receive the $100 monthly rate; the standard rate is $150. Payment-provider charges are separate. We agree integration scope and any additional setup costs in advance.</p></details>
       <details><summary>What do you need from our team?</summary><p>Your menu, table count, POS details and supported merchant-account setup. Your kitchen reviews ingredient and dietary information before it appears to guests. We arrange staff training around your service hours.</p></details>
-      <details><summary>Does every guest need an app or an account?</summary><p>No Aalayna download or account is needed to browse the menu or explore the guest flow. Paying with a wallet may require that provider’s app and account. Receipt and marketing sign-ups are optional and separate.</p></details>
       <details><summary>Can Aalayna help us bring customers back?</summary><p>That is the goal of the retention tools: collect optional contact details with separate marketing permission, link them to confirmed visits and prepare relevant invitations. The prototype supports customer history, audience planning and recorded return visits. WhatsApp and email sending are upcoming. We do not promise additional revenue; once messaging is connected, we can measure delivery and subsequent visits with your team over time.</p></details>
       <details><summary>Do guests have to share their contact details?</summary><p>No. Paying and leaving a review do not require an email or phone number. Guests can request a receipt without agreeing to restaurant offers. Visit insights cover identified payers with linked bills, not everyone seated at the table.</p></details>
       <details><summary>What happens if the connection drops?</summary><p>Guests can return to the usual staff-assisted payment process. A payment should only be marked confirmed after verification; the pilot will test the fallback and reconciliation process with your team.</p></details>
     </div>
   </section>
-  <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>Let’s talk about your restaurant.</h2><p>Share what your team needs. We’ll help you plan the next step.</p><div class="actions"><a class="btn" data-track="booking_click" data-placement="footer" href="book.html">Book a conversation</a></div></div></section>
+  <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>Tell us about your restaurant.</h2><p>Share what your team needs. We’ll help you plan the next step.</p><div class="actions"><a class="btn" data-track="whatsapp_click" data-placement="footer" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20Aalayna%20for%20my%20restaurant">WhatsApp us</a><a class="btn outline" data-track="booking_click" data-placement="footer" href="book.html">Book a 15-min call</a></div></div></section>
 </main>
-<footer class="wrap footer"><a class="logo" href="index.html">aalay<b>na</b></a><p>© 2026 Aalayna · For restaurants in Lebanon</p><a data-track="whatsapp_click" data-placement="footer_contact" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20Aalayna">Contact us on WhatsApp</a></footer>
+<footer class="wrap footer"><a class="logo" href="index.html">aalay<b>na</b></a><p>© 2026 Aalayna · For restaurants in Lebanon</p><a data-track="whatsapp_click" data-placement="footer_contact" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20Aalayna">WhatsApp us</a></footer>
 </body>
 </html>

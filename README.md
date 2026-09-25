@@ -4,6 +4,8 @@ Static restaurant product demo and marketing website. No package installation or
 
 The public homepage and booking page contain no interactive demos or app previews; calls to action lead to a pilot conversation or direct contact. They do not link into the full guest app, menu editor or dashboard. Those existing demo pages are still accessible by their direct URLs; removing navigation links is not access control.
 
+`fr/index.html` is the French homepage: the same ids, classes, images and tracked placements as `index.html`, linked both ways (FR in the English header, EN in the French footer) and declared with hreflang; the calculator and booking page are English only for now.
+
 ## Demo limits
 
 Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider or POS is connected. Without a configured bill/owner key the pages share only local demo data. Shared mode requires the Supabase migrations below. Staff sign in to the dashboard and editor with a one-time email code and a role (owner, manager, waiter); the owner key remains a bearer fallback and guests use per-bill and table keys. Do not use the demo to collect real payments, real card details, or guest contact data.

@@ -55,3 +55,9 @@
 !tests/fixtures/*
 # never shipped: onboarding/<slug>.json holds the owner key, the card sheet the table codes
 onboarding/
+# marketing screenshots and the share image (W3a)
+!images/
+!images/*
+# the French homepage (W4)
+!fr/
+!fr/*
