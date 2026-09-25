@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aalayna — operations</title>
+<title>Aalayna · operations</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
@@ -326,9 +326,9 @@
         <div class="d" id="settlement-change">Excluding tips</div></div>
       <div class="card"><div class="k">Completed bills</div><div class="v" id="t-scan">0</div>
         <div class="d">Fully paid and closed in this period</div></div>
-      <div class="card"><div class="k">Average completed bill</div><div class="v" id="k-avg">—</div>
+      <div class="card"><div class="k">Average completed bill</div><div class="v" id="k-avg">–</div>
         <div class="d">Per bill, excluding tips</div></div>
-      <div class="card"><div class="k">Tip rate</div><div class="v" id="k-tip">—</div>
+      <div class="card"><div class="k">Tip rate</div><div class="v" id="k-tip">–</div>
         <div class="d">tips ÷ net settled</div></div>
     </div>
 
@@ -366,9 +366,9 @@
     <div class="top"><div><h1>Business overview</h1><div class="sub" id="overview-period">Collected payments and customer growth</div></div></div>
     <div class="grid g4 owner-kpis">
       <div class="card"><div class="k">Bill payments collected</div><div class="v" id="week-net">$0.00</div><div class="d" id="overview-money-detail"></div><p class="metric-change" id="overview-money-change"></p></div>
-      <div class="card"><div class="k">Contact capture</div><div class="v" id="capture-rate">—</div><div class="d" id="capture-detail"></div><p class="metric-change" id="capture-change"></p></div>
-      <div class="card"><div class="k">Marketing sign-ups</div><div class="v" id="optin-rate">—</div><div class="d" id="optin-detail"></div><p class="metric-change" id="optin-change"></p></div>
-      <div class="card"><div class="k">Return within 30 days</div><div class="v" id="return-rate">—</div><div class="d" id="return-detail"></div><p class="metric-change" id="return-change"></p></div>
+      <div class="card"><div class="k">Contact capture</div><div class="v" id="capture-rate">–</div><div class="d" id="capture-detail"></div><p class="metric-change" id="capture-change"></p></div>
+      <div class="card"><div class="k">Marketing sign-ups</div><div class="v" id="optin-rate">–</div><div class="d" id="optin-detail"></div><p class="metric-change" id="optin-change"></p></div>
+      <div class="card"><div class="k">Return within 30 days</div><div class="v" id="return-rate">–</div><div class="d" id="return-detail"></div><p class="metric-change" id="return-change"></p></div>
     </div>
     <details class="ops-help metric-definitions"><summary>What these numbers mean</summary>
       <p id="overview-period-detail"></p>
@@ -502,7 +502,7 @@
 
     <div class="grid g2e">
       <div class="card">
-        <h3>Tips by server — this week</h3>
+        <h3>Tips by server &middot; this week</h3>
         <div class="cs">Suitable basis for weekly one-on-ones alongside guest feedback.</div>
         <div id="team" style="margin-top:8px"></div>
       </div>
@@ -559,7 +559,7 @@
 })();
 </script>
 <!-- ==== T4 staff sign-in: end ==== -->
-<script src="restaurant-ops.js?v=11"></script>
+<script src="restaurant-ops.js?v=12"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
@@ -591,14 +591,14 @@ function go(el, v){
   $('report-toolbar').hidden = v !== 'tonight' && v !== 'week';
 }
 
-/* ───────── Tonight — live from the store ───────── */
+/* ───────── Tonight · live from the store ───────── */
 function paintTonight(){
   ownerReportSnapshot = Aalayna.ownerReport($('report-period').value);
   var report=opsReport(), m=report.current, r=m.rails;
   $('r-whish').textContent=money(r.whish/100);$('r-card').textContent=money(r.card/100);$('r-cash').textContent=money(r.cash/100);
   $('r-tot').textContent=money(m.grossCents/100);$('k-tot').textContent=money(m.netCents/100);
-  $('t-scan').textContent=m.completedBills;$('k-avg').textContent=m.averageBillCents==null?'—':money(m.averageBillCents/100);
-  $('k-tip').textContent=m.netCents>0?opsPercent(m.tipCents/m.netCents):'—';
+  $('t-scan').textContent=m.completedBills;$('k-avg').textContent=m.averageBillCents==null?'–':money(m.averageBillCents/100);
+  $('k-tip').textContent=m.netCents>0?opsPercent(m.tipCents/m.netCents):'–';
   $('settlement-change').textContent=opsMoneyChange(m.netCents,report.previous.netCents);
   $('t-date').textContent='Open bills and collection requests · live now';
   $('report-period-note').textContent=report.window.label+' · Beirut time. Open bills and pending cash always stay live.';
@@ -775,7 +775,7 @@ async function refundRow(btn, id){
     }, 3000);
     return;
   }
-  try{await Aalayna.refund(id);toast('Refund recorded — statement and tips updated');}catch(error){toast(error.message);}
+  try{await Aalayna.refund(id);toast('Refund recorded. Statement and tips updated');}catch(error){toast(error.message);}
 }
 function paintTips(){
   var box = $('tips'); box.innerHTML = '';
@@ -820,7 +820,7 @@ function exportCSV(){
     a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
     a.download = 'aalayna-settlements.csv';
     a.click();
-    toast('Statement exported — ' + s.length + ' rows');
+    toast('Statement exported: ' + s.length + ' rows');
   }catch(e){ toast('Export unavailable in this preview'); }
 }
 

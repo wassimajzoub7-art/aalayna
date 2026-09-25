@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aalayna — menu editor</title>
+<title>Aalayna · menu editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
@@ -329,7 +329,7 @@
 </head>
 <body>
 <div class="stage">
-  <div class="t">aalay<b>na</b> — menu editor</div>
+  <div class="t">aalay<b>na</b> · menu editor</div>
   <div class="s">what the restaurant sees</div>
   <div class="staff-bar" id="staff-bar" hidden><span id="staff-bar-who"></span> · <a href="#" id="staff-bar-action"></a></div>
 </div>
@@ -396,26 +396,26 @@
       <div class="fld">
         <div class="lb">Per serving</div>
         <div class="macro">
-          <div class="m"><input id="ed-kcal" inputmode="numeric" placeholder="—"><div class="ml">KCAL</div></div>
-          <div class="m"><input id="ed-pr" inputmode="numeric" placeholder="—"><div class="ml">PROTEIN</div></div>
-          <div class="m"><input id="ed-ft" inputmode="numeric" placeholder="—"><div class="ml">FAT</div></div>
-          <div class="m"><input id="ed-cb" inputmode="numeric" placeholder="—"><div class="ml">CARBS</div></div>
+          <div class="m"><input id="ed-kcal" inputmode="numeric" placeholder="–"><div class="ml">KCAL</div></div>
+          <div class="m"><input id="ed-pr" inputmode="numeric" placeholder="–"><div class="ml">PROTEIN</div></div>
+          <div class="m"><input id="ed-ft" inputmode="numeric" placeholder="–"><div class="ml">FAT</div></div>
+          <div class="m"><input id="ed-cb" inputmode="numeric" placeholder="–"><div class="ml">CARBS</div></div>
         </div>
       </div>
 
       <div class="confbar" id="ed-conf"></div>
       <button class="cta cta-gold" id="ed-confbtn" style="margin-top:10px;display:none" onclick="confirmDish()">
-        Confirm — put this dish in guest filters
+        Confirm: put this dish in guest filters
       </button>
 
       <div class="fld">
         <div class="lb">Options <span class="tag">GUESTS CHOOSE &middot; PRICE CAN CHANGE</span></div>
         <div id="ed-opts"></div>
-        <button class="optadd" onclick="addOptGroup()">+ Add option group &mdash; milk, size, extras&hellip;</button>
+        <button class="optadd" onclick="addOptGroup()">+ Add option group: milk, size, extras&hellip;</button>
       </div>
 
       <div class="aibar" id="ed-ai">
-        <span>Missing translations can be <b>drafted automatically</b> — you review before publishing,
+        <span>Missing translations can be <b>drafted automatically</b>. You review them before publishing,
         or write them yourself in the tabs above.</span>
         <button onclick="draft()">Draft all</button>
       </div>
@@ -468,7 +468,7 @@
       <div class="fxrate">
         <div>
           <div class="fxr-l">Exchange rate</div>
-          <div class="fxr-s">LL per $1 &mdash; every guest menu follows it instantly</div>
+          <div class="fxr-s">LL per $1 &middot; every guest menu follows it instantly</div>
         </div>
         <input class="fxr-in" id="fx-rate" inputmode="numeric" onchange="saveRate(this)">
       </div>
@@ -499,8 +499,8 @@
   <button class="swb" onclick="reset()">&#8635; Reset</button>
 </div>
 <div class="note-out">
-  <b>Sections carry service hours, not items.</b> Restaurants think in dayparts — "we stop serving
-  breakfast at 11:30" — so the window sits on the section. Outside its hours a section is not on
+  <b>Sections carry service hours, not items.</b> Restaurants think in dayparts ("we stop serving
+  breakfast at 11:30"), so the window sits on the section. Outside its hours a section is not on
   the guest's menu at all. Bulk repricing keeps menu updates quick when ingredient costs change.
 </div>
 <script src="aalayna-store.js?v=22"></script>
@@ -552,9 +552,9 @@
    so the window lives on the SECTION, not the item. */
 var WINDOWS = [
   {id:'all',   name:'All day',   from:0,    to:1440, sub:'Always on the menu'},
-  {id:'brkf',  name:'Breakfast', from:420,  to:690,  sub:'7:00 — 11:30'},
-  {id:'lunch', name:'Lunch',     from:720,  to:960,  sub:'12:00 — 16:00'},
-  {id:'dinner',name:'Dinner',    from:1080, to:1410, sub:'18:00 — 23:30'}
+  {id:'brkf',  name:'Breakfast', from:420,  to:690,  sub:'7:00 – 11:30'},
+  {id:'lunch', name:'Lunch',     from:720,  to:960,  sub:'12:00 – 16:00'},
+  {id:'dinner',name:'Dinner',    from:1080, to:1410, sub:'18:00 – 23:30'}
 ];
 /* ---- bound to the shared draft. The editor is the only writer. ---- */
 var SECTIONS = [], ITEMS = [];
@@ -639,7 +639,7 @@ function markClean(){
 function publish(){
   var v = Aalayna.publish();
   markClean();
-  toast('Published v' + v + ' — live on every table. No reprints.');
+  toast('Published v' + v + '. Live on every table, no reprints.');
 }
 /* ---------- list ---------- */
 function render(){
@@ -801,7 +801,7 @@ function setAvail(v){
   cur().available = v;
   dirty(); paintAvail();
 }
-/* Ingredients are typed. Allergens are TICKED from a fixed list — free text is how
+/* Ingredients are typed. Allergens are TICKED from a fixed list: free text is how
    a misspelt "pistachhio" silently drops out of a nut filter. */
 var SUGGEST = {
   nuts:   ['pistachio','cashew','pine nut','almond','walnut','hazelnut','peanut'],
@@ -847,7 +847,7 @@ function chipInput(inputId, getList, after){
 function cur(){ return ITEMS[editing]; }
 
 /* ---- option groups ----
-   'one' = the guest picks exactly one (milk, sweetness) — first choice is the
+   'one' = the guest picks exactly one (milk, sweetness); first choice is the
    default and usually costs nothing. 'many' = independent add-ons.
    Text edits mutate the model without repainting so focus is never lost. */
 function escA(v){ return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
@@ -863,7 +863,7 @@ function paintOpts(){
           ' onclick="optAl(' + gi + ',' + ci + ',\'' + a + '\')">' + a + '</button>';
       }).join('');
       return '<div class="oc"><div class="oc-r">' +
-        '<input class="cn" value="' + escA(c.n) + '" placeholder="Choice — e.g. Oat milk"' +
+        '<input class="cn" value="' + escA(c.n) + '" placeholder="Choice, e.g. Oat milk"' +
           ' oninput="optC(' + gi + ',' + ci + ',\'n\',this.value)">' +
         '<input class="cp" value="' + (c.p ? c.p.toFixed(2) : '') + '" placeholder="+ 0.00"' +
           ' inputmode="decimal" onchange="optC(' + gi + ',' + ci + ',\'p\',this.value)">' +
@@ -872,7 +872,7 @@ function paintOpts(){
     }).join('');
     el.innerHTML =
       '<div class="og-h">' +
-        '<input value="' + escA(g.name) + '" placeholder="Group — e.g. Milk"' +
+        '<input value="' + escA(g.name) + '" placeholder="Group, e.g. Milk"' +
           ' oninput="optG(' + gi + ',this.value)">' +
         '<span class="og-seg">' +
           '<button class="' + (g.type === 'one' ? 'on' : '') + '" onclick="optType(' + gi + ',\'one\')">Pick one</button>' +
@@ -891,7 +891,7 @@ function optC(gi, ci, k, v){
   if (k === 'p') c.p = parseFloat(v) || 0; else c.n = v;
   dirty();
 }
-/* what THIS choice brings to the dish — cow milk brings dairy, almond brings nuts.
+/* what THIS choice brings to the dish: cow milk brings dairy, almond brings nuts.
    The guest app subtracts and adds these live as choices change. */
 function optAl(gi, ci, a){
   var c = cur().opts[gi].choices[ci];
@@ -948,7 +948,7 @@ function draftLang(){
   edBuf[edLang].n = edBuf.en.n;          // dish names carry over
   edBuf[edLang].d = edBuf.en.d;          // description drafted from English
   edPaint(); edStash();
-  toast('Drafted from English — adjust anything that reads wrong');
+  toast('Drafted from English. Adjust anything that reads wrong');
 }
 function paintAllergens(){
   var it = cur(), box = $('ed-al');
@@ -972,7 +972,7 @@ function paintAllergens(){
   if (sug.length){
     sb.style.display = 'flex';
     sb.innerHTML = '<span>&#9432;</span><span>Your ingredients suggest <b>' +
-      sug.join(', ') + '</b>. Tick it if that is right — we will never tick it for you.</span>';
+      sug.join(', ') + '</b>. Tick it if that is right. We will never tick it for you.</span>';
   } else { sb.style.display = 'none'; }
 }
 function paintConf(){
@@ -986,7 +986,7 @@ function paintConf(){
     btn.style.display = 'none';
   } else if (miss.length){
     bar.className = 'confbar no';
-    bar.innerHTML = '<span>&#9888;</span><span>Not in guest filters yet — still needs <b>' +
+    bar.innerHTML = '<span>&#9888;</span><span>Not in guest filters yet: still needs <b>' +
       miss.join(' and ') + '</b>.</span>';
     btn.style.display = 'none';
   } else {
@@ -1005,7 +1005,7 @@ function confirmDish(){
   }
   t.conf = 1;
   dirty(); paintConf();
-  toast(ITEMS[editing].n + ' confirmed — now in guest filters');
+  toast(ITEMS[editing].n + ' confirmed, now in guest filters');
 }
 function draft(){
   ['fr','ar'].forEach(function(l){
@@ -1013,7 +1013,7 @@ function draft(){
   });
   $('ed-ai').style.display = 'none';
   edPaint(); edStash();
-  toast('Both languages drafted — review them in the tabs');
+  toast('Both languages drafted. Review them in the tabs');
 }
 function saveItem(){
   if(cur().imageUrl && !/^https:\/\/[^\s]+$/i.test(cur().imageUrl)){toast('Use a full https:// photo URL, or leave the photo blank.');$('ed-photo').focus();return;}
@@ -1045,9 +1045,9 @@ function saveItem(){
   if (addingNew){
     addingNew = false;
     toast(it.n + ' added' + (drafted.length
-      ? ' — ' + drafted.join(' + ') + ' drafted, edit them any time' : ''));
+      ? '. ' + drafted.join(' + ') + ' drafted, edit them any time' : ''));
   } else {
-    toast('Saved — publish when you’re ready');
+    toast('Saved. Publish when you’re ready');
   }
 }
 /* Soft delete. The row keeps its id and history; it moves to Archived. */
@@ -1146,7 +1146,7 @@ function applyFx(){
   t.forEach(function(i){ i.p = newPrice(i.p); });
   closeOv('ov-fx'); render(); dirty();
   $('fx-sub').textContent = 'Repriced just now · ' + (pct >= 0 ? '+' : '') + pct + '% on ' + t.length + ' dishes';
-  toast(t.length + ' prices updated — not live yet');
+  toast(t.length + ' prices updated, not live yet');
 }
 /* ---------- service windows ---------- */
 var winSec = 0;
@@ -1236,7 +1236,7 @@ function endDrag(){
     var kept = archived();
     if (next.length + kept.length === ITEMS.length) ITEMS = next.concat(kept);
     dirty();
-    toast('Order saved — publish to make it live');
+    toast('Order saved. Publish to make it live');
   } else {
     var order = [];
     document.querySelectorAll('.sec').forEach(function(b){
@@ -1245,7 +1245,7 @@ function endDrag(){
     });
     if (order.length === SECTIONS.length) SECTIONS = order;
     dirty();
-    toast('Section order saved — publish to make it live');
+    toast('Section order saved. Publish to make it live');
   }
   render();
 }
@@ -1263,9 +1263,9 @@ function reset(){
   document.getElementById('v-sub').textContent = v.name + (v.place ? ' · ' + v.place : ''); })();
 render();
 paintClock();
-// another tab published or reset — reload from the store
+// another tab published or reset: reload from the store
 Aalayna.on(function(){
-  /* While the item editor is open, local ITEMS is the source of truth — a pull
+  /* While the item editor is open, local ITEMS is the source of truth: a pull
      would round-trip the dish through normalise(), which drops option groups
      whose choices haven't been named yet, orphaning the fields being typed in. */
   if (document.getElementById('ov-item').classList.contains('on')){ paintClock(); return; }

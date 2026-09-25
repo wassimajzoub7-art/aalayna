@@ -2,7 +2,7 @@
 var selectedGrowthCustomer = null;
 var ownerReportSnapshot = null;
 function opsReport(){return ownerReportSnapshot || Aalayna.ownerReport($('report-period').value);}
-function opsPercent(value){return value==null?'—':(value*100).toFixed(1)+'%';}
+function opsPercent(value){return value==null?'–':(value*100).toFixed(1)+'%';}
 function opsRateChange(current,previous){
   if(current==null || previous==null)return 'Comparison needs more history';
   var delta=(current-previous)*100;
@@ -85,7 +85,7 @@ function paintGrowthCampaigns() {
       [['Reported deliveries',report.delivered.size],['Guests who returned',report.delivered.returners],['Linked return spending',money(report.delivered.spendCents/100)]].forEach(function(pair){var metric=opsEl('div');metric.append(opsEl('span',pair[0]),opsEl('strong',String(pair[1])));outcomes.appendChild(metric);});
       card.appendChild(outcomes);
       card.appendChild(opsEl('p','After reported delivery · spending excludes tips and refunded payments.','cs'));
-      var rate=function(g){return g.rate==null?'—':(g.rate*100).toFixed(1)+'%';};
+      var rate=function(g){return g.rate==null?'–':(g.rate*100).toFixed(1)+'%';};
       card.appendChild(opsEl('p','Return rate by original assignment: recipients '+rate(report.assigned)+' ('+report.assigned.returners+'/'+report.assigned.size+'), comparison '+rate(report.comparison)+' ('+report.comparison.returners+'/'+report.comparison.size+').','cs'));
       card.appendChild(opsEl('p',(report.windowComplete?'30-day observation window ended. ':'30-day observation window still open. ')+'Observed returns are not proof of additional sales. Small groups are directional; return visits may overlap campaigns. Delivery reports are owner-imported, not independently verified.','cs'));
       var actions=opsEl('div',null,'ops-actions');
@@ -308,7 +308,7 @@ function paintDishInterest(){
   $('dish-period').textContent=w.label+' · dish views and distinct bills containing each dish. These are separate counts, not a conversion rate. Viewing sessions are not unique people.';
   body.replaceChildren();
   var seen=rows.filter(function(r){ return r.opens>0; }), unseen=rows.filter(function(r){ return r.opens===0; });
-  seen.slice(0,25).forEach(function(r){ var tr=opsEl('tr'); [r.name,String(r.opens),String(r.sessions),r.avgDwellS==null?'—':r.avgDwellS+' s',String(r.onBills)].forEach(function(t,i){ tr.appendChild(opsEl('td',t,i?'num':null)); }); body.appendChild(tr); });
+  seen.slice(0,25).forEach(function(r){ var tr=opsEl('tr'); [r.name,String(r.opens),String(r.sessions),r.avgDwellS==null?'–':r.avgDwellS+' s',String(r.onBills)].forEach(function(t,i){ tr.appendChild(opsEl('td',t,i?'num':null)); }); body.appendChild(tr); });
   if(!seen.length){ var tr=opsEl('tr'); var td=opsEl('td','No dish opened yet in this period. Rows appear as guests browse the menu on their phones.','ops-empty'); td.colSpan=5; tr.appendChild(td); body.appendChild(tr); }
   $('dish-none').textContent=unseen.length?'Not opened at all in this period: '+unseen.slice(0,12).map(function(r){ return r.name; }).join(', ')+(unseen.length>12?' and '+(unseen.length-12)+' more':'')+'.':'';
 }
@@ -319,8 +319,8 @@ function paintGuestJourney(){
   box.appendChild(opsMetric('Scan to payment',opsPercent(m.conversion),opsCount(m.paidSessions,'paid session')+' of '+opsCount(m.scans,'scan')));
   box.appendChild(opsMetric('Repeat devices',opsPercent(m.repeatRate),m.repeatSessions+' of '+opsCount(m.sessions,'session')+' from a device seen before'));
   var total=m.rails.cash+m.rails.card+m.rails.whish+m.rails.other, digital=m.rails.card+m.rails.whish;
-  box.appendChild(opsMetric('Cash vs digital',m.digitalShare==null?'—':Math.round(m.cashShare*100)+'% / '+Math.round(m.digitalShare*100)+'%',total?'Cash '+money(m.rails.cash/100)+', digital '+money(digital/100)+' of '+money(total/100)+' collected':'No collected amount in this period'));
-  box.appendChild(opsMetric('Bill to payment',m.medianBillToPaymentMs==null?'—':opsDuration(m.medianBillToPaymentMs),m.timedSessions?'Median across '+opsCount(m.timedSessions,'timed session')+', bill opened to first payment':'No timed sessions yet'));
+  box.appendChild(opsMetric('Cash vs digital',m.digitalShare==null?'–':Math.round(m.cashShare*100)+'% / '+Math.round(m.digitalShare*100)+'%',total?'Cash '+money(m.rails.cash/100)+', digital '+money(digital/100)+' of '+money(total/100)+' collected':'No collected amount in this period'));
+  box.appendChild(opsMetric('Bill to payment',m.medianBillToPaymentMs==null?'–':opsDuration(m.medianBillToPaymentMs),m.timedSessions?'Median across '+opsCount(m.timedSessions,'timed session')+', bill opened to first payment':'No timed sessions yet'));
   box.appendChild(opsMetric('Identity capture',opsPercent(m.captureRate),m.identifiedPayments+' of '+opsCount(m.payments,'payment')+' linked to a known guest'));
   var list=$('journey-never'); list.replaceChildren();
   if(!m.neverOrdered.length)list.appendChild(opsEl('p','No viewed item is missing from every bill in this period.','ops-empty'));

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
-<title>Aalayna × Hallab 1881 — full flow</title>
+<title>Aalayna × Hallab 1881 · full flow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
@@ -146,7 +146,7 @@
   .dstars{display:flex;gap:10px;justify-content:center;margin-top:10px}
   .dstars .star{font-size:30px;color:rgba(255,255,255,.3)}
   .dstars .star.on{color:var(--gold)}
-  /* pointing at star n lights 1..n — gold up to the cursor, dim after it */
+  /* pointing at star n lights 1..n; gold up to the cursor, dim after it */
   @media (hover:hover) and (pointer:fine){
     .dstars:hover .star{color:var(--gold-lt)}
     .dstars .star:hover ~ .star{color:rgba(255,255,255,.3)}
@@ -362,7 +362,7 @@
     font-size:12px;color:var(--amber);line-height:1.55}
   .chg-out b{font-weight:600}
 
-  /* ── success — the venue's screen ── */
+  /* ── success · the venue's screen ── */
   .done-inner{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--green-deep)}
   .pat2{display:none} .vig{display:none}
   .burst{display:none} .burst i{display:none}
@@ -543,7 +543,7 @@
   .greet{font-size:32px}.tbl{font-size:14px;padding:7px 12px}
   .note{font-size:16px;line-height:1.6}
   .powered{font-size:12px}
-  .m-head{padding:16px 170px 0 68px;min-height:72px}
+  .m-head{padding-block:16px 0;padding-inline:68px 170px;min-height:72px}   /* logical: the selects sit at the inline end in both directions */
   .m-head .vn{font-size:23px;line-height:1.2}.m-head .vs{font-size:13px;line-height:1.4;margin-top:4px}
   .sels{top:12px;gap:6px}.sel select{min-height:44px;font-size:14px;padding:8px 23px 8px 10px}
   .sel::after{font-size:11px}
@@ -844,7 +844,7 @@
       <textarea class="ta" id="review-text" aria-label="Your feedback (optional)" maxlength="1000" placeholder="How was your visit?"></textarea>
       <label class="feedback-label" for="review-destination">Share with</label>
       <select id="review-destination" aria-label="Share feedback with" onchange="paintReviewDestination()"><option value="google">Google · public review</option><option value="private">Restaurant · private feedback</option></select>
-      <p class="sh-s" id="review-status" role="status" aria-live="polite">Prototype only — no review or feedback is sent.</p>
+      <p class="sh-s" id="review-status" role="status" aria-live="polite">Prototype only: no review or feedback is sent.</p>
       <button class="cta cta-green" id="review-submit" type="button" onclick="submitReview()">Continue to Google</button>
     </div>
   </div>
@@ -889,7 +889,7 @@
       </div>
       <button class="cta cta-green" id="wh-btn" onclick="whishConfirm()">Open Whish</button>
       <button class="cta cta-ghost" onclick="cancelProvider('ov-whish')">Cancel</button>
-      <div class="sim-note">Simulated &mdash; in production this is a Whish deep link with a payment callback.</div>
+      <div class="sim-note">Simulated. In production this is a Whish deep link with a payment callback.</div>
     </div>
   </div>
 
@@ -910,7 +910,7 @@
       </div>
       <button class="cta cta-green" id="card-btn" style="margin-top:20px" onclick="cardConfirm()">Pay $41.94</button>
       <button class="cta cta-ghost" onclick="cancelProvider('ov-card')">Cancel</button>
-      <div class="sim-note">Simulated &mdash; in production this is the gateway's hosted page (3-D Secure included).</div>
+      <div class="sim-note">Simulated. In production this is the gateway's hosted page (3-D Secure included).</div>
     </div>
   </div>
 </div></div>
@@ -1239,7 +1239,7 @@ function anyFilterable(){ return MENU.some(filterable); }
 var MEAT = ['lamb','chicken','beef','lamb awarma','minced lamb'];
 /* A dish's own al/ing are its UNAVOIDABLE base. Option choices add on top:
    the default view = base + the first choice of every pick-one group. Selecting
-   oat milk really does take the dairy out — the warning and filters follow. */
+   oat milk really does take the dairy out; the warning and filters follow. */
 function effDiet(m, sel){
   var al = (m.al||[]).slice(), ing = (m.ing||[]).slice();
   function add(c){
@@ -1304,7 +1304,7 @@ function descOf(m){
   if (LANG === 'en') return m.d;
   return (m.tr && m.tr[LANG] && m.tr[LANG].d) || m.d;
 }
-/* price display follows the currency toggle — the diner-facing half of the FX feature */
+/* price display follows the currency toggle: the diner-facing half of the FX feature */
 function price(v){
   if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE() / 1000) * 1000).toLocaleString('en-US');
   return '$' + v.toFixed(2);
@@ -1332,7 +1332,19 @@ function renderMenu(){
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
 var tipRate = .10, tipFlat = null, kind = 'whish', note = 0;
-function tipAmt(){ return Math.round((tipFlat != null ? tipFlat : share * tipRate) * 100) / 100; }
+/* T12: the amount this guest was shown and is paying. From the tap on Pay until the
+   payment completes, fails or is cancelled, the share and tip stay as shown. The
+   request reserves the share on the check (availableCents drops by it) and the store
+   write repaints the page; without the hold calcShare would recompute this guest's
+   share from the reduced balance behind the provider sheet. Other guests' pages
+   recompute as before: only the device paying holds its amount. */
+var payHold = null;
+function holdPayment(){ payHold = {share: share, tip: tipAmt()}; }
+function releasePayment(){ payHold = null; }
+function tipAmt(){
+  if (payHold) return payHold.tip;
+  return Math.round((tipFlat != null ? tipFlat : share * tipRate) * 100) / 100;
+}
 var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
@@ -1356,7 +1368,7 @@ function go(id){
 function openOv(id){
   var ov = $(id);
   ov.classList.add('on');
-  // the sheet element is reused between opens — without this it keeps the
+  // the sheet element is reused between opens; without this it keeps the
   // scroll depth of the previous visit and opens mid-page on phones
   var sh = ov.querySelector('.sheet');
   if (sh) sh.scrollTop = 0;
@@ -1373,7 +1385,7 @@ function closeOv(id){
 /* ---------------- menu ---------------- */
 var filt = {veg:false, nonuts:false, nodairy:false, light:false, protein:false};
 /* Every reason is derived from the ingredient record, not from a hand-typed tag.
-   Items are DIMMED and given a reason, never hidden — four people share one menu,
+   Items are DIMMED and given a reason, never hidden: four people share one menu,
    and one person's filter should not erase the other three's dinner. */
 function buildCats(rebuild){
   var wrap = $('cats'), ink = $('ink');
@@ -1398,7 +1410,7 @@ function selectCat(el, id){
   var h = document.querySelector('[data-sect="' + id + '"]'), sc = $('menuscroll');
   if (h){
     spyLock = 1;                                   // don't let the spy fight the smooth scroll
-    // offsetTop is measured against the positioned .view, not the scroller — use rects
+    // offsetTop is measured against the positioned .view, not the scroller; use rects
     var delta = h.getBoundingClientRect().top - sc.getBoundingClientRect().top;
     sc.scrollTo({ top: sc.scrollTop + delta, behavior: 'smooth' });
     setTimeout(function(){ spyLock = 0; }, 650);
@@ -1416,7 +1428,7 @@ function spy(){
   for (var i = 0; i < heads.length; i++){
     if (heads[i].getBoundingClientRect().top - base <= 4) cur = i;
   }
-  // the final section can never reach the top — there isn't enough content beneath it.
+  // the final section can never reach the top; there isn't enough content beneath it.
   // Once you're at the bottom of the list you are, by definition, in the last section.
   if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 90) cur = heads.length - 1;
   var tabs = document.querySelectorAll('.cat');
@@ -1548,7 +1560,7 @@ function openItem(m){
   try { Aalayna.logEvent('item_view', { itemId: m.id, categoryId: m.c }, { tableId: TABLE, sessionId: Aalayna.session() }); } catch(error) {}
   itemOpenedAt = Date.now();
   var box = $('i-adds'); box.innerHTML = '';
-  /* 'one' groups behave like radios — the first choice is the default and is
+  /* 'one' groups behave like radios; the first choice is the default and is
      already in the base price. 'many' groups are independent add-ons. */
   (m.opts || []).forEach(function(g, gi){
     var lb = document.createElement('div');
@@ -1583,7 +1595,7 @@ function openItem(m){
   calcItem();
   openOv('ov-item');
 }
-/* the allergen line is computed from what is actually selected — pick oat milk
+/* the allergen line is computed from what is actually selected; pick oat milk
    and the dairy warning goes away, pick almond and a nuts warning appears */
 function paintAlert(){
   var alrt = $('i-alrt');
@@ -1655,7 +1667,7 @@ function buildPick(){
       box.appendChild(d);
       return;
     }
-    /* picked[i] is a UNIT COUNT, not a boolean — tapping the row takes one unit
+    /* picked[i] is a UNIT COUNT, not a boolean; tapping the row takes one unit
        of the line, the stepper takes more. 4 people can each pay for their own
        coffee off a single 4x line. */
     var unit = b.p / b.q, lineOwed = unit * avail;
@@ -1703,26 +1715,39 @@ function ppl(d){
   $('pn').textContent = people;
   calcShare();
 }
+/* Evenly with N people: each person pays the bill divided by N (before tip), capped at
+   what is still available. Dividing the remainder instead gave four diners 38.13,
+   28.59, 21.45 and 16.08 on a $152.50 bill, leaving $48.25. When less than an
+   even share is left (someone paid more, or items were paid separately) the share is
+   what is left, and the page says so. The last of N shares can be a cent or two under
+   the others: each share is rounded to the cent and the last one takes the remainder. */
+function evenShareCents(){ return Math.round(Math.round(TOTAL * 100) / people); }
 function calcShare(){
-  var rem = remaining();
-  if (splitMode === 'even')      share = rem / people;
+  var rem = remaining(), capped = false;
+  if (splitMode === 'even'){
+    share = evenShareCents() / 100;
+    // the note only when the shortfall is more than cent rounding across the party (people cents)
+    capped = rem > 0 && Math.round(rem * 100) < evenShareCents() - people;
+  }
   else if (splitMode === 'all')  share = rem;
   else if (splitMode === 'amt'){
     // whatever they type, never more than what the table still owes
     share = Math.max(0, Math.min(rem, parseFloat($('amt-in').value) || 0));
-    $('amt-hint').textContent = 'Whatever you like — up to the ' + usd(rem) + ' remaining.';
+    $('amt-hint').textContent = 'Whatever you like, up to the ' + usd(rem) + ' remaining.';
   }
   else { share = 0; BILL.forEach(function(b, i){
     var avail = b.q - paidUnits(b);
     if (picked[i] && avail > 0) share += (b.p / b.q) * Math.min(picked[i], avail); }); }
   share = Math.min(rem, Math.round(share * 100) / 100);
+  if (payHold) share = payHold.share;   // a payment in progress keeps the amount it was shown
   $('sh-v').textContent = usd(share);
   $('sh-ll').textContent = ll(share);
   var cb = $('continue-btn');
   if (cb) cb.disabled = share <= 0;
   if (cb) cb.innerHTML = '<span class="sheen"></span>Continue · ' + usd(share);
-  var rest = rem - share;
-  $('restnote').textContent = rest > 0.01
+  var rest = payHold ? rem : rem - share;   // held: rem already excludes this guest's reservation
+  $('restnote').textContent = capped && !payHold ? 'Only ' + usd(rem) + ' is left on this bill.'
+    : rest > 0.01
     ? usd(rest) + ' available for other guests. Pending cash is held until staff confirm or cancel it.'
     : rem <= 0 ? 'No balance is available for another payment. Check any pending cash request with your server.' : 'That covers the available balance. Staff still need to confirm any pending cash.';
   paintPay();
@@ -1785,7 +1810,7 @@ function money(v){ return usd(v); }
 function paintChange(due){
   var out = $('chgout');
   if (note === 0){
-    out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. ' + esc(SERVER) + ' just collects the notes — no trip to the till.';
+    out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. ' + esc(SERVER) + ' just collects the notes. No trip to the till.';
     return;
   }
   var back = note - due;
@@ -1807,7 +1832,7 @@ function paintPay(){
   $('paybtn').disabled = share <= 0 || (isCash && note > 0 && note < tot);
   $('paybtn').innerHTML = '<span class="sheen"></span>' +
     (isCash ? 'Request cash collection' : 'Pay ' + usd(tot));
-  if (isCash) paintChange(tot);   // tot, not share — the change must account for the tip
+  if (isCash) paintChange(tot);   // tot, not share; the change must account for the tip
 }
 /* ---------------- success ---------------- */
 var GOLDS = ['#C9A227','#F0DFA8','#E2BE45','#F9EFDC','#9C7A16','#F0DFA8'];
@@ -1889,6 +1914,7 @@ function paymentFailed(error, fields){
   }
   paymentRequestId = newRequestId();
   paymentBusy = false;
+  releasePayment();
   buildBill(); buildPick(); calcShare();
   alert(error.message);
 }
@@ -1900,6 +1926,7 @@ async function settle(){
   if (paymentBusy) return;
   applyRails();   // with a venue key only cash is payable
   paintPay();
+  holdPayment();  // what the guest sees now is what they pay, whatever the reservation repaints
   var t = tipAmt(), tot = share + t;
   if (kind === 'cash'){
     paymentBusy = true;
@@ -1923,6 +1950,7 @@ function cancelProvider(ovId){
   closeOv(ovId);
   try { Aalayna.failPayment(paymentRequestId, 'expired'); } catch(e) {}
   paymentRequestId = newRequestId();
+  releasePayment();
   buildBill(); buildPick(); calcShare();
 }
 function providerConfirm(rail, ovId, btnId, label){
@@ -1951,6 +1979,7 @@ async function finishSettle(rail){
 }
 function completeSettle(record, rail){
   try { sessionStorage.removeItem(receiptSessionKey()+':pending'); } catch(e) {}
+  releasePayment();
   lastSettlementId = record.id;
   lastSettlementStatus = null;
   go('v-done');
@@ -2027,7 +2056,7 @@ function closeReview(){
 function paintReviewDestination(){
   $('review-submit').textContent = $('review-destination').value === 'google' ? 'Continue to Google' : 'Send privately';
   $('review-submit').disabled = false;
-  $('review-status').textContent = 'Prototype only — no review or feedback is sent.';
+  $('review-status').textContent = 'Prototype only: no review or feedback is sent.';
 }
 function submitReview(){
   try { Aalayna.submitReview({ settlementId: lastSettlementId, rating: rating,
@@ -2041,7 +2070,7 @@ function submitReview(){
 function syncReceiptViewport(){
   if (window.visualViewport) document.documentElement.style.setProperty('--app-height',window.visualViewport.height+'px');
 }
-/* optional, after payment — never a gate. Simulated like the payments. */
+/* optional, after payment; never a gate. Simulated like the payments. */
 async function sendReceipt(){
   var v = $('mail-in').value.trim();
   var isMail = /^\S+@\S+\.\S+$/.test(v);
@@ -2060,7 +2089,7 @@ async function sendReceipt(){
   $('payment-status').textContent = (Aalayna.sync && Aalayna.sync.enabled ? 'Preferences saved to the restaurant.' : 'Preferences saved locally.') + ' No receipt or message sent.';
 }
 /* demo only: flip between a venue that has finished confirming its menu and one that
-   hasn't. Note what the second state does NOT contain — no warnings, no badges, no
+   hasn't. Note what the second state does NOT contain: no warnings, no badges, no
    half-information. Just an ordinary menu. */
 function toggleCoverage(){
   DEMO_INCOMPLETE = !DEMO_INCOMPLETE;
@@ -2074,6 +2103,7 @@ function restart(){
   Aalayna.newSession();            // start over = a new scan, a new session
   billRequested = false;
   paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null; paymentRequestId = newRequestId();
+  releasePayment();
   openTableBill();
   logScan();
   $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
@@ -2113,7 +2143,7 @@ document.addEventListener('keydown',function(e){
 if(window.visualViewport)window.visualViewport.addEventListener('resize',syncReceiptViewport);
 syncReceiptViewport();
 /* ---------------- boot ---------------- */
-/* venue identity — heritage venues keep their crest lines, custom demos get neutral ones */
+/* venue identity: heritage venues keep their crest lines, custom demos get neutral ones */
 /* TABLE: the demo's table 12, or, from a table QR, the table the server named */
 var TABLE = AalaynaTableQR.table != null ? AalaynaTableQR.table : 12, SERVER = 'Abou Karim';
 /* client-side events (spec section 4): the scan, each dish opened, the first look at the bill */
@@ -2182,6 +2212,7 @@ AalaynaTableQR.start();
    still sends. The key is dropped only when the server refuses it. Never the demo. */
 function billClosed(message){
   BILL_ENDED = true; BILL_ENDED_MSG = message || BILL_ENDED_MSG;
+  releasePayment();   // no bill, nothing in progress to hold
   CHECK = null; BILL = []; TOTAL = 0; if (picked) picked = {};
   // a payment in progress, or a cash request that never reached the restaurant, goes back to the bill
   if ($('v-settle').classList.contains('on') || $('v-pay').classList.contains('on') || ($('v-done').classList.contains('on') && !lastSettlementId)) { paymentBusy = false; go('v-bill'); }
@@ -2231,7 +2262,7 @@ function paintQueued(){
     // T8: the sync layer dropped the refused job and keeps its message; it is shown here, once.
     try { sessionStorage.removeItem(pendingKey()); } catch(e) {}
     if (Aalayna.sync.dismiss) Aalayna.sync.dismiss('op:reserve:' + p.requestId);
-    if (BILL_ENDED || (Aalayna.sync.closed && Aalayna.sync.closed())) { paymentBusy = false; return false; }   // the closed-bill message says it
+    if (BILL_ENDED || (Aalayna.sync.closed && Aalayna.sync.closed())) { paymentBusy = false; releasePayment(); return false; }   // the closed-bill message says it
     go('v-pay');
     paymentFailed(new Error('The restaurant did not accept this cash request. Please speak with your server.'));
     return false;
