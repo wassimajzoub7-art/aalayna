@@ -238,6 +238,15 @@ id in `admin.html` if the venue wants Google reviews (there is no Places API key
 check the brand colour, background and font against their Instagram. Demo payments are
 already off.
 
+## Reel
+
+`reel.html` is a 15-second motion piece: a table QR is scanned, the $152.50 bill tears into four $38.13 shares, one guest adds the 10% tip and pays $41.94 with Whish Money, and the wordmark closes on "scan, split, settle." Every frame is a pure function of time (`__render(t)`), so the page plays live at any size (click to pause, `?loop` to loop, reduced motion shows the last frame) and renders frame-exact to video. It is not linked from the site yet.
+
+- `images/reel.mp4`: 1920 x 1080, 60 fps, with sound, for social and the pitch.
+- `images/reel-web.mp4`: 1280 x 720, 30 fps, muted, about 1 MB, for a website embed; `images/reel-poster.jpg` is its poster.
+
+To re-render after changing the page: `node tools/reel-audio.js reel.wav`, then `node tools/render-reel.js --audio reel.wav --out images/reel.mp4` (Playwright's Chromium and an ffmpeg with libx264; `--fonts <dir>` serves Google Fonts from a local folder when the browser cannot reach them, `--stills 1,5.2,11` writes review PNGs instead). The soundtrack is synthesised by the script, so there is no music licence to clear.
+
 ## Validation
 
 Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
