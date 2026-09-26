@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aalayna Reel</title>
+<meta name="description" content="Aalayna in fifteen seconds: scan, split, tip, pay, settled.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@600;700&family=Amiri:wght@700&display=block" rel="stylesheet">
+<style>
+/* Aalayna reel: one 15 s timeline. Every frame is a pure function of t (render(t)), so the page plays live,
+   scrubs, and renders frame-exact to video through tools/render-reel.js. Stage is 1920 x 1080, scaled to fit. */
+:root{--bg:#FAF6F1;--ink:#211B16;--sub:#6E635B;--line:#EAE2D8;--red:#C9414B;--petrol:#173E43;--peach:#F6C39F;--paper:#fff}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);overflow:hidden}
+body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+#view{position:fixed;inset:0;display:grid;place-items:center}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg);transform-origin:0 0}
+#cam{position:absolute;inset:0;transform-origin:50% 50%}
+.L{position:absolute;inset:0}
+.a{position:absolute;left:0;top:0;will-change:transform,opacity}
+.wipe{position:absolute;left:0;top:0;width:2400px;height:2400px;border-radius:50%}
+
+/* S1 scan */
+#dot{width:56px;height:56px;background:var(--red);border-radius:50%}
+#qr{position:absolute;left:0;top:0}
+#brackets{position:absolute;left:0;top:0;overflow:visible}
+#scan{width:470px;height:6px;border-radius:3px;background:var(--red);box-shadow:0 0 24px 4px rgba(201,65,75,.55)}
+#scanTrail{width:470px;height:120px;background:linear-gradient(to top,rgba(201,65,75,.22),rgba(201,65,75,0))}
+
+/* S2 kinetic type */
+#w1{background:var(--red)}
+.kl{position:absolute;left:200px;overflow:hidden;padding:0 30px 24px 0;font-size:196px;font-weight:700;line-height:1;letter-spacing:-.055em;color:var(--bg);white-space:nowrap}
+.kl span{display:inline-block;transform-origin:0 100%}
+#k3{color:var(--ink)}
+#eye2{left:206px;top:170px;font-size:30px;font-weight:600;letter-spacing:.16em;color:var(--peach);white-space:nowrap}
+#w2{width:3400px;height:1600px;background:var(--bg);transform-origin:50% 50%}
+
+/* S3 receipt */
+.strip{width:540px;height:760px}
+.paper{position:absolute;inset:0;background:var(--paper);padding:56px 52px 0}
+.rc-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:26px;border-bottom:2px solid var(--line);margin-bottom:22px}
+.rc-head b{font-size:40px;letter-spacing:-.02em}.rc-head span{font-size:22px;color:var(--sub)}
+.rc-row{display:flex;justify-content:space-between;font-size:26px;line-height:2.05;color:var(--ink)}
+.rc-row span:last-child{font-variant-numeric:tabular-nums;color:var(--sub)}
+.rc-sep{margin:20px 0 18px;border-top:3px dashed var(--line)}
+.rc-total{display:flex;justify-content:space-between;align-items:baseline;font-size:34px;font-weight:700}
+.rc-total span:last-child{font-size:54px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.rc-ll{text-align:right;font-size:22px;color:var(--sub);margin-top:4px;font-variant-numeric:tabular-nums}
+#badge{width:176px;height:176px;border-radius:50%;background:var(--red);color:var(--bg);display:grid;place-items:center;font-size:72px;font-weight:700;letter-spacing:-.04em;box-shadow:0 18px 40px rgba(201,65,75,.35)}
+#ring{width:176px;height:176px;border-radius:50%;border:6px solid var(--red)}
+.card{width:320px;height:440px;border-radius:28px;background:var(--paper);box-shadow:0 30px 50px rgba(33,27,22,.14);display:flex;flex-direction:column;align-items:center;padding-top:44px;backface-visibility:hidden}
+.card i{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:40px;font-weight:700;color:#fff}
+.card small{margin-top:34px;font-size:20px;font-weight:600;letter-spacing:.14em;color:var(--sub)}
+.card b{margin-top:6px;font-size:76px;letter-spacing:-.04em;color:var(--ink)}
+.card em{font-style:normal;font-size:20px;color:var(--sub)}
+.card.you{outline:6px solid var(--red)}.card.you small{color:var(--red)}
+
+/* S4 phone */
+#s4{perspective:2200px}
+#phone{width:440px;height:888px;padding:15px;border-radius:66px;background:var(--ink);box-shadow:0 60px 90px rgba(33,27,22,.28),inset 0 0 0 2px #3a322b;transform-style:preserve-3d}
+#screen{position:relative;width:410px;height:858px;border-radius:52px;overflow:hidden;background:#fff}
+#screen img{display:block;width:410px;height:858px;object-fit:cover;object-position:50% 100%}
+.rip{position:absolute;left:0;top:0;width:120px;height:120px;border-radius:50%;border:5px solid var(--red)}
+#eye4{font-size:28px;font-weight:600;letter-spacing:.16em;color:var(--red);white-space:nowrap;height:40px;overflow:hidden}
+#eye4 div{height:40px;line-height:40px}
+#amtWrap{perspective:900px}
+#amt{font-size:196px;font-weight:700;letter-spacing:-.055em;line-height:1;display:flex;transform-origin:50% 50%;backface-visibility:hidden}
+.col{display:inline-block;height:1em;overflow:hidden}
+.col div{display:flex;flex-direction:column}
+.col span{height:1em;display:block}
+#ll{font-size:124px;font-weight:700;letter-spacing:-.05em;line-height:1;white-space:nowrap;color:var(--petrol);transform-origin:50% 50%;backface-visibility:hidden}
+#tipTag{font-size:40px;font-weight:700;color:var(--red);white-space:nowrap}
+.chip{width:200px;height:100px;border-radius:50px;border:3px solid var(--line);background:#fff;display:grid;place-items:center;font-size:44px;font-weight:700}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff}
+.pm{height:92px;padding:0 34px;border-radius:22px;display:flex;align-items:center;font-size:40px;font-weight:700;color:#fff;letter-spacing:-.01em;white-space:nowrap}
+#pmNote{font-size:30px;color:var(--sub);white-space:nowrap}
+
+/* S5 paid */
+#w3{background:var(--petrol)}
+#check{overflow:visible}
+.word{font-size:132px;font-weight:700;letter-spacing:-.05em;color:var(--bg);white-space:nowrap}
+#wd3{color:var(--peach)}
+.star{width:84px;height:84px}
+#confetti{position:absolute;left:0;top:0}
+
+/* S6 wordmark */
+#w4{background:var(--bg)}
+#mark{font-family:'Amiri',serif;font-weight:700;font-size:300px;line-height:1.35;overflow:hidden;padding:0 20px;white-space:nowrap;display:flex}
+#mark span{display:inline-block}
+#mark .na{color:var(--red)}
+#ar{font-family:'Amiri',serif;font-weight:700;font-size:118px;line-height:1.6;color:var(--red);direction:rtl;white-space:nowrap}
+#uline{width:56px;height:56px;border-radius:28px;background:var(--red)}
+.tag{font-size:54px;font-weight:500;letter-spacing:.02em;color:var(--ink);white-space:nowrap}
+.tag b{color:var(--red);font-weight:600}
+#url{font-size:30px;font-weight:600;letter-spacing:.18em;color:var(--sub)}
+
+/* Finish */
+#grain{position:absolute;inset:-64px;opacity:.035;mix-blend-mode:overlay;pointer-events:none}
+
+/* Controls: hidden while capturing */
+#ui{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 16px;opacity:0;transition:opacity .25s}
+body:hover #ui,#ui:focus-within,body.ended #ui,body.paused #ui{opacity:1}
+#ui button{min-width:44px;min-height:44px;border:0;border-radius:22px;background:rgba(33,27,22,.82);color:#fff;font:600 14px/1 'IBM Plex Sans',sans-serif;padding:0 16px;cursor:pointer}
+#ui button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+#bar{flex:1;height:4px;border-radius:2px;background:rgba(33,27,22,.15);overflow:hidden}
+#bar i{display:block;height:100%;width:0;background:var(--red)}
+body.capture #ui{display:none}
+</style>
+</head>
+<body>
+<div id="view"><div id="stage" role="img" aria-label="Aalayna reel: a guest scans the table QR, the bill splits four ways, they add a 10% tip, pay with Whish Money, and the Aalayna wordmark closes: scan, split, settle.">
+<div id="cam">
+  <div class="L" id="s1">
+    <div class="a" id="dot"></div>
+    <canvas id="qr" width="1920" height="1080"></canvas>
+    <svg id="brackets" width="1920" height="1080"><g fill="none" stroke="#C9414B" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path id="bk0"/><path id="bk1"/><path id="bk2"/><path id="bk3"/></g></svg>
+    <div class="a" id="scanTrail"></div><div class="a" id="scan"></div>
+  </div>
+  <div class="a wipe" id="w1"></div>
+  <div class="L" id="s2">
+    <div class="a" id="eye2"></div>
+    <div class="kl" id="k1" style="top:300px"><span>The bill.</span></div>
+    <div class="kl" id="k2" style="top:500px"><span>The split.</span></div>
+    <div class="kl" id="k3" style="top:700px"><span>Settled.</span></div>
+  </div>
+  <div class="a" id="w2"></div>
+  <div class="L" id="s3"></div>
+  <div class="L" id="s4">
+    <div class="a" id="phone"><div id="screen"><img src="images/guest-pay.png" alt=""><div class="a rip" id="rp1"></div><div class="a rip" id="rp2"></div><div class="a rip" id="rp3"></div></div></div>
+    <div class="a" id="eye4"><div id="eyeRoll"><div>YOUR SHARE</div><div>WITH A 10% TIP</div><div>SAME BILL, IN LIRA</div></div></div>
+    <div class="a" id="amtWrap"><div id="amt"></div></div>
+    <div class="a" id="ll">LL 3,753,630</div>
+    <div class="a" id="tipTag">+ $3.81 tip</div>
+    <div class="a chip" id="c0">5%</div><div class="a chip" id="c1">10%</div><div class="a chip" id="c2">15%</div>
+    <div class="a pm" id="m0" style="background:#E4002B">whish</div><div class="a pm" id="m1" style="background:#1A1F71">VISA</div><div class="a pm" id="m2" style="background:#3E8E6A">CASH</div>
+    <div class="a" id="pmNote">Opens with the amount filled in</div>
+  </div>
+  <div class="a wipe" id="w3"></div>
+  <div class="L" id="s5">
+    <canvas id="confetti" width="1920" height="1080"></canvas>
+    <svg class="a" id="check" width="260" height="260" viewBox="0 0 260 260"><circle id="ckFill" cx="130" cy="130" r="118" fill="#F6C39F"/><circle id="ckRing" cx="130" cy="130" r="118" fill="none" stroke="#F6C39F" stroke-width="12" stroke-linecap="round" transform="rotate(-90 130 130)"/><path id="ckMark" d="M78 134 L114 170 L184 96" fill="none" stroke="#F6C39F" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="a word" id="wd1">Paid.</div><div class="a word" id="wd2">Tipped.</div><div class="a word" id="wd3">Rated.</div>
+  </div>
+  <div class="a wipe" id="w4"></div>
+  <div class="L" id="s6">
+    <div class="a" id="ar">علينا</div>
+    <div class="a" id="mark"></div>
+    <div class="a" id="uline"></div>
+    <div class="a tag" id="tg0"><b>scan</b>,</div><div class="a tag" id="tg1"><b>split</b>,</div><div class="a tag" id="tg2"><b>settle</b>.</div>
+    <div class="a" id="url">AALAYNA.COM</div>
+  </div>
+</div>
+<canvas id="grain" width="1024" height="1024"></canvas>
+</div></div>
+<div id="ui"><button id="play" type="button" aria-label="Pause">Pause</button><button id="replay" type="button">Replay</button><div id="bar"><i></i></div></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="mb1" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+  <filter id="mb2" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+  <filter id="mb3" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+</defs></svg>
+<script>
+(() => {
+const DUR = 15, W = 1920, H = 1080, CX = 960, CY = 540;
+const $ = id => document.getElementById(id);
+
+/* Math */
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const p = (t, a, b) => clamp((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const E = {
+  inQuad: k => k * k,
+  outCubic: k => 1 - Math.pow(1 - k, 3),
+  inOutCubic: k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2,
+  outQuint: k => 1 - Math.pow(1 - k, 5),
+  inExpo: k => k === 0 ? 0 : Math.pow(2, 10 * k - 10),
+  outExpo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
+  inOutExpo: k => k === 0 ? 0 : k === 1 ? 1 : k < .5 ? Math.pow(2, 20 * k - 10) / 2 : (2 - Math.pow(2, -20 * k + 10)) / 2,
+  inOutQuart: k => k < .5 ? 8 * k * k * k * k : 1 - Math.pow(-2 * k + 2, 4) / 2,
+  outBack: (k, s = 1.9) => 1 + (s + 1) * Math.pow(k - 1, 3) + s * Math.pow(k - 1, 2),
+};
+// Damped spring from 0 to 1, s seconds after it starts.
+const spring = (s, f = 2.2, d = 7) => s <= 0 ? 0 : 1 - Math.exp(-d * s) * Math.cos(2 * Math.PI * f * s);
+// Decaying wobble around 0, for squash and camera shake.
+const wobble = (s, f = 3, d = 7) => s <= 0 ? 0 : Math.exp(-d * s) * Math.cos(2 * Math.PI * f * s);
+const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
+
+// Position an element by its centre. o: x y z s sx sy r rx ry o(pacity)
+function T(el, o) {
+  const s = o.s ?? 1;
+  let tr = `translate3d(${o.x ?? 0}px,${o.y ?? 0}px,${o.z ?? 0}px) translate(-50%,-50%)`;
+  if (o.rx) tr += ` rotateX(${o.rx}deg)`;
+  if (o.ry) tr += ` rotateY(${o.ry}deg)`;
+  if (o.r) tr += ` rotate(${o.r}deg)`;
+  tr += ` scale(${(o.sx ?? 1) * s},${(o.sy ?? 1) * s})`;
+  el.style.transform = tr;
+  el.style.opacity = o.o ?? 1;
+}
+const show = (el, on) => { el.style.display = on ? '' : 'none'; };
+const wipe = (el, x, y, r) => { el.style.transform = `translate(${x - 1200}px,${y - 1200}px) scale(${Math.max(r, 0) / 1200})`; };
+const blurX = (id, v) => $(id).firstElementChild.setAttribute('stdDeviation', `${Math.min(60, Math.abs(v)).toFixed(1)} 0`);
+
+/* ---------- Build ---------- */
+// QR: 25 x 25 with three finder squares, seeded so every render is identical.
+const QN = 25, QM = 16, QS = QN * QM;
+const qr = [], qrand = rng(12);
+const inFinder = (r, c) => [[0, 0], [0, QN - 7], [QN - 7, 0]].some(([a, b]) => r >= a && r < a + 7 && c >= b && c < b + 7);
+const finderOn = (r, c) => { for (const [a, b] of [[0, 0], [0, QN - 7], [QN - 7, 0]]) { const y = r - a, x = c - b; if (y >= 0 && y < 7 && x >= 0 && x < 7) return y === 0 || y === 6 || x === 0 || x === 6 || (y >= 2 && y <= 4 && x >= 2 && x <= 4); } return false; };
+for (let r = 0; r < QN; r++) for (let c = 0; c < QN; c++) {
+  const f = inFinder(r, c), sep = !f && (inFinder(r - 1, c) || inFinder(r + 1, c) || inFinder(r, c - 1) || inFinder(r, c + 1) || inFinder(r - 1, c - 1) || inFinder(r + 1, c + 1) || inFinder(r - 1, c + 1) || inFinder(r + 1, c - 1));
+  const on = f ? finderOn(r, c) : !sep && qrand() < .5;
+  if (!on) continue;
+  const x = CX - QS / 2 + c * QM + QM / 2, y = CY - QS / 2 + r * QM + QM / 2;
+  const d = Math.hypot(x - CX, y - CY) / (QS * .72);
+  qr.push({ x, y, f, delay: d * .32 + qrand() * .06 });
+}
+
+// Receipt: four copies, each clipped to one torn quarter, so together they read as one sheet.
+const RW = 540, RH = 760, RX = CX, RY = 560;
+const items = [['Fattoush ×2', '18.00'], ['Hummus beiruti', '9.50'], ['Mixed grill ×2', '58.00'], ['Kibbeh nayyeh', '22.00'], ['Arak ×4', '32.00'], ['Knefeh', '13.00']];
+const receiptHTML = `<div class="rc-head"><b>Table 12</b><span>4 guests · 21:47</span></div>` +
+  items.map(([n, v]) => `<div class="rc-row"><span>${n}</span><span>$${v}</span></div>`).join('') +
+  `<div class="rc-sep"></div><div class="rc-total"><span>Total</span><span class="rcT">$152.50</span></div><div class="rc-ll">≈ LL 13,648,750</div>`;
+const trand = rng(7), edges = [];
+for (let b = 0; b <= 4; b++) {
+  const pts = [];
+  for (let y = 0; y <= RH - 14; y += 19) pts.push([b === 0 ? 0 : b === 4 ? RW : b * RW / 4 + (trand() - .5) * 16, y]);
+  edges.push(pts);
+}
+const zig = x => (Math.round(x / 18) % 2 ? RH - 14 : RH);
+function stripPoly(i) {
+  const L = edges[i], R = edges[i + 1], pts = [];
+  pts.push(...R.map(([x, y]) => [x + (i < 3 ? 1.5 : 0), y]));   // down the right edge, 1.5 px over the seam
+  for (let x = R[R.length - 1][0]; x >= L[L.length - 1][0] - 1; x -= 9) pts.push([x, zig(x)]); // along the torn bottom
+  pts.push(...L.slice().reverse());                            // back up the left edge
+  return `polygon(${pts.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(',')})`;
+}
+const s3 = $('s3'), strips = [], cards = [];
+const cardX = [390, 770, 1150, 1530];
+const people = [['R', '#173E43', 'RAMI'], ['M', '#E0A77F', 'MAYA'], ['You', '#C9414B', 'YOUR SHARE'], ['K', '#211B16', 'KARIM']];
+for (let i = 0; i < 4; i++) {
+  const w = document.createElement('div'); w.className = 'a strip';
+  w.innerHTML = `<div class="paper" style="clip-path:${stripPoly(i)}">${receiptHTML}</div>`;
+  const cx = (edges[i][0][0] + edges[i + 1][0][0]) / 2;
+  w.style.transformOrigin = `${cx}px 50%`;
+  s3.appendChild(w); strips.push({ el: w, cx: RX - RW / 2 + cx, rows: w.querySelectorAll('.rc-row,.rc-head,.rc-sep,.rc-total,.rc-ll'), total: w.querySelector('.rcT') });
+}
+for (let i = 0; i < 4; i++) {
+  const c = document.createElement('div'); c.className = 'a card' + (i === 2 ? ' you' : '');
+  const [ini, col, lab] = people[i];
+  c.innerHTML = `<i style="background:${col};font-size:${ini.length > 1 ? 32 : 44}px">${ini}</i><small>${lab}</small><b>$38.13</b><em>≈ LL 3,412,635</em>`;
+  s3.appendChild(c); cards.push(c);
+}
+const badge = document.createElement('div'); badge.className = 'a'; badge.id = 'badge'; badge.textContent = '÷ 4';
+const ring = document.createElement('div'); ring.className = 'a'; ring.id = 'ring';
+const shadow = document.createElement('div'); shadow.className = 'a'; shadow.style.cssText = `width:${RW}px;height:${RH - 14}px;box-shadow:0 30px 60px rgba(33,27,22,.16)`;
+s3.prepend(shadow); s3.append(ring, badge);
+
+// Odometer for the amount: one rolling column per digit.
+const amt = $('amt'), cols = [];
+'$00.00'.split('').forEach((ch, i) => {
+  const c = document.createElement('span');
+  if (ch === '0') { c.className = 'col'; c.innerHTML = '<div>' + [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(d => `<span>${d}</span>`).join('') + '</div>'; cols.push(c.firstChild); }
+  else c.textContent = ch;
+  amt.appendChild(c);
+});
+const places = [1, 0, -1, -2];
+function odo(v) {
+  const n = v * 100;                                                  // in cents, fractional while counting
+  places.forEach((pl, i) => {
+    const u = Math.pow(10, pl + 2);
+    const pos = Math.floor(n / u) % 10 + Math.max(0, (n % u) - (u - 1)); // roll only in the last cent before a carry
+    cols[i].style.transform = `translateY(${-pos}em)`;
+  });
+}
+
+// Wordmark letters and the confetti field.
+const mark = $('mark');
+'aalayna'.split('').forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch; if (i >= 5) s.className = 'na'; mark.appendChild(s); });
+const letters = [...mark.children];
+const conf = [], crand = rng(99), palette = ['#C9414B', '#F6C39F', '#FAF6F1', '#ffffff', '#E0A77F'];
+for (let i = 0; i < 170; i++) {
+  const a = crand() * Math.PI * 2, sp = 500 + crand() * 1500;
+  conf.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 500, w: 10 + crand() * 16, h: 6 + crand() * 10, c: palette[i % palette.length], spin: (crand() - .5) * 24, round: crand() < .3, flip: 4 + crand() * 8 });
+}
+
+// Grain: one noise tile, shifted each frame.
+(() => { const g = $('grain').getContext('2d'), d = g.createImageData(1024, 1024), r = rng(3); for (let i = 0; i < d.data.length; i += 4) { const v = r() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } g.putImageData(d, 0, 0); })();
+
+const qctx = $('qr').getContext('2d'), cctx = $('confetti').getContext('2d');
+const rr = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); };
+const layers = ['s1', 's2', 's3', 's4', 's5', 's6', 'w1', 'w2', 'w3', 'w4'].reduce((o, k) => (o[k] = $(k), o), {});
+
+/* ---------- Render: everything on screen at time t ---------- */
+function render(t) {
+  t = clamp(t, 0, DUR);
+
+  // Camera: slow push per scene, plus a short shake on each impact.
+  const hits = [[2, 10], [5, 14], [11, 16], [13, 8]];
+  let sx = 0, sy = 0;
+  for (const [h, a] of hits) { sx += a * wobble(t - h, 13, 9); sy += a * .7 * wobble(t - h + .02, 17, 9); }
+  const push = t < 2 ? lerp(1, 1.06, E.inOutCubic(p(t, 0, 2))) : t < 3.7 ? lerp(1.0, 1.035, p(t, 2, 3.7)) : t < 6.9 ? lerp(1, 1.04, p(t, 3.7, 6.9)) : t < 10.2 ? lerp(1, 1.025, p(t, 6.9, 10.2)) : t < 12.6 ? lerp(1.04, 1, E.outCubic(p(t, 10.2, 12.6))) : lerp(1.03, 1, E.outCubic(p(t, 12.6, 15)));
+  $('cam').style.transform = `translate(${sx}px,${sy}px) scale(${push})`;
+
+  show(layers.s1, t < 2.05); show(layers.w1, t >= 1.7 && t < 3.8); show(layers.s2, t >= 1.95 && t < 3.8);
+  show(layers.w2, t >= 3.2 && t < 3.8); show(layers.s3, t >= 3.5 && t < 7.4); show(layers.s4, t >= 6.7 && t < 10.5);
+  show(layers.w3, t >= 9.95 && t < 12.75); show(layers.s5, t >= 10.3 && t < 12.75); show(layers.w4, t >= 12.25); show(layers.s6, t >= 12.4);
+  $('stage').style.background = t >= 3.75 && t < 10.5 || t < 1.9 || t >= 12.7 ? '#FAF6F1' : t < 3.75 ? '#C9414B' : '#173E43';
+
+  if (t < 2.05) scene1(t);
+  if (t >= 1.7 && t < 3.8) scene2(t);
+  if (t >= 3.5 && t < 7.4) scene3(t);
+  if (t >= 6.7 && t < 10.5) scene4(t);
+  if (t >= 9.95 && t < 12.75) scene5(t);
+  if (t >= 12.25) scene6(t);
+
+  const f = Math.floor(t * 24);
+  $('grain').style.transform = `translate(${(f * 373) % 64 - 32}px,${(f * 211) % 64 - 32}px)`;
+}
+
+// 0 to 2 s: a red dot drops, becomes a QR card, the camera frames it and scans.
+function scene1(t) {
+  const dot = $('dot');
+  let y, sx = 1, sy = 1;
+  if (t < .5) y = lerp(-80, CY, E.inQuad(p(t, .1, .5)));
+  else if (t < .75) { const u = p(t, .5, .75); y = CY - 70 * 4 * u * (1 - u); }
+  else y = CY;
+  const sq = .5 * wobble(t - .5, 3.2, 9) * (t < .75 ? 1 : 0) + .28 * wobble(t - .75, 3.2, 9);
+  sx = 1 + sq; sy = 1 - sq;
+  // The dot grows into the QR card: size, corner radius and colour all morph.
+  const m = E.outExpo(p(t, .9, 1.3));
+  const size = lerp(56, 470, m);
+  dot.style.width = dot.style.height = size + 'px';
+  dot.style.borderRadius = lerp(28, 40, m) + 'px';
+  dot.style.background = `rgb(${lerp(201, 255, m)},${lerp(65, 255, m)},${lerp(75, 255, m)})`;
+  dot.style.boxShadow = `0 ${30 * m}px ${60 * m}px rgba(33,27,22,${.14 * m})`;
+  T(dot, { x: CX, y, sx, sy, r: lerp(-45, 0, m) * (m > 0 ? 1 : 0) });
+
+  qctx.clearRect(0, 0, W, H);
+  for (const q of qr) {
+    const s = t - (1.0 + q.delay);
+    if (s <= 0) continue;
+    const k = spring(s, 2.4, 8), mv = E.outExpo(clamp(s / .45));
+    const x = lerp(CX, q.x, mv), yy = lerp(CY, q.y, mv), sz = (QM - 2) * clamp(k, 0, 1.25);
+    qctx.fillStyle = q.f ? '#C9414B' : '#211B16';
+    rr(qctx, x - sz / 2, yy - sz / 2, sz, sz, q.f ? 2 : 4);
+  }
+
+  // Viewfinder brackets close in, then the scan line sweeps.
+  const b = E.outExpo(p(t, 1.1, 1.55)), half = lerp(620, 268, b), L = 74;
+  $('brackets').style.opacity = p(t, 1.1, 1.25);
+  [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([dx, dy], i) => {
+    const x = CX + dx * half, y0 = CY + dy * half;
+    $('bk' + i).setAttribute('d', `M${x} ${y0 - dy * L} L${x} ${y0} L${x - dx * L} ${y0}`);
+  });
+  const sc = E.inOutCubic(p(t, 1.5, 1.88)), sy2 = lerp(CY - 225, CY + 225, sc), so = t > 1.5 && t < 1.9 ? Math.sin(Math.PI * sc) : 0;
+  T($('scan'), { x: CX, y: sy2, o: so }); T($('scanTrail'), { x: CX, y: sy2 - 60, o: so });
+}
+
+// 1.75 to 3.8 s: red floods out of the QR, three lines of type, then a whip to the receipt.
+function scene2(t) {
+  wipe($('w1'), CX, CY, lerp(0, 1300, E.inOutQuart(p(t, 1.72, 2.02))));
+  const starts = [2, 2.25, 2.5];
+  ['k1', 'k2', 'k3'].forEach((id, i) => {
+    const el = $(id), sp = el.firstElementChild, k = E.outExpo(p(t, starts[i], starts[i] + .7));
+    sp.style.transform = `translateY(${lerp(115, 0, k)}%) rotate(${lerp(7, 0, k)}deg)`;
+    // Exit: whip left with a horizontal motion blur from the velocity.
+    const ex = tt => -2600 * E.inExpo(p(tt, 3.22 + i * .05, 3.62 + i * .05));
+    const x = ex(t), v = x - ex(t - 1 / 60);
+    el.style.transform = `translateX(${x + lerp(0, -24, p(t, 2, 3.2))}px)`;
+    el.style.filter = Math.abs(v) > .5 ? `url(#mb${i + 1})` : 'none';
+    blurX('mb' + (i + 1), v * .35);
+  });
+  const eye = 'TABLE 12 · 21:47 · 4 GUESTS', n = Math.floor(eye.length * p(t, 2.1, 2.6));
+  $('eye2').textContent = eye.slice(0, n) + (t > 2.1 && t < 3.2 && Math.floor(t * 4) % 2 ? '▍' : '');
+  $('eye2').style.opacity = 1 - p(t, 3.2, 3.35);
+  // A cream panel sweeps in on a slant.
+  const k = E.inOutExpo(p(t, 3.22, 3.78));
+  T($('w2'), { x: lerp(CX + 3000, CX, k), y: CY, r: -12 });
+}
+
+// 3.6 to 7.3 s: the receipt lands, items tick in, the total counts, ÷4 stamps, and it tears into four shares.
+function scene3(t) {
+  const inK = E.outExpo(p(t, 3.6, 4.2)), settle = spring(t - 3.75, 1.6, 6);
+  const tot = 152.5 * E.outCubic(p(t, 4.6, 5.0));
+  strips.forEach((st, i) => {
+    const tear = E.outExpo(p(t, 5.5, 6.05)), fl = p(t, 6.0 + i * .125, 6.3 + i * .125);
+    const tx = cardX[i] - st.cx, dir = i % 2 ? 1 : -1;
+    st.el.style.filter = `drop-shadow(0 30px 40px rgba(33,27,22,${(.16 * tear).toFixed(3)}))`;
+    T(st.el, { x: RX + tx * tear, y: lerp(1500, RY, inK) - 30 * Math.sin(Math.PI * tear), r: lerp(9, 0, settle) + dir * 5 * tear * (1 - fl), ry: 90 * E.inOutCubic(Math.min(fl * 2, 1)), o: fl < .5 ? 1 : 0 });
+    st.rows.forEach((row, j) => { const k = E.outExpo(p(t, 3.9 + j * .1, 4.3 + j * .1)); row.style.opacity = k; row.style.transform = `translateX(${lerp(24, 0, k)}px)`; });
+    st.total.textContent = '$' + tot.toFixed(2);
+  });
+  T(shadow, { x: RX, y: lerp(1500, RY, inK) - 7, r: lerp(9, 0, settle), o: 1 - p(t, 5.5, 5.6) });
+  // The ÷4 stamp, with a shockwave ring.
+  const bk = p(t, 5, 5.3), bOut = E.inExpo(p(t, 5.45, 5.65));
+  T(badge, { x: RX + 250, y: RY - 330, s: (bk > 0 ? lerp(2.4, 1, E.outBack(bk, 2.4)) : 0) * (1 - bOut), r: lerp(-30, -10, E.outExpo(bk)), o: bk > 0 ? Math.min(1, bk * 4) : 0 });
+  const rk = p(t, 5.05, 5.5);
+  T(ring, { x: RX + 250, y: RY - 330, s: lerp(1, 2.4, E.outCubic(rk)), o: rk > 0 ? 1 - rk : 0 });
+
+  // Each quarter flips around to its guest's card; three leave, yours flies into the phone.
+  cards.forEach((c, i) => {
+    const fl = p(t, 6.0 + i * .125, 6.3 + i * .125), k = E.outCubic(Math.max(0, fl * 2 - 1));
+    const out = E.inExpo(p(t, 6.72 + i * .04, 7.1 + i * .04));
+    let x = cardX[i], y = RY + lerp(-12, 0, k), s = 1, r = 0, o = fl >= .5 ? 1 : 0;
+    if (i === 2) { const m = E.inOutCubic(p(t, 6.75, 7.2)); x = lerp(cardX[2], 620, m); y = lerp(RY, CY, m); s = lerp(1, 1.26, m); o *= 1 - p(t, 7.08, 7.25); }
+    else { y += 1500 * out; r = (i - 1.5) * 25 * out; }
+    T(c, { x, y, s, r, ry: lerp(-90, 0, k), o });
+  });
+}
+
+// 6.8 to 10.3 s: the phone. Tip, method, currency, pay.
+function scene4(t) {
+  const ph = $('phone'), up = spring(t - 6.85, 1.3, 5.2), drift = p(t, 7.3, 10.3);
+  T(ph, { x: 620, y: CY + lerp(1000, 0, up), ry: lerp(38, -14, up) + 6 * drift, rx: lerp(18, 4, up), r: lerp(-8, 0, up) });
+
+  // Tap ripples, in screen pixels of the 410 px wide screenshot.
+  [['rp1', 205, 349, 8.25], ['rp2', 695 * 410 / 780, (888 - 56) * 410 / 780, 9.25], ['rp3', 205, 786, 10.0]].forEach(([id, x, y, at]) => {
+    const k = p(t, at, at + .45);
+    T($(id), { x, y, s: lerp(.2, 1.3, E.outCubic(k)), o: k > 0 && k < 1 ? 1 - k : 0 });
+  });
+
+  const X0 = 1080, colIn = E.outExpo(p(t, 7.2, 7.8));
+  // Eyebrow rolls through three labels.
+  const roll = E.outExpo(p(t, 8.25, 8.6)) + E.outExpo(p(t, 9.5, 9.85));
+  $('eyeRoll').style.transform = `translateY(${-roll * 40}px)`;
+  const e4 = $('eye4'); e4.style.transform = `translate(${X0 + lerp(60, 0, colIn)}px,250px)`; e4.style.opacity = colIn;
+
+  // The amount: counts up, rolls to include the tip, then flips over into lira.
+  const v = 38.13 * E.outCubic(p(t, 7.25, 7.8)) + 3.81 * E.inOutCubic(p(t, 8.3, 8.8));
+  odo(v);
+  const flip = E.inOutCubic(p(t, 9.5, 9.8));
+  const aw = $('amtWrap'); aw.style.transform = `translate(${X0 + lerp(60, 0, colIn)}px,300px)`; aw.style.opacity = colIn;
+  $('amt').style.transform = `rotateX(${flip * 90}deg)`; $('amt').style.opacity = flip < .5 ? 1 : 0;
+  const ll = $('ll'); ll.style.transform = `translate(${X0}px,330px) perspective(900px) rotateX(${lerp(-90, 0, E.outBack(p(t, 9.65, 9.95), 1.2))}deg)`; ll.style.opacity = t > 9.65 ? 1 : 0;
+
+  const tk = p(t, 8.3, 8.55), tOut = p(t, 9.45, 9.6);
+  T($('tipTag'), { x: X0 + 150, y: 540 - 22 * E.outBack(tk), o: tk > 0 ? Math.min(1, tk * 3) * (1 - tOut) : 0 });
+
+  // Tip chips burst out of the phone, 10% gets picked.
+  [0, 1, 2].forEach(i => {
+    const s = t - (7.75 + i * .125), k = spring(s, 1.8, 6.5), fly = E.outExpo(clamp(s / .5));
+    const out = E.inExpo(p(t, 8.8 + i * .05, 9.1 + i * .05));
+    const el = $('c' + i); el.classList.toggle('on', i === 1 && t >= 8.25);
+    const pulse = i === 1 ? .12 * wobble(t - 8.25, 3, 8) * (t >= 8.25 ? 1 : 0) : 0;
+    T(el, { x: lerp(620, X0 + 100 + i * 230, fly), y: lerp(420, 700, fly) + 600 * out, z: lerp(300, 0, fly), s: clamp(k, 0, 1.3) * (1 - pulse), r: lerp(-20, 0, fly), o: s > 0 ? 1 - out : 0 });
+  });
+  // Payment methods slide in, Whish is chosen.
+  [0, 1, 2].forEach(i => {
+    const k = E.outExpo(p(t, 8.875 + i * .125, 9.35 + i * .125)), out = p(t, 9.45, 9.6);
+    const el = $('m' + i), sel = i === 0 && t >= 9.25;
+    el.style.boxShadow = sel ? `0 0 0 ${lerp(0, 8, E.outBack(p(t, 9.25, 9.45)))}px #FAF6F1, 0 0 0 ${lerp(0, 14, E.outBack(p(t, 9.25, 9.45)))}px #E4002B` : 'none';
+    const x0 = [X0, X0 + 234, X0 + 432][i];
+    el.style.transform = `translate(${x0 + lerp(500, 0, k)}px,${650 - 40 * out}px) scale(${sel ? 1 + .08 * wobble(t - 9.25, 3, 8) : 1})`;
+    el.style.opacity = k * (1 - out);
+  });
+  const nk = E.outExpo(p(t, 9.1, 9.5)), nOut = p(t, 9.45, 9.6);
+  const note = $('pmNote'); note.style.transform = `translate(${X0}px,${780 + lerp(20, 0, nk)}px)`; note.style.opacity = nk * (1 - nOut);
+}
+
+// 10 to 12.7 s: petrol floods from the Pay button; check, confetti, three words, five stars.
+function scene5(t) {
+  wipe($('w3'), 620, 930, lerp(0, 2400, E.inOutQuart(p(t, 9.98, 10.5))));
+  const C = [CX, 360];
+  const ring = E.inOutCubic(p(t, 10.35, 10.8)), mk = E.outCubic(p(t, 10.75, 11)), fill = E.outBack(p(t, 11, 11.25), 2.2);
+  const circ = 2 * Math.PI * 118;
+  $('ckRing').setAttribute('stroke-dasharray', `${circ * ring} ${circ}`);
+  $('ckMark').setAttribute('stroke-dasharray', `${170 * mk} 400`);
+  $('ckMark').setAttribute('stroke', t >= 11 ? '#173E43' : '#F6C39F');
+  $('ckFill').setAttribute('r', 118 * clamp(fill, 0, 1.2));
+  const collapse = E.inExpo(p(t, 12.2, 12.5));
+  T($('check'), { x: C[0], y: C[1], s: (1 + .1 * wobble(t - 11, 2.5, 7) * (t >= 11 ? 1 : 0)) * (1 - collapse), o: 1 });
+
+  // Confetti: plain ballistics with drag, so any frame can be drawn on its own.
+  cctx.clearRect(0, 0, W, H);
+  const s = t - 11;
+  if (s > 0) for (const q of conf) {
+    const dr = 2.2, e = (1 - Math.exp(-dr * s)) / dr;
+    const x = C[0] + q.vx * e, y = C[1] + q.vy * e + 900 * s * s * .5;
+    const a = Math.max(0, 1 - s / 1.7);
+    if (!a) continue;
+    cctx.save(); cctx.globalAlpha = a; cctx.translate(x, y); cctx.rotate(q.spin * s); cctx.scale(1, Math.cos(q.flip * s)); cctx.fillStyle = q.c;
+    if (q.round) { cctx.beginPath(); cctx.arc(0, 0, q.h * .6, 0, Math.PI * 2); cctx.fill(); } else cctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h);
+    cctx.restore();
+  }
+
+  // Words land left to right; stars pop underneath.
+  ['wd1', 'wd2', 'wd3'].forEach((id, i) => {
+    const k = p(t, 11.15 + i * .16, 11.5 + i * .16);
+    T($(id), { x: lerp(wordX[i], CX, collapse), y: 640 + lerp(-120, 0, E.outBack(k, 2.2)), s: lerp(1.4, 1, E.outExpo(k)) * (1 - collapse), o: Math.min(1, k * 3) });
+  });
+  const st = document.querySelectorAll('.star');
+  st.forEach((el, i) => {
+    const k = spring(t - (11.6 + i * .07), 2, 6.5);
+    T(el, { x: lerp(CX - 220 + i * 110, CX, collapse), y: 810, s: clamp(k, 0, 1.3) * (1 - collapse), r: lerp(-120, 0, clamp(k)), o: t > 11.6 + i * .07 ? 1 : 0 });
+  });
+}
+
+// 12.3 to 15 s: cream returns, the red dot comes back and draws the wordmark.
+function scene6(t) {
+  wipe($('w4'), CX, CY, lerp(0, 1300, E.inOutQuart(p(t, 12.3, 12.7))));
+  const ul = $('uline');
+  const pop = spring(t - 12.55, 2.2, 7), st = E.inOutExpo(p(t, 12.8, 13.25));
+  const w = lerp(56, 640, st), h = lerp(56, 10, st);
+  ul.style.width = w + 'px'; ul.style.height = h + 'px'; ul.style.borderRadius = h / 2 + 'px';
+  T(ul, { x: CX, y: lerp(CY, 712, E.inOutCubic(p(t, 12.75, 13.1))), s: clamp(pop, 0, 1.3), o: t > 12.55 ? 1 : 0 });
+
+  letters.forEach((l, i) => {
+    const k = E.outExpo(p(t, 12.9 + i * .055, 13.6 + i * .055));
+    l.style.transform = `translateY(${lerp(110, 0, k)}%) rotate(${lerp(10, 0, k)}deg)`;
+  });
+  T($('mark'), { x: CX, y: 505, s: lerp(1.04, 1, E.outCubic(p(t, 13, 15))) });
+
+  // Arabic reveals right to left, the way it is written.
+  const a = $('ar'), ak = E.inOutCubic(p(t, 13.3, 13.9));
+  a.style.clipPath = `inset(0 0 0 ${100 - ak * 100}%)`;
+  T(a, { x: CX, y: 262 + lerp(18, 0, ak) });
+
+  ['tg0', 'tg1', 'tg2'].forEach((id, i) => {
+    const k = E.outExpo(p(t, 13.75 + i * .15, 14.3 + i * .15));
+    T($(id), { x: tagX[i], y: 800 + lerp(30, 0, k), o: k });
+  });
+  const uk = E.outCubic(p(t, 14.3, 14.8));
+  T($('url'), { x: CX, y: 965, o: uk, s: lerp(.96, 1, uk) });
+}
+
+// Stars are built once.
+const s5 = $('s5');
+for (let i = 0; i < 5; i++) {
+  const sv = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  sv.setAttribute('viewBox', '0 0 24 24'); sv.setAttribute('class', 'a star');
+  sv.innerHTML = '<path fill="#F6C39F" d="M12 1.8l3.1 6.4 7 1-5.1 4.9 1.2 7L12 17.8l-6.2 3.3 1.2-7L1.9 9.2l7-1z"/>';
+  s5.appendChild(sv);
+}
+
+/* ---------- Playback ---------- */
+const params = new URLSearchParams(location.search);
+const capture = params.has('capture');
+function fit() {
+  const s = capture ? 1 : Math.min(innerWidth / W, innerHeight / H);
+  const st = $('stage');
+  st.style.transform = `scale(${s})`;
+  st.style.left = (innerWidth - W * s) / 2 + 'px'; st.style.top = (innerHeight - H * s) / 2 + 'px';
+}
+// Rows of words centred on the stage, from their real widths.
+let wordX = [590, 960, 1335], tagX = [778, 952, 1132];
+const row = (ids, gap) => { const w = ids.map(id => $(id).offsetWidth), tot = w.reduce((a, b) => a + b) + gap * (w.length - 1); let x = CX - tot / 2; return w.map(v => { const c = x + v / 2; x += v + gap; return c; }); };
+const measure = () => { wordX = row(['wd1', 'wd2', 'wd3'], 44); tagX = row(['tg0', 'tg1', 'tg2'], 22); };
+window.__render = t => { if (!measure.done) { measure(); measure.done = true; } render(t); };
+window.__duration = DUR;
+if (capture) { document.body.classList.add('capture'); fit(); return; }
+
+addEventListener('resize', fit); fit();
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let t0 = null, at = reduce ? DUR : 0, playing = !reduce, raf = 0;
+const loop = params.has('loop');
+const btn = $('play'), bar = $('bar').firstChild;
+function frame(now) {
+  if (t0 === null) t0 = now - at * 1000;
+  at = (now - t0) / 1000;
+  if (at >= DUR) {
+    if (loop) { t0 = now; at = 0; }
+    else { at = DUR; playing = false; document.body.classList.add('ended'); btn.textContent = 'Play'; btn.setAttribute('aria-label', 'Play'); }
+  }
+  window.__render(at); bar.style.width = at / DUR * 100 + '%';
+  if (playing) raf = requestAnimationFrame(frame);
+}
+function play(from) {
+  if (from !== undefined) at = from;
+  cancelAnimationFrame(raf); t0 = null; playing = true;
+  document.body.classList.remove('ended', 'paused'); btn.textContent = 'Pause'; btn.setAttribute('aria-label', 'Pause');
+  raf = requestAnimationFrame(frame);
+}
+function pause() { playing = false; cancelAnimationFrame(raf); document.body.classList.add('paused'); btn.textContent = 'Play'; btn.setAttribute('aria-label', 'Play'); }
+btn.onclick = () => playing ? pause() : play(at >= DUR ? 0 : at);
+$('replay').onclick = () => play(0);
+addEventListener('keydown', e => { if (e.key === ' ' && e.target === document.body) { e.preventDefault(); btn.click(); } });
+// Don't burn frames while hidden or scrolled off in an iframe.
+document.addEventListener('visibilitychange', () => { if (document.hidden && playing) pause(); });
+document.fonts.ready.then(() => { measure(); measure.done = true; render(at); bar.style.width = at / DUR * 100 + '%'; if (playing) play(at); else if (reduce) { document.body.classList.add('ended'); btn.textContent = 'Play'; } });
+})();
+</script>
+</body>
+</html>

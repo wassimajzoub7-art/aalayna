@@ -58,6 +58,8 @@ onboarding/
 # marketing screenshots and the share image (W3a)
 !images/
 !images/*
+# the 15-second reel: live page, video renders in images/, tools/render-reel.js and tools/reel-audio.js
+!reel.html
 # the French homepage (W4)
 !fr/
 !fr/*
