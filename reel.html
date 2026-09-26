@@ -4,68 +4,67 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aalayna Film</title>
-<meta name="description" content="Aalayna in 45 seconds: the wait for the bill, then scan, menu, split, tip, pay and rate from the table, and the restaurant's live side.">
+<meta name="description" content="Aalayna in 45 seconds, all at one table: the wait for the bill, then scan, menu, split, tip, pay and rate, and the restaurant's live floor.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@700&display=block" rel="stylesheet">
 <style>
-/* Aalayna film: one 45 s timeline in two formats (?format=portrait) and two languages (?lang=fr).
-   Every frame is a pure function of t (render(t)), so the page plays live, scrubs, and renders frame-exact to video
-   through tools/render-reel.js. The phone, dashboard and editor are vector rebuilds of the real screens. */
-:root{--bg:#FAF6F1;--ink:#211B16;--sub:#6E635B;--line:#EAE2D8;--red:#C9414B;--petrol:#173E43;--peach:#F6C39F;
+/* Aalayna film: one 45 s timeline in two formats (?format=portrait) and two languages (?lang=fr), set at one table.
+   The table, the room and the waiter are a vector world under a camera that dives into the guest's phone and rises
+   over the floor. Every frame is a pure function of t (render(t)), so the page plays live, scrubs, and renders
+   frame-exact to video through tools/render-reel.js. The phone and panels are vector rebuilds of the real screens. */
+:root{--bg:#FAF6F1;--ink:#211B16;--sub:#6E635B;--line:#EAE2D8;--red:#C9414B;--petrol:#173E43;--peach:#F6C39F;--green:#3E8E6A;--amber:#E0A33A;
   --a-line:#E7E5E0;--a-soft:#F0EEE9;--a-ink:#171D1A;--a-sub:#68716B;--a-faint:#9AA29C;--a-green:#0F4B3A;--a-gbg:#EDF3EF;--a-gline:#D5E3DA;
   --a-amber:#8A6A1F;--a-abg:#F8F1DF;--a-aline:#EBDDB4;--a-red:#B4423A}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;background:var(--bg);overflow:hidden}
 body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
 #view{position:fixed;inset:0}
-#stage{position:absolute;left:0;top:0;overflow:hidden;background:#123236;transform-origin:0 0}
-.act,.fill{position:absolute;inset:0}
-.a{position:absolute;left:0;top:0;will-change:transform,opacity}
+#stage{position:absolute;left:0;top:0;overflow:hidden;background:#0E2A2D;transform-origin:0 0}
+.layer{position:absolute;inset:0}
+.a{position:absolute;left:0;top:0}
 .w{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .02em .12em;margin:0 -.02em -.12em}
 .w>span{display:inline-block;transform-origin:0 100%}
 
+/* The world: floor, tables, table 12 */
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+#world svg{position:absolute;overflow:visible}
+#vig{pointer-events:none}
+
 /* Act 1: the wait */
-#a1 .fill{background:radial-gradient(ellipse at 62% 50%,#22494E 0%,#16383C 46%,#0E2A2D 100%)}
-.bokeh{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(246,195,159,.22),rgba(246,195,159,0) 70%)}
-#tableBox{width:1000px;height:1000px}
-#tableBox svg{position:absolute;inset:0;overflow:visible}
-.cap1{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg)}
+.cap1{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);text-wrap:balance}
 .cap1 .em{color:var(--peach)}
-.pain{display:flex;align-items:center;gap:.5em;padding:.3em .8em .3em .3em;border-radius:999px;background:rgba(250,246,241,.08);border:2px solid rgba(250,246,241,.16);color:var(--bg);font-weight:600;white-space:nowrap}
+.pain{display:flex;align-items:center;gap:.5em;padding:.3em .8em .3em .3em;border-radius:999px;background:rgba(14,42,45,.72);border:2px solid rgba(250,246,241,.18);color:var(--bg);font-weight:600;white-space:nowrap}
 .pain i{width:1.5em;height:1.5em;border-radius:50%;background:var(--red);display:grid;place-items:center;font-style:normal;color:#fff;font-weight:700}
 .pain svg{width:.9em;height:.9em}
 #clock{font-weight:600;letter-spacing:.08em;color:rgba(250,246,241,.8);font-variant-numeric:tabular-nums;white-space:nowrap}
 #clock b{color:var(--peach);font-weight:700}
 
 /* Act 2: the turn */
-#a2 .fill{background:var(--red)}
+#red .fill{position:absolute;inset:0;background:var(--red)}
 .kl{position:absolute;overflow:hidden;padding:0 40px 24px 0;font-weight:700;line-height:1;letter-spacing:-.055em;color:var(--bg);white-space:nowrap}
 .kl span{display:inline-block;transform-origin:0 100%}
 #k3{color:var(--ink)}
-#thesis{font-weight:500;color:var(--bg);line-height:1.3}
+#thesis{font-weight:500;color:var(--bg);line-height:1.3;text-wrap:balance}
 
-/* Act 3: the guest */
-#a3 .fill{background:var(--bg)}
+/* Captions and the journey rail, over the room */
 .cap{display:flex;flex-direction:column;align-items:flex-start}
-.cap .lab{font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);white-space:nowrap}
-.cap .hd{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--ink);margin-top:.3em}
-.cap .hd .em{color:var(--red)}
-.cap .sb{color:var(--sub);line-height:1.34;margin-top:.75em}
-.cap .hd,.cap .sb,.cap1,#thesis{text-wrap:balance}
-#capB .lab{color:var(--peach)}#capB .hd{color:var(--bg)}#capB .hd .em{color:var(--peach)}#capB .sb{color:#C4D2CF}
-.rline{position:absolute;height:3px;border-radius:2px;background:var(--line);transform-origin:0 50%}
-.rline.on{background:var(--red)}
-.node{width:18px;height:18px;border-radius:50%;border:3px solid #D9CFC2;background:var(--bg)}
-.rlab{font-weight:600;color:var(--sub);white-space:nowrap}
-#rdot{width:26px;height:26px;border-radius:50%;background:var(--red);box-shadow:0 0 0 8px rgba(201,65,75,.16)}
+.cap .lab{font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--peach);white-space:nowrap}
+.cap .hd{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);margin-top:.3em;text-wrap:balance}
+.cap .hd .em{color:var(--peach)}
+.cap .sb{color:#C9D6D3;line-height:1.34;margin-top:.75em;text-wrap:balance}
+.rline{position:absolute;height:3px;border-radius:2px;background:rgba(250,246,241,.18);transform-origin:0 50%}
+.node{width:18px;height:18px;border-radius:50%;border:3px solid rgba(250,246,241,.3);background:#10302F}
+.rlab{font-weight:600;color:rgba(250,246,241,.62);white-space:nowrap}
+#rdot{width:26px;height:26px;border-radius:50%;background:var(--red);box-shadow:0 0 0 8px rgba(201,65,75,.2)}
 
-/* The phone: a 390 px wide app viewport, scaled into the screen */
+/* The guest's phone: a 390 px wide app viewport, scaled into the screen */
 #phoneLayer{perspective:2600px;pointer-events:none}
-#phone{width:440px;height:888px;padding:15px;border-radius:68px;background:linear-gradient(150deg,#342b25,#14100d 60%);box-shadow:0 50px 90px rgba(33,27,22,.3),0 14px 26px rgba(33,27,22,.18),inset 0 0 0 2px #463d35,inset 0 0 0 6px #0d0b09}
+#phone{width:440px;height:888px;padding:15px;border-radius:68px;background:linear-gradient(150deg,#342b25,#14100d 60%);transform-origin:50% 50%}
 #screen{position:relative;width:410px;height:858px;border-radius:53px;overflow:hidden;background:#fff}
-#island{position:absolute;left:149px;top:11px;width:112px;height:32px;border-radius:16px;background:#0b0908;z-index:12}
+#island{position:absolute;left:149px;top:11px;width:112px;height:32px;border-radius:16px;background:#0b0908;z-index:14}
+#off{position:absolute;inset:0;background:#0a0908;z-index:12}
 #sbar{position:absolute;left:0;top:0;width:410px;height:46px;z-index:11;display:flex;align-items:center;justify-content:space-between;padding:6px 36px 0 44px;font-size:16px;font-weight:600;color:var(--a-ink)}
 #sbar.light{color:#fff}
 #sbar svg{height:13px}
@@ -79,7 +78,6 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .pw b{color:var(--a-sub)}
 .pv{display:inline-flex;flex-direction:column;overflow:hidden;vertical-align:top}
 .pv>*{display:block;font-style:normal;white-space:nowrap}
-
 #sCam{background:radial-gradient(ellipse at 50% 42%,#54443a 0%,#221b17 58%,#0d0a09 100%)}
 #tent{position:absolute;left:77px;top:150px;width:236px;height:300px;border-radius:20px;background:#fff;box-shadow:0 18px 40px rgba(0,0,0,.45);text-align:center}
 #tent canvas{display:block;margin:20px auto 0}
@@ -89,7 +87,6 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #scanl{position:absolute;left:92px;width:206px;height:4px;border-radius:2px;background:var(--red);box-shadow:0 0 18px 4px rgba(201,65,75,.6)}
 #scanPill{position:absolute;left:65px;top:566px;width:260px;height:48px;border-radius:24px;background:#FAF6F1;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.35)}
 #scanPill i{width:12px;height:12px;border-radius:50%;background:var(--red)}
-
 .m-title{position:absolute;left:70px;top:8px;font-size:20px;font-weight:700;line-height:24px}
 .m-sub{position:absolute;left:70px;top:32px;font-size:13px;color:var(--a-sub)}
 .pill{position:absolute;top:8px;height:42px;padding:0 11px;border:1.5px solid var(--a-line);border-radius:12px;display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;background:#fff}
@@ -111,12 +108,10 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .row .v.ar{direction:rtl;text-align:right}
 .row .v.ar .nm{font-family:'IBM Plex Sans Arabic',sans-serif}
 .row .v.ar .pr{right:auto;left:16px;direction:ltr}
-.row .flash{position:absolute;inset:0;background:var(--peach);opacity:0}
 #billBtn{position:absolute;left:62px;top:700px;width:266px;height:48px;border-radius:24px;background:var(--a-green);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-weight:600;box-shadow:0 10px 24px rgba(15,75,58,.3)}
 #billBtn .pv{height:20px;line-height:20px;align-items:center}
 #ddLang{position:absolute;right:118px;top:58px;width:150px;background:#fff;border:1px solid var(--a-line);border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.14);padding:6px;font-size:14px;transform-origin:100% 0}
 #ddLang div{height:36px;line-height:36px;padding:0 12px;border-radius:8px}
-
 .c-title{position:absolute;left:0;right:0;top:10px;text-align:center;font-size:20px;font-weight:700}
 .c-sub{position:absolute;left:0;right:0;top:38px;text-align:center;font-size:13.5px;color:var(--a-sub)}
 .billcard{position:absolute;left:16px;width:358px;top:72px;border:1.5px solid var(--a-line);border-radius:16px;padding:8px 16px 14px;background:#fff}
@@ -127,7 +122,6 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .bc-m{font-size:13px;color:var(--a-sub);line-height:28px;padding-left:26px}
 .bc-t{display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px dashed var(--a-line);margin-top:8px;padding-top:10px;font-weight:700;font-size:15px}
 .bc-t b{font-size:24px;letter-spacing:-.02em}
-
 .s-h{position:absolute;left:0;right:0;top:10px;text-align:center;font-size:22px;font-weight:700;letter-spacing:-.01em}
 .s-s{position:absolute;left:0;right:0;top:44px;text-align:center;font-size:15px;color:var(--a-sub)}
 .seg{position:absolute;left:16px;width:358px;top:84px;height:58px;border-radius:14px;background:var(--a-soft);display:grid;grid-template-columns:repeat(4,1fr);font-size:14px;color:var(--a-sub);text-align:center;align-items:center;line-height:17px}
@@ -145,7 +139,6 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .share b{display:block;font-size:40px;letter-spacing:-.02em;line-height:52px;font-variant-numeric:tabular-nums}
 .share span{display:block;font-size:14px;font-variant-numeric:tabular-nums}
 .note{position:absolute;left:0;right:0;top:392px;text-align:center;font-size:14px;color:var(--a-sub);font-variant-numeric:tabular-nums}
-
 .p-top{position:absolute;left:0;right:0;top:6px;text-align:center;font-size:14.5px;font-weight:600;color:var(--a-green)}
 .p-tot{position:absolute;left:0;right:0;top:26px;text-align:center;font-size:46px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .p-ll{position:absolute;left:0;right:0;top:86px;text-align:center;font-size:14px;color:var(--a-sub);font-variant-numeric:tabular-nums}
@@ -174,7 +167,6 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #whish b{display:block;font-size:32px;letter-spacing:-.02em}
 #whish .bar{margin-top:18px;height:5px;border-radius:3px;background:var(--a-soft);overflow:hidden}
 #whish .bar i{display:block;height:100%;width:0;background:var(--a-green)}
-
 #sPaid{background:var(--a-green);color:#fff}
 #ck{position:absolute;left:167px;top:38px;overflow:visible}
 .pd-h{position:absolute;left:0;right:0;top:100px;text-align:center;font-family:'Amiri',serif;font-size:40px;font-weight:700;line-height:48px}
@@ -196,85 +188,48 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .opt svg{width:16px;height:16px}
 #rsheet .cm{position:absolute;left:20px;right:20px;top:128px;height:54px;border:1.5px solid var(--a-line);border-radius:12px;padding:0 14px;display:flex;align-items:center;font-size:14px;color:var(--a-faint)}
 #rsheet .cta{top:196px}
-#tapDot{width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(23,29,26,.2);border:2.5px solid rgba(255,255,255,.95);box-shadow:0 3px 10px rgba(0,0,0,.25)}
-#tapRing{width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:3px solid rgba(201,65,75,.85)}
+#tapDot,.tapd{width:46px;height:46px;border-radius:50%;background:rgba(23,29,26,.2);border:2.5px solid rgba(255,255,255,.95);box-shadow:0 3px 10px rgba(0,0,0,.25)}
+#tapRing,.tapr{width:46px;height:46px;border-radius:50%;border:3px solid rgba(201,65,75,.85)}
 #stamp{width:170px;height:170px;border-radius:50%;background:var(--red);color:var(--bg);display:grid;place-items:center;font-size:68px;font-weight:700;letter-spacing:-.04em;box-shadow:0 18px 40px rgba(201,65,75,.35)}
 #stampRing{width:170px;height:170px;border-radius:50%;border:6px solid var(--red)}
 #conf{position:absolute;left:0;top:0}
 
-/* Act 4: the restaurant */
-#a4 .fill{background:radial-gradient(ellipse at 62% 46%,#1F4D52 0%,#173E43 48%,#0F2D30 100%)}
-#dash{width:1160px;height:600px;border-radius:22px;background:#F6F6F4;overflow:hidden;box-shadow:0 60px 120px rgba(0,0,0,.4);color:var(--a-ink);font-size:15px}
-.d-side{position:absolute;left:0;top:0;bottom:0;width:220px;background:var(--a-green);padding:28px 16px;color:#fff}
-.d-logo{font-family:'Amiri',serif;font-size:32px;font-weight:700;line-height:1;padding-left:10px}
-.d-logo b{color:#F2B8A8;font-weight:700}
-.d-nav{margin-top:40px;display:flex;flex-direction:column;gap:4px;font-size:15px}
-.d-nav>*{padding:10px 12px;border-radius:10px;color:rgba(255,255,255,.8);font-weight:500}
-.d-nav b{background:rgba(255,255,255,.13);color:#fff;font-weight:600}
-.d-nav i{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#C9414B;color:#fff;font-size:11.5px;font-weight:700;margin-left:8px}
-.d-main{position:absolute;left:220px;top:0;right:0;bottom:0}
-.d-h{position:absolute;left:36px;top:28px;font-size:30px;font-weight:700;letter-spacing:-.02em}
-.d-s{position:absolute;left:36px;top:72px;font-size:14.5px;color:var(--a-sub)}
-.d-live{position:absolute;right:36px;top:34px;padding:6px 12px;border-radius:999px;background:var(--a-gbg);color:var(--a-green);font-size:13px;font-weight:600}
-.d-tabs{position:absolute;left:36px;top:104px;display:flex;gap:8px;font-size:14.5px}
-.d-tabs>*{padding:8px 14px;border-radius:10px;color:var(--a-sub)}
-.d-tabs b{background:var(--a-gbg);color:var(--a-green);font-weight:600;border:1px solid var(--a-gline)}
-.d-kpis{position:absolute;left:36px;right:36px;top:160px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.d-kpis>div{border-left:3px solid var(--a-gline);padding-left:16px}
-.d-kpis small{display:block;font-size:13.5px;color:var(--a-sub)}
-.d-kpis b{display:block;font-size:32px;font-weight:700;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums}
-.d-toast{position:absolute;left:36px;right:36px;top:256px;height:50px;border-radius:12px;background:var(--a-gbg);border:1px solid var(--a-gline);display:flex;align-items:center;gap:12px;padding:0 16px;font-weight:600;color:var(--a-green)}
-.d-toast i{font-style:normal;width:26px;height:26px;border-radius:50%;background:var(--a-green);color:#fff;display:grid;place-items:center;font-size:14px}
-.d-toast span{margin-left:auto;font-weight:500;color:var(--a-sub);font-size:13px}
-.d-att{position:absolute;left:36px;right:36px;top:322px;height:238px;border-radius:16px;background:#FFFBF2;border:1px solid var(--a-aline);padding:20px 22px}
-.d-att-h{font-size:18px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
-.d-badge{position:relative;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--a-abg);border:1px solid var(--a-aline);color:var(--a-amber)}
+/* The restaurant's side: compact panels over the floor */
+.pnl{width:640px;border-radius:22px;background:#F6F6F4;overflow:hidden;box-shadow:0 50px 100px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);color:var(--a-ink);font-size:15px;transform-origin:50% 50%}
+.pn-h{height:60px;display:flex;align-items:center;gap:14px;padding:0 22px;background:var(--a-green);color:#fff}
+.pn-logo{font-family:'Amiri',serif;font-size:26px;font-weight:700;line-height:1}
+.pn-logo b{color:#F2B8A8}
+.pn-t{font-size:14.5px;color:rgba(255,255,255,.85)}
+.pn-live{margin-left:auto;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12.5px;font-weight:600;letter-spacing:.04em}
+.pn-att{position:relative;margin:18px;height:196px;border-radius:16px;background:#FFFBF2;border:1px solid var(--a-aline);padding:18px 20px}
+.pn-att-h{font-size:18px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.d-badge{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--a-abg);border:1px solid var(--a-aline);color:var(--a-amber)}
 .d-badge.ok{background:var(--a-gbg);border-color:var(--a-gline);color:var(--a-green)}
-.d-att-s{font-size:14px;color:var(--a-sub);margin-top:4px}
-.d-row{position:absolute;left:22px;right:22px;top:98px;display:flex;align-items:center;gap:40px;padding-top:16px;border-top:1px solid var(--a-aline)}
-.d-row b{display:block;font-size:16px;font-weight:700}
-.d-row .amt{font-size:22px;letter-spacing:-.01em}
-.d-row small{display:block;font-size:13.5px;color:var(--a-sub);margin-top:2px}
-.d-btns{display:flex;gap:10px;margin-left:auto}
-.d-btns span{height:42px;padding:0 16px;border-radius:10px;display:grid;place-items:center;font-size:14px;font-weight:600;background:#fff;white-space:nowrap}
-#confirmBtn{border:1.5px solid #E2B5B0;color:var(--a-red)}
-.d-cancel{border:1.5px solid var(--a-line);color:var(--a-ink)}
-.d-decl{position:absolute;left:22px;top:192px;font-size:13.5px;color:var(--a-sub)}
-.d-done{position:absolute;left:22px;right:22px;top:110px;height:70px;border-radius:12px;background:var(--a-gbg);border:1px solid var(--a-gline);display:flex;align-items:center;gap:12px;padding:0 18px;font-size:17px;font-weight:600;color:var(--a-green)}
-.d-done i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--a-green);color:#fff;display:grid;place-items:center;font-size:15px}
-.tapd{width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(23,29,26,.2);border:2.5px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25)}
-.tapr{width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;border:3px solid rgba(201,65,75,.85)}
-#editor{width:560px;height:720px;border-radius:22px;background:#fff;box-shadow:0 60px 120px rgba(0,0,0,.4);color:var(--a-ink);overflow:hidden}
-.e-h{position:absolute;left:26px;top:24px;font-size:24px;font-weight:700}
-.e-live{position:absolute;right:26px;top:26px;padding:5px 10px;border-radius:8px;background:var(--a-gbg);color:var(--a-green);font-size:12px;font-weight:700;letter-spacing:.1em}
-.e-s{position:absolute;left:26px;top:58px;font-size:14px;color:var(--a-sub)}
-.e-rep{position:absolute;left:26px;right:26px;top:92px;height:68px;border-radius:14px;background:var(--a-abg);border:1px solid var(--a-aline);display:flex;align-items:center;gap:14px;padding:0 16px;color:var(--a-amber)}
-.e-rep i{font-style:normal;width:40px;height:40px;border-radius:10px;background:var(--a-amber);color:#fff;display:grid;place-items:center;font-weight:700;font-size:18px}
-.e-rep b{display:block;font-size:15.5px}
-.e-rep small{display:block;font-size:13px;opacity:.85}
-.e-rep span{margin-left:auto;font-size:20px}
-.e-info{position:absolute;left:26px;right:26px;top:172px;height:44px;border-radius:10px;background:#F6F6F4;border:1px solid var(--a-line);display:flex;align-items:center;padding:0 14px;font-size:13.5px;color:var(--a-sub);white-space:nowrap}
-.e-info b{color:var(--a-ink);margin:0 4px}
-.e-sec{position:absolute;left:26px;font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--a-sub);display:flex;align-items:center;gap:8px}
-.e-sec i{font-style:normal;background:var(--a-soft);padding:3px 8px;border-radius:6px;font-size:11.5px}
-.e-row{position:absolute;left:0;right:0;height:66px;border-top:1px solid var(--a-soft);display:flex;align-items:center;padding:0 26px 0 26px}
-.e-row b{display:block;font-size:16px;font-weight:600}
+.pn-att-s{font-size:14px;color:var(--a-sub);margin-top:4px}
+.pn-row{position:absolute;left:20px;right:20px;top:94px;display:flex;align-items:center;gap:26px;padding-top:16px;border-top:1px solid var(--a-aline)}
+.pn-row b{display:block;font-size:16px;font-weight:700}
+.pn-row .amt{font-size:22px}
+.pn-row small{display:block;font-size:13.5px;color:var(--a-sub);margin-top:2px}
+#confirmBtn{margin-left:auto;height:44px;padding:0 16px;border-radius:10px;display:grid;place-items:center;font-size:14.5px;font-weight:600;background:#fff;border:1.5px solid #E2B5B0;color:var(--a-red);white-space:nowrap}
+.pn-done{position:absolute;left:20px;right:20px;top:104px;height:70px;border-radius:12px;background:var(--a-gbg);border:1px solid var(--a-gline);display:flex;align-items:center;gap:12px;padding:0 18px;font-size:17px;font-weight:600;color:var(--a-green)}
+.pn-done i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--a-green);color:#fff;display:grid;place-items:center;font-size:15px}
+.e-row{position:relative;height:70px;border-bottom:1px solid var(--a-soft);display:flex;align-items:center;padding:0 24px;background:#fff}
+.e-row b{display:block;font-size:17px;font-weight:600}
 .e-row small{display:block;font-size:13.5px;color:var(--a-sub)}
 .e-row em{font-style:normal;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--a-abg);color:var(--a-amber);border:1px solid var(--a-aline);margin-left:8px;vertical-align:2px;display:inline-block}
-.e-pr{margin-left:auto;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
-.e-input{position:absolute;right:18px;top:13px;height:40px;width:100px;padding:0 12px;border:2px solid var(--a-green);border-radius:9px;display:flex;align-items:center;font-size:16px;font-weight:700;background:#fff;box-shadow:0 0 0 4px rgba(15,75,58,.12)}
+.e-pr{margin-left:auto;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.e-input{position:absolute;right:18px;top:14px;height:42px;width:108px;padding:0 12px;border:2px solid var(--a-green);border-radius:9px;display:flex;align-items:center;font-size:17px;font-weight:700;background:#fff;box-shadow:0 0 0 4px rgba(15,75,58,.12)}
 .e-input s{display:inline-block;width:2px;height:20px;background:var(--a-green);margin-left:2px}
-.e-add{position:absolute;left:26px;font-size:15px;font-weight:600;color:var(--a-green)}
-.e-btn{position:absolute;left:26px;right:26px;bottom:24px;height:54px;border-radius:14px;overflow:hidden}
+.e-sec{padding:14px 24px 6px;font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--a-sub);background:#fff}
+.e-btn{position:relative;margin:16px 18px 18px;height:54px;border-radius:14px;overflow:hidden}
 .e-btn span{position:absolute;inset:0;display:grid;place-items:center;font-size:16px;font-weight:600}
-#eBtnA{background:#F0EEE9;color:var(--a-faint)}
+#eBtnA{background:#E9E6E0;color:var(--a-faint)}
 #eBtnB{background:var(--a-green);color:#fff}
-.e-toast{position:absolute;left:26px;right:26px;bottom:90px;height:50px;border-radius:12px;background:var(--a-ink);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14.5px;font-weight:600;white-space:nowrap}
+.e-toast{position:absolute;left:18px;right:18px;bottom:84px;height:50px;border-radius:12px;background:var(--a-ink);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14.5px;font-weight:600;white-space:nowrap}
 .e-toast i{font-style:normal;color:#8FD1B0}
-#sync{position:absolute;left:0;top:0;overflow:visible}
 
 /* Act 5: the close */
-#a5 .fill{background:var(--bg)}
+#close .fill{position:absolute;inset:0;background:var(--bg)}
 #mark{font-family:'Amiri',serif;font-weight:700;line-height:1.35;overflow:hidden;padding:0 20px;white-space:nowrap;display:flex}
 #mark span{display:inline-block}
 #mark .na{color:var(--red)}
@@ -302,6 +257,9 @@ body.capture #ui{display:none}
   <filter id="mb1" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
   <filter id="mb2" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
   <filter id="mb3" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+  <radialGradient id="cloth" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#FCF6EC"/><stop offset="1" stop-color="#EBDCC7"/></radialGradient>
+  <linearGradient id="bodyShade" x1="0" y1="0" x2="0" y2="1"><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
+  <linearGradient id="phGlare" x1="0" y1="0" x2="1" y2="1"><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".1"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
 </defs></svg>
 <script>
 (() => {
@@ -318,7 +276,7 @@ document.documentElement.lang = LANG;
 const N = ' ';
 const COPY = {
   en: {
-    aria: 'Aalayna film. Dinner ends with a wait for the bill. With Aalayna, guests scan the table QR, read the menu in their language and currency, split the $152.50 bill four ways, tip the waiter, pay $41.94 with Whish Money and rate the night. The restaurant sees payments live, confirms cash, and publishes a price change to every table in seconds. Two months free from go-live. aalayna.com',
+    aria: 'Aalayna film, set at one table. Dinner ends with a wait for the bill. With Aalayna, a guest scans the QR on the table, reads the menu in their language and currency, splits the $152.50 bill four ways, tips the waiter, pays $41.94 with Whish Money and rates the night, while the rest of the table pays by card, Whish and cash. The restaurant sees every table live, confirms the cash, and publishes a price change to every table at once. Two months free from go-live. aalayna.com',
     dinner: 'Dinner was *great.*', bill: 'Then comes *the bill.*',
     pains: ['Waiting for the waiter', 'Doing the maths', 'Waiting for change'],
     clock: m => `10:${String(m).padStart(2, '0')} <b>PM</b>`,
@@ -330,17 +288,19 @@ const COPY = {
       ['03 · Split', 'Split it *their way.*', 'Evenly, by item or any amount. Nobody does the maths.'],
       ['04 · Tip', 'Something for the *waiter.*', 'One tap. 10% is already selected.'],
       ['05 · Pay', '*Whish,* card or cash.', 'Staff confirm cash when they collect it.'],
-      ['06 · Rate', 'One tap to *rate* the night.', 'Then their choice: a Google review or a private note.'],
+      ['06 · Rate', 'One tap to *rate* the night.', 'A Google review or a private note.'],
+      ['Table 12', 'Everyone pays, *at their own pace.*', 'Three in the app. One in cash, for the waiter to confirm.'],
     ],
     side: [
       ['Your side', 'Every table, *live.*', 'Payments land as they happen. Confirm cash once it’s in your hands.'],
-      ['Your menu', 'Change a price. *Live in seconds.*', 'Published to every table. No reprints.'],
+      ['Your menu', 'Change a price. *Every table has it.*', 'Published at once. No reprints.'],
     ],
     rail: ['Scan', 'Menu', 'Split', 'Tip', 'Pay', 'Rate'],
+    pending: 'Cash pending', settled: 'Settled',
     tag: ['scan', 'split', 'settle'], cta: 'Two months free from go-live.', url: 'aalayna.com', time: '10:41',
   },
   fr: {
-    aria: `Film Aalayna. Le dîner se termine par l’attente de l’addition. Avec Aalayna, les clients scannent le QR de la table, lisent le menu dans leur langue et leur devise, partagent l’addition de $152.50 en quatre, laissent un pourboire, paient $41.94 avec Whish Money et notent la soirée. Le restaurant voit les paiements en direct, confirme les espèces et publie un nouveau prix sur chaque table en quelques secondes. Deux mois gratuits dès la mise en service. aalayna.com`,
+    aria: 'Film Aalayna, à une seule table. Le dîner se termine par l’attente de l’addition. Avec Aalayna, un client scanne le QR de la table, lit le menu dans sa langue et sa devise, partage l’addition de $152.50 en quatre, laisse un pourboire, paie $41.94 avec Whish Money et note la soirée, pendant que le reste de la table paie par carte, Whish et espèces. Le restaurant voit chaque table en direct, confirme les espèces et publie un nouveau prix sur toutes les tables d’un coup. Deux mois gratuits dès la mise en service. aalayna.com',
     dinner: 'Le dîner était *parfait.*', bill: 'Puis vient *l’addition.*',
     pains: ['On attend le serveur', 'On fait les calculs', 'On attend la monnaie'],
     clock: m => `22 h ${String(m).padStart(2, '0')}`,
@@ -352,13 +312,15 @@ const COPY = {
       ['03 · Partager', 'Chacun paie *sa part.*', 'À parts égales, par plat ou au montant choisi. Personne ne calcule.'],
       ['04 · Pourboire', 'Un geste pour le *serveur.*', `En une touche. 10${N}% déjà sélectionnés.`],
       ['05 · Payer', '*Whish,* carte ou espèces.', 'L’équipe confirme les espèces à l’encaissement.'],
-      ['06 · Noter', 'Une touche pour *noter* la soirée.', `Puis, au choix${N}: un avis Google ou un mot privé.`],
+      ['06 · Noter', 'Une touche pour *noter* la soirée.', 'Un avis Google ou un mot privé.'],
+      ['Table 12', 'Chacun règle, *à son rythme.*', 'Trois dans l’appli. Un en espèces, que le serveur confirme.'],
     ],
     side: [
       ['Côté restaurant', 'Chaque table, *en direct.*', 'Les paiements arrivent en temps réel. Confirmez les espèces une fois en main.'],
-      ['Votre menu', `Un prix change${N}? *En ligne en secondes.*`, 'Publié sur chaque table. Rien à réimprimer.'],
+      ['Votre menu', `Un prix change${N}? *Toutes les tables l’ont.*`, 'Publié d’un coup. Rien à réimprimer.'],
     ],
     rail: ['Scanner', 'Menu', 'Partager', 'Pourboire', 'Payer', 'Noter'],
+    pending: 'Espèces en attente', settled: 'Réglée',
     tag: ['scanner', 'partager', 'régler'], cta: 'Deux mois gratuits dès la mise en service.', url: 'aalayna.com', time: '22:41',
   },
 };
@@ -377,6 +339,7 @@ const E = {
   outExpo: k => k === 1 ? 1 : 1 - Math.pow(2, -10 * k),
   inOutExpo: k => k === 0 ? 0 : k === 1 ? 1 : k < .5 ? Math.pow(2, 20 * k - 10) / 2 : (2 - Math.pow(2, -20 * k + 10)) / 2,
   inOutQuart: k => k < .5 ? 8 * k * k * k * k : 1 - Math.pow(-2 * k + 2, 4) / 2,
+  inOutSine: k => -(Math.cos(Math.PI * k) - 1) / 2,
   outBack: (k, s = 1.9) => 1 + (s + 1) * Math.pow(k - 1, 3) + s * Math.pow(k - 1, 2),
   inBack: (k, s = 1.7) => k * k * ((s + 1) * k - s),
 };
@@ -385,8 +348,10 @@ const wobble = (s, f = 3, d = 7) => s <= 0 ? 0 : Math.exp(-d * s) * Math.cos(2 *
 const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
 const money = v => '$' + v.toFixed(2);
 const lira = v => 'LL ' + Math.round(v).toLocaleString('en-US');
+const rad = d => d * Math.PI / 180;
+const rot = (x, y, deg) => { const a = rad(deg), c = Math.cos(a), s = Math.sin(a); return [x * c - y * s, x * s + y * c]; };
+const mixRGB = (a, b, k) => `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], k))).join(',')})`;
 
-// Position an element by its centre: x y z s sx sy r rx ry o
 function T(el, o) {
   const s = o.s ?? 1;
   let tr = `translate3d(${o.x ?? 0}px,${o.y ?? 0}px,${o.z ?? 0}px) translate(-50%,-50%)`;
@@ -397,11 +362,10 @@ function T(el, o) {
   el.style.transform = tr;
   el.style.opacity = o.o ?? 1;
 }
-// Position by top-left corner.
 const TL = (el, x, y, o = 1, extra = '') => { el.style.transform = `translate(${x}px,${y}px) ${extra}`; el.style.opacity = o; };
 const show = (el, on) => { el.style.display = on ? '' : 'none'; };
+const attr = (el, k, v) => el.setAttribute(k, v);
 const blurX = (id, v) => $(id).firstElementChild.setAttribute('stdDeviation', `${Math.min(60, Math.abs(v)).toFixed(1)} 0`);
-// Words in their own masks; *…* marks emphasis.
 function words(txt) {
   let em = false, out = '';
   txt.split('*').forEach((part, i) => {
@@ -410,58 +374,231 @@ function words(txt) {
   });
   return out;
 }
+const spans = el => el._w || (el._w = [...el.querySelectorAll('.w>span')]);
+// Centre of an element in its panel's own pixels, measured once.
+const centerIn = (el, root) => { if (el._c) return el._c; let x = el.offsetWidth / 2, y = el.offsetHeight / 2; for (let e = el; e && e !== root; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; } return (el._c = [x, y]); };
 
-/* ---------- Build ---------- */
-const stage = $('stage');
-stage.style.width = W + 'px'; stage.style.height = H + 'px';
-stage.setAttribute('aria-label', C.aria);
+/* ---------- The world ---------- */
+// Table 12 sits at (0, 0). Guests: 0 top (Maya, card), 1 right (Karim, Whish), 2 bottom (the guest we follow), 3 left (Rami, cash).
+const GA = [-90, 0, 90, 180];
+const seat = (a, x, y) => rot(x, y, a - 90);                // a point in the frame of a seat at angle a: x to the sitter's right, y outward
+const place = (i, x, y) => seat(GA[i], x, y);
+const NAMES = [['M', '#3E8E6A'], ['K', '#C9414B'], ['You', '#211B16'], ['R', '#C7925F']];
+const QRD = [0, 3];                                         // the red dot on the QR tent
+const rcRand = rng(7), rcEdges = [];
+for (let b = 0; b <= 4; b++) { const pts = []; for (let y = -95; y <= 86; y += 7) pts.push([b === 0 ? -48 : b === 4 ? 48 : -48 + b * 24 + (rcRand() - .5) * 6, y]); rcEdges.push(pts); }
+const zig = x => (Math.round((x + 48) / 6) % 2 ? 90 : 95);
+function stripPoly(i) {
+  const L = rcEdges[i], R = rcEdges[i + 1].map(([x, y]) => [x + (i < 3 ? .6 : 0), y]), pts = [...R];
+  for (let x = R[R.length - 1][0]; x >= L[L.length - 1][0] - .5; x -= 3) pts.push([x, zig(x)]);
+  pts.push(...L.slice().reverse());
+  return pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+}
+function qrPattern(n, seed) {
+  const r = rng(seed), out = [];
+  const inF = (y, x) => [[0, 0], [0, n - 7], [n - 7, 0]].some(([a, b]) => y >= a && y < a + 7 && x >= b && x < b + 7);
+  const fOn = (y, x) => { for (const [a, b] of [[0, 0], [0, n - 7], [n - 7, 0]]) { const yy = y - a, xx = x - b; if (yy >= 0 && yy < 7 && xx >= 0 && xx < 7) return yy === 0 || yy === 6 || xx === 0 || xx === 6 || (yy >= 2 && yy <= 4 && xx >= 2 && xx <= 4); } return false; };
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const f = inF(y, x), sep = !f && [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1]].some(([a, b]) => inF(y + a, x + b));
+    if (f ? fOn(y, x) : !sep && r() < .5) out.push([x, y, f]);
+  }
+  return out;
+}
+const QR = qrPattern(25, 12);
 
-function tableSVG() {
-  const A = [-90, 0, 90, 180], rad = d => d * Math.PI / 180;
-  const ppl = [['#3E8E6A', '#2A1D16'], ['#C9414B', '#1B1614'], ['#E4DACB', '#6B3A26'], ['#F6C39F', '#3A2A20']];
-  const food = [['#8DB36B', '#C85A3C'], ['#E0C48E', '#9C6B3A'], ['#8DB36B', '#E0C48E'], ['#C85A3C', '#8DB36B']];
-  let s = `<defs><radialGradient id="cloth" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#FCF6EC"/><stop offset="1" stop-color="#EBDCC7"/></radialGradient>
-    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="18"/></filter></defs>
-    <circle cx="500" cy="524" r="268" fill="#000" opacity=".42" filter="url(#soft)"/>
-    <circle cx="500" cy="500" r="252" fill="url(#cloth)"/>
-    <circle cx="500" cy="500" r="238" fill="none" stroke="#E2D1BA" stroke-width="3" stroke-dasharray="1 12" stroke-linecap="round"/>`;
-  A.forEach((a, i) => {
-    const c = Math.cos(rad(a)), n = Math.sin(rad(a)), tx = -n, ty = c, px = 500 + 158 * c, py = 500 + 158 * n;
-    const fx = px + 12 * tx - 8 * c, fy = py + 12 * ty - 8 * n;
-    s += `<circle cx="${px}" cy="${py}" r="58" fill="#fff" stroke="#E7DDCF" stroke-width="2"/><circle cx="${px}" cy="${py}" r="41" fill="none" stroke="#F2EBE1" stroke-width="2"/>
-      <ellipse cx="${fx}" cy="${fy}" rx="13" ry="8" fill="${food[i][0]}" transform="rotate(${a + 25} ${fx} ${fy})"/>
-      <circle cx="${px - 14 * tx + 6 * c}" cy="${py - 14 * ty + 6 * n}" r="6" fill="${food[i][1]}"/><circle cx="${px - 2 * tx - 16 * c}" cy="${py - 2 * ty - 16 * n}" r="4" fill="${food[i][1]}" opacity=".8"/>`;
-    [-1, 1].forEach(sd => { const kx = px + sd * 80 * tx, ky = py + sd * 80 * ty; s += `<rect x="${kx - 3.5}" y="${ky - 36}" width="7" height="72" rx="3.5" fill="#C2B8AA" transform="rotate(${a + 90} ${kx} ${ky})"/>`; });
-    const gx = 500 + 214 * Math.cos(rad(a + 27)), gy = 500 + 214 * Math.sin(rad(a + 27));
-    s += `<circle cx="${gx}" cy="${gy}" r="17" fill="rgba(190,220,232,.55)" stroke="rgba(140,175,190,.85)" stroke-width="2"/><circle cx="${gx - 5}" cy="${gy - 5}" r="5" fill="rgba(255,255,255,.75)"/>`;
-  });
-  s += `<circle cx="450" cy="448" r="40" fill="#fff" stroke="#EDE4D8" stroke-width="3"/><circle cx="450" cy="448" r="30" fill="#E8D2A8"/><path d="M430 448q20-22 40 0q-20 18-30 2" fill="none" stroke="#C9A227" stroke-width="3" stroke-linecap="round"/><circle cx="460" cy="436" r="3" fill="#C85A3C"/><circle cx="444" cy="458" r="2.5" fill="#C85A3C"/>
-    <circle cx="552" cy="446" r="42" fill="#fff" stroke="#EDE4D8" stroke-width="3"/><circle cx="545" cy="438" r="12" fill="#8DB36B"/><circle cx="562" cy="451" r="10" fill="#9CC17A"/><circle cx="548" cy="458" r="6" fill="#C85A3C"/><circle cx="566" cy="434" r="5" fill="#E9E0C9"/><circle cx="536" cy="454" r="7" fill="#7FA35F"/>
-    <g id="ringG" opacity="0"><circle cx="500" cy="500" r="300" fill="none" stroke="rgba(250,246,241,.12)" stroke-width="6"/><circle id="ring1" cx="500" cy="500" r="300" fill="none" stroke="#C9414B" stroke-width="8" stroke-linecap="round" transform="rotate(-90 500 500)" stroke-dasharray="0 1885"/>`;
-  for (let k = 0; k < 12; k++) { const a = rad(k * 30); s += `<line x1="${500 + 312 * Math.cos(a)}" y1="${500 + 312 * Math.sin(a)}" x2="${500 + 326 * Math.cos(a)}" y2="${500 + 326 * Math.sin(a)}" stroke="rgba(250,246,241,.4)" stroke-width="3" stroke-linecap="round"/>`; }
+// People, plates and cutlery, each drawn in its own frame. A sitter faces -y, towards the table; +x is their right.
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const tone = (h, k) => mixRGB(hex(h), k < 0 ? [0, 0, 0] : [255, 255, 255], Math.abs(k));
+const f1 = v => +v.toFixed(1);
+const BODY = (w, f, b) => `M${-w} 2C${-w} ${f1(-f * .7)} ${f1(-w * .71)} ${-f} 0 ${-f}S${w} ${f1(-f * .7)} ${w} 2 ${f1(w * .71)} ${b} 0 ${b} ${-w} ${f1(b * .68)} ${-w} 2Z`;
+function headSVG(o, s = 1) {
+  const sk = o.skin, hr = o.hair;
+  let h = `<g transform="scale(${s})"><circle cx="-35" cy="-12" r="7.5" fill="${sk}"/><circle cx="35" cy="-12" r="7.5" fill="${sk}"/><ellipse cy="-52" rx="6.5" ry="8" fill="${tone(sk, -.08)}"/><circle cy="-14" r="37" fill="${sk}"/>`;
+  if (o.style === 'scarf') h += `<ellipse cy="12" rx="48" ry="46" fill="${tone(o.scarf, -.14)}"/><circle cy="-12" r="40" fill="${o.scarf}"/>`;
+  else {
+    if (o.style === 'long') h += `<ellipse cy="14" rx="40" ry="42" fill="${tone(hr, -.1)}"/>`;
+    h += `<circle cy="-6" r="${o.style === 'buzz' ? 34 : 36}" fill="${hr}"${o.style === 'buzz' ? ' fill-opacity=".72"' : ''}/>`;
+    if (o.style === 'bun') h += `<circle cy="28" r="15" fill="${hr}"/>`;
+  }
+  return h + `<ellipse cx="-12" cy="-18" rx="15" ry="9" fill="#fff" fill-opacity=".13" transform="rotate(-25 -12 -18)"/></g>`;
+}
+const chairSVG = (c = '#2B2019') => `<rect x="-86" y="18" width="172" height="56" rx="26" fill="${c}"/><rect x="-66" y="62" width="132" height="6" rx="3" fill="#fff" fill-opacity=".07"/>`;
+const foreArm = (o, d) => `<path d="M${d * 80} -6L${d * 63} -100" stroke="${tone(o.shirt, -.18)}" stroke-width="30" stroke-linecap="round"/><ellipse cx="${d * 62}" cy="-115" rx="14" ry="17" fill="${o.skin}"/>`;
+function sitterSVG(o, restId) {
+  const body = BODY(98, 40, 44);
+  return `<path d="${body}" transform="translate(0 16)" fill="#000" fill-opacity=".24"/>${foreArm(o, -1)}${restId ? `<g id="${restId}">${foreArm(o, 1)}</g>` : foreArm(o, 1)}
+    <path d="${body}" fill="${o.shirt}"/><path d="${body}" fill="url(#bodyShade)"/>${headSVG(o)}`;
+}
+// A waiter on their feet, seen from above: feet and the free arm swing as they walk.
+function standerSVG(o, id, hold) {
+  const dk = tone(o.shirt, -.12), body = BODY(76, 32, 36);
+  return `<ellipse cx="8" cy="16" rx="86" ry="54" fill="#000" fill-opacity=".26"/>
+    <ellipse id="${id}f0" cx="-22" rx="12" ry="19" fill="#141110"/><ellipse id="${id}f1" cx="22" rx="12" ry="19" fill="#141110"/>
+    <g id="${id}a0"><ellipse cx="-70" cy="2" rx="16" ry="30" fill="${dk}"/><circle cx="-70" cy="34" r="13" fill="${o.skin}"/></g>
+    <path d="M62 -6L56 -62" stroke="${dk}" stroke-width="28" stroke-linecap="round"/><circle cx="55" cy="-74" r="13" fill="${o.skin}"/>${hold}
+    <path d="${body}" fill="${o.shirt}"/><path d="${body}" fill="url(#bodyShade)"/><rect x="-10" y="27" width="20" height="11" rx="3" fill="#FAF6F1" fill-opacity=".9"/>
+    ${headSVG(o, .9)}`;
+}
+const TRAY = `<circle cx="58" cy="-104" r="46" fill="#3B3431"/><circle cx="58" cy="-104" r="41" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="2"/>${[[42, -118], [74, -112], [56, -84]].map(([x, y]) => glassSVG(x, y, 11)).join('')}`;
+const FOLDER = `<rect x="34" y="-116" width="42" height="56" rx="5" fill="#2B211B" transform="rotate(-8 55 -88)"/><rect x="40" y="-108" width="30" height="5" rx="2" fill="#C9414B" transform="rotate(-8 55 -88)"/>`;
+function glassSVG(x, y, r = 16) {
+  return `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(190,220,232,.5)" stroke="rgba(140,175,190,.85)" stroke-width="2"/><circle cx="${x}" cy="${y}" r="${f1(r * .55)}" fill="rgba(222,238,244,.4)"/><circle cx="${f1(x - r * .33)}" cy="${f1(y - r * .33)}" r="${f1(r * .26)}" fill="#fff" fill-opacity=".8"/>`;
+}
+const knifeSVG = L => `<rect x="${-L / 2}" y="-3.2" width="${f1(L * .48)}" height="6.4" rx="3.2" fill="#B5AA9A"/><path d="M${f1(-L * .03)} -3.6H${f1(L * .42)}Q${L / 2} -3.6 ${L / 2} 0Q${f1(L * .46)} 3.6 ${f1(L * .4)} 3.6H${f1(-L * .03)}Z" fill="#D9D2C8"/>`;
+const forkSVG = L => `<rect x="${-L / 2}" y="-3.2" width="${f1(L * .56)}" height="6.4" rx="3.2" fill="#B5AA9A"/><rect x="${f1(L * .04)}" y="-6" width="${f1(L * .14)}" height="12" rx="3.5" fill="#D9D2C8"/>${[-4.5, -1.5, 1.5, 4.5].map(d => `<rect x="${f1(L * .15)}" y="${d - .9}" width="${f1(L * .35)}" height="1.8" rx=".9" fill="#D9D2C8"/>`).join('')}`;
+// What is left on a plate, or still on it.
+const FOOD = {
+  left: (r, q) => `<path d="M${f1(-r * .42)} ${f1(r * .12)}q${f1(r * .3)} ${f1(-r * .36)} ${f1(r * .72)} ${f1(-r * .14)}" fill="none" stroke="${['#E0C48E', '#D98A62', '#C9B27E'][Math.floor(q() * 3)]}" stroke-width="${f1(r * .15)}" stroke-linecap="round" stroke-opacity=".7"/>`
+    + [0, 1, 2].map(() => `<circle cx="${f1((q() - .5) * r * .9)}" cy="${f1((q() - .2) * r * .6)}" r="${f1(1.5 + q() * 2.5)}" fill="${['#8DB36B', '#C85A3C', '#9C6B3A'][Math.floor(q() * 3)]}"/>`).join(''),
+  hummus: r => `<circle r="${f1(r * .62)}" fill="#E7CFA0"/><circle r="${f1(r * .38)}" fill="none" stroke="#D3B67F" stroke-width="${f1(r * .07)}"/><circle r="${f1(r * .17)}" fill="#B3A134" fill-opacity=".85"/><circle cx="${f1(r * .24)}" cy="${f1(-r * .22)}" r="${f1(r * .06)}" fill="#C85A3C"/><circle cx="${f1(-r * .28)}" cy="${f1(r * .14)}" r="${f1(r * .05)}" fill="#C85A3C"/>`,
+  salad: (r, q) => Array.from({ length: 10 }, (_, j) => { const a = q() * 6.283, d = Math.sqrt(q()) * r * .5; return `<circle cx="${f1(Math.cos(a) * d)}" cy="${f1(Math.sin(a) * d)}" r="${f1(r * (.1 + q() * .09))}" fill="${['#8DB36B', '#7FA35F', '#9CC17A', '#C85A3C', '#E9E0C9'][j % 5]}"/>`; }).join(''),
+  grill: r => `<g transform="rotate(-18)"><rect x="${f1(-r * .6)}" y="${f1(-r * .3)}" width="${f1(r * 1.1)}" height="${f1(r * .22)}" rx="${f1(r * .11)}" fill="#8A4B2A"/><rect x="${f1(-r * .5)}" y="${f1(-r * .02)}" width="${f1(r * 1.05)}" height="${f1(r * .22)}" rx="${f1(r * .11)}" fill="#9C5A33"/>`
+    + [-.35, -.1, .15].map(x => `<path d="M${f1(r * x)} ${f1(-r * .3)}l${f1(r * .06)} ${f1(r * .5)}" stroke="#5E3018" stroke-width="${f1(r * .04)}"/>`).join('') + `</g><circle cx="${f1(r * .28)}" cy="${f1(r * .4)}" r="${f1(r * .15)}" fill="#C8453A"/><ellipse cx="${f1(-r * .28)}" cy="${f1(r * .42)}" rx="${f1(r * .2)}" ry="${f1(r * .11)}" fill="#EEE3C8"/>`,
+};
+function plateSVG(x, y, r, food, q, ang, done) {
+  let s = `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${f1(ang)})"><circle r="${r}" fill="#fff" stroke="#E7DDCF" stroke-width="2"/><circle r="${f1(r * .72)}" fill="none" stroke="#F2EBE1" stroke-width="2"/>${FOOD[food](r, q)}`;
+  if (done) s += `<g transform="rotate(${f1(-40 + q() * 12)}) translate(${f1(r * .12)} ${f1(r * .1)})">${knifeSVG(f1(r * 1.3))}<g transform="translate(0 ${f1(-r * .22)})">${forkSVG(f1(r * 1.3))}</g></g>`;
+  return s + '</g>';
+}
+function plantSVG(x, y, s, q) {
+  let g = `<g transform="translate(${x} ${y}) scale(${s})"><circle cx="10" cy="16" r="100" fill="#000" fill-opacity=".3"/><circle r="76" fill="#9C5B43"/><circle r="64" fill="#3A2A20"/>`;
+  for (let j = 0; j < 12; j++) {
+    const a = j * 30 + q() * 22, L = 88 + q() * 56;
+    g += `<g transform="rotate(${f1(a)})"><ellipse cx="${f1(L * .55)}" rx="${f1(L * .55)}" ry="${f1(17 + q() * 11)}" fill="${['#2F6B4F', '#3E8E6A', '#276048', '#4C9B72'][j % 4]}"/><path d="M6 0H${f1(L * 1.02)}" stroke="#fff" stroke-opacity=".13" stroke-width="2.5"/></g>`;
+  }
+  return g + '</g>';
+}
+
+// Table 12's guests: Maya, Karim, you, Rami.
+const G12 = [
+  { shirt: '#3E8E6A', skin: '#D9A47E', hair: '#2A1D16', style: 'long' },
+  { shirt: '#C9414B', skin: '#C68B63', hair: '#1B1614', style: 'short' },
+  { shirt: '#5B7C99', skin: '#E0B08A', hair: '#6B3A26', style: 'bun' },
+  { shirt: '#E4DACB', skin: '#B57B55', hair: '#3A2A20', style: 'buzz' },
+];
+const WAITER = { shirt: '#1E1A17', skin: '#C68B63', hair: '#1B1614', style: 'short' };
+
+function t12SVG() {
+  const q = rng(5);
+  let s = `<defs>
+    <radialGradient id="tshade"><stop offset=".78" stop-color="#000" stop-opacity=".5"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <radialGradient id="pool"><stop offset="0" stop-color="#F6C39F" stop-opacity=".26"/><stop offset=".5" stop-color="#F6C39F" stop-opacity=".08"/><stop offset="1" stop-color="#F6C39F" stop-opacity="0"/></radialGradient>
+    <g id="rcArt"><rect x="-48" y="-95" width="96" height="190" fill="#fff"/><text y="-74" font-size="10" font-weight="700" text-anchor="middle" fill="#211B16" letter-spacing="1.5">TABLE 12</text>
+      ${[0, 1, 2, 3, 4, 5, 6, 7].map(i => `<rect x="-38" y="${-58 + i * 13}" width="${[46, 38, 52, 34, 44, 50, 36, 42][i]}" height="4" rx="2" fill="#E3DBD0"/><rect x="22" y="${-58 + i * 13}" width="16" height="4" rx="2" fill="#E3DBD0"/>`).join('')}
+      <line x1="-38" y1="50" x2="38" y2="50" stroke="#E3DBD0" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="-38" y="72" font-size="9" font-weight="700" fill="#6E635B">TOTAL</text><text x="38" y="74" font-size="15" font-weight="700" text-anchor="end" fill="#211B16">$152.50</text></g>
+    ${[0, 1, 2, 3].map(i => `<clipPath id="rc${i}"><polygon points="${stripPoly(i)}"/></clipPath>`).join('')}
+  </defs>
+  <circle id="pool12" r="880" fill="url(#pool)"/>`;
+  // Chairs under everything, then the table and what is on it.
+  for (let i = 0; i < 4; i++) { const [x, y] = place(i, 0, 356); s += `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${GA[i] - 90})">${chairSVG()}</g>`; }
+  s += `<circle cy="26" r="318" fill="url(#tshade)"/><circle r="252" fill="url(#cloth)"/>
+  <circle r="238" fill="none" stroke="#E2D1BA" stroke-width="3" stroke-dasharray="1 12" stroke-linecap="round"/>`;
+  for (let i = 0; i < 4; i++) {
+    const [px, py] = place(i, 0, 162), [gx, gy] = place(i, -92, 92);
+    s += plateSVG(px, py, 54, 'left', q, GA[i] - 90, true) + glassSVG(f1(gx), f1(gy));
+  }
+  s += `<g transform="translate(-86 16)"><circle r="37" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.hummus(40)}</g>
+    <g transform="translate(86 18)"><circle r="39" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.salad(40, q)}</g>
+    <g id="qrTent"><rect x="-31" y="-68" width="62" height="80" rx="6" fill="#fff" stroke="#E6DCCF" stroke-width="1.5"/>
+      ${QR.map(([x, y, f]) => `<rect x="${(-22 + x * 1.76).toFixed(2)}" y="${(-61 + y * 1.76).toFixed(2)}" width="1.6" height="1.6" fill="${f ? '#C9414B' : '#211B16'}"/>`).join('')}
+      <text y="-9" font-size="6.5" font-weight="700" text-anchor="middle" fill="#211B16">TABLE 12</text><circle id="qrDot" cx="0" cy="3" r="4.5" fill="#C9414B"/></g>
+    <g id="ringG" opacity="0"><circle r="300" fill="none" stroke="rgba(250,246,241,.12)" stroke-width="6"/><circle id="ring1" r="300" fill="none" stroke="#C9414B" stroke-width="8" stroke-linecap="round" transform="rotate(-90)" stroke-dasharray="0 1885"/>`;
+  for (let k = 0; k < 12; k++) { const a = rad(k * 30); s += `<line x1="${f1(312 * Math.cos(a))}" y1="${f1(312 * Math.sin(a))}" x2="${f1(326 * Math.cos(a))}" y2="${f1(326 * Math.sin(a))}" stroke="rgba(250,246,241,.4)" stroke-width="3" stroke-linecap="round"/>`; }
+  s += `</g><g id="segG" opacity="0">`;
+  for (let i = 0; i < 4; i++) {
+    const a0 = rad(GA[i] - 38), a1 = rad(GA[i] + 38);
+    s += `<path id="seg${i}" d="M${f1(300 * Math.cos(a0))} ${f1(300 * Math.sin(a0))}A300 300 0 0 1 ${f1(300 * Math.cos(a1))} ${f1(300 * Math.sin(a1))}" fill="none" stroke="rgba(250,246,241,.18)" stroke-width="12" stroke-linecap="round"/>`;
+  }
   s += `</g>`;
-  A.forEach((a, i) => {
-    const c = Math.cos(rad(a)), n = Math.sin(rad(a)), bx = 500 + 382 * c, by = 500 + 382 * n, hx = 500 + 374 * c, hy = 500 + 374 * n;
-    s += `<g id="gp${i}"><ellipse cx="${bx}" cy="${by}" rx="96" ry="54" fill="${ppl[i][0]}" transform="rotate(${a + 90} ${bx} ${by})"/><circle cx="${hx}" cy="${hy}" r="41" fill="${ppl[i][1]}"/></g>`;
-  });
-  s += `<g id="arm" opacity="0"><line x1="874" y1="452" x2="948" y2="366" stroke="#C9414B" stroke-width="24" stroke-linecap="round"/><circle cx="954" cy="357" r="18" fill="#D9A47E"/></g>
-    <g id="tray" opacity="0"><rect x="-40" y="-56" width="80" height="112" rx="9" fill="#2B211B"/><rect x="-29" y="-45" width="58" height="80" rx="3" fill="#fff"/>
-      <rect x="-21" y="-35" width="30" height="5" rx="2" fill="#D8CFC3"/><rect x="-21" y="-23" width="42" height="4" rx="2" fill="#E7E0D6"/><rect x="-21" y="-13" width="38" height="4" rx="2" fill="#E7E0D6"/><rect x="-21" y="-3" width="42" height="4" rx="2" fill="#E7E0D6"/><rect x="-21" y="11" width="42" height="6" rx="2" fill="#C9414B"/></g>
+  // The guests. Karim's right arm can come off the table to call the waiter.
+  for (let i = 0; i < 4; i++) {
+    const [bx, by] = place(i, 0, 356);
+    s += `<g id="gp${i}"><g transform="translate(${f1(bx)} ${f1(by)}) rotate(${GA[i] - 90})">${sitterSVG(G12[i], i === 1 ? 'armRest' : '')}${i === 1 ? `<g id="arm" opacity="0"><path d="M82 -4L150 -26" stroke="${tone(G12[1].shirt, -.18)}" stroke-width="32" stroke-linecap="round"/><ellipse cx="170" cy="-32" rx="21" ry="25" fill="${G12[1].skin}" transform="rotate(-18 170 -32)"/><ellipse cx="160" cy="-55" rx="7" ry="11" fill="${tone(G12[1].skin, -.06)}" transform="rotate(-40 160 -55)"/></g>` : ''}</g></g>`;
+  }
+  // Everyone's phone lies at their right hand; the guest we follow has the real one, drawn over the world.
+  for (const i of [0, 1, 3]) {
+    const [x, y] = place(i, 126, 150);
+    s += `<g id="ph${i}" transform="translate(${f1(x)} ${f1(y)}) rotate(${GA[i] - 90})"><rect x="-23.5" y="-46" width="47" height="92" rx="9" fill="#1E1916"/><rect id="phs${i}" x="-20" y="-42" width="40" height="84" rx="6.5" fill="#0E0C0B"/><rect x="-20" y="-42" width="40" height="84" rx="6.5" fill="url(#phGlare)"/>
+      <g id="pht${i}" opacity="0"><text y="-8" font-size="6.5" font-weight="700" text-anchor="middle" fill="#0F4B3A" letter-spacing=".5">YOUR SHARE</text><text y="8" font-size="12" font-weight="700" text-anchor="middle" fill="#0F4B3A">$38.13</text></g>
+      <g id="phk${i}" opacity="0"><circle cy="-6" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M-5-6l3.5 3.5 7-7.5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text id="phc${i}" y="20" font-size="7.5" font-weight="700" text-anchor="middle" fill="#fff"></text></g></g>`;
+  }
+  for (let i = 0; i < 4; i++) {
+    s += `<g id="card${i}" opacity="0"><rect x="-27" y="-37" width="54" height="74" rx="8" fill="#fff" stroke="#E6DCCF" stroke-width="1.5"/><circle cy="-15" r="11" fill="${NAMES[i][1]}"/>
+      <text y="${NAMES[i][0].length > 1 ? -12.5 : -11}" font-size="${NAMES[i][0].length > 1 ? 7.5 : 11}" font-weight="700" text-anchor="middle" fill="#fff">${NAMES[i][0]}</text><text y="14" font-size="13.5" font-weight="700" text-anchor="middle" fill="#211B16">$38.13</text>
+      <text y="26" font-size="6.5" text-anchor="middle" fill="#6E635B">EACH</text>
+      <g id="cardok${i}" opacity="0"><rect x="-27" y="-37" width="54" height="74" rx="8" fill="#3E8E6A"/><circle cy="-6" r="13" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M-6-6l4 4 8-8.5" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><text y="20" font-size="9" font-weight="700" text-anchor="middle" fill="#fff">PAID</text></g></g>`;
+  }
+  for (let i = 0; i < 4; i++) s += `<g id="rs${i}" opacity="0"><g clip-path="url(#rc${i})"><use href="#rcArt"/></g></g>`;
+  for (let i = 0; i < 4; i++) s += `<g id="ok${i}" opacity="0"><circle r="21" fill="#3E8E6A" stroke="#FAF6F1" stroke-width="3"/><path d="M-8 0l5 5 11-11" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+  s += `<g id="waiter0" opacity="0">${standerSVG(WAITER, 'w0', TRAY)}</g><g id="waiter" opacity="0">${standerSVG(WAITER, 'w1', FOLDER)}</g>
+    <g id="tray" opacity="0"><rect x="-37" y="-52" width="74" height="104" rx="9" fill="#2B211B"/><rect x="-27" y="-42" width="54" height="74" rx="3" fill="#fff"/>
+      <rect x="-19" y="-33" width="28" height="5" rx="2" fill="#D8CFC3"/><rect x="-19" y="-22" width="38" height="4" rx="2" fill="#E7E0D6"/><rect x="-19" y="-13" width="35" height="4" rx="2" fill="#E7E0D6"/><rect x="-19" y="-4" width="38" height="4" rx="2" fill="#E7E0D6"/><rect x="-19" y="9" width="38" height="6" rx="2" fill="#C9414B"/></g>
     <g font-size="52" font-weight="700" fill="#211B16" text-anchor="middle">${['÷', '+', '×', '?'].map((g, i) => `<text id="gl${i}" opacity="0">${g}</text>`).join('')}</g>
-    ${[0, 1, 2].map(i => `<g id="co${i}" opacity="0"><circle r="14" fill="#D8B45A" stroke="#B8923A" stroke-width="3"/><circle r="7" fill="none" stroke="#B8923A" stroke-width="2"/></g>`).join('')}
-    <circle id="dot1" r="27" fill="#C9414B" opacity="0"/>`;
+    ${[0, 1, 2].map(i => `<g id="co${i}" opacity="0"><circle r="13" fill="#D8B45A" stroke="#B8923A" stroke-width="3"/><circle r="6.5" fill="none" stroke="#B8923A" stroke-width="2"/></g>`).join('')}
+    <circle id="dot1" r="26" fill="#C9414B" opacity="0"/>
+    <circle id="pulse12" r="330" fill="none" stroke="#3E8E6A" stroke-width="18" opacity="0"/>
+    <g id="tag12" opacity="0"><rect id="tagBg" x="-270" y="-68" width="540" height="136" rx="68" fill="#E0A33A" stroke="#FAF6F1" stroke-width="6"/><text id="tagTx" y="23" font-size="64" font-weight="700" text-anchor="middle" fill="#fff"></text></g>`;
   return s;
 }
+
+// The rest of the room: fourteen tables around table 12, laid out for the frame, with plants along the edges.
+const GRID = P ? [[-900, -1800], [0, -1800], [900, -1800], [-900, -900], [0, -900], [900, -900], [-900, 0], [900, 0], [-900, 900], [0, 900], [900, 900], [-900, 1800], [0, 1800], [900, 1800]]
+               : [[-1800, -900], [-900, -900], [0, -900], [900, -900], [1800, -900], [-1800, 0], [-900, 0], [900, 0], [1800, 0], [-1800, 900], [-900, 900], [0, 900], [900, 900], [1800, 900]];
+const PLANTS = P ? [[-1420, -2300, 1.1], [1420, -2300, .95], [-1420, 2300, 1], [1420, 2300, 1.15], [-1400, 450, .8], [1400, -450, .85]]
+                 : [[-2330, -1360, 1.1], [2330, -1360, .95], [-2330, 1360, 1], [2330, 1360, 1.15], [450, -1380, .8], [-450, 1380, .85]];
+const NUMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15];
+const TWO = { 10: 1, 5: 1 };
+// Status over time: e eating, p paying (cash or card in progress), d paid, o empty.
+const STATUS = { 1: [[0, 'e'], [35.4, 'p'], [37.3, 'd']], 2: [[0, 'd']], 3: [[0, 'e'], [36.1, 'd']], 4: [[0, 'p'], [38.6, 'd']], 5: [[0, 'o']], 6: [[0, 'e']], 7: [[0, 'd']],
+  8: [[0, 'e'], [37.6, 'p']], 9: [[0, 'd']], 10: [[0, 'e']], 11: [[0, 'p'], [35.9, 'd']], 13: [[0, 'e'], [38.9, 'd']], 14: [[0, 'o'], [36.5, 'e']], 15: [[0, 'd']] };
+const SC = { e: [111, 150, 146], p: [224, 163, 58], d: [62, 142, 106], o: [60, 80, 82] };
+const SHIRTS = ['#3E8E6A', '#C9414B', '#E4DACB', '#F6C39F', '#5B7C99', '#B98E63', '#2F5D66', '#8C6BA8', '#D8C9B0', '#E0A33A'];
+const SKINS = ['#E0B08A', '#C68B63', '#D9A47E', '#A9714D', '#EDC4A0', '#B57B55'];
+const HAIRS = ['#2A1D16', '#1B1614', '#4A2C1C', '#6B3A26', '#8A5A3C', '#3A2A20'];
+const STYLES = ['short', 'long', 'bun', 'buzz', 'short', 'long', 'scarf'];
+function floorSVG() {
+  let s = `<defs><radialGradient id="fpool"><stop offset="0" stop-color="#F6C39F" stop-opacity=".16"/><stop offset=".6" stop-color="#F6C39F" stop-opacity=".04"/><stop offset="1" stop-color="#F6C39F" stop-opacity="0"/></radialGradient>
+    <pattern id="tiles" width="900" height="900" patternUnits="userSpaceOnUse"><rect width="450" height="450" fill="#fff" fill-opacity=".016"/><rect x="450" y="450" width="450" height="450" fill="#fff" fill-opacity=".016"/><path d="M0 0H900M0 450H900M0 0V900M450 0V900" stroke="#000" stroke-opacity=".2" stroke-width="6"/></pattern></defs>
+    <rect x="-9000" y="-9000" width="18000" height="18000" fill="#0F2E31"/><rect x="-9000" y="-9000" width="18000" height="18000" fill="url(#tiles)"/>`;
+  const gr = rng(21);
+  PLANTS.forEach(([x, y, k]) => { s += plantSVG(x, y, k, gr); });
+  GRID.forEach(([x, y], k) => {
+    const n = NUMS[k], two = TWO[n], R = two ? 140 : 196, gRad = R + 84, empty = STATUS[n][0][1] === 'o', spin = (gr() - .5) * 40;
+    const seats = (two ? [0, 180] : [-90, 0, 90, 180]).map(a0 => a0 + spin + (gr() - .5) * 14);
+    const at = (a, x, y) => seat(a, x, y);
+    s += `<g id="ft${n}" transform="translate(${x} ${y})"><circle class="fpool" r="620" fill="url(#fpool)"/>`;
+    seats.forEach(a => { const [cx, cy] = at(a, 0, gRad); s += `<g transform="translate(${f1(cx)} ${f1(cy)}) rotate(${f1(a - 90)}) scale(.78)">${chairSVG()}</g>`; });
+    s += `<circle cy="16" r="${R + 30}" fill="#000" fill-opacity=".3"/><circle r="${R}" fill="url(#cloth)"/><circle r="${R - 12}" fill="none" stroke="#E2D1BA" stroke-width="3" stroke-dasharray="1 12" stroke-linecap="round"/>
+      <circle id="fr${n}" r="${R + 10}" fill="none" stroke="rgb(111,150,146)" stroke-width="14" opacity="0"/>`;
+    seats.forEach(a => {
+      const [px, py] = at(a, 0, two ? R - 54 : R - 70), [gx, gy] = two ? at(a, -74, 66) : at(a, -62, R - 118);
+      s += plateSVG(px, py, two ? 38 : 42, empty ? 'left' : ['left', 'hummus', 'salad', 'grill'][Math.floor(gr() * 4)], gr, a - 90, !empty && gr() < .5) + glassSVG(f1(gx), f1(gy), 13);
+    });
+    s += `<g id="fg${n}">`;
+    seats.forEach(a => {
+      const [bx, by] = at(a, 0, gRad), pick = arr => arr[Math.floor(gr() * arr.length)];
+      const o = { shirt: pick(SHIRTS), skin: pick(SKINS), hair: pick(HAIRS), style: pick(STYLES), scarf: pick(['#C9414B', '#2F5D66', '#D8C9B0', '#8C6BA8']) };
+      s += `<g transform="translate(${f1(bx)} ${f1(by)}) rotate(${f1(a - 90)}) scale(.78)">${sitterSVG(o)}</g>`;
+    });
+    s += `</g><circle id="fx${n}" r="${R + 10}" fill="none" stroke="#F6C39F" stroke-width="10" opacity="0"/>
+      <g id="fl${n}" opacity="0"><circle r="46" fill="#173E43" stroke="#FAF6F1" stroke-opacity=".35" stroke-width="4"/><text y="19" font-size="52" font-weight="700" text-anchor="middle" fill="#FAF6F1">${n}</text></g>
+      <g id="pt${n}" opacity="0"><rect x="-140" y="-55" width="280" height="110" rx="55" fill="#F6C39F" stroke="#211B16" stroke-opacity=".15" stroke-width="4"/><text y="22" font-size="64" font-weight="700" text-anchor="middle" fill="#211B16">$5.25</text></g></g>`;
+  });
+  s += `<g>${[0, 1, 2].map(i => `<circle id="rip${i}" r="10" fill="none" stroke="#F6C39F" stroke-width="${22 - i * 6}" opacity="0"/>`).join('')}</g>
+    <rect id="floorDim" x="-9000" y="-9000" width="18000" height="18000" fill="#061416" opacity=".6"/>`;
+  return s;
+}
+
+/* ---------- The phone's app (the real screens, rebuilt) ---------- */
 const ICON = {
   hand: '<svg viewBox="0 0 24 24" fill="#fff"><path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V10h.5V3.5a1.5 1.5 0 0 1 3 0V10h.5V5a1.5 1.5 0 0 1 3 0v8.5c0 4.1-2.7 7.5-6.6 7.5-2.6 0-4.3-1.3-5.6-3.4L3.4 13.1a1.4 1.4 0 0 1 2.3-1.6L8 14z"/></svg>',
   div: '<svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="5.5" r="2.3"/><circle cx="12" cy="18.5" r="2.3"/><rect x="3" y="10.6" width="18" height="2.8" rx="1.4"/></svg>',
   coin: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><ellipse cx="12" cy="7" rx="8" ry="3.5"/><path d="M4 7v5c0 1.9 3.6 3.5 8 3.5s8-1.6 8-3.5V7M4 12v5c0 1.9 3.6 3.5 8 3.5s8-1.6 8-3.5v-5"/></svg>',
 };
 const STAR = (fill, stroke) => `<svg viewBox="0 0 24 24"><path d="M12 2.2l2.95 6.1 6.7.9-4.9 4.65 1.2 6.65L12 17.3l-5.95 3.2 1.2-6.65L2.35 9.2l6.7-.9z" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
-const bokeh = n => { const r = rng(n); let s = ''; for (let i = 0; i < 9; i++) { const d = 120 + r() * 260; s += `<div class="bokeh" data-b="${r().toFixed(3)},${r().toFixed(3)},${r().toFixed(3)}" style="width:${d}px;height:${d}px;left:${-d / 2}px;top:${-d / 2}px"></div>`; } return s; };
-
 const MENU = [
-  ['Fattoush', 'فتوش', 'Rocca, lettuce, tomatoes, cucumbers, purslane, radish, lemon juice, olive oil', ['$4.75', 'LL 425,000', '$5.25']],
+  ['Fattoush', 'فتوش', 'Rocca, lettuce, tomatoes, cucumbers, purslane, radish, lemon juice, olive oil', ['$4.75', 'LL 425,000']],
   ['Tabbouleh', 'تبولة', 'Fresh parsley, tomatoes, cracked wheat, onions, lemon juice and virgin olive oil', ['$5.00', 'LL 448,000']],
   ['Raheb Salad', 'سلطة راهب', 'Charcoal-grilled eggplant with diced tomatoes, bell peppers, parsley, garlic', ['$7.00', 'LL 627,000']],
   ['Hummus', 'حمص', 'Blended chickpeas, tahini and lemon juice topped with virgin olive oil', ['$4.00', 'LL 358,000']],
@@ -470,133 +607,127 @@ const MENU = [
 const ROWY = [180, 266, 352, 470, 556];
 const BILL = [['2×', 'Shish Taouk', '32.00'], ['3×', 'Lahme Ba’ajine', '18.00'], ['2×', 'Arayess Kafta', '15.00'], ['2×', 'Fattoush', '12.00'], ['2×', 'Hummus', '10.00'], ['1×', 'Batata w Kezbara', '6.50'], ['4×', 'Warak Enab', '18.00'], ['2×', 'Moutabal', '8.00']];
 const pvHTML = vals => `<span class="pv">${vals.map(v => `<i>${v}</i>`).join('')}</span>`;
-const sbarSVG = `<span id="sbTime">${C.time}</span><span style="display:flex;gap:7px;align-items:center"><svg viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" fill="currentColor"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0zM3.4 6.8a6.5 6.5 0 0 1 9.2 0l-1.4 1.4a4.5 4.5 0 0 0-6.4 0zM1.1 4.5a9.8 9.8 0 0 1 13.8 0l-1.4 1.4a7.8 7.8 0 0 0-11 0z"/></svg><svg viewBox="0 0 27 13" fill="none" stroke="currentColor"><rect x=".7" y=".7" width="22" height="11.6" rx="3.4" stroke-opacity=".45"/><rect x="2.6" y="2.6" width="16" height="7.8" rx="1.8" fill="currentColor" stroke="none"/><path d="M24.6 4.6v3.8" stroke-width="1.6" stroke-linecap="round" stroke-opacity=".5"/></svg></span>`;
+const sbarSVG = `<span>${C.time}</span><span style="display:flex;gap:7px;align-items:center"><svg viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12" fill="currentColor"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0zM3.4 6.8a6.5 6.5 0 0 1 9.2 0l-1.4 1.4a4.5 4.5 0 0 0-6.4 0zM1.1 4.5a9.8 9.8 0 0 1 13.8 0l-1.4 1.4a7.8 7.8 0 0 0-11 0z"/></svg><svg viewBox="0 0 27 13" fill="none" stroke="currentColor"><rect x=".7" y=".7" width="22" height="11.6" rx="3.4" stroke-opacity=".45"/><rect x="2.6" y="2.6" width="16" height="7.8" rx="1.8" fill="currentColor" stroke="none"/><path d="M24.6 4.6v3.8" stroke-width="1.6" stroke-linecap="round" stroke-opacity=".5"/></svg></span>`;
+const APP = `
+ <div class="scr" id="sCam"><div id="tent"><canvas id="qrc" width="196" height="196"></canvas><b>Table 12</b><small>Scan to view and pay</small></div>
+   <svg id="brk" width="390" height="772"><g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path id="bk0"/><path id="bk1"/><path id="bk2"/><path id="bk3"/></g></svg>
+   <div id="scanl"></div><div id="scanPill"><i></i>${C.url} · Table 12</div></div>
+ <div class="scr" id="sMenu">
+   <div class="back">←</div><div class="m-title">Table 12</div><div class="m-sub">Dinner menu</div>
+   <div class="pill" id="pLang">${pvHTML(['EN', 'AR'])}<u>▾</u></div><div class="pill" id="pCur">${pvHTML(['USD $', 'LBP LL'])}<u>▾</u></div>
+   <div class="filt">≡ Dietary filters</div>
+   <div class="tabs"><b>Salads</b><span>Appetizers</span><span>All Day Breakfast</span><span>Charcoal Grill</span></div>
+   <div class="hair" style="top:146px"></div>
+   <div class="sec" style="top:160px">SALADS</div><div class="sec" style="top:450px">APPETIZERS</div>
+   ${MENU.map((m, i) => `<div class="row" id="mr${i}" style="top:${ROWY[i]}px">
+      <div class="v en"><div class="nm">${m[0]}</div><div class="ds">${m[2]}</div><div class="pr">${pvHTML(m[3])}<u>›</u></div></div>
+      <div class="v ar"><div class="nm">${m[1]}</div><div class="ds">${m[2]}</div><div class="pr"><u>‹</u><span>${m[3][0]}</span></div></div></div>`).join('')}
+   <div id="billBtn">Open the bill ${pvHTML(['$152.50', 'LL 13,649,000'])}</div>
+   <div id="ddLang"><div>English</div><div>Français</div><div>العربية</div></div>
+   <div class="dim"></div>
+ </div>
+ <div class="scr" id="sBill">
+   <div class="back">←</div><div class="c-title">Table 12</div><div class="c-sub">4 guests · opened 8:42 pm</div>
+   <div class="billcard"><div class="bc-h">THE BILL</div>${BILL.map(r => `<div class="bc-r"><i>${r[0]}</i>${r[1]}<b>$${r[2]}</b></div>`).join('')}<div class="bc-m">+ 4 more items</div>
+     <div class="bc-t"><span>Total</span><b>$152.50</b></div></div>
+   <div class="cta" id="settleBtn">Settle my share</div><div class="pw">powered by <b>Aalayna</b></div><div class="dim"></div>
+ </div>
+ <div class="scr" id="sSplit">
+   <div class="back">←</div><div class="s-h">How are we doing this?</div><div class="s-s">Nobody has to work out the maths</div>
+   <div class="seg"><b></b><span class="on">Evenly</span><span>My items</span><span>Custom<br>amount</span><span>All of it</span></div>
+   <div class="people"><b>How many of you?</b><span class="stp" style="left:206px">−</span><span class="cnt">${pvHTML(['2', '3', '4'])}</span><span class="stp" style="left:300px" id="plusBtn">+</span></div>
+   <div class="share"><small>YOUR SHARE</small><b id="shareV">$38.13</b><span id="shareL">≈ LL 3,412,635</span></div>
+   <div class="note" id="shareN">$114.37 left for the other guests.</div>
+   <div class="cta" id="contBtn">Continue · $38.13</div><div class="pw">powered by <b>Aalayna</b></div><div class="dim"></div>
+ </div>
+ <div class="scr" id="sPay">
+   <div class="back">←</div><div class="p-top">Total to pay · Table 12</div><div class="p-tot" id="payT">$41.94</div><div class="p-ll" id="payL">≈ LL 3,753,630</div>
+   <div class="p-sum"><div><small>Bill share</small><b>$38.13</b></div><div><small>Tip</small><b id="payTip">$3.81</b></div></div>
+   <div class="p-q">Something for Abou Karim?</div>
+   ${[['No tip', ''], ['5%', '$1.91'], ['10%', '$3.81'], ['15%', '$5.72'], ['Other', '']].map((c, i) => `<div class="chip" id="chip${i}" style="left:${16 + i * 73}px">${c[0]}${c[1] ? `<small>${c[1]}</small>` : ''}</div>`).join('')}
+   <div class="meth">
+     <div class="mr sel" style="top:0"><i style="background:#E4002B">whish</i><div><b>Whish Money</b><small>Opens with the amount filled in</small></div><u></u></div>
+     <div class="mr" style="top:70px"><i style="background:#1A1F71">VISA</i><div><b>Card</b><small>Visa, Mastercard, Amex</small></div><u></u></div>
+     <div class="mr" style="top:140px;border-bottom:0"><i style="background:#3E8E6A">CASH</i><div><b>Paying cash</b><small>Staff confirm after collection</small></div><u></u></div>
+   </div>
+   <div class="ring" id="payRing"></div>
+   <div class="cta" id="payBtn">Pay $41.94</div><div class="pw">powered by <b>Aalayna</b></div>
+   <div id="whish"><div class="wh"><i>whish</i>Opening Whish Money</div><small>Amount filled in</small><b>$41.94</b><div class="bar"><i id="whBar"></i></div></div>
+   <div class="dim"></div>
+ </div>
+ <div class="scr" id="sPaid">
+   <svg id="ck" width="56" height="56" viewBox="0 0 56 56"><circle id="ckC" cx="28" cy="28" r="25" fill="none" stroke="#fff" stroke-width="3" transform="rotate(-90 28 28)"/><path id="ckP" d="M17 29l7 7 15-16" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   <div class="pd-h">Shukran.</div>
+   <div class="pd-card"><b>$41.94</b><div><span>Paid via</span><b>Whish Money</b></div><div><span>Table</span><b>12</b></div></div>
+   <div class="pd-rc"><span>WhatsApp or email</span><b>Send my receipt</b></div>
+   <div class="pd-of"><i></i>Send me offers from the restaurant</div>
+   <div class="pd-q">How was your visit?</div>
+   ${[0, 1, 2, 3, 4].map(i => `<div class="star" style="left:${81 + i * 48}px">${STAR('none', 'rgba(255,255,255,.85)')}<span class="a" style="width:36px;height:36px" id="sf${i}">${STAR('#F6C39F', '#F6C39F')}</span></div>`).join('')}
+   <div class="pw" style="color:rgba(255,255,255,.55)">powered by <b style="color:#fff">Aalayna</b></div>
+   <div id="rsheet"><div class="gr"></div><div class="t">Thank you! Where should it go?</div>
+     <div class="opt" id="opt0" style="left:20px">${STAR('#C9A227', '#C9A227')}Google review</div>
+     <div class="opt" id="opt1" style="left:200px"><svg viewBox="0 0 24 24" fill="none" stroke="#171D1A" stroke-width="2.2"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Private note</div>
+     <div class="ring" id="optRing"></div>
+     <div class="cm">Add a comment (optional)</div><div class="cta" id="sendBtn">Send</div></div>
+ </div>
+ <div class="a" id="tapDot"></div><div class="a" id="tapRing"></div>`;
 
+/* ---------- Build the stage ---------- */
+const stage = $('stage');
+stage.style.width = W + 'px'; stage.style.height = H + 'px';
+stage.setAttribute('aria-label', C.aria);
 stage.innerHTML = `
-<div id="cam" class="act">
- <div class="act" id="a1"><div class="fill"></div>${bokeh(4)}
-   <div class="a" id="tableBox"><svg viewBox="0 0 1000 1000" width="1000" height="1000">${tableSVG()}</svg></div>
+<div id="cam" class="layer">
+ <div id="worldWrap" class="layer"><div id="world">
+   <svg id="floor" viewBox="-9000 -9000 18000 18000" width="18000" height="18000" style="left:-9000px;top:-9000px">${floorSVG()}</svg>
+   <svg id="t12" viewBox="-1000 -1000 2000 2000" width="2000" height="2000" style="left:-1000px;top:-1000px">${t12SVG()}</svg>
+ </div></div>
+ <div id="vig" class="layer"></div>
+ <div id="phoneLayer" class="layer">
+   <div class="a" id="phone"><div id="screen"><div id="island"></div><div id="sbar">${sbarSVG}</div><div id="app">${APP}</div><div id="off"></div><div id="glare"></div></div></div>
+   <div class="a" id="stampRing"></div><div class="a" id="stamp">÷ 4</div>
+   <canvas id="conf" width="${W}" height="${H}"></canvas>
+ </div>
+ <div id="ui1" class="layer">
    <div class="a cap1" id="c1a">${words(C.dinner)}</div><div class="a cap1" id="c1b">${words(C.bill)}</div>
    ${C.pains.map((t, i) => `<div class="a pain" id="pain${i}"><i>${[ICON.hand, ICON.div, ICON.coin][i]}</i>${t}</div>`).join('')}
    <div class="a" id="clock"></div>
  </div>
- <div class="act" id="a2"><div class="fill"></div>
-   ${C.kinetic.map((t, i) => `<div class="kl" id="k${i + 1}"><span>${t}</span></div>`).join('')}
-   <div class="a" id="thesis">${words(C.thesis)}</div>
- </div>
- <div class="act" id="a3"><div class="fill"></div>
+ <div id="uiA" class="layer">
+   <div class="a" id="scrimA"></div>
    <div class="a cap" id="capA"><div class="lab"></div><div class="hd"></div><div class="sb"></div></div>
-   <div class="a rline" id="rl0"></div><div class="a rline on" id="rl1"></div>
+   <div class="a rline" id="rl0"></div><div class="a rline" id="rl1"></div>
    ${C.rail.map((t, i) => `<div class="a node" id="rn${i}"></div><div class="a rlab" id="rt${i}">${t}</div>`).join('')}
    <div class="a" id="rdot"></div>
  </div>
- <div class="act" id="a4"><div class="fill"></div>${bokeh(9)}
+ <div id="uiB" class="layer">
+   <div class="a" id="scrimB"></div>
    <div class="a cap" id="capB"><div class="lab"></div><div class="hd"></div><div class="sb"></div></div>
-   <div class="a" id="dash">
-     <div class="d-side"><div class="d-logo">aalay<b>na</b></div><div class="d-nav"><b>Service</b><span>Overview</span><span>Customers</span><span>Reviews<i>2</i></span><span>Team</span></div></div>
-     <div class="d-main">
-       <div class="d-h">Service</div><div class="d-s">Open bills and collection requests · live now</div><div class="d-live">● Live</div>
-       <div class="d-tabs"><b>Live floor</b><span>Settlement report</span></div>
-       <div class="d-kpis"><div><small>Awaiting cash collection</small><b id="k1v">$41.94</b></div><div><small>Open bills</small><b>1</b></div><div><small>Collected in period · incl. tips</small><b id="k3v">$73.39</b></div></div>
-       <div class="d-toast" id="dToast"><i>✓</i>Table 12 · $41.94 paid with Whish Money<span>just now</span></div>
-       <div class="d-att" id="dAtt">
-         <div class="d-att-h">Needs attention<span class="d-badge" id="dBadge">1 waiting</span></div>
-         <div class="d-att-s">Confirm cash only after it reaches your hands.</div>
-         <div class="d-row" id="dRow"><div><b>Table 12</b><small>Cash, pending</small></div><div><b class="amt">$41.94</b><small>incl. $3.81 tip</small></div>
-           <div class="d-btns"><span id="confirmBtn">Confirm cash received</span><span class="d-cancel">Cancel request</span></div></div>
-         <div class="d-decl" id="dDecl">Guest declares $50.00 · change $8.06</div>
-         <div class="d-done" id="dDone"><i>✓</i>Cash confirmed · Table 12 · $41.94</div>
-       </div>
+   <div class="a pnl" id="pDash">
+     <div class="pn-h"><span class="pn-logo">aalay<b>na</b></span><span class="pn-t">Service · Live floor</span><span class="pn-live">● Live</span></div>
+     <div class="pn-att">
+       <div class="pn-att-h">Needs attention<span class="d-badge" id="dBadge">1 waiting</span></div>
+       <div class="pn-att-s">Confirm cash only after it reaches your hands.</div>
+       <div class="pn-row" id="dRow"><div><b>Table 12</b><small>Cash, pending</small></div><div><b class="amt">$41.94</b><small>incl. $3.81 tip</small></div><span id="confirmBtn">Confirm cash received</span></div>
+       <div class="pn-done" id="dDone"><i>✓</i>Cash confirmed · Table 12 · $41.94</div>
      </div>
      <div class="a tapd" id="dTap"></div><div class="a tapr" id="dRing"></div>
    </div>
-   <div class="a" id="editor">
-     <div class="e-h">Menu</div><div class="e-live" id="eLive">● LIVE</div><div class="e-s">Dinner menu</div>
-     <div class="e-rep"><i>%</i><div><b>Reprice the whole menu</b><small>Draft price changes, then publish when ready</small></div><span>›</span></div>
-     <div class="e-info">It is<b>22:44</b>· guests currently see<b>9 of 9</b>sections</div>
-     <div class="e-sec" style="top:236px">SALADS<i>ALL DAY</i>3</div>
-     <div class="e-row" style="top:262px" id="eRowF"><div><b>Fattoush<em id="eDraft">Draft</em></b><small>Rocca</small></div><span class="e-pr" id="ePrice">$4.75</span><span class="e-input" id="eInput">$<span id="eTyped">4.75</span><s id="eCaret"></s></span></div>
-     <div class="e-row" style="top:328px"><div><b>Tabbouleh</b><small>Fresh parsley</small></div><span class="e-pr">$5.00</span></div>
-     <div class="e-row" style="top:394px"><div><b>Raheb Salad</b><small>Charcoal-grilled eggplant with diced tomatoes</small></div><span class="e-pr">$7.00</span></div>
-     <div class="e-add" style="top:474px">+ Add to Salads</div>
-     <div class="e-sec" style="top:520px">APPETIZERS<i>ALL DAY</i>19</div>
-     <div class="e-row" style="top:546px"><div><b>Hummus</b><small>Blended chickpeas</small></div><span class="e-pr">$4.00</span></div>
+   <div class="a pnl" id="pEd">
+     <div class="pn-h"><span class="pn-logo">aalay<b>na</b></span><span class="pn-t">Menu · Salads</span><span class="pn-live" id="eLive">● LIVE</span></div>
+     <div class="e-sec">SALADS · ALL DAY</div>
+     <div class="e-row" id="eRowF"><div><b>Fattoush<em id="eDraft">Draft</em></b><small>Rocca</small></div><span class="e-pr" id="ePrice">$4.75</span><span class="e-input" id="eInput">$<span id="eTyped">4.75</span><s id="eCaret"></s></span></div>
+     <div class="e-row"><div><b>Tabbouleh</b><small>Fresh parsley</small></div><span class="e-pr">$5.00</span></div>
      <div class="e-btn"><span id="eBtnA">Everything is live</span><span id="eBtnB">Publish to every table</span></div>
-     <div class="e-toast" id="eToast"><i>✓</i>Published v12. Live on every table, no reprints.</div>
+     <div class="e-toast" id="eToast"><i>✓</i>Published. Live on every table, no reprints.</div>
      <div class="a tapd" id="eTap"></div><div class="a tapr" id="eRing"></div>
    </div>
-   <svg id="sync" width="${W}" height="${H}"><path id="syncPath" fill="none" stroke="#F6C39F" stroke-width="5" stroke-linecap="round" stroke-dasharray="14 12"/><circle id="syncDot" r="11" fill="#C9414B" stroke="#FAF6F1" stroke-width="4"/></svg>
  </div>
- <div class="act" id="phoneLayer">
-   <div class="a" id="phone"><div id="screen"><div id="island"></div><div id="sbar">${sbarSVG}</div><div id="app">
-     <div class="scr" id="sCam"><div id="tent"><canvas id="qrc" width="196" height="196"></canvas><b>Table 12</b><small>Scan to view and pay</small></div>
-       <svg id="brk" width="390" height="772"><g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path id="bk0"/><path id="bk1"/><path id="bk2"/><path id="bk3"/></g></svg>
-       <div id="scanl"></div><div id="scanPill"><i></i>${C.url} · Table 12</div></div>
-     <div class="scr" id="sMenu">
-       <div class="back">←</div><div class="m-title">Table 12</div><div class="m-sub">Dinner menu</div>
-       <div class="pill" id="pLang">${pvHTML(['EN', 'AR'])}<u>▾</u></div><div class="pill" id="pCur">${pvHTML(['USD $', 'LBP LL'])}<u>▾</u></div>
-       <div class="filt">≡ Dietary filters</div>
-       <div class="tabs"><b>Salads</b><span>Appetizers</span><span>All Day Breakfast</span><span>Charcoal Grill</span></div>
-       <div class="hair" style="top:146px"></div>
-       <div class="sec" style="top:160px">SALADS</div><div class="sec" style="top:450px">APPETIZERS</div>
-       ${MENU.map((m, i) => `<div class="row" id="mr${i}" style="top:${ROWY[i]}px"><div class="flash"></div>
-          <div class="v en"><div class="nm">${m[0]}</div><div class="ds">${m[2]}</div><div class="pr">${pvHTML(m[3])}<u>›</u></div></div>
-          <div class="v ar"><div class="nm">${m[1]}</div><div class="ds">${m[2]}</div><div class="pr"><u>‹</u><span>${m[3][0]}</span></div></div></div>`).join('')}
-       <div id="billBtn">Open the bill ${pvHTML(['$152.50', 'LL 13,649,000'])}</div>
-       <div id="ddLang"><div>English</div><div>Français</div><div>العربية</div></div>
-       <div class="dim"></div>
-     </div>
-     <div class="scr" id="sBill">
-       <div class="back">←</div><div class="c-title">Table 12</div><div class="c-sub">4 guests · opened 8:42 pm</div>
-       <div class="billcard"><div class="bc-h">THE BILL</div>${BILL.map(r => `<div class="bc-r"><i>${r[0]}</i>${r[1]}<b>$${r[2]}</b></div>`).join('')}<div class="bc-m">+ 4 more items</div>
-         <div class="bc-t"><span>Total</span><b>$152.50</b></div></div>
-       <div class="cta" id="settleBtn">Settle my share</div><div class="pw">powered by <b>Aalayna</b></div><div class="dim"></div>
-     </div>
-     <div class="scr" id="sSplit">
-       <div class="back">←</div><div class="s-h">How are we doing this?</div><div class="s-s">Nobody has to work out the maths</div>
-       <div class="seg"><b></b><span class="on">Evenly</span><span>My items</span><span>Custom<br>amount</span><span>All of it</span></div>
-       <div class="ring" id="segRing"></div>
-       <div class="people"><b>How many of you?</b><span class="stp" style="left:206px">−</span><span class="cnt">${pvHTML(['2', '3', '4'])}</span><span class="stp" style="left:300px" id="plusBtn">+</span></div>
-       <div class="share"><small>YOUR SHARE</small><b id="shareV">$38.13</b><span id="shareL">≈ LL 3,412,635</span></div>
-       <div class="note" id="shareN">$114.37 left for the other guests.</div>
-       <div class="cta" id="contBtn">Continue · $38.13</div><div class="pw">powered by <b>Aalayna</b></div><div class="dim"></div>
-     </div>
-     <div class="scr" id="sPay">
-       <div class="back">←</div><div class="p-top">Total to pay · Table 12</div><div class="p-tot" id="payT">$41.94</div><div class="p-ll" id="payL">≈ LL 3,753,630</div>
-       <div class="p-sum"><div><small>Bill share</small><b>$38.13</b></div><div><small>Tip</small><b id="payTip">$3.81</b></div></div>
-       <div class="p-q">Something for Abou Karim?</div>
-       ${[['No tip', ''], ['5%', '$1.91'], ['10%', '$3.81'], ['15%', '$5.72'], ['Other', '']].map((c, i) => `<div class="chip" id="chip${i}" style="left:${16 + i * 73}px">${c[0]}${c[1] ? `<small>${c[1]}</small>` : ''}</div>`).join('')}
-       <div class="meth">
-         <div class="mr sel" style="top:0"><i style="background:#E4002B">whish</i><div><b>Whish Money</b><small>Opens with the amount filled in</small></div><u></u></div>
-         <div class="mr" style="top:70px"><i style="background:#1A1F71">VISA</i><div><b>Card</b><small>Visa, Mastercard, Amex</small></div><u></u></div>
-         <div class="mr" style="top:140px;border-bottom:0"><i style="background:#3E8E6A">CASH</i><div><b>Paying cash</b><small>Staff confirm after collection</small></div><u></u></div>
-       </div>
-       <div class="ring" id="payRing"></div>
-       <div class="cta" id="payBtn">Pay $41.94</div><div class="pw">powered by <b>Aalayna</b></div>
-       <div id="whish"><div class="wh"><i>whish</i>Opening Whish Money</div><small>Amount filled in</small><b>$41.94</b><div class="bar"><i id="whBar"></i></div></div>
-       <div class="dim"></div>
-     </div>
-     <div class="scr" id="sPaid">
-       <svg id="ck" width="56" height="56" viewBox="0 0 56 56"><circle id="ckC" cx="28" cy="28" r="25" fill="none" stroke="#fff" stroke-width="3" transform="rotate(-90 28 28)"/><path id="ckP" d="M17 29l7 7 15-16" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-       <div class="pd-h">Shukran.</div>
-       <div class="pd-card"><b>$41.94</b><div><span>Paid via</span><b>Whish Money</b></div><div><span>Table</span><b>12</b></div></div>
-       <div class="pd-rc"><span>WhatsApp or email</span><b>Send my receipt</b></div>
-       <div class="pd-of"><i></i>Send me offers from the restaurant</div>
-       <div class="pd-q">How was your visit?</div>
-       ${[0, 1, 2, 3, 4].map(i => `<div class="star" style="left:${81 + i * 48}px">${STAR('none', 'rgba(255,255,255,.85)')}<span class="a" style="inset:0;left:0;top:0;width:36px;height:36px" id="sf${i}">${STAR('#F6C39F', '#F6C39F')}</span></div>`).join('')}
-       <div class="pw" style="color:rgba(255,255,255,.55)">powered by <b style="color:#fff">Aalayna</b></div>
-       <div id="rsheet"><div class="gr"></div><div class="t">Thank you! Where should it go?</div>
-         <div class="opt" id="opt0" style="left:20px">${STAR('#C9A227', '#C9A227')}Google review</div>
-         <div class="opt" id="opt1" style="left:200px"><svg viewBox="0 0 24 24" fill="none" stroke="#171D1A" stroke-width="2.2"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Private note</div>
-         <div class="ring" id="optRing"></div>
-         <div class="cm">Add a comment (optional)</div><div class="cta" id="sendBtn">Send</div></div>
-     </div>
-     <div class="a" id="tapDot"></div><div class="a" id="tapRing"></div>
-   </div><div id="glare"></div></div></div>
-   <div class="a" id="stampRing"></div><div class="a" id="stamp">÷ 4</div>
-   <canvas id="conf" width="${W}" height="${H}"></canvas>
+ <div id="red" class="layer"><div class="fill"></div>
+   ${C.kinetic.map((t, i) => `<div class="kl" id="k${i + 1}"><span>${t}</span></div>`).join('')}
+   <div class="a" id="thesis">${words(C.thesis)}</div>
  </div>
- <div class="act" id="a5"><div class="fill"></div>
+ <div id="close" class="layer"><div class="fill"></div>
    <div class="a" id="ar">علينا</div>
    <div class="a" id="mark">${'aalayna'.split('').map((c, i) => `<span${i >= 5 ? ' class="na"' : ''}>${c}</span>`).join('')}</div>
    <div class="a" id="uline"></div>
@@ -606,52 +737,85 @@ stage.innerHTML = `
  </div>
 </div>`;
 
-// QR for the table tent: 25 x 25, three finder squares in red, seeded so every render matches.
-(() => {
-  const g = $('qrc').getContext('2d'), n = 25, m = 196 / n, r = rng(12);
-  const inF = (y, x) => [[0, 0], [0, n - 7], [n - 7, 0]].some(([a, b]) => y >= a && y < a + 7 && x >= b && x < b + 7);
-  const fOn = (y, x) => { for (const [a, b] of [[0, 0], [0, n - 7], [n - 7, 0]]) { const yy = y - a, xx = x - b; if (yy >= 0 && yy < 7 && xx >= 0 && xx < 7) return yy === 0 || yy === 6 || xx === 0 || xx === 6 || (yy >= 2 && yy <= 4 && xx >= 2 && xx <= 4); } return false; };
-  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
-    const f = inF(y, x), sep = !f && [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1]].some(([a, b]) => inF(y + a, x + b));
-    if (!(f ? fOn(y, x) : !sep && r() < .5)) continue;
-    g.fillStyle = f ? '#C9414B' : '#211B16';
-    g.beginPath(); g.roundRect(x * m + .6, y * m + .6, m - 1.2, m - 1.2, f ? 1.5 : 2.5); g.fill();
-  }
-})();
-
-// Confetti field and grain-free bokeh positions.
+(() => { const g = $('qrc').getContext('2d'), m = 196 / 25; for (const [x, y, f] of QR) { g.fillStyle = f ? '#C9414B' : '#211B16'; g.beginPath(); g.roundRect(x * m + .6, y * m + .6, m - 1.2, m - 1.2, f ? 1.5 : 2.5); g.fill(); } })();
 const conf = [], crand = rng(99), palette = ['#C9414B', '#F6C39F', '#FAF6F1', '#ffffff', '#3E8E6A', '#E0A77F'];
 for (let i = 0; i < 190; i++) {
   const a = -Math.PI / 2 + (crand() - .5) * Math.PI * 1.5, sp = 700 + crand() * 1500;
   conf.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, w: 12 + crand() * 16, h: 7 + crand() * 10, c: palette[i % palette.length], spin: (crand() - .5) * 22, round: crand() < .3, flip: 4 + crand() * 8 });
 }
 const cctx = $('conf').getContext('2d');
+const SCREENS = [...document.querySelectorAll('.scr')];
+const POOLS = [...document.querySelectorAll('.fpool')];
 
 /* ---------- Timeline ---------- */
-const CH = [10.625, 14.375, 18.125, 22.5, 25.625, 29.375, 32.5];      // guest chapters (and the end of the last)
-const SIDE = [32.5, 36.25, 40];
-const DT = 1.25;    // the guest act onwards runs on u = t - DT: two beats later, so the thesis can be read
-const HITS = [[7.86, 12], [8.44, 10], [21.2 + DT, 10], [29.95 + DT, 8], [34.9 + DT, 7], [40.625 + DT, 8]];
-const NAV = [[10.7, 'sCam', 0], [12.5, 'sMenu', 0], [18.4, 'sBill', 1], [19.25, 'sSplit', 1], [22.55, 'sPay', 1], [27.4, 'sPaid', 0], [36.05, 'sMenu', -1]];
-const TAPS = [[12.35, 195, 590], [14.62, 244, 29], [14.98, 197, 154], [15.95, 244, 29], [16.12, 197, 82], [16.62, 328, 29], [17.5, 328, 29],
-  [18.25, 195, 724], [19.05, 195, 713], [20.45, 322, 198], [20.85, 322, 198], [22.35, 195, 713], [26.75, 195, 713], [29.8, 291, 458], [31.3, 195, 713 + 0]];
-const HOME = [195, 364.3, 1];
-const FOCUS = [[14.45, 250, 60, 1.55], [16.45, 250, 250, 1.35], [17.75, ...HOME], [19.3, 195, 150, 1.45], [20.3, 200, 262, 1.4], [21.95, ...HOME],
-  [22.75, 195, 180, 1.45], [24.9, 195, 400, 1.35], [26.6, ...HOME], [29.45, 195, 450, 1.5], [30.35, 195, 600, 1.35], [31.9, ...HOME]];
-const K = 410 / 390;
-const PH = { x: lay(640, 540), y: lay(540, 1222), s: lay(1, 1.32) };
-let phoneNow = { x: PH.x, y: PH.y, s: PH.s };
-const appToStage = (ax, ay) => ({ x: phoneNow.x + phoneNow.s * (ax * K + 15 - 220), y: phoneNow.y + phoneNow.s * (ay * K + 61 - 444) });
+const CH = [11.875, 15, 18.75, 23.75, 26.875, 29.375, 31.875, 34.375];   // six guest chapters, the settle beat, then the room
+const SIDE = [34.375, 38.125, 41.25];
+const HITS = [[7.5, 12], [8.125, 10], [21.85, 10], [29.9, 7], [36.6, 7], [42.5, 8]];
+const NAV = [[11.2, 'sCam', 0], [14.6, 'sMenu', 0], [18.95, 'sBill', 1], [19.7, 'sSplit', 1], [23.95, 'sPay', 1], [28.45, 'sPaid', 0]];
+const TAPS = [[14.45, 195, 590], [15.4, 244, 29], [15.72, 197, 154], [16.55, 244, 29], [16.7, 197, 82], [17.1, 328, 29], [17.95, 328, 29],
+  [18.75, 195, 724], [19.5, 195, 713], [19.95, 322, 198], [20.3, 322, 198], [27.85, 195, 713], [29.75, 291, 458], [31.05, 195, 713]];
+const K = 410 / 390, PS = 90 / 888, HOME = [195, 364.3];
+const PH = { s: lay(1, 1.32) };
+const F = { a1: lay([1215, 548], [540, 1262]), wide: lay([600, 560], [540, 1235]), close: lay([640, 540], [540, 1222]), floor: lay([1268, 545], [540, 1062]), end: [CX, CY] };
+const ZW = lay(1.1, .98), ZF = lay(.275, .24);
+
+// The guest's phone: lying at their place, lifted over the QR to scan, put back down for the split.
+function phonePose(t) {
+  const up = E.inOutCubic(p(t, 12.05, 12.85)), down = E.inOutCubic(p(t, 20.65, 21.45)), k = up * (1 - down);
+  return { x: lerp(126, 0, k), y: lerp(150, -28, k), r: 0, lift: 1 + .12 * k, k };
+}
+const phoneWorld = (pp, ax, ay) => { const s = PS * pp.lift, [dx, dy] = rot((15 + ax * K - 220) * s, (61 + ay * K - 444) * s, pp.r); return { x: pp.x + dx, y: pp.y + dy }; };
+const closeUp = (t, ax = HOME[0], ay = HOME[1], zm = 1) => { const pp = phonePose(t), w = phoneWorld(pp, ax, ay); return { fx: F.close[0], fy: F.close[1], lx: w.x, ly: w.y, z: PH.s * zm / (PS * pp.lift), r: -pp.r }; };
+const view = (lx, ly, z, r, f = F.wide) => ({ fx: f[0], fy: f[1], lx, ly, z, r });
+const CAM = [
+  [0, 0, () => view(0, 0, 1.14 * lay(.98, 1.12), -8, F.a1)],
+  [0, 3, () => view(0, 0, .98 * lay(.98, 1.12), -10, F.a1), E.outCubic],
+  [3, 7.45, () => view(0, 0, 1.03 * lay(.98, 1.12), -13, F.a1), E.inOutCubic],
+  [11.2, 11.2, () => view(0, 15, ZW, 0)],
+  [11.3, 12.95, () => view(0, 10, ZW * 1.07, 2), E.inOutCubic],
+  [12.95, 13.75, t => closeUp(t), E.inOutCubic],
+  [15.25, 15.85, t => closeUp(t, 250, 60, 1.55), E.inOutCubic],
+  [17.1, 17.6, t => closeUp(t, 250, 250, 1.35), E.inOutCubic],
+  [18.2, 18.65, t => closeUp(t), E.inOutCubic],
+  [19.75, 20.2, t => closeUp(t, 200, 262, 1.35), E.inOutCubic],
+  [20.65, 21.55, () => view(0, 20, ZW * 1.02, 0), E.inOutCubic],
+  [21.55, 23.6, () => view(0, 20, ZW * 1.09, 5), E.inOutSine],
+  [23.7, 24.45, t => closeUp(t), E.inOutCubic],
+  [24.55, 25.1, t => closeUp(t, 195, 180, 1.45), E.inOutCubic],
+  [25.95, 26.5, t => closeUp(t, 195, 330, 1.3), E.inOutCubic],
+  [27.55, 28.05, t => closeUp(t), E.inOutCubic],
+  [29.4, 29.9, t => closeUp(t, 195, 400, 1.4), E.inOutCubic],
+  [30.2, 30.65, t => closeUp(t, 195, 600, 1.35), E.inOutCubic],
+  [31.45, 32.3, () => view(0, 30, ZW * .98, -4), E.inOutCubic],
+  [32.3, 34.3, () => view(0, 30, ZW * 1.05, -7), E.inOutSine],
+  [34.375, 35.6, () => view(0, 0, ZF, 0, F.floor), E.inOutCubic],
+  [35.6, 41.2, () => view(0, 0, ZF * 1.05, -3, F.floor), E.inOutSine],
+  [41.25, 41.9, () => view(0, 0, ZF * 1.4, -3, F.end), E.inOutCubic],
+];
+const mixCam = (a, b, k) => ({ fx: lerp(a.fx, b.fx, k), fy: lerp(a.fy, b.fy, k), lx: lerp(a.lx, b.lx, k), ly: lerp(a.ly, b.ly, k), z: Math.exp(lerp(Math.log(a.z), Math.log(b.z), k)), r: lerp(a.r, b.r, k) });
+function camAt(t) {
+  let s = null;
+  for (const [a, b, fn, ease] of CAM) {
+    if (t < a) break;
+    const to = fn(t), k = b > a ? (ease || (x => x))(p(t, a, b)) : 1;
+    s = s ? mixCam(s, to, k) : to;
+  }
+  return s;
+}
+let cam = camAt(0);
+const proj = (x, y) => { const [dx, dy] = rot((x - cam.lx) * cam.z, (y - cam.ly) * cam.z, cam.r); return { x: cam.fx + dx, y: cam.fy + dy }; };
+const unproj = (sx, sy) => { const [dx, dy] = rot((sx - cam.fx) / cam.z, (sy - cam.fy) / cam.z, -cam.r); return { x: cam.lx + dx, y: cam.ly + dy }; };
 
 /* ---------- Layout constants ---------- */
-const L1 = lay({ tb: [1215, 548, .98], cap: [120, 236, 600, 96], pain: [120, 560, 102, 42], clock: [1800, 96] },
-               { tb: [540, 1262, 1], cap: [80, 170, 920, 104], pain: [80, 470, 104, 46], clock: [1000, 96] });
+const L1 = lay({ cap: [120, 236, 600, 96], pain: [120, 560, 102, 42], clock: [1800, 96] }, { cap: [80, 170, 920, 104], pain: [80, 470, 104, 46], clock: [1000, 96] });
 const L2 = lay({ x: 170, tops: [180, 362, 544], fs: 176, th: [176, 800, 1500, 50] }, { x: 86, tops: [470, 634, 798], fs: 150, th: [90, 1060, 900, 58] });
 const LA = lay({ x: 1110, y: 250, w: 700, fl: 28, fh: 84, fs: 40 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
-const LB = lay({ x: 110, y: 250, w: 540, fl: 28, fh: 80, fs: 38 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
+const LB = lay({ x: 110, y: 170, w: 470, fl: 28, fh: 78, fs: 36 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
 const LR = lay({ x0: 1116, step: 134, y: 905, fs: 22 }, { x0: 140, step: 160, y: 86, fs: 24 });
+const PNL = lay({ x: 372, y: 718, s: .82 }, { x: 540, y: 1722, s: 1.2 });
+const SCRIM = { A: lay('linear-gradient(90deg,rgba(9,28,30,0),rgba(9,28,30,.84) 27%,rgba(9,28,30,.9))', 'linear-gradient(180deg,rgba(9,28,30,.92),rgba(9,28,30,.8) 55%,rgba(9,28,30,0))'),
+                B: lay('linear-gradient(270deg,rgba(9,28,30,0),rgba(9,28,30,.8) 30%,rgba(9,28,30,.9))', 'linear-gradient(180deg,rgba(9,28,30,.92),rgba(9,28,30,.8) 55%,rgba(9,28,30,0))') };
 
-// Caption blocks: set text when the chapter changes, then fit the headline to two lines.
 const capState = { A: -1, B: -1 };
 function setCaption(el, spec, L) {
   el.style.width = L.w + 'px';
@@ -666,9 +830,9 @@ function setCaption(el, spec, L) {
 function caption(el, key, specs, times, t, L) {
   let i = -1;
   for (let k = 0; k < specs.length; k++) if (t >= times[k] && t < times[k + 1]) i = k;
-  if (i < 0) { el.style.opacity = 0; return; }
+  if (i < 0) { el.style.opacity = 0; return -1; }
   if (capState[key] !== i) { setCaption(el, specs[i], L); capState[key] = i; }
-  const t0 = Math.max(times[i], key === 'A' ? 10.85 : 32.75) + .1, t1 = times[i + 1];
+  const t0 = times[i] + .1, t1 = times[i + 1];
   const [lab, , sb] = el.children, out = E.inCubic(p(t, t1 - .45, t1 - .08));
   TL(el, L.x, L.y - 26 * out, 1 - out);
   const kl = E.outExpo(p(t, t0, t0 + .6));
@@ -676,185 +840,282 @@ function caption(el, key, specs, times, t, L) {
   el._w.forEach((w, j) => { const k = E.outExpo(p(t, t0 + .12 + j * .05, t0 + .9 + j * .05)); w.style.transform = `translateY(${(1 - k) * 112}%) rotate(${(1 - k) * 5}deg)`; });
   const ks = E.outCubic(p(t, t0 + .55, t0 + 1.15));
   sb.style.transform = `translateY(${20 * (1 - ks)}px)`; sb.style.opacity = ks;
+  return i;
+}
+function scrim(el, key, t, a, b) {
+  el.style.background = SCRIM[key]; el.style.width = lay(key === 'A' ? 1060 : 800, W) + 'px'; el.style.height = lay(H, 760) + 'px';
+  TL(el, lay(key === 'A' ? W - 1060 : 0, 0), 0, E.outCubic(p(t, a, a + .6)) * (1 - p(t, b - .4, b)));
 }
 
 /* ---------- Render ---------- */
-const acts = ['a1', 'a2', 'a3', 'a4', 'phoneLayer', 'a5'].reduce((o, k) => (o[k] = $(k), o), {});
+const layers = ['ui1', 'uiA', 'uiB', 'red', 'close', 'phoneLayer'].reduce((o, k) => (o[k] = $(k), o), {});
 function render(t) {
   t = clamp(t, 0, DUR);
   let sx = 0, sy = 0;
   for (const [h, a] of HITS) { sx += a * wobble(t - h, 13, 9); sy += a * .7 * wobble(t - h + .02, 17, 9); }
   $('cam').style.transform = `translate(${sx}px,${sy}px)`;
-  const u = t - DT;
-  show(acts.a1, t < 8.46); show(acts.a2, t >= 7.99 && u < 10.86); show(acts.a3, u >= 10.28 && u < 32.9);
-  show(acts.a4, u >= 32.25 && u < 40.4); show(acts.phoneLayer, u >= 10.6 && u < 40.4); show(acts.a5, u >= 39.85);
-  if (t < 8.46) act1(t);
-  if (t >= 7.99 && u < 10.86) act2(t);
-  if (u >= 10.28 && u < 32.9) act3(u);
-  if (u >= 32.25 && u < 40.4) act4(u);
-  if (u >= 10.6 && u < 40.4) phone(u);
-  if (u >= 32.25 && u < 40.4) act4sync(u);
-  if (u >= 39.85) act5(u);
+
+  // The camera over the world; in portrait, close-ups never climb over the caption.
+  cam = camAt(t);
+  if (P && t > 11) { const pp = phonePose(t), c = proj(pp.x, pp.y), top = c.y - 444 * cam.z * PS * pp.lift; if (top < 612) cam.fy += 612 - top; }
+  $('world').style.transform = `translate(${cam.fx}px,${cam.fy}px) rotate(${cam.r}deg) scale(${cam.z}) translate(${-cam.lx}px,${-cam.ly}px)`;
+  const near = clamp((cam.z * PS - .32) / .5);
+  $('worldWrap').style.filter = near > .01 ? `blur(${(7 * near).toFixed(2)}px) brightness(${1 - .2 * near})` : 'none';
+  lighting(t);
+
+  show(layers.ui1, t < 7.9); show(layers.red, t >= 7.5 && t < 11.95); show(layers.uiA, t >= 11.8 && t < 34.45);
+  show(layers.uiB, t >= 34.3 && t < 41.6); show(layers.close, t >= 41.7); show(layers.phoneLayer, t < 41.4);
+  table12(t); floor(t);
+  if (t < 7.9) act1ui(t);
+  if (t >= 7.5 && t < 11.95) red(t);
+  if (t >= 11.8 && t < 34.45) guestUI(t);
+  if (t < 41.4) phone(t);
+  if (t >= 34.3 && t < 41.6) roomUI(t);
+  if (t >= 41.7) closing(t);
 }
 
-function bokehAt(root, t, seed) {
-  root.querySelectorAll('.bokeh').forEach((b, i) => {
-    const [u, v, w] = b.dataset.b.split(',').map(Number);
-    const x = W * (u + .06 * Math.sin(t * .23 + i + seed)), y = H * (v + .05 * Math.cos(t * .19 + i * 1.7 + seed));
-    b.style.transform = `translate(${x}px,${y}px) scale(${.8 + .4 * w})`; b.style.opacity = .45 + .35 * Math.sin(t * .5 + i * 2.1 + seed);
-  });
+// Night, then the lights come up at the table, then over the whole room.
+function lighting(t) {
+  const lit = E.inOutCubic(p(t, 11.1, 11.4)), room = E.inOutCubic(p(t, 34.4, 35.4));
+  const c = proj(0, 0), strength = lerp(lerp(.96, .62, lit), .4, room);
+  $('vig').style.background = `radial-gradient(ellipse ${lay(62, 95)}% ${lay(75, 52)}% at ${(c.x / W * 100).toFixed(2)}% ${(c.y / H * 100).toFixed(2)}%,rgba(6,20,22,0) 38%,rgba(6,20,22,${strength}) 100%)`;
+  attr($('pool12'), 'opacity', lerp(.55, 1, lit));
+  attr($('floorDim'), 'opacity', lerp(lerp(.62, .38, lit), .02, room));
 }
 
-let tableNow = { x: 0, y: 0, s: 1, r: 0 };
-// 0 to 8.4 s: dinner is over and the wait begins.
-function act1(t) {
-  bokehAt(acts.a1, t, 0);
-  const [tx, ty, ts] = L1.tb, intro = E.outCubic(p(t, 0, 3)), push = .05 * E.inOutCubic(p(t, 4, 7.4));
-  const s = ts * (lerp(1.16, 1, intro) + push), r = lerp(-8, 0, intro) - 5 * E.inOutCubic(p(t, 3, 7.45));
-  T($('tableBox'), { x: tx, y: ty, s, r, o: E.outCubic(p(t, 0, .7)) });
-  tableNow = { x: tx, y: ty, s, r };
-  for (let i = 0; i < 4; i++) $('gp' + i).setAttribute('transform', `translate(${3 * Math.sin(t * 1.7 + i * 1.3)} ${3 * Math.cos(t * 1.3 + i)})`);
-  // The bill arrives, then waits.
-  const tr = E.outExpo(p(t, 2.55, 3.3)), gone = Math.max(0, 1 - E.inBack(p(t, 7.87, 8.1)));
-  $('tray').setAttribute('transform', `translate(500 ${lerp(1000, 552, tr)}) rotate(${lerp(28, -3, tr) + 4 * wobble(t - 3.15, 2, 6) * (t > 3.15 ? 1 : 0)}) scale(${gone})`);
-  $('tray').setAttribute('opacity', t > 2.5 ? 1 : 0);
-  const rk = p(t, 4, 7.4);
-  $('ring1').setAttribute('stroke-dasharray', `${1885 * rk} 1885`);
-  $('ringG').setAttribute('opacity', p(t, 3.8, 4.15) * (1 - p(t, 7.8, 8.05)));
-  const up = E.outBack(p(t, 4.3, 4.6), 2.2), wave = t > 4.6 ? 14 * Math.sin((t - 4.6) * Math.PI * 5.2) * (1 - p(t, 7.2, 7.5)) : 0;
-  $('arm').setAttribute('transform', `rotate(${lerp(70, 0, up) + wave} 874 452)`);
-  $('arm').setAttribute('opacity', t >= 4.3 ? Math.min(1, (t - 4.3) * 8) * (1 - p(t, 7.6, 7.9)) : 0);
-  ['gl0', 'gl1', 'gl2', 'gl3'].forEach((id, i) => {
-    const st = 4.95 + i * .32, k = p(t, st, st + 1.5), el = $(id);
-    el.setAttribute('transform', `translate(${500 + [-58, 52, -22, 66][i]} ${520 - 150 * E.outCubic(k)})`);
-    el.setAttribute('opacity', k > 0 && k < 1 ? Math.sin(Math.PI * k) * (1 - p(t, 7.8, 8)) : 0);
+/* ---------- Table 12 ---------- */
+function table12(t) {
+  for (let i = 0; i < 4; i++) attr($('gp' + i), 'transform', `translate(${(3 * Math.sin(t * 1.7 + i * 1.3)).toFixed(2)} ${(3 * Math.cos(t * 1.3 + i)).toFixed(2)})`);
+  // The bill arrives and waits; the red dot lands on it.
+  const tr = E.outExpo(p(t, 2.55, 3.3)), gone = Math.max(0, 1 - E.inBack(p(t, 7.55, 7.8)));
+  attr($('tray'), 'transform', `translate(0 ${lerp(480, 58, tr)}) rotate(${lerp(28, -3, tr) + 4 * wobble(t - 3.15, 2, 6) * (t > 3.15 ? 1 : 0)}) scale(${gone})`);
+  attr($('tray'), 'opacity', t > 2.5 && t < 7.8 ? 1 : 0);
+  attr($('ring1'), 'stroke-dasharray', `${1885 * p(t, 4, 7.4)} 1885`);
+  attr($('ringG'), 'opacity', p(t, 3.8, 4.15) * (1 - p(t, 7.5, 7.75)));
+  const up = E.outBack(p(t, 4.3, 4.6), 2.2), down = E.inOutCubic(p(t, 7.1, 7.45)), wave = t > 4.6 ? 14 * Math.sin((t - 4.6) * Math.PI * 5.2) * (1 - p(t, 7.0, 7.3)) : 0;
+  const armUp = t >= 4.3 && down < 1 ? Math.min(1, (t - 4.3) * 8) : 0;
+  attr($('arm'), 'transform', `rotate(${lerp(-81, 0, up * (1 - down)) + wave} 82 -4)`);
+  attr($('arm'), 'opacity', armUp); attr($('armRest'), 'opacity', 1 - armUp);
+  for (let i = 0; i < 4; i++) {
+    const st = 4.95 + i * .32, k = p(t, st, st + 1.5), el = $('gl' + i);
+    attr(el, 'transform', `translate(${[-58, 52, -22, 66][i]} ${40 - 150 * E.outCubic(k)})`);
+    attr(el, 'opacity', k > 0 && k < 1 ? Math.sin(Math.PI * k) * (1 - p(t, 7.4, 7.6)) : 0);
+  }
+  for (let i = 0; i < 3; i++) {
+    const st = 5.6 + i * .12, k = E.outBack(p(t, st, st + .35));
+    attr($('co' + i), 'transform', `translate(${[56, 80, 44][i]} ${[96, 72, 118][i]}) scale(${k * (.25 + .75 * Math.abs(Math.cos((t - st) * 6)))} ${k})`);
+    attr($('co' + i), 'opacity', t > st ? 1 - p(t, 7.4, 7.6) : 0);
+  }
+  const dot = $('dot1');
+  if (t >= 7.1 && t < 8.2) {
+    const sq = t > 7.5 ? .5 * wobble(t - 7.5, 3.2, 9) : 0;
+    attr(dot, 'transform', `translate(0 ${lerp(-900, 58, E.inQuad(p(t, 7.1, 7.5)))}) scale(${1 + sq} ${1 - sq})`); attr(dot, 'opacity', 1);
+  } else attr(dot, 'opacity', 0);
+  attr($('qrDot'), 'r', 4.5 * (1 + .6 * wobble(t - 11.9, 2.5, 6) * (t > 11.9 ? 1 : 0)));
+
+  // The split: the receipt prints, tears in four and flies to each guest, who gets their share.
+  const pr = E.outExpo(p(t, 21.15, 21.75));
+  for (let i = 0; i < 4; i++) {
+    const el = $('rs' + i), xc = -36 + 24 * i, [cx, cy] = place(i, -124, 150);
+    const tear = E.inOutCubic(p(t, 22.0, 22.2)), fly = E.outExpo(p(t, 22.15 + i * .06, 22.85 + i * .06)), flip = p(t, 22.8 + i * .06, 22.95 + i * .06);
+    const x0 = xc + (xc > 0 ? 1 : -1) * 6 * tear, y0 = 20 + 4 * tear * (i % 2 ? 1 : -1);
+    const x = lerp(x0, cx, fly), y = lerp(y0, cy, fly), r = lerp(0, GA[i] - 90, fly) + (1 - fly) * fly * (i % 2 ? 40 : -40);
+    const s = lerp(1, .8, fly);
+    attr(el, 'transform', `translate(${x} ${y}) rotate(${r}) scale(${s * (1 - flip)} ${s * lerp(.12, 1, pr)}) translate(${-xc} 0)`);
+    attr(el, 'opacity', t > 21.15 && flip < 1 ? 1 : 0);
+    const card = $('card' + i), cf = E.outBack(p(t, 22.95 + i * .06, 23.2 + i * .06), 1.6);
+    attr(card, 'transform', `translate(${cx} ${cy}) rotate(${GA[i] - 90}) scale(${cf} 1)`);
+    attr(card, 'opacity', t > 22.95 + i * .06 && t < 34.6 ? 1 : 0);
+  }
+  // Everyone else's phone lights up with their share, then turns green (card, Whish) or amber (cash).
+  const PAY = { 0: [32.7, 'card'], 1: [33.1, 'whish'], 3: [33.5, 'cash'] };
+  for (const i of [0, 1, 3]) {
+    const lit = p(t, 23.0 + i * .05, 23.25 + i * .05), [pt, how] = PAY[i], paid = p(t, pt, pt + .2);
+    const cash = how === 'cash', ok = cash ? p(t, 36.6, 36.8) : paid;
+    attr($('phs' + i), 'fill', paid > 0 ? mixRGB([255, 255, 255], cash && ok < 1 ? [224, 163, 58] : [62, 142, 106], Math.max(paid, ok)) : mixRGB([14, 12, 11], [255, 255, 255], lit));
+    attr($('pht' + i), 'opacity', lit * (1 - paid));
+    attr($('phk' + i), 'opacity', paid);
+    $('phc' + i).textContent = cash && ok < 1 ? 'CASH' : 'PAID';
+  }
+  // Paid: badges by each guest, the ring's segments turn green, the share cards turn to "paid".
+  const payT = [32.7, 33.1, 32.35, 33.5];
+  attr($('segG'), 'opacity', p(t, 32.1, 32.4));
+  for (let i = 0; i < 4; i++) {
+    const pt = payT[i], k = p(t, pt, pt + .25), cash = i === 3, confirmed = cash ? p(t, 36.6, 36.9) : 1;
+    attr($('seg' + i), 'stroke', k > 0 ? (cash ? mixRGB([224, 163, 58], [62, 142, 106], confirmed) : mixRGB([250, 246, 241], [62, 142, 106], k)) : 'rgba(250,246,241,.18)');
+    const ok = $('ok' + i), bk = cash ? confirmed : k, [ox, oy] = place(i, 58, 322);
+    attr(ok, 'opacity', bk > 0 ? 1 : 0);
+    attr(ok, 'transform', `translate(${ox} ${oy}) scale(${clamp(spring(t - (cash ? 36.6 : pt), 2.4, 7), 0, 1.3)})`);
+    attr($('cardok' + i), 'opacity', cash ? confirmed : k);
+  }
+  // A waiter walks straight past the raised hand; later one comes over for the cash, and one crosses the floor.
+  const w0a = p(t, 4.55, 6.9), w0b = p(t, 35.2, 40.6);
+  if (t < 20) {
+    const [x, y] = P ? [lerp(1000, -1000, w0a), -600] : [520, lerp(-820, 820, w0a)];
+    walker('waiter0', 'w0', x, y, P ? -90 : 180, w0a * (P ? 2000 : 1640) / 130 * Math.PI, clamp(Math.sin(Math.PI * w0a) * 4), w0a > 0 && w0a < 1 ? 1 : 0);
+  }
+  else walker('waiter0', 'w0', lerp(2500, -1500, w0b), 450, -90, w0b * 4000 / 130 * Math.PI, clamp(Math.sin(Math.PI * w0b) * 6), w0b > 0 && w0b < 1 ? 1 : 0);
+  const wk = E.inOutCubic(p(t, 32.9, 34.1)), q0 = [720, -640], q1 = [40, -660], q2 = [-300, -330];
+  const wx = lerp(lerp(q0[0], q1[0], wk), lerp(q1[0], q2[0], wk), wk), wy = lerp(lerp(q0[1], q1[1], wk), lerp(q1[1], q2[1], wk), wk);
+  const dirx = lerp(q1[0] - q0[0], q2[0] - q1[0], wk), diry = lerp(q1[1] - q0[1], q2[1] - q1[1], wk);
+  const face = lerp(Math.atan2(diry, dirx) * 180 / Math.PI + 90, Math.atan2(330, -82) * 180 / Math.PI + 90, E.inOutCubic(p(t, 34.0, 34.5)));
+  walker('waiter', 'w1', wx, wy, face, wk * 1000 / 130 * Math.PI, clamp(Math.sin(Math.PI * wk) * 3), t > 32.9 ? Math.min(1, (t - 32.9) * 4) : 0);
+  // On the floor: table 12's status, settled once the cash is confirmed.
+  const tag = $('tag12'), tk = E.outBack(p(t, 35.0, 35.3), 1.6), settled = t >= 36.75;
+  attr(tag, 'opacity', t > 35 && t < 41.3 ? 1 : 0);
+  attr(tag, 'transform', `rotate(${-cam.r}) scale(${tk * (settled ? 1 + .15 * wobble(t - 36.75, 2.5, 6) : 1)})`);
+  attr($('tagBg'), 'fill', settled ? '#3E8E6A' : '#E0A33A');
+  $('tagTx').textContent = settled ? C.settled : C.pending;
+  const bw = settled ? (LANG === 'fr' ? 330 : 380) : (LANG === 'fr' ? 700 : 540);
+  attr($('tagBg'), 'x', -bw / 2); attr($('tagBg'), 'width', bw);
+  const pk = p(t, 36.7, 37.6);
+  attr($('pulse12'), 'r', 330 + 380 * E.outCubic(pk)); attr($('pulse12'), 'opacity', pk > 0 && pk < 1 ? 1 - pk : 0);
+  // The close: the table folds into the dot.
+  const fold = E.inCubic(p(t, 41.35, 41.875));
+  $('t12').style.transformOrigin = '1000px 1000px';
+  $('t12').style.transform = fold > 0 ? `scale(${Math.max(0, 1 - fold)})` : '';
+}
+
+function walker(id, pre, x, y, ang, phase, m, o) {
+  const el = $(id), sw = Math.sin(phase) * m;
+  attr(el, 'opacity', o);
+  if (!o) return;
+  attr(el, 'transform', `translate(${f1(x)} ${f1(y)}) rotate(${f1(ang + 3 * sw)})`);
+  attr($(pre + 'f0'), 'transform', `translate(0 ${f1(-26 * sw)})`); attr($(pre + 'f1'), 'transform', `translate(0 ${f1(26 * sw)})`);
+  attr($(pre + 'a0'), 'transform', `translate(0 ${f1(16 * sw)})`);
+}
+
+/* ---------- The room ---------- */
+let ripO = { x: 0, y: 0 };
+function floor(t) {
+  const on = E.outCubic(p(t, 34.6, 35.3));
+  POOLS.forEach(el => attr(el, 'opacity', lerp(.35, 1, on)));
+  const ripT = t - 39.95, fold = E.inCubic(p(t, 41.35, 41.875));
+  GRID.forEach(([x, y], k) => {
+    const n = NUMS[k], st = STATUS[n];
+    let cur = st[0][1], prev = cur, since = 99;
+    for (const [at, s] of st) if (t >= at) { prev = cur; cur = s; since = t - at; }
+    const kk = clamp(since / .4), col = SC[cur].map((v, i) => lerp(SC[prev][i], v, kk));
+    const pulse = cur === 'p' ? .55 + .45 * Math.sin(t * 7 + k) : 1;
+    attr($('fr' + n), 'stroke', `rgb(${col.map(Math.round).join(',')})`);
+    attr($('fr' + n), 'opacity', on * (cur === 'o' ? .25 : pulse));
+    attr($('fg' + n), 'opacity', cur === 'o' ? 0 : prev === 'o' ? kk : 1);
+    // The published price reaches each table as the wave passes.
+    const d = Math.hypot(x - ripO.x, y - ripO.y), hit = ripT - d / 3400, fx = hit > 0 ? Math.exp(-hit * 3.2) : 0;
+    attr($('fx' + n), 'opacity', (fx * .95).toFixed(3)); attr($('fx' + n), 'stroke-width', 10 + 30 * fx);
+    const tag = hit > 0 && hit < 1.35 ? clamp(spring(hit, 2, 6.5), 0, 1.25) * (1 - E.inBack(p(hit, 1.05, 1.35))) : 0;
+    attr($('pt' + n), 'opacity', tag > 0 ? 1 : 0); attr($('pt' + n), 'transform', `rotate(${-cam.r}) scale(${Math.max(0, tag).toFixed(3)})`);
+    attr($('fl' + n), 'opacity', on * .9 * (1 - clamp(tag * 3)));
+    attr($('fl' + n), 'transform', `rotate(${-cam.r})`);
+    attr($('ft' + n), 'transform', `translate(${lerp(x, 0, fold)} ${lerp(y, 0, fold)}) scale(${(1 + .06 * fx) * Math.max(0, 1 - fold)})`);
   });
   for (let i = 0; i < 3; i++) {
-    const st = 5.6 + i * .12, k = E.outBack(p(t, st, st + .35)), el = $('co' + i);
-    el.setAttribute('transform', `translate(${[556, 580, 544][i]} ${[596, 572, 620][i]}) scale(${k * (.25 + .75 * Math.abs(Math.cos((t - st) * 6)))} ${k})`);
-    el.setAttribute('opacity', t > st ? 1 - p(t, 7.8, 8) : 0);
+    const r = $('rip' + i), k = ripT - i * .12;
+    attr(r, 'cx', ripO.x); attr(r, 'cy', ripO.y); attr(r, 'r', Math.max(1, k * 3400)); attr(r, 'opacity', k > 0 && k < 1.4 ? .8 * (1 - k / 1.4) : 0);
   }
-  // The red dot drops onto the bill.
-  const dot = $('dot1');
-  if (t >= 7.45) {
-    const sq = t > 7.86 ? .5 * wobble(t - 7.86, 3.2, 9) : 0;
-    dot.setAttribute('transform', `translate(500 ${lerp(-420, 552, E.inQuad(p(t, 7.45, 7.86)))}) scale(${1 + sq} ${1 - sq})`);
-    dot.setAttribute('opacity', 1);
-  } else dot.setAttribute('opacity', 0);
+}
 
+/* ---------- Act 1 captions ---------- */
+function act1ui(t) {
   const [cx, cy, cw, cf] = L1.cap;
-  [['c1a', .45, 2.4], ['c1b', 2.65, 7.4]].forEach(([id, a, b]) => {
+  [['c1a', .45, 2.4], ['c1b', 2.65, 7.25]].forEach(([id, a, b]) => {
     const el = $(id); el.style.width = cw + 'px'; el.style.fontSize = cf + 'px';
     const out = E.inCubic(p(t, b, b + .35));
     TL(el, cx, cy - 30 * out, 1 - out);
-    el.querySelectorAll('.w>span').forEach((w, j) => { const k = E.outExpo(p(t, a + j * .07, a + .85 + j * .07)); w.style.transform = `translateY(${(1 - k) * 112}%) rotate(${(1 - k) * 6}deg)`; });
+    spans(el).forEach((w, j) => { const k = E.outExpo(p(t, a + j * .07, a + .85 + j * .07)); w.style.transform = `translateY(${(1 - k) * 112}%) rotate(${(1 - k) * 6}deg)`; });
   });
   const [px, py, pstep, pf] = L1.pain;
   for (let i = 0; i < 3; i++) {
-    const el = $('pain' + i), a = 4.3 + i * .65, k = E.outExpo(p(t, a, a + .6)), out = E.inBack(p(t, 7.55 + i * .05, 7.85 + i * .05));
+    const el = $('pain' + i), a = 4.3 + i * .65, k = E.outExpo(p(t, a, a + .6)), out = E.inBack(p(t, 7.3 + i * .05, 7.6 + i * .05));
     el.style.fontSize = pf + 'px';
     TL(el, px + lerp(-50, 0, k), py + i * pstep, t > a ? k * (1 - out) : 0, `scale(${1 - .3 * out})`);
     el.firstElementChild.style.transform = `scale(${clamp(spring(t - a - .05, 2.4, 7), 0, 1.3)})`;
   }
   const cl = $('clock'), ck = p(t, 4, 7.4);
-  cl.innerHTML = C.clock(21 + Math.floor(17 * ck));
-  cl.style.fontSize = lay(34, 36) + 'px';
-  TL(cl, L1.clock[0] - cl.offsetWidth, L1.clock[1] - 20, p(t, 3.8, 4.2) * (1 - p(t, 7.7, 8)));
+  cl.innerHTML = C.clock(21 + Math.floor(17 * ck)); cl.style.fontSize = lay(34, 36) + 'px';
+  if (!cl._w) cl._w = cl.offsetWidth;
+  TL(cl, L1.clock[0] - cl._w, L1.clock[1] - 20, p(t, 3.8, 4.2) * (1 - p(t, 7.4, 7.7)));
 }
 
-let dotStage = { x: CX, y: CY };
-// 8 to 10.9 s: red floods from the dot; the line the homepage opens with.
-function act2(t) {
-  if (t < 8.1) { const { x, y, s, r } = tableNow, a = r * Math.PI / 180; dotStage = { x: x - 52 * Math.sin(a) * s, y: y + 52 * Math.cos(a) * s }; }
-  acts.a2.style.clipPath = `circle(${lerp(26, Math.hypot(W, H), E.inOutQuart(p(t, 8, 8.44)))}px at ${dotStage.x}px ${dotStage.y}px)`;
-  const starts = [8.4375, 8.75, 9.0625];
+/* ---------- Act 2: the turn ---------- */
+function red(t) {
+  const d = proj(0, 58), q = proj(QRD[0], QRD[1]), full = Math.hypot(W, H);
+  let r, c;
+  if (t < 11.25) { r = lerp(26 * cam.z, full, E.inOutQuart(p(t, 7.55, 8.05))); c = d; }
+  else { r = lerp(full, 4.5 * cam.z, E.inOutQuart(p(t, 11.25, 11.875))); c = q; }
+  $('red').style.clipPath = `circle(${Math.max(0, r).toFixed(1)}px at ${c.x.toFixed(1)}px ${c.y.toFixed(1)}px)`;
+  const starts = [8.125, 8.4375, 8.75];
   ['k1', 'k2', 'k3'].forEach((id, i) => {
     const el = $(id), sp = el.firstElementChild, k = E.outExpo(p(t, starts[i], starts[i] + .85));
     el.style.fontSize = L2.fs + 'px'; el.style.left = L2.x + 'px'; el.style.top = L2.tops[i] + 'px';
     sp.style.transform = `translateY(${lerp(115, 0, k)}%) rotate(${lerp(7, 0, k)}deg)`;
-    const ex = tt => -2800 * E.inExpo(p(tt, 10.3 + DT + i * .05, 10.72 + DT + i * .05));
+    const ex = tt => -2800 * E.inExpo(p(tt, 11.1 + i * .05, 11.5 + i * .05));
     const x = ex(t), v = x - ex(t - 1 / 60);
-    el.style.transform = `translateX(${x + lerp(0, -30, p(t, 8.5, 10.3 + DT))}px)`;
+    el.style.transform = `translateX(${x + lerp(0, -30, p(t, 8.2, 11.1))}px)`;
     el.style.filter = Math.abs(v) > .5 ? `url(#mb${i + 1})` : 'none';
     blurX('mb' + (i + 1), v * .35);
   });
   const th = $('thesis'), [x, y, w, f] = L2.th;
   th.style.width = w + 'px'; th.style.fontSize = f + 'px';
-  TL(th, x - 1400 * E.inExpo(p(t, 10.3 + DT, 10.75 + DT)), y, 1 - p(t, 10.4 + DT, 10.7 + DT));
-  th.querySelectorAll('.w>span').forEach((s, j) => { const k = E.outExpo(p(t, 9.375 + j * .05, 10.1 + j * .05)); s.style.transform = `translateY(${(1 - k) * 112}%)`; });
+  TL(th, x - 1400 * E.inExpo(p(t, 11.1, 11.55)), y, 1 - p(t, 11.2, 11.5));
+  spans(th).forEach((s, j) => { const k = E.outExpo(p(t, 9.375 + j * .05, 10.1 + j * .05)); s.style.transform = `translateY(${(1 - k) * 112}%)`; });
 }
 
-// 10.3 to 32.9 s: the guest's side, chapter by chapter.
-function act3(t) {
-  const sk = H * .22, e = lerp(W + sk, -12, E.inOutExpo(p(t, 10.28, 10.8)));
-  acts.a3.style.clipPath = `polygon(${e}px 0,${W + 20}px 0,${W + 20}px ${H}px,${e - sk}px ${H}px)`;
+/* ---------- Act 3: the guest's captions and the rail ---------- */
+function guestUI(t) {
   caption($('capA'), 'A', C.ch, CH, t, LA);
-  // The journey rail, and the red dot moving along it.
-  const rin = E.outExpo(p(t, 10.9, 11.6)), rout = 1 - p(t, 32.1, 32.4);
+  scrim($('scrimA'), 'A', t, 11.8, 34.45);
+  const rin = E.outExpo(p(t, 12.0, 12.7)), rout = 1 - p(t, 34.0, 34.35);
   const x0 = LR.x0, y = LR.y, span = LR.step * 5;
   let pos = 0;
-  for (let i = 1; i < 6; i++) pos += E.inOutCubic(p(t, CH[i], CH[i] + .6));
+  for (let k = 1; k < 6; k++) pos += E.inOutCubic(p(t, CH[k], CH[k] + .6));
+  const done = p(t, 33.5, 33.9), col = mixRGB([201, 65, 75], [62, 142, 106], done);
   const l0 = $('rl0'), l1 = $('rl1');
   l0.style.width = span + 'px'; TL(l0, x0, y - 1.5, rout, `scaleX(${rin})`);
-  l1.style.width = span + 'px'; TL(l1, x0, y - 1.5, rout, `scaleX(${pos / 5 * rin})`);
-  for (let i = 0; i < 6; i++) {
-    const n = $('rn' + i), lb = $('rt' + i), k = E.outBack(p(t, 11 + i * .06, 11.4 + i * .06));
-    const done = pos >= i - .01, act = Math.abs(pos - i) < .5;
-    n.style.borderColor = done ? '#C9414B' : '#D9CFC2'; n.style.background = done ? '#C9414B' : '#FAF6F1';
-    T(n, { x: x0 + i * LR.step, y, s: k, o: rout });
-    lb.style.fontSize = LR.fs + 'px'; lb.style.color = act ? '#B3363F' : done ? '#211B16' : '#6E635B'; lb.style.fontWeight = act ? 700 : 600;
-    T(lb, { x: x0 + i * LR.step, y: y + lay(34, 36), o: k * rout * (act ? 1 : .8) });
+  l1.style.width = span + 'px'; l1.style.background = col; TL(l1, x0, y - 1.5, rout, `scaleX(${pos / 5 * rin})`);
+  for (let k = 0; k < 6; k++) {
+    const n = $('rn' + k), lb = $('rt' + k), kin = E.outBack(p(t, 12.1 + k * .06, 12.5 + k * .06));
+    const reached = pos >= k - .01, act = Math.abs(pos - k) < .5 && done < 1;
+    n.style.borderColor = reached ? col : 'rgba(250,246,241,.3)'; n.style.background = reached ? col : '#10302F';
+    T(n, { x: x0 + k * LR.step, y, s: kin, o: rout });
+    lb.style.fontSize = LR.fs + 'px'; lb.style.color = act ? '#F6C39F' : reached ? '#FAF6F1' : 'rgba(250,246,241,.6)'; lb.style.fontWeight = act ? 700 : 600;
+    T(lb, { x: x0 + k * LR.step, y: y + lay(34, 36), o: kin * rout });
   }
-  const pulse = 1 + .12 * Math.sin(t * 6);
-  T($('rdot'), { x: x0 + pos * LR.step, y, s: E.outBack(p(t, 11.2, 11.6)) * pulse, o: rout });
+  $('rdot').style.background = col;
+  T($('rdot'), { x: x0 + pos * LR.step, y, s: E.outBack(p(t, 12.3, 12.7)) * (1 + .12 * Math.sin(t * 6)), o: rout });
 }
 
-// The phone, its screens, and everything that happens on them.
+/* ---------- The guest's phone ---------- */
 function phone(t) {
-  // Camera: enter, focus on parts of the screen, then shrink beside the dashboard and the editor.
-  let st = { ax: HOME[0], ay: HOME[1], z: 1 };
-  for (const [kt, ax, ay, z] of FOCUS) { const k = E.inOutCubic(p(t, kt, kt + .65)); if (t >= kt) st = { ax: lerp(st.ax, ax, k), ay: lerp(st.ay, ay, k), z: lerp(st.z, z, k) }; }
-  const s = PH.s * st.z, dx = st.ax * K + 15 - 220, dy = st.ay * K + 61 - 444;
-  let x = PH.x - s * dx, y = PH.y - s * dy, sc = s;
-  if (P) y = Math.max(y, 612 + 444 * s);   // portrait: zooms never climb over the caption
-  const up = spring(t - 10.75, 1.2, 5);
-  y += lerp(H * .9, 0, clamp(up, 0, 1.2));
-  let ry = lerp(34, -8, clamp(up, 0, 1.1)) / st.z + 3 * Math.sin(t * .6), rx = lerp(20, 3, clamp(up, 0, 1.1)), rz = lerp(-10, 0, clamp(up, 0, 1.1));
-  // Restaurant side: small beside the dashboard, then larger beside the editor.
-  const m1 = E.inOutCubic(p(t, 32.3, 32.95)), m2 = E.inOutCubic(p(t, 36.1, 36.7)), m3 = E.inOutCubic(p(t, 38.2, 38.6)) - E.inOutCubic(p(t, 39.2, 39.6));
-  const A = lay({ x: 1800, y: 905, s: .4 }, { x: 882, y: 1612, s: .5 }), B = lay({ x: 1650, y: 548, s: .62 }, { x: 858, y: 1100, s: .66 });
-  x = lerp(lerp(x, A.x, m1), B.x, m2); y = lerp(lerp(y, A.y, m1), B.y, m2); sc = lerp(lerp(sc, A.s, m1), B.s, m2) * (1 + .1 * m3);
-  ry = lerp(ry, -14, m1); rx = lerp(rx, 4, m1); rz = lerp(rz, lay(4, 3), m1 * (1 - m2));
-  phoneNow = { x, y, s: sc };
-  T($('phone'), { x, y, s: sc, ry, rx, r: rz });
+  const pp = phonePose(t), c = proj(pp.x, pp.y), s = cam.z * PS * pp.lift, near = clamp((s - .25) / .6);
+  const rx = lerp(14 * pp.k, 3, near), ry = lerp(-6 * pp.k, -7 + 3 * Math.sin(t * .6), near);
+  const ph = $('phone');
+  T(ph, { x: c.x, y: c.y, s, r: cam.r + pp.r, rx, ry, o: 1 - p(t, 41.1, 41.35) });
+  const lift = pp.k + near * .6;
+  ph.style.boxShadow = `0 ${(10 + 60 * lift).toFixed(1)}px ${(18 + 90 * lift).toFixed(1)}px rgba(0,0,0,${(.45 - .12 * lift).toFixed(3)}),inset 0 0 0 2px #463d35,inset 0 0 0 6px #0d0b09`;
   $('glare').style.backgroundPosition = `${50 + ry * 3}% 0`;
+  $('off').style.opacity = 1 - E.outCubic(p(t, 12.0, 12.3));
 
-  // Screens: open (fade and grow), push (slide in from the right) or back (slide in from the left).
   let cur = 0;
   NAV.forEach((n, i) => { if (t >= n[0]) cur = i; });
-  document.querySelectorAll('.scr').forEach(el => { el.style.display = 'none'; });
+  SCREENS.forEach(el => { el.style.display = 'none'; });
   const [ct, cid, dir] = NAV[cur], k = E.inOutCubic(p(t, ct, ct + .45)), inc = $(cid);
   inc.style.display = ''; inc.style.zIndex = 2;
   if (cur > 0 && k < 1) {
-    const out = $(NAV[cur - 1][1]); out.style.display = ''; out.style.zIndex = dir < 0 ? 3 : 1;
-    out.style.transform = dir === 0 ? '' : dir > 0 ? `translateX(${-110 * k}px)` : `translateX(${390 * k}px)`;
-    out.querySelector('.dim') && (out.querySelector('.dim').style.opacity = dir > 0 ? .12 * k : 0);
-    out.style.opacity = 1;
+    const out = $(NAV[cur - 1][1]); out.style.display = ''; out.style.zIndex = 1;
+    out.style.transform = dir === 0 ? '' : `translateX(${-110 * k}px)`;
+    const od = out.querySelector('.dim'); if (od) od.style.opacity = dir > 0 ? .12 * k : 0;
   }
-  inc.style.transform = dir === 0 ? `scale(${lerp(.94, 1, k)})` : dir > 0 ? `translateX(${390 * (1 - k)}px)` : `translateX(${-110 * (1 - k)}px)`;
+  inc.style.transform = dir === 0 ? `scale(${lerp(.94, 1, k)})` : `translateX(${390 * (1 - k)}px)`;
   inc.style.opacity = dir === 0 ? k : 1;
-  const idim = inc.querySelector('.dim'); if (idim) idim.style.opacity = dir < 0 ? .12 * (1 - k) : 0;
-  // The strip under the status bar takes each screen's own colour, blended through the transition.
+  const idim = inc.querySelector('.dim'); if (idim) idim.style.opacity = 0;
   const TOP = { sCam: [25, 20, 17], sPaid: [15, 75, 58] }, top = id => TOP[id] || [255, 255, 255];
-  const c0 = cur > 0 ? top(NAV[cur - 1][1]) : top(cid), c1 = top(cid);
-  $('screen').style.background = `rgb(${c0.map((v, i) => Math.round(lerp(v, c1[i], k))).join(',')})`;
+  $('screen').style.background = mixRGB(cur > 0 ? top(NAV[cur - 1][1]) : top(cid), top(cid), k);
   const dom = k > .5 || cur === 0 ? cid : NAV[cur - 1][1];
   $('sbar').className = dom === 'sCam' || dom === 'sPaid' ? 'light' : '';
   $('app').style.transform = `scale(${K})`;
-
   scrCam(t); scrMenu(t); scrBill(t); scrSplit(t); scrPay(t); scrPaid(t);
 
-  // Touches.
   let tap = null;
   for (const tp of TAPS) if (t >= tp[0] - .32 && t < tp[0] + .6) tap = tp;
   const td = $('tapDot'), tr = $('tapRing');
@@ -865,173 +1126,153 @@ function phone(t) {
     T(tr, { x: ax, y: ay, s: lerp(.5, 2, E.outCubic(rk)), o: rk > 0 && rk < 1 ? 1 - rk : 0 });
   } else { td.style.opacity = 0; tr.style.opacity = 0; }
 
-  // The ÷ 4 stamp beside the share.
-  const sp = appToStage(350, 266), bk = p(t, 21.2, 21.5), bo = E.inExpo(p(t, 22.2, 22.45));
-  T($('stamp'), { x: sp.x + lay(40, 10), y: sp.y - lay(20, 40), s: (bk > 0 ? lerp(2.4, 1, E.outBack(bk, 2.4)) : 0) * (1 - bo) * lay(1, 1.1), r: lerp(-28, -10, E.outExpo(bk)), o: bk > 0 ? Math.min(1, bk * 4) : 0 });
-  const rk2 = p(t, 21.25, 21.7);
-  T($('stampRing'), { x: sp.x + lay(40, 10), y: sp.y - lay(20, 40), s: lerp(1, 2.5, E.outCubic(rk2)) * lay(1, 1.1), o: rk2 > 0 ? 1 - rk2 : 0 });
+  // ÷ 4 stamped on the receipt as it tears.
+  const rc = proj(0, 20), bk = p(t, 21.85, 22.15), bo = E.inExpo(p(t, 22.9, 23.2));
+  const sxy = { x: rc.x + lay(150, 120), y: rc.y - lay(130, 150) };
+  T($('stamp'), { x: sxy.x, y: sxy.y, s: (bk > 0 ? lerp(2.4, 1, E.outBack(bk, 2.4)) : 0) * (1 - bo) * lay(.9, 1), r: lerp(-28, -10, E.outExpo(bk)), o: bk > 0 ? Math.min(1, bk * 4) : 0 });
+  const rk2 = p(t, 21.9, 22.35);
+  T($('stampRing'), { x: sxy.x, y: sxy.y, s: lerp(1, 2.5, E.outCubic(rk2)) * lay(.9, 1), o: rk2 > 0 ? 1 - rk2 : 0 });
 
-  // Confetti from the stars.
   cctx.clearRect(0, 0, W, H);
-  const cs = t - 29.95;
+  const cs = t - 29.9;
   if (cs > 0 && cs < 2) {
-    const o = appToStage(195, 458);
-    for (const c of conf) {
+    const [ox, oy] = rot((195 * K + 15 - 220) * s, (458 * K + 61 - 444) * s, cam.r), o = { x: c.x + ox, y: c.y + oy };
+    for (const f of conf) {
       const dr = 2.4, e = (1 - Math.exp(-dr * cs)) / dr, a = Math.max(0, 1 - cs / 1.8);
-      cctx.save(); cctx.globalAlpha = a; cctx.translate(o.x + c.vx * e * lay(1, 1.05), o.y + c.vy * e + 1000 * cs * cs * .5);
-      cctx.rotate(c.spin * cs); cctx.scale(1, Math.cos(c.flip * cs)); cctx.fillStyle = c.c;
-      if (c.round) { cctx.beginPath(); cctx.arc(0, 0, c.h * .6, 0, Math.PI * 2); cctx.fill(); } else cctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+      cctx.save(); cctx.globalAlpha = a; cctx.translate(o.x + f.vx * e, o.y + f.vy * e + 1000 * cs * cs * .5);
+      cctx.rotate(f.spin * cs); cctx.scale(1, Math.cos(f.flip * cs)); cctx.fillStyle = f.c;
+      if (f.round) { cctx.beginPath(); cctx.arc(0, 0, f.h * .6, 0, Math.PI * 2); cctx.fill(); } else cctx.fillRect(-f.w / 2, -f.h / 2, f.w, f.h);
       cctx.restore();
     }
   }
 }
 
 function scrCam(t) {
-  if (t > 12.95) return;
-  const tent = $('tent'), shake = `translate(${2.5 * Math.sin(t * 3.1)}px,${2 * Math.cos(t * 2.3)}px) rotate(${-2 + .8 * Math.sin(t * 1.7)}deg)`;
-  tent.style.transform = shake; tent.style.filter = `blur(${lerp(7, 0, E.outCubic(p(t, 10.9, 11.45)))}px)`;
-  const b = E.outExpo(p(t, 11.35, 11.8)), half = lerp(190, 118, b), L = 30, cx = 195, cy = 268;
-  $('brk').style.opacity = p(t, 11.3, 11.45);
+  if (t > 15) return;
+  const tent = $('tent');
+  tent.style.transform = `translate(${2.5 * Math.sin(t * 3.1)}px,${2 * Math.cos(t * 2.3)}px) rotate(${-2 + .8 * Math.sin(t * 1.7)}deg)`;
+  tent.style.filter = `blur(${lerp(7, 0, E.outCubic(p(t, 13.55, 14.0))).toFixed(2)}px)`;
+  const b = E.outExpo(p(t, 13.8, 14.15)), half = lerp(190, 118, b), L = 30, cx = 195, cy = 268;
+  $('brk').style.opacity = p(t, 13.75, 13.9);
   [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([dx, dy], i) => { const x = cx + dx * half, y = cy + dy * half; $('bk' + i).setAttribute('d', `M${x} ${y - dy * L}L${x} ${y}L${x - dx * L} ${y}`); });
-  const sc = E.inOutCubic(p(t, 11.75, 12.1));
-  TL($('scanl'), 0, lerp(172, 362, sc), t > 11.75 && t < 12.12 ? Math.sin(Math.PI * sc) : 0);
-  const pk = spring(t - 12.1, 2, 6.5), press = t >= 12.29 && t < 12.45 ? .95 : 1;
-  TL($('scanPill'), 0, lerp(60, 0, clamp(pk, 0, 1)), t > 12.1 ? Math.min(1, (t - 12.1) * 6) : 0, `scale(${clamp(pk, 0, 1.08) * press})`);
+  const sc = E.inOutCubic(p(t, 13.95, 14.25));
+  TL($('scanl'), 0, lerp(172, 362, sc), t > 13.95 && t < 14.27 ? Math.sin(Math.PI * sc) : 0);
+  const pk = spring(t - 14.2, 2, 6.5), press = t >= 14.39 && t < 14.55 ? .95 : 1;
+  TL($('scanPill'), 0, lerp(60, 0, clamp(pk, 0, 1)), t > 14.2 ? Math.min(1, (t - 14.2) * 6) : 0, `scale(${clamp(pk, 0, 1.08) * press})`);
 }
 
-function rollPV(pv, idx) { const h = pv.offsetHeight || pv.firstElementChild.offsetHeight; pv.firstElementChild.style.marginTop = (-idx * h) + 'px'; }
+function rollPV(pv, idx) { if (!pv._h) pv._h = pv.offsetHeight || pv.firstElementChild.offsetHeight; pv.firstElementChild.style.marginTop = (-idx * (pv._h || 0)) + 'px'; }
 function scrMenu(t) {
-  const on = (t > 12.45 && t < 18.9) || t > 35.9; if (!on) return;
-  // Language: Arabic from 15.05 to 16.2. Currency: lira from 16.7 to 17.6.
-  const kar = E.inOutCubic(p(t, 15.02, 15.4)) - E.inOutCubic(p(t, 16.16, 16.5));
-  const kll = E.inOutCubic(p(t, 16.68, 17)) - E.inOutCubic(p(t, 17.55, 17.85));
+  if (t < 14.55 || t > 19.6) return;
+  const kar = E.inOutCubic(p(t, 15.74, 16.1)) - E.inOutCubic(p(t, 16.74, 17.05));
+  const kll = E.inOutCubic(p(t, 17.15, 17.45)) - E.inOutCubic(p(t, 17.97, 18.25));
   rollPV($('pLang').querySelector('.pv'), kar);
   rollPV($('pCur').querySelector('.pv'), kll);
   rollPV($('billBtn').querySelector('.pv'), kll);
   MENU.forEach((m, i) => {
     const row = $('mr' + i), en = row.querySelector('.v.en'), ar = row.querySelector('.v.ar');
-    const kin = E.outCubic(p(t, 12.55 + i * .07, 12.95 + i * .07));
-    row.style.opacity = t < 18 ? kin : 1; row.style.transform = `translateY(${16 * (1 - kin)}px)`;
+    const kin = E.outCubic(p(t, 14.65 + i * .07, 15.05 + i * .07));
+    row.style.opacity = kin; row.style.transform = `translateY(${16 * (1 - kin)}px)`;
     const kr = clamp(kar * 1.15 - i * .03, 0, 1);
     en.style.opacity = 1 - clamp(kr * 2); en.style.transform = `translateX(${-28 * kr}px)`;
     ar.style.opacity = clamp(kr * 2 - 1); ar.style.transform = `translateX(${28 * (1 - kr)}px)`;
-    const idx = clamp(kll * 1.2 - i * .04, 0, 1) + (i === 0 ? 2 * E.inOutCubic(p(t, 38.3, 38.65)) : 0);
-    rollPV(en.querySelector('.pv'), idx);
-    row.querySelector('.flash').style.opacity = i === 0 ? .55 * (p(t, 38.3, 38.45) - p(t, 38.6, 39.4)) : 0;
+    rollPV(en.querySelector('.pv'), clamp(kll * 1.2 - i * .04, 0, 1));
   });
-  const dd = $('ddLang'), open1 = p(t, 14.68, 14.82) * (1 - p(t, 15.02, 15.14)), open2 = p(t, 16.0, 16.1) * (1 - p(t, 16.16, 16.26));
-  const op = Math.max(open1, open2);
+  const dd = $('ddLang'), op = Math.max(p(t, 15.46, 15.58) * (1 - p(t, 15.74, 15.86)), p(t, 16.6, 16.68) * (1 - p(t, 16.74, 16.84)));
   dd.style.opacity = op; dd.style.transform = `scale(${lerp(.92, 1, op)})`;
-  [...dd.children].forEach((r, i) => { r.style.background = (i === 2 && t > 14.9 && t < 15.2) || (i === 0 && t > 16.06 && t < 16.3) ? '#EDF3EF' : 'transparent'; });
-  $('billBtn').style.transform = `scale(${t >= 18.2 && t < 18.36 ? .95 : 1})`;
+  [...dd.children].forEach((r, i) => { r.style.background = (i === 2 && t > 15.62 && t < 15.9) || (i === 0 && t > 16.64 && t < 16.9) ? '#EDF3EF' : 'transparent'; });
+  $('billBtn').style.transform = `scale(${t >= 18.7 && t < 18.86 ? .95 : 1})`;
 }
 
 function scrBill(t) {
-  if (t < 18.3 || t > 19.8) return;
-  $('sBill').querySelectorAll('.bc-r,.bc-m,.bc-t').forEach((r, i) => { const k = E.outCubic(p(t, 18.5 + i * .035, 18.8 + i * .035)); r.style.opacity = k; r.style.transform = `translateY(${10 * (1 - k)}px)`; });
-  $('settleBtn').style.transform = `scale(${t >= 19.0 && t < 19.16 ? .96 : 1})`;
+  if (t < 18.9 || t > 20.3) return;
+  const sb = $('sBill'); (sb._r || (sb._r = [...sb.querySelectorAll('.bc-r,.bc-m,.bc-t')])).forEach((r, i) => { const k = E.outCubic(p(t, 19.0 + i * .03, 19.25 + i * .03)); r.style.opacity = k; r.style.transform = `translateY(${10 * (1 - k)}px)`; });
+  $('settleBtn').style.transform = `scale(${t >= 19.45 && t < 19.61 ? .96 : 1})`;
 }
 
 function scrSplit(t) {
-  if (t < 19.15 || t > 23.1) return;
-  // A ring hops across the ways to split while the caption names them.
-  const cells = [60.75, 150.25, 239.75, 329.25], hops = [19.45, 19.75, 20.05, 20.3];
-  let cx = cells[0];
-  hops.forEach((h, i) => { cx = lerp(cx, cells[[1, 2, 3, 0][i]], E.inOutCubic(p(t, h, h + .22))); });
-  const rg = $('segRing'), ro = p(t, 19.38, 19.48) * (1 - p(t, 20.45, 20.6));
-  rg.style.left = (cx - 44) + 'px'; rg.style.top = '82px'; rg.style.width = '88px'; rg.style.height = '62px'; rg.style.opacity = ro;
-  // Two taps on + take the table from 2 to 4.
-  const c1 = E.inOutCubic(p(t, 20.47, 20.7)), c2 = E.inOutCubic(p(t, 20.87, 21.1));
+  if (t < 19.65 || t > 24.5) return;
+  const c1 = E.inOutCubic(p(t, 19.97, 20.2)), c2 = E.inOutCubic(p(t, 20.32, 20.55));
   rollPV($('sSplit').querySelector('.cnt .pv'), c1 + c2);
   const v = c2 > 0 ? lerp(50.84, 38.13, c2) : lerp(76.25, 50.84, c1);
   $('shareV').textContent = money(v); $('shareL').textContent = '≈ ' + lira(v * 89500);
   $('shareN').textContent = money(152.5 - v) + ' left for the other guests.';
   $('contBtn').textContent = 'Continue · ' + money(v);
-  $('plusBtn').style.transform = `scale(${(t >= 20.4 && t < 20.55) || (t >= 20.8 && t < 20.95) ? .9 : 1})`;
-  $('contBtn').style.transform = `scale(${t >= 22.3 && t < 22.46 ? .96 : 1})`;
+  $('plusBtn').style.transform = `scale(${(t >= 19.9 && t < 20.05) || (t >= 20.25 && t < 20.4) ? .9 : 1})`;
 }
 
 function scrPay(t) {
-  if (t < 22.5 || t > 27.9) return;
-  // 10% is the default: it lights up and the total takes the tip.
-  const k = E.inOutCubic(p(t, 22.95, 23.5)), sel = t >= 22.95;
+  if (t < 23.9 || t > 29) return;
+  const k = E.inOutCubic(p(t, 24.6, 25.15)), sel = t >= 24.6;
   $('chip0').classList.toggle('sel', !sel); $('chip2').classList.toggle('sel', sel);
-  $('chip2').style.transform = `scale(${1 + .1 * wobble(t - 22.95, 3, 8) * (sel ? 1 : 0)})`;
+  $('chip2').style.transform = `scale(${1 + .1 * wobble(t - 24.6, 3, 8) * (sel ? 1 : 0)})`;
   const tot = 38.13 + 3.81 * k;
   $('payT').textContent = money(tot); $('payTip').textContent = money(3.81 * k); $('payL').textContent = '≈ ' + lira(tot * 89500);
-  // A ring tours Whish, card and cash.
-  const rows = [335, 405, 475], hops = [25.75, 26.0, 26.25];
+  const rows = [335, 405, 475], hops = [26.95, 27.2, 27.45];
   let cy = rows[0];
   hops.forEach((h, i) => { if (i) cy = lerp(cy, rows[i], E.inOutCubic(p(t, h, h + .2))); });
-  const rg = $('payRing'), ro = p(t, 25.7, 25.8) * (1 - p(t, 26.45, 26.6));
+  const rg = $('payRing'), ro = p(t, 26.9, 27.0) * (1 - p(t, 27.62, 27.75));
   rg.style.left = '12px'; rg.style.width = '366px'; rg.style.height = '74px'; rg.style.top = (cy - 37) + 'px'; rg.style.opacity = ro;
-  $('payBtn').style.transform = `scale(${t >= 26.7 && t < 26.86 ? .96 : 1})`;
-  const wk = E.outExpo(p(t, 26.88, 27.2));
-  $('whish').style.transform = `translateY(${-280 * wk}px)`;
-  $('whBar').style.width = 100 * E.inOutCubic(p(t, 27.05, 27.38)) + '%';
+  $('payBtn').style.transform = `scale(${t >= 27.8 && t < 27.96 ? .96 : 1})`;
+  $('whish').style.transform = `translateY(${-280 * E.outExpo(p(t, 27.95, 28.25))}px)`;
+  $('whBar').style.width = 100 * E.inOutCubic(p(t, 28.1, 28.42)) + '%';
 }
 
 function scrPaid(t) {
-  if (t < 27.35) return;
-  const ck = p(t, 27.5, 27.85), cm = p(t, 27.75, 28);
+  if (t < 28.4) return;
+  const ck = p(t, 28.55, 28.9), cm = p(t, 28.8, 29.05);
   $('ckC').setAttribute('stroke-dasharray', `${157 * ck} 160`); $('ckP').setAttribute('stroke-dasharray', `${34 * cm} 40`);
   const sp = $('sPaid');
-  [['.pd-h', 27.6], ['.pd-card', 27.72], ['.pd-rc', 27.85], ['.pd-of', 27.92], ['.pd-q', 28.0]].forEach(([s, a]) => { const el = sp.querySelector(s), k = E.outCubic(p(t, a, a + .4)); el.style.opacity = k; el.style.transform = `translateY(${14 * (1 - k)}px)`; });
+  [['.pd-h', 28.6], ['.pd-card', 28.7], ['.pd-rc', 28.8], ['.pd-of', 28.85], ['.pd-q', 28.9]].forEach(([sel, a]) => { const el = sp.querySelector(sel), k = E.outCubic(p(t, a, a + .4)); el.style.opacity = k; el.style.transform = `translateY(${14 * (1 - k)}px)`; });
   for (let i = 0; i < 5; i++) {
-    const a = 29.85 + i * .05, f = $('sf' + i), k = p(t, a, a + .05), star = f.parentElement;
+    const a = 29.8 + i * .05, f = $('sf' + i), k = p(t, a, a + .05), star = f.parentElement;
     f.style.opacity = k; f.style.transform = `scale(${t > a ? 1 + .45 * wobble(t - a, 2.6, 7) : 1})`;
-    const ks = E.outCubic(p(t, 28.05 + i * .04, 28.4 + i * .04));
+    const ks = E.outCubic(p(t, 28.95 + i * .04, 29.3 + i * .04));
     star.style.opacity = ks; star.style.transform = `translateY(${12 * (1 - ks)}px)`;
   }
-  const sh = E.outExpo(p(t, 30.3, 30.75)) - E.inOutCubic(p(t, 31.55, 31.9));
-  $('rsheet').style.transform = `translateY(${-280 * sh}px)`;
-  const ox = lerp(20, 200, E.inOutCubic(p(t, 31.0, 31.2)));
+  $('rsheet').style.transform = `translateY(${-280 * (E.outExpo(p(t, 30.2, 30.6)) - E.inOutCubic(p(t, 31.2, 31.5)))}px)`;
   const rg = $('optRing');
-  rg.style.left = (ox - 4) + 'px'; rg.style.top = '62px'; rg.style.width = '178px'; rg.style.height = '58px';
-  rg.style.opacity = p(t, 30.7, 30.8) * (1 - p(t, 31.35, 31.5));
-  $('sendBtn').style.transform = `scale(${t >= 31.25 && t < 31.41 ? .96 : 1})`;
+  rg.style.left = (lerp(20, 200, E.inOutCubic(p(t, 30.75, 30.95))) - 4) + 'px'; rg.style.top = '62px'; rg.style.width = '178px'; rg.style.height = '58px';
+  rg.style.opacity = p(t, 30.45, 30.55) * (1 - p(t, 31.0, 31.1));
+  $('sendBtn').style.transform = `scale(${t >= 31.0 && t < 31.16 ? .96 : 1})`;
 }
 
-// 32.3 to 40.4 s: the restaurant's side.
-function act4(t) {
-  acts.a4.style.clipPath = `inset(${lerp(H, 0, E.inOutQuart(p(t, 32.25, 32.85)))}px 0 0 0)`;
-  bokehAt(acts.a4, t, 3);
+/* ---------- Act 4: the room, the dashboard, the menu ---------- */
+function roomUI(t) {
   caption($('capB'), 'B', C.side, SIDE, t, LB);
-  const D = lay({ x: 1235, y: 552, s: .95 }, { x: 540, y: 1090, s: .82 });
-  const din = spring(t - 32.7, 1.3, 5.5), dout = E.inExpo(p(t, 35.95, 36.4));
-  const zoom = E.inOutCubic(p(t, 34.0, 34.45)), ds = D.s * lerp(1, lay(1.3, 1.36), zoom);
-  // Landscape keeps the left edge still (the caption sits there); portrait centres on the confirm row.
-  const zx = lay(D.x - 580 * D.s + 580 * ds, 540 - (720 - 580) * ds), zy = lay(610 - 140 * ds, 1080 - 140 * ds);
-  const dash = $('dash');
-  T(dash, { x: lerp(D.x, zx, zoom) + lerp(420, 0, clamp(din, 0, 1.1)) - 500 * dout, y: lerp(D.y, zy, zoom), s: ds, ry: lerp(-16, 0, clamp(din, 0, 1)), o: clamp(din * 2, 0, 1) * (1 - dout) });
-  const tk = E.outExpo(p(t, 33.4, 33.8));
-  $('dToast').style.transform = `translateX(${60 * (1 - tk)}px)`; $('dToast').style.opacity = tk;
-  const k3a = E.inOutCubic(p(t, 33.45, 33.95)), k3b = E.inOutCubic(p(t, 34.9, 35.4)), k1 = E.inOutCubic(p(t, 34.9, 35.3));
-  $('k3v').textContent = money(73.39 + 41.94 * k3a + 41.94 * k3b); $('k1v').textContent = money(41.94 * (1 - k1));
-  const dn = E.outCubic(p(t, 34.9, 35.25));
-  $('dRow').style.opacity = 1 - dn; $('dDecl').style.opacity = 1 - dn; $('dDone').style.opacity = dn; $('dDone').style.transform = `scale(${lerp(.96, 1, dn)})`;
-  const b = $('dBadge'); b.textContent = t >= 34.95 ? 'All clear' : '1 waiting'; b.className = 'd-badge' + (t >= 34.95 ? ' ok' : '');
-  $('confirmBtn').style.transform = `scale(${t >= 34.68 && t < 34.84 ? .95 : 1})`;
-  tapAt($('dTap'), $('dRing'), 34.72, 870, 457, t);
+  scrim($('scrimB'), 'B', t, 34.4, 41.4);
+  const { x: px, y: py, s: ps } = PNL;
+  const slide = k => ({ x: px + lay(-700, 0) * (1 - clamp(k, 0, 1.1)), y: py + lay(0, 560) * (1 - clamp(k, 0, 1.1)) });
+  const dIn = spring(t - 35.55, 1.4, 6), dOut = E.inExpo(p(t, 37.8, 38.15)), dp = slide(dIn);
+  T($('pDash'), { x: dp.x, y: dp.y + 40 * dOut, s: ps * (1 - .06 * dOut), o: clamp(dIn * 2, 0, 1) * (1 - dOut) });
+  const dn = E.outCubic(p(t, 36.6, 36.95));
+  $('dRow').style.opacity = 1 - dn; $('dDone').style.opacity = dn; $('dDone').style.transform = `scale(${lerp(.96, 1, dn)})`;
+  const b = $('dBadge'); b.textContent = t >= 36.6 ? 'All clear' : '1 waiting'; b.className = 'd-badge' + (t >= 36.6 ? ' ok' : '');
+  $('confirmBtn').style.transform = `scale(${t >= 36.4 && t < 36.56 ? .95 : 1})`;
+  if (t > 35.5 && t < 37.2) { const [cx, cy] = centerIn($('confirmBtn'), $('pDash')); tapAt($('dTap'), $('dRing'), 36.45, cx, cy, t); }
+  else { $('dTap').style.opacity = 0; $('dRing').style.opacity = 0; }
 
-  const EDp = lay({ x: 1130, y: 548, s: 1 }, { x: 370, y: 1100, s: 1.05 });
-  const ein = spring(t - 36.2, 1.3, 5.5), ed = $('editor');
-  T(ed, { x: EDp.x + lerp(460, 0, clamp(ein, 0, 1.1)), y: EDp.y, s: EDp.s, ry: lerp(-16, 0, clamp(ein, 0, 1)), o: clamp(ein * 2, 0, 1) * (1 - p(t, 39.5, 39.9)) });
-  // Tap the price, type 5.25, publish.
-  const editing = t >= 36.98 && t < 38.12;
+  const eIn = spring(t - 38.1, 1.4, 6), eOut = E.inExpo(p(t, 41.0, 41.3)), ep = slide(eIn);
+  T($('pEd'), { x: ep.x, y: ep.y, s: ps * (1 - .1 * eOut), o: clamp(eIn * 2, 0, 1) * (1 - eOut) });
+  const editing = t >= 38.72 && t < 39.72;
   $('eInput').style.display = editing ? '' : 'none'; $('ePrice').style.opacity = editing ? 0 : 1;
-  const typed = t < 37.1 ? '4.75' : t < 37.16 ? '4.7' : t < 37.22 ? '4.' : t < 37.28 ? '4' : t < 37.36 ? '' : '5.25'.slice(0, Math.min(4, Math.floor((t - 37.36) / .08) + 1));
+  const typed = t < 38.85 ? '4.75' : t < 38.91 ? '4.7' : t < 38.97 ? '4.' : t < 39.03 ? '4' : t < 39.1 ? '' : '5.25'.slice(0, Math.min(4, Math.floor((t - 39.1) / .07) + 1));
   $('eTyped').textContent = typed; $('eCaret').style.opacity = Math.floor(t * 4) % 2 ? 1 : .15;
-  $('ePrice').textContent = t >= 38.12 ? '$5.25' : '$4.75';
-  const draft = E.outBack(p(t, 37.45, 37.7)) * (1 - p(t, 38.2, 38.35));
+  $('ePrice').textContent = t >= 39.72 ? '$5.25' : '$4.75';
+  const draft = E.outBack(p(t, 39.15, 39.4)) * (1 - p(t, 39.8, 39.95));
   $('eDraft').style.transform = `scale(${draft})`; $('eDraft').style.opacity = draft > .02 ? 1 : 0;
-  const pb = E.inOutCubic(p(t, 37.72, 37.95)) * (1 - E.inOutCubic(p(t, 38.2, 38.45)));
-  $('eBtnB').style.opacity = pb; $('eBtnB').style.transform = `scale(${t >= 38.05 && t < 38.2 ? .97 : 1})`;
-  const tt = E.outExpo(p(t, 38.2, 38.55)) * (1 - p(t, 39.4, 39.7));
+  const pb = E.inOutCubic(p(t, 39.35, 39.55)) * (1 - E.inOutCubic(p(t, 39.8, 40.05)));
+  $('eBtnB').style.opacity = pb; $('eBtnB').style.transform = `scale(${t >= 39.65 && t < 39.8 ? .97 : 1})`;
+  const tt = E.outExpo(p(t, 39.8, 40.15)) * (1 - p(t, 40.9, 41.15));
   $('eToast').style.opacity = tt; $('eToast').style.transform = `translateY(${16 * (1 - tt)}px)`;
-  $('eLive').style.transform = `scale(${1 + .18 * wobble(t - 38.25, 2.5, 6) * (t > 38.25 ? 1 : 0)})`;
-  $('eRowF').style.background = `rgba(246,195,159,${.35 * (p(t, 38.15, 38.3) - p(t, 38.6, 39.3))})`;
-  tapAt($('eTap'), $('eRing'), 36.95, 505, 295, t); if (t > 37.6) tapAt($('eTap'), $('eRing'), 38.08, 280, 669, t);
+  $('eLive').style.transform = `scale(${1 + .18 * wobble(t - 39.85, 2.5, 6) * (t > 39.85 ? 1 : 0)})`;
+  $('eRowF').style.background = `rgba(246,195,159,${(.35 * (p(t, 39.75, 39.9) - p(t, 40.2, 40.9))).toFixed(3)})`;
+  if (t > 38.3 && t < 40.3) {
+    const [ix, iy] = centerIn($('ePrice'), $('pEd')), [bx, by] = centerIn($('eBtnB'), $('pEd'));
+    if (t < 39.2) tapAt($('eTap'), $('eRing'), 38.68, ix, iy, t); else tapAt($('eTap'), $('eRing'), 39.68, bx, by, t);
+  } else { $('eTap').style.opacity = 0; $('eRing').style.opacity = 0; }
+  // The wave starts at the panel and crosses the room.
+  if (t < 39.95) ripO = unproj(lay(px + 320 * ps, px), lay(py, py - 210 * ps));
 }
 function tapAt(dot, ring, at, x, y, t) {
   const pre = E.outCubic(p(t, at - .32, at - .08)), live = t >= at - .32 && t < at + .6;
@@ -1039,47 +1280,33 @@ function tapAt(dot, ring, at, x, y, t) {
   const rk = p(t, at, at + .5);
   T(ring, { x, y, s: lerp(.5, 2, E.outCubic(rk)), o: rk > 0 && rk < 1 ? 1 - rk : 0 });
 }
-// The published price travels from the editor to the phone.
-function act4sync(t) {
-  const path = $('syncPath'), dot = $('syncDot'), k = p(t, 38.18, 38.5), fade = 1 - p(t, 38.75, 39.1);
-  if (t < 38.1 || fade <= 0) { path.style.opacity = 0; dot.style.opacity = 0; return; }
-  const EDp = lay({ x: 1130, y: 548, s: 1 }, { x: 370, y: 1100, s: 1.05 });
-  const a = { x: EDp.x + EDp.s * (505 - 280), y: EDp.y + EDp.s * (295 - 360) }, b = appToStage(318, 203);
-  const c = { x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - lay(170, 140) };
-  path.setAttribute('d', `M${a.x} ${a.y}Q${c.x} ${c.y} ${b.x} ${b.y}`);
-  const len = path.getTotalLength();
-  path.style.opacity = fade; path.style.strokeDashoffset = -t * 60;
-  path.style.clipPath = 'none';
-  const pt = path.getPointAtLength(len * E.inOutCubic(k));
-  dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y); dot.style.opacity = k > 0 ? fade : 0;
-  path.setAttribute('stroke-dasharray', `${Math.max(1, len * E.inOutCubic(k))} ${len}`);
-}
 
-// 39.85 to 45 s: the wordmark.
-function act5(t) {
-  acts.a5.style.clipPath = `circle(${lerp(0, Math.hypot(W, H) * .6, E.inOutQuart(p(t, 39.85, 40.35)))}px at ${CX}px ${CY}px)`;
+/* ---------- Act 5: the close ---------- */
+function closing(t) {
+  const c0 = proj(0, 0), pop = spring(t - 41.86, 2.2, 7), dotR = 28 * clamp(pop, 0, 1.3);
+  $('close').style.clipPath = `circle(${Math.max(dotR - 1.5, lerp(0, Math.hypot(W, H) * .6, E.inOutQuart(p(t, 41.92, 42.36)))).toFixed(1)}px at ${c0.x.toFixed(1)}px ${c0.y.toFixed(1)}px)`;
   const Lc = lay({ mark: [CX, 450, 270], ar: [CX, 206, 112], ul: 628, tag: [690, 54], cta: [818, 40], url: [980, 30] },
                  { mark: [CX, 870, 250], ar: [CX, 632, 124], ul: 1036, tag: [1134, 60], cta: [1300, 38], url: [1500, 32] });
-  const push = lerp(1.035, 1, E.outCubic(p(t, 40, 45)));
-  const ul = $('uline'), pop = spring(t - 40.3, 2.2, 7), stch = E.inOutExpo(p(t, 40.52, 40.9));
-  const w = lerp(56, lay(640, 600), stch), h = lerp(56, 10, stch);
+  const push = lerp(1.035, 1, E.outCubic(p(t, 42, 45)));
+  const ul = $('uline'), st = E.inOutExpo(p(t, 42.3, 42.65)), home = E.inOutCubic(p(t, 42.25, 42.6));
+  const w = lerp(56, lay(640, 600), st), h = lerp(56, 10, st);
   ul.style.width = w + 'px'; ul.style.height = h + 'px'; ul.style.borderRadius = h / 2 + 'px';
-  T(ul, { x: CX, y: lerp(CY, Lc.ul, E.inOutCubic(p(t, 40.45, 40.85))), s: clamp(pop, 0, 1.3) * push, o: t > 40.3 ? 1 : 0 });
+  T(ul, { x: lerp(c0.x, CX, home), y: lerp(c0.y, Lc.ul, home), s: clamp(pop, 0, 1.3) * push, o: t > 41.86 ? 1 : 0 });
   const mk = $('mark'); mk.style.fontSize = Lc.mark[2] + 'px';
-  [...mk.children].forEach((l, i) => { const k = E.outExpo(p(t, 40.625 + i * .055, 41.4 + i * .055)); l.style.transform = `translateY(${lerp(110, 0, k)}%) rotate(${lerp(10, 0, k)}deg)`; });
+  [...mk.children].forEach((l, i) => { const k = E.outExpo(p(t, 42.5 + i * .055, 43.25 + i * .055)); l.style.transform = `translateY(${lerp(110, 0, k)}%) rotate(${lerp(10, 0, k)}deg)`; });
   T(mk, { x: Lc.mark[0], y: Lc.mark[1], s: push });
-  const a = $('ar'), ak = E.inOutCubic(p(t, 40.95, 41.55));
+  const a = $('ar'), ak = E.inOutCubic(p(t, 42.75, 43.3));
   a.style.fontSize = Lc.ar[2] + 'px'; a.style.clipPath = `inset(0 0 0 ${100 - ak * 100}%)`;
   T(a, { x: Lc.ar[0], y: Lc.ar[1] + lerp(18, 0, ak), s: push });
   const tgs = [0, 1, 2].map(i => $('tg' + i));
   tgs.forEach(el => { el.style.fontSize = Lc.tag[1] + 'px'; });
-  const ws = tgs.map(el => el.offsetWidth), gap = Lc.tag[1] * .4, tot = ws.reduce((m, v) => m + v) + gap * 2;
+  const ws = tgs.map(el => el._w || (el._w = el.offsetWidth)), gap = Lc.tag[1] * .4, tot = ws.reduce((m, v) => m + v) + gap * 2;
   let x = CX - tot / 2;
-  tgs.forEach((el, i) => { const k = E.outExpo(p(t, 41.25 + i * .15, 41.8 + i * .15)); T(el, { x: x + ws[i] / 2, y: Lc.tag[0] + lerp(30, 0, k), o: k, s: push }); x += ws[i] + gap; });
+  tgs.forEach((el, i) => { const k = E.outExpo(p(t, 43.0 + i * .13, 43.5 + i * .13)); T(el, { x: x + ws[i] / 2, y: Lc.tag[0] + lerp(30, 0, k), o: k, s: push }); x += ws[i] + gap; });
   const c = $('cta'); c.style.fontSize = Lc.cta[1] + 'px';
-  const ck = spring(t - 41.7, 1.8, 6.5);
-  T(c, { x: CX, y: Lc.cta[0], s: clamp(ck, 0, 1.2) * push, o: t > 41.7 ? Math.min(1, (t - 41.7) * 5) : 0 });
-  const u = $('url'), uk = E.outCubic(p(t, 42.05, 42.55));
+  const ckk = spring(t - 43.4, 1.8, 6.5);
+  T(c, { x: CX, y: Lc.cta[0], s: clamp(ckk, 0, 1.2) * push, o: t > 43.4 ? Math.min(1, (t - 43.4) * 5) : 0 });
+  const u = $('url'), uk = E.outCubic(p(t, 43.7, 44.2));
   u.style.fontSize = Lc.url[1] + 'px';
   T(u, { x: CX, y: Lc.url[0], o: uk, s: lerp(.96, 1, uk) });
 }
