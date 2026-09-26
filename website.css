@@ -167,4 +167,9 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.faq summary::after{transition:none}}
 
 /* very narrow phones: the header button gives up padding before the page scrolls sideways */
-@media (max-width:359px){.nav-in .btn.compact{padding-inline:.6rem;letter-spacing:0}}
+/* 320 to 359 px: tighter header; a long CTA (the French one) wraps to two lines inside the 64 px bar. */
+@media (max-width:359px){.nav-in{gap:.5rem}.nav-in .btn.compact{padding-inline:.6rem;letter-spacing:0;white-space:normal;line-height:1.2}}
+/* Large monitors: scale the whole page so the 1120 px column doesn't sit small in the middle. The type scale keeps its ratios. */
+@media (min-width:1680px){html{zoom:1.15}}
+@media (min-width:2200px){html{zoom:1.4}}
+@media (min-width:3000px){html{zoom:1.8}}

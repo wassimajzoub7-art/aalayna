@@ -98,8 +98,7 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #url{font-size:30px;font-weight:600;letter-spacing:.18em;color:var(--sub)}
 
 /* Finish */
-#grain{position:absolute;inset:-64px;opacity:.07;mix-blend-mode:overlay;pointer-events:none}
-#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 65%,rgba(0,0,0,.07) 100%)}
+#grain{position:absolute;inset:-64px;opacity:.035;mix-blend-mode:overlay;pointer-events:none}
 
 /* Controls: hidden while capturing */
 #ui{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 16px;opacity:0;transition:opacity .25s}
@@ -155,7 +154,6 @@ body.capture #ui{display:none}
   </div>
 </div>
 <canvas id="grain" width="1024" height="1024"></canvas>
-<div id="vig"></div>
 </div></div>
 <div id="ui"><button id="play" type="button" aria-label="Pause">Pause</button><button id="replay" type="button">Replay</button><div id="bar"><i></i></div></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
