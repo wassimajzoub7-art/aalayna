@@ -69,11 +69,13 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .hero h1 em{font-style:normal;color:var(--brand-text)}
 .lead{font-size:var(--fs-lead);line-height:1.6;margin-top:1.7rem;max-width:30rem}
 .supporting{font-size:var(--fs-small);line-height:1.9;margin-top:1rem;color:var(--ink)}
-/* The reel: muted loop with its last frame (the wordmark) as poster; sound only on request. */
+/* The film: muted loop with its last frame (the wordmark and offer) as poster; sound only on request.
+   Phones get the 9:16 cut, everything else the 16:9 one (the sources choose by width). */
 .hero-reel{position:relative}
 .hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:1rem;background:var(--bg);box-shadow:0 1.5rem 3rem rgba(33,27,22,.16)}
 .reel-sound{position:absolute;right:.75rem;bottom:.75rem;min-height:44px;padding:.5rem 1rem;border:0;border-radius:999px;background:rgba(33,27,22,.8);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
 .reel-sound:hover{background:var(--ink)}
+@media(max-width:767px){.hero-reel{justify-self:center;width:100%;max-width:22rem}.hero-reel video{aspect-ratio:9/16}}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}

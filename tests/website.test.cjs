@@ -319,7 +319,7 @@ test('share previews: og and twitter tags on every marketing page, image at an a
   assert.ok(fs.existsSync(path.join(ROOT, 'images', 'og-image.png')));
 });
 
-test('product screens: every image exists in WebP and PNG, has its size, an alt, and is lazy; the hero is the reel', () => {
+test('product screens: every image exists in WebP and PNG, has its size, an alt, and is lazy; the hero is the film', () => {
   const s = read('index.html');
   const pics = [...s.matchAll(/<picture><source srcset="images\/([\w-]+)\.webp" type="image\/webp"><img ([^>]*)><\/picture>/g)];
   assert.equal(pics.length, (s.match(/<img\b/g) || []).length, 'every img sits in a picture with a WebP source');
@@ -332,11 +332,13 @@ test('product screens: every image exists in WebP and PNG, has its size, an alt,
     assert.match(attrs, /loading="lazy"/, name + ' is lazy');
   });
   const hero = s.slice(s.indexOf('class="hero wrap"'), s.indexOf('</section>'));
-  const video = hero.match(/<video ([^>]*)><source src="images\/reel-web\.mp4" type="video\/mp4"><\/video>/);
-  assert.ok(video, 'the hero plays the web cut of the reel');
-  ['autoplay', 'muted', 'loop', 'playsinline', 'poster="images/reel-poster.jpg"', 'width="1280" height="720"'].forEach(a => assert.ok(video[1].includes(a), 'reel ' + a));
-  assert.match(video[1], /aria-label="[^"]{40,}"/, 'reel description');
-  ['reel-web.mp4', 'reel-poster.jpg'].forEach(f => assert.ok(fs.existsSync(path.join(ROOT, 'images', f)), f));
+  // 16:9 from 768 px (browsers that ignore media fall back to it), 9:16 below; both languages ship both cuts and posters.
+  const video = hero.match(/<video ([^>]*)><source src="images\/film-en\.mp4" type="video\/mp4" media="\(min-width: 768px\)"><source src="images\/film-en-portrait\.mp4" type="video\/mp4"><\/video>/);
+  assert.ok(video, 'the hero plays the film, 16:9 first');
+  ['autoplay', 'muted', 'loop', 'playsinline', 'poster="images/film-en.jpg"', 'data-poster-portrait="images/film-en-portrait.jpg"', 'width="1280" height="720"'].forEach(a => assert.ok(video[1].includes(a), 'film ' + a));
+  assert.match(video[1], /aria-label="[^"]{80,}"/, 'film description');
+  ['en', 'fr'].forEach(l => ['.mp4', '-portrait.mp4', '.jpg', '-portrait.jpg'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, 'images', 'film-' + l + x)), 'film-' + l + x)));
+  assert.ok(!fs.existsSync(path.join(ROOT, 'images', 'reel-web.mp4')), 'the 15-second cut is retired');
   assert.ok(!/conversation-card|Tell us about your floor/.test(s), 'the mid-page booking card is gone');
   assert.ok(!/w1-/.test(s + read('website.css')), 'W1 classes folded into the system');
 });
@@ -366,7 +368,7 @@ test('fr homepage: same ids, classes, tags, images and tracked placements as ind
   assert.deepEqual(tags(fr), tags(en), 'element sequence in the body');
   const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
   assert.deepEqual(pairs(fr), pairs(en), 'tracked placements, in order');
-  assert.deepEqual(all(fr, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/');
+  assert.deepEqual(all(fr, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g).map(u => u.replace('film-fr', 'film-en')), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/ (the film in French)');
   assert.equal((fr.match(/(?:src|srcset)="images\//g) || []).length, 0, 'no image path left relative to the root');
   const imgAttrs = s => all(s, /<img ([^>]*)>/g).map(a => a.replace(/ alt="[^"]*"/, '').replace('src="../', 'src="'));
   assert.deepEqual(imgAttrs(fr), imgAttrs(en), 'sizes, lazy loading and fetchpriority');

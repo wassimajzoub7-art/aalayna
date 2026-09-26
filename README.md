@@ -238,14 +238,17 @@ id in `admin.html` if the venue wants Google reviews (there is no Places API key
 check the brand colour, background and font against their Instagram. Demo payments are
 already off.
 
-## Reel
+## Film
 
-`reel.html` is a 15-second motion piece: a table QR is scanned, the $152.50 bill tears into four $38.13 shares, one guest adds the 10% tip and pays $41.94 with Whish Money, and the wordmark closes on "scan, split, settle." Every frame is a pure function of time (`__render(t)`), so the page plays live at any size (click to pause, `?loop` to loop, reduced motion shows the last frame) and renders frame-exact to video. The homepage hero (English and French) plays the web cut as a muted loop with a Sound on button; with reduced motion or Data Saver it stays on the poster with player controls.
+`reel.html` is a 45-second film in two formats (16:9, and 9:16 with `?format=portrait`) and two languages (`?lang=fr`). It opens on the wait at the end of dinner, turns on the homepage line ("The bill. The split. Aalayna."), then walks the guest through six steps (scan, menu in their language and currency, split, tip, pay with Whish, card or cash, rate) and the restaurant through two (payments and cash confirmation live on the dashboard, a price published to every table from the editor). It closes on the wordmark and the offer: two months free from go-live. The phone, dashboard and editor are vector rebuilds of the real screens with the app's own copy, so every tap, total and price change animates; no restaurant is named. Every frame is a pure function of time (`__render(t)`): the page plays live at any size (click to pause, `?loop` to loop, reduced motion shows the last frame) and renders frame-exact to video.
 
-- `images/reel.mp4`: 1920 x 1080, 60 fps, with sound, for social and the pitch.
-- `images/reel-web.mp4`: 1280 x 720, 30 fps, with sound, about 1.1 MB, for the homepage hero; `images/reel-poster.jpg` (the closing wordmark) is its poster.
+The homepage hero (English and French) plays the web cut in its language as a muted loop with a Sound on button: 16:9 from 768 px (browsers that ignore `media` on `<source>` get it everywhere), 9:16 below, each with its closing frame as poster. With reduced motion or Data Saver it stays on the poster with player controls.
 
-To re-render after changing the page: `node tools/reel-audio.js reel.wav`, then `node tools/render-reel.js --audio reel.wav --out images/reel.mp4` (Playwright's Chromium and an ffmpeg with libx264; `--fonts <dir>` serves Google Fonts from a local folder when the browser cannot reach them, `--stills 1,5.2,11` writes review PNGs instead). The soundtrack is synthesised by the script, so there is no music licence to clear.
+- `images/film-en.mp4`, `images/film-fr.mp4`: 1280 x 720, 30 fps, with sound.
+- `images/film-en-portrait.mp4`, `images/film-fr-portrait.mp4`: 720 x 1280, 30 fps, with sound.
+- `images/film-*.jpg`: the posters. The 1080p 60 fps masters for social are rendered on demand, not committed.
+
+To render: `node tools/reel-audio.js film.wav`, then `node tools/render-reel.js --audio film.wav --lang en --format landscape --out film-en.mp4` (and `--format portrait`, `--lang fr`). It needs Playwright's Chromium and an ffmpeg with libx264, splits the frames across `--workers` headless pages and joins the segments; `--fonts <dir>` serves Google Fonts from a local folder when the browser cannot reach them, and `--stills 1,5.2,11` writes review PNGs instead. The web cuts are the masters at 30 fps and 720 px. The soundtrack is synthesised by the script, so there is no music licence to clear.
 
 ## Validation
 
