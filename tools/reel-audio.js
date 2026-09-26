@@ -455,7 +455,7 @@ function convolve(x, ir) {
 eq('rev', ['hp', 280, .7], ['lp', 6500, .7]);
 const revL = convolve(bus.rev[0], impulse(1)), revR = convolve(bus.rev[1], impulse(2));
 
-// Sum the buses at their levels, glue-compress, limit to -1.5 dBFS, normalise to -14 LUFS.
+// Sum the buses at their levels, glue-compress, limit to -2.5 dBFS (headroom for AAC), normalise to -14 LUFS.
 const LEVEL = { kick: -2.5, drums: 7, bass: -1, keys: 3, pad: 4, pluck: 9, bell: 0, fx: 3, amb: -1 };
 if (process.env.STEMS) for (const b of Object.keys(LEVEL)) { const [l, r] = bus[b], k = db(LEVEL[b]), a = l.map(v => v * k), c = r.map(v => v * k); console.log(b.padEnd(6), lufs(a, c).toFixed(1), 'LUFS, loudest 400 ms', momentaryMax(a, c).toFixed(1)); }
 const L = new Float64Array(N), R = new Float64Array(N);
@@ -515,10 +515,10 @@ function limit(ceil) {
 glue();
 let gain = db(-14 - lufs(L, R));
 for (let i = 0; i < N; i++) { L[i] *= gain; R[i] *= gain; }
-limit(db(-1.5));
+limit(db(-2.5));
 gain = db(-14 - lufs(L, R));
 for (let i = 0; i < N; i++) { L[i] *= gain; R[i] *= gain; }
-limit(db(-1.5));
+limit(db(-2.5));
 let peak = 0;
 for (let i = 0; i < N; i++) {
   const fade = Math.min(1, (N - i) / (SR * .9)) * Math.min(1, i / (SR * .02));
