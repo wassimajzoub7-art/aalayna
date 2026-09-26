@@ -260,7 +260,7 @@ air(7.55, .55, .035, 200, 2600);                              // red floods the 
 
 /* ---------- The groove (9.375-41.25) ---------- */
 // Sections: 'in' groove intro, 'A' guest, 'thin' pull-outs, 'build', 'B' the room.
-const SECT = [[9.375, 'in'], [10, 'A'], [11.1, 'gap'], [11.875, 'A'], [20.65, 'thin'], [22.5, 'A'], [31.45, 'thin'], [32.5, 'A2'], [33.75, 'build'], [35, 'B'], [41.25, 'end']];
+const SECT = [[9.375, 'in'], [10, 'A'], [11.1, 'gap'], [11.875, 'A'], [21.3, 'thin'], [22.5, 'A'], [31.45, 'thin'], [32.5, 'A2'], [33.75, 'build'], [35, 'B'], [41.25, 'end']];
 const sectAt = t => { let s = 'none'; for (const [a, n] of SECT) if (t + 1e-6 >= a) s = n; return s; };
 for (let i = Math.round(9.375 / S16); i * S16 < 41.25 - 1e-6; i++) {
   const t = i * S16, sx = sectAt(t), pos = i % 16, sw = pos % 2 ? S16 * .12 : 0, full = sx === 'A' || sx === 'B' || sx === 'A2';
@@ -325,22 +325,25 @@ air(12.95, .8, .022, 300, 2000);                              // into the phone
 [[13.8, 88], [13.86, 91]].forEach(([x, m]) => tock(x, m, .025, .2));
 glide(13.95, .3, 84, 96, .01, .2);                            // the scan line
 pop(14.2, 79, .05);                                           // scanned
-const TAPS = [14.45, 15.4, 15.72, 16.55, 16.7, 17.1, 17.95, 18.75, 19.5, 19.95, 20.3, 27.85, 29.75, 31.05];
+const TAPS = [14.45, 15.35, 15.95, 16.45, 17.35, 17.65, 18.6, 18.85, 19.45, 20.2, 20.65, 21.0, 27.85, 29.75, 31.05];
 TAPS.forEach((x, i) => tock(x, toneAt(x, i % 4, 2), .045));
-[0, 1, 2].forEach(i => pluck(15.76 + i * .06, toneAt(15.76, 2 - i, 2), .03, { pan: .3, t60: .7, dly: .1 }));     // العربية
-[0, 1, 2].forEach(i => pluck(16.76 + i * .06, toneAt(16.76, i, 2), .03, { pan: .3, t60: .7, dly: .1 }));         // English
-[0, 1, 2, 3].forEach(i => pluck(17.16 + i * .05, toneAt(17.16, i, 2), .026, { pan: -.3, t60: .6, dly: .1 }));    // lira
-[0, 1, 2, 3].forEach(i => pluck(17.98 + i * .05, toneAt(17.98, 3 - i, 2), .026, { pan: -.3, t60: .6, dly: .1 })); // dollars
-[18.95, 19.7].forEach(x => air(x, .35, .01, 1200, 3200, .4, -.2));
-[[19.97, 88], [20.32, 91]].forEach(([x, m]) => pop(x + .02, m, .03, .2));
-air(20.65, .9, .024, 2200, 300);                              // back out to the table
-[60, 64, 67, 71, 74, 76].forEach((m, i) => pluck(21.15 + i * .09, m + 12, .035, { pan: -.2 + i * .08, t60: .8 }));   // the receipt prints
-thock(21.85, .16); boom(21.85, .22, 70); kick(21.85, .8); bell(21.85, 84, .03);                            // ÷ 4
-tear(22.0, .2, .035);
-air(22.15, .6, .012, 800, 2600);
-[0, 1, 2, 3].forEach(i => pluck(22.95 + i * .06, [72, 76, 79, 84][i], .04, { pan: -.45 + i * .3, t60: 1 }));   // four shares land
-air(23.7, .75, .022, 300, 2000);                              // back into the phone
-pop(24.6, 79, .045); bell(24.62, 88, .025);                   // 10% for the waiter
+air(15.45, .4, .01, 700, 2200);                               // the filter sheet rises
+pop(15.97, 84, .035);                                         // Vegetarian on
+air(16.5, .3, .008, 2200, 700);                               // Done: the sheet drops
+[[16.6, 79], [16.7, 76]].forEach(([x, m]) => pluck(x, m, .022, { pan: -.25, t60: .8, dly: .1 }));   // two dishes fade
+pop(16.62, 88, .018);                                         // the badge
+[0, 1, 2].forEach(i => pluck(17.69 + i * .06, toneAt(17.69, 2 - i, 2), .03, { pan: .3, t60: .7, dly: .1 }));     // العربية
+[0, 1, 2].forEach(i => pluck(18.89 + i * .06, toneAt(18.89, i, 2), .03, { pan: .3, t60: .7, dly: .1 }));         // English
+[19.65, 20.4].forEach(x => air(x, .35, .01, 1200, 3200, .4, -.2));
+[[20.67, 88], [21.02, 91]].forEach(([x, m]) => pop(x + .02, m, .03, .2));
+air(21.3, .9, .024, 2200, 300);                               // back out to the table
+[60, 64, 67, 71, 74, 76].forEach((m, i) => pluck(21.75 + i * .09, m + 12, .035, { pan: -.2 + i * .08, t60: .8 }));   // the receipt prints
+thock(22.5, .16); boom(22.5, .22, 70); bell(22.5, 84, .03);  // ÷ 4, on the downbeat
+tear(22.65, .2, .035);
+air(22.8, .6, .012, 800, 2600);
+[0, 1, 2, 3].forEach(i => pluck(23.6 + i * .06, [72, 76, 79, 84][i], .04, { pan: -.45 + i * .3, t60: 1 }));   // four shares land
+air(24.3, .75, .022, 300, 2000);                              // back into the phone
+pop(25.0, 79, .045); bell(25.02, 88, .025);                   // 10% for the waiter
 [[26.95, 84], [27.2, 86], [27.45, 88]].forEach(([x, m]) => tock(x, m, .022, .25));
 air(27.95, .3, .01, 900, 3000);
 [72, 76, 79, 84].forEach((m, i) => bell(28.45 + i * .07, m + 12, .035, { pan: -.3 + i * .2 }));                 // paid

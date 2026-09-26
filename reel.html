@@ -54,10 +54,10 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .cap .hd{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);margin-top:.3em;text-wrap:balance}
 .cap .hd .em{color:var(--peach)}
 .cap .sb{color:#C9D6D3;line-height:1.34;margin-top:.75em;text-wrap:balance}
-.rline{position:absolute;height:3px;border-radius:2px;background:rgba(250,246,241,.18);transform-origin:0 50%}
-.node{width:18px;height:18px;border-radius:50%;border:3px solid rgba(250,246,241,.3);background:#10302F}
-.rlab{font-weight:600;color:rgba(250,246,241,.62);white-space:nowrap}
-#rdot{width:26px;height:26px;border-radius:50%;background:var(--red);box-shadow:0 0 0 8px rgba(201,65,75,.2)}
+.rline{position:absolute;height:2px;border-radius:1px;background:rgba(250,246,241,.14);transform-origin:0 50%}
+.node{width:12px;height:12px;border-radius:50%;border:2px solid rgba(250,246,241,.28);background:#10302F}
+.rlab{font-weight:500;letter-spacing:.02em;color:rgba(250,246,241,.5);white-space:nowrap}
+#rdot{width:18px;height:18px;border-radius:50%;background:var(--red);box-shadow:0 0 0 6px rgba(201,65,75,.18)}
 
 /* The guest's phone: a 390 px wide app viewport, scaled into the screen */
 #phoneLayer{perspective:2600px;pointer-events:none}
@@ -94,6 +94,26 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .pill u{text-decoration:none;color:var(--a-sub);font-size:11px}
 #pLang{right:118px}#pCur{right:16px}
 .filt{position:absolute;left:16px;top:62px;height:36px;padding:0 12px;border:1.5px solid var(--a-line);border-radius:10px;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600}
+.filt i{font-style:normal;min-width:21px;height:21px;padding:0 6px;border-radius:11px;background:var(--a-green);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+#fSum{position:absolute;left:196px;top:71px;font-size:13px;font-weight:600;color:var(--a-green);white-space:nowrap}
+.why{position:absolute;left:16px;top:58px;display:flex;align-items:center;gap:6px;height:23px;padding:0 8px;border-radius:7px;background:#FBEDEB;border:1px solid #EAD2CF;color:var(--a-red);font-size:12px;font-weight:600;white-space:nowrap}
+.why b{font-size:10px;opacity:.8}
+.row .v.ar .why{left:auto;right:16px}
+.row.one .ds{-webkit-line-clamp:1}
+#fScrim{position:absolute;inset:0;background:#000;opacity:0;z-index:4}
+#fSheet{position:absolute;left:0;right:0;top:772px;height:352px;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -12px 36px rgba(0,0,0,.2);z-index:5}
+#fSheet .gr{position:absolute;left:175px;top:10px;width:40px;height:5px;border-radius:3px;background:#D9D6D0}
+#fSheet .t{position:absolute;left:20px;top:28px;font-size:19px;font-weight:700}
+#fSheet .s{position:absolute;left:20px;right:20px;top:60px;font-size:14px;line-height:20px;color:var(--a-sub)}
+.fchips{position:absolute;left:20px;right:20px;top:114px;display:flex;flex-wrap:wrap;gap:8px}
+.fc{height:38px;padding:0 13px;border:1.5px solid var(--a-line);border-radius:10px;display:flex;align-items:center;font-size:14.5px;font-weight:500;background:#fff}
+.fc.on{background:var(--a-gbg);border-color:var(--a-gline);color:var(--a-green);font-weight:700}
+#fBar{position:absolute;left:20px;right:20px;top:212px;height:42px;display:flex;align-items:center;gap:7px;padding:0 12px;border-radius:10px;background:var(--a-gbg);font-size:14px;color:var(--a-green);opacity:0}
+#fBar b{font-size:16px}
+#fBar u{margin-left:auto;text-decoration:none;font-weight:600}
+#fSheet .disc{position:absolute;left:20px;top:266px;font-size:12.5px;color:var(--a-faint)}
+#fDone{position:absolute;left:16px;right:16px;top:292px;height:50px;border-radius:12px;background:var(--a-green);color:#fff;display:grid;place-items:center;font-weight:600;font-size:16px}
+.bc-ll{text-align:right;font-size:12.5px;color:var(--a-sub);margin-top:2px;font-variant-numeric:tabular-nums}
 .tabs{position:absolute;left:16px;top:112px;display:flex;gap:18px;font-size:14px;color:var(--a-sub);white-space:nowrap}
 .tabs b{color:var(--a-ink);font-weight:600;border-bottom:2px solid var(--a-ink);padding-bottom:9px}
 .hair{position:absolute;left:0;right:0;height:1px;background:var(--a-soft)}
@@ -257,6 +277,7 @@ body.capture #ui{display:none}
   <filter id="mb1" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
   <filter id="mb2" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
   <filter id="mb3" x="-40%" y="-20%" width="180%" height="140%"><feGaussianBlur stdDeviation="0 0"/></filter>
+  <radialGradient id="soft"><stop offset="0" stop-color="#000" stop-opacity=".34"/><stop offset=".6" stop-color="#000" stop-opacity=".15"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
   <radialGradient id="cloth" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#FCF6EC"/><stop offset="1" stop-color="#EBDCC7"/></radialGradient>
   <linearGradient id="bodyShade" x1="0" y1="0" x2="0" y2="1"><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
   <linearGradient id="phGlare" x1="0" y1="0" x2="1" y2="1"><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".1"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
@@ -276,7 +297,7 @@ document.documentElement.lang = LANG;
 const N = ' ';
 const COPY = {
   en: {
-    aria: 'Aalayna film, set at one table. Dinner ends with a wait for the bill. With Aalayna, a guest scans the QR on the table, reads the menu in their language and currency, splits the $152.50 bill four ways, tips the waiter, pays $41.94 with Whish Money and rates the night, while the rest of the table pays by card, Whish and cash. The restaurant sees every table live, confirms the cash, and publishes a price change to every table at once. Two months free from go-live. aalayna.com',
+    aria: 'Aalayna film, set at one table. Dinner ends with a wait for the bill. With Aalayna, a guest scans the QR on the table, reads the menu in their language and currency and filters it for their diet, splits the $152.50 bill four ways, tips the waiter, pays $41.94 with Whish Money and rates the night, while the rest of the table pays by card, Whish and cash. The restaurant sees every table live, confirms the cash, and publishes a price change to every table at once. Two months free from go-live. aalayna.com',
     dinner: 'Dinner was *great.*', bill: 'Then comes *the bill.*',
     pains: ['Waiting for the waiter', 'Doing the maths', 'Waiting for change'],
     clock: m => `10:${String(m).padStart(2, '0')} <b>PM</b>`,
@@ -284,7 +305,7 @@ const COPY = {
     thesis: 'Guests view, split and pay from the table.',
     ch: [
       ['01 · Scan', 'Scan the *QR* on the table.', 'No app to download. No account.'],
-      ['02 · Menu', 'Their *language.* Their *currency.*', 'English, Français or العربية. Dollars or lira.'],
+      ['02 · Menu', 'Their language. *Their diet.*', 'English, Français or العربية. Dollars or lira. Vegetarian, no nuts, no dairy.'],
       ['03 · Split', 'Split it *their way.*', 'Evenly, by item or any amount. Nobody does the maths.'],
       ['04 · Tip', 'Something for the *waiter.*', 'One tap. 10% is already selected.'],
       ['05 · Pay', '*Whish,* card or cash.', 'Staff confirm cash when they collect it.'],
@@ -300,7 +321,7 @@ const COPY = {
     tag: ['scan', 'split', 'settle'], cta: 'Two months free from go-live.', url: 'aalayna.com', time: '10:41',
   },
   fr: {
-    aria: 'Film Aalayna, à une seule table. Le dîner se termine par l’attente de l’addition. Avec Aalayna, un client scanne le QR de la table, lit le menu dans sa langue et sa devise, partage l’addition de $152.50 en quatre, laisse un pourboire, paie $41.94 avec Whish Money et note la soirée, pendant que le reste de la table paie par carte, Whish et espèces. Le restaurant voit chaque table en direct, confirme les espèces et publie un nouveau prix sur toutes les tables d’un coup. Deux mois gratuits dès la mise en service. aalayna.com',
+    aria: 'Film Aalayna, à une seule table. Le dîner se termine par l’attente de l’addition. Avec Aalayna, un client scanne le QR de la table, lit le menu dans sa langue et sa devise et le filtre selon son régime, partage l’addition de $152.50 en quatre, laisse un pourboire, paie $41.94 avec Whish Money et note la soirée, pendant que le reste de la table paie par carte, Whish et espèces. Le restaurant voit chaque table en direct, confirme les espèces et publie un nouveau prix sur toutes les tables d’un coup. Deux mois gratuits dès la mise en service. aalayna.com',
     dinner: 'Le dîner était *parfait.*', bill: 'Puis vient *l’addition.*',
     pains: ['On attend le serveur', 'On fait les calculs', 'On attend la monnaie'],
     clock: m => `22 h ${String(m).padStart(2, '0')}`,
@@ -308,7 +329,7 @@ const COPY = {
     thesis: 'Vos clients consultent, partagent et règlent l’addition depuis la table.',
     ch: [
       ['01 · Scanner', 'Un scan du *QR* sur la table.', 'Aucune appli à télécharger. Aucun compte.'],
-      ['02 · Menu', 'Leur *langue.* Leur *devise.*', 'English, Français ou العربية. En dollars ou en livres.'],
+      ['02 · Menu', 'Dans leur langue. *Selon leur régime.*', 'English, Français ou العربية. En dollars ou en livres. Végétarien, sans noix, sans lactose.'],
       ['03 · Partager', 'Chacun paie *sa part.*', 'À parts égales, par plat ou au montant choisi. Personne ne calcule.'],
       ['04 · Pourboire', 'Un geste pour le *serveur.*', `En une touche. 10${N}% déjà sélectionnés.`],
       ['05 · Payer', '*Whish,* carte ou espèces.', 'L’équipe confirme les espèces à l’encaissement.'],
@@ -383,7 +404,7 @@ const centerIn = (el, root) => { if (el._c) return el._c; let x = el.offsetWidth
 const GA = [-90, 0, 90, 180];
 const seat = (a, x, y) => rot(x, y, a - 90);                // a point in the frame of a seat at angle a: x to the sitter's right, y outward
 const place = (i, x, y) => seat(GA[i], x, y);
-const NAMES = [['M', '#3E8E6A'], ['K', '#C9414B'], ['You', '#211B16'], ['R', '#C7925F']];
+const NAMES = [['M', '#5E8C6A'], ['K', '#8A5A78'], ['You', '#211B16'], ['R', '#A08C6E']];
 const QRD = [0, 3];                                         // the red dot on the QR tent
 const rcRand = rng(7), rcEdges = [];
 for (let b = 0; b <= 4; b++) { const pts = []; for (let y = -95; y <= 86; y += 7) pts.push([b === 0 ? -48 : b === 4 ? 48 : -48 + b * 24 + (rcRand() - .5) * 6, y]); rcEdges.push(pts); }
@@ -426,13 +447,13 @@ const chairSVG = (c = '#2B2019') => `<rect x="-86" y="18" width="172" height="56
 const foreArm = (o, d) => `<path d="M${d * 80} -6L${d * 63} -100" stroke="${tone(o.shirt, -.18)}" stroke-width="30" stroke-linecap="round"/><ellipse cx="${d * 62}" cy="-115" rx="14" ry="17" fill="${o.skin}"/>`;
 function sitterSVG(o, restId) {
   const body = BODY(98, 40, 44);
-  return `<path d="${body}" transform="translate(0 16)" fill="#000" fill-opacity=".24"/>${foreArm(o, -1)}${restId ? `<g id="${restId}">${foreArm(o, 1)}</g>` : foreArm(o, 1)}
+  return `<ellipse cy="20" rx="130" ry="78" fill="url(#soft)"/>${foreArm(o, -1)}${restId ? `<g id="${restId}">${foreArm(o, 1)}</g>` : foreArm(o, 1)}
     <path d="${body}" fill="${o.shirt}"/><path d="${body}" fill="url(#bodyShade)"/>${headSVG(o)}`;
 }
 // A waiter on their feet, seen from above: feet and the free arm swing as they walk.
 function standerSVG(o, id, hold) {
   const dk = tone(o.shirt, -.12), body = BODY(76, 32, 36);
-  return `<ellipse cx="8" cy="16" rx="86" ry="54" fill="#000" fill-opacity=".26"/>
+  return `<ellipse cx="8" cy="18" rx="112" ry="76" fill="url(#soft)"/>
     <ellipse id="${id}f0" cx="-22" rx="12" ry="19" fill="#141110"/><ellipse id="${id}f1" cx="22" rx="12" ry="19" fill="#141110"/>
     <g id="${id}a0"><ellipse cx="-70" cy="2" rx="16" ry="30" fill="${dk}"/><circle cx="-70" cy="34" r="13" fill="${o.skin}"/></g>
     <path d="M62 -6L56 -62" stroke="${dk}" stroke-width="28" stroke-linecap="round"/><circle cx="55" cy="-74" r="13" fill="${o.skin}"/>${hold}
@@ -442,7 +463,7 @@ function standerSVG(o, id, hold) {
 const TRAY = `<circle cx="58" cy="-104" r="46" fill="#3B3431"/><circle cx="58" cy="-104" r="41" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="2"/>${[[42, -118], [74, -112], [56, -84]].map(([x, y]) => glassSVG(x, y, 11)).join('')}`;
 const FOLDER = `<rect x="34" y="-116" width="42" height="56" rx="5" fill="#2B211B" transform="rotate(-8 55 -88)"/><rect x="40" y="-108" width="30" height="5" rx="2" fill="#C9414B" transform="rotate(-8 55 -88)"/>`;
 function glassSVG(x, y, r = 16) {
-  return `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(190,220,232,.5)" stroke="rgba(140,175,190,.85)" stroke-width="2"/><circle cx="${x}" cy="${y}" r="${f1(r * .55)}" fill="rgba(222,238,244,.4)"/><circle cx="${f1(x - r * .33)}" cy="${f1(y - r * .33)}" r="${f1(r * .26)}" fill="#fff" fill-opacity=".8"/>`;
+  return `<circle cx="${f1(x + r * .3)}" cy="${f1(y + r * .4)}" r="${f1(r * 1.45)}" fill="url(#soft)" opacity=".55"/><circle cx="${x}" cy="${y}" r="${r}" fill="rgba(190,220,232,.5)" stroke="rgba(140,175,190,.85)" stroke-width="2"/><circle cx="${x}" cy="${y}" r="${f1(r * .55)}" fill="rgba(222,238,244,.4)"/><circle cx="${f1(x - r * .33)}" cy="${f1(y - r * .33)}" r="${f1(r * .26)}" fill="#fff" fill-opacity=".8"/>`;
 }
 const knifeSVG = L => `<rect x="${-L / 2}" y="-3.2" width="${f1(L * .48)}" height="6.4" rx="3.2" fill="#B5AA9A"/><path d="M${f1(-L * .03)} -3.6H${f1(L * .42)}Q${L / 2} -3.6 ${L / 2} 0Q${f1(L * .46)} 3.6 ${f1(L * .4)} 3.6H${f1(-L * .03)}Z" fill="#D9D2C8"/>`;
 const forkSVG = L => `<rect x="${-L / 2}" y="-3.2" width="${f1(L * .56)}" height="6.4" rx="3.2" fill="#B5AA9A"/><rect x="${f1(L * .04)}" y="-6" width="${f1(L * .14)}" height="12" rx="3.5" fill="#D9D2C8"/>${[-4.5, -1.5, 1.5, 4.5].map(d => `<rect x="${f1(L * .15)}" y="${d - .9}" width="${f1(L * .35)}" height="1.8" rx=".9" fill="#D9D2C8"/>`).join('')}`;
@@ -456,7 +477,7 @@ const FOOD = {
     + [-.35, -.1, .15].map(x => `<path d="M${f1(r * x)} ${f1(-r * .3)}l${f1(r * .06)} ${f1(r * .5)}" stroke="#5E3018" stroke-width="${f1(r * .04)}"/>`).join('') + `</g><circle cx="${f1(r * .28)}" cy="${f1(r * .4)}" r="${f1(r * .15)}" fill="#C8453A"/><ellipse cx="${f1(-r * .28)}" cy="${f1(r * .42)}" rx="${f1(r * .2)}" ry="${f1(r * .11)}" fill="#EEE3C8"/>`,
 };
 function plateSVG(x, y, r, food, q, ang, done) {
-  let s = `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${f1(ang)})"><circle r="${r}" fill="#fff" stroke="#E7DDCF" stroke-width="2"/><circle r="${f1(r * .72)}" fill="none" stroke="#F2EBE1" stroke-width="2"/>${FOOD[food](r, q)}`;
+  let s = `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${f1(ang)})"><circle r="${f1(r * 1.24)}" fill="url(#soft)" opacity=".5"/><circle r="${r}" fill="#fff" stroke="#E7DDCF" stroke-width="2"/><circle r="${f1(r * .72)}" fill="none" stroke="#F2EBE1" stroke-width="2"/>${FOOD[food](r, q)}`;
   if (done) s += `<g transform="rotate(${f1(-40 + q() * 12)}) translate(${f1(r * .12)} ${f1(r * .1)})">${knifeSVG(f1(r * 1.3))}<g transform="translate(0 ${f1(-r * .22)})">${forkSVG(f1(r * 1.3))}</g></g>`;
   return s + '</g>';
 }
@@ -471,10 +492,10 @@ function plantSVG(x, y, s, q) {
 
 // Table 12's guests: Maya, Karim, you, Rami.
 const G12 = [
-  { shirt: '#3E8E6A', skin: '#D9A47E', hair: '#2A1D16', style: 'long' },
-  { shirt: '#C9414B', skin: '#C68B63', hair: '#1B1614', style: 'short' },
+  { shirt: '#6B9A7A', skin: '#D9A47E', hair: '#2A1D16', style: 'long' },
+  { shirt: '#8A5A78', skin: '#C68B63', hair: '#1B1614', style: 'short' },
   { shirt: '#5B7C99', skin: '#E0B08A', hair: '#6B3A26', style: 'bun' },
-  { shirt: '#E4DACB', skin: '#B57B55', hair: '#3A2A20', style: 'buzz' },
+  { shirt: '#D8C9B0', skin: '#B57B55', hair: '#3A2A20', style: 'buzz' },
 ];
 const WAITER = { shirt: '#1E1A17', skin: '#C68B63', hair: '#1B1614', style: 'short' };
 
@@ -498,8 +519,9 @@ function t12SVG() {
     const [px, py] = place(i, 0, 162), [gx, gy] = place(i, -92, 92);
     s += plateSVG(px, py, 54, 'left', q, GA[i] - 90, true) + glassSVG(f1(gx), f1(gy));
   }
-  s += `<g transform="translate(-86 16)"><circle r="37" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.hummus(40)}</g>
-    <g transform="translate(86 18)"><circle r="39" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.salad(40, q)}</g>
+  s += `<g transform="translate(-86 16)"><circle r="48" fill="url(#soft)" opacity=".5"/><circle r="37" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.hummus(40)}</g>
+    <g transform="translate(86 18)"><circle r="50" fill="url(#soft)" opacity=".5"/><circle r="39" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.salad(40, q)}</g>
+    <ellipse cx="6" cy="-18" rx="50" ry="62" fill="url(#soft)" opacity=".7"/>
     <g id="qrTent"><rect x="-31" y="-68" width="62" height="80" rx="6" fill="#fff" stroke="#E6DCCF" stroke-width="1.5"/>
       ${QR.map(([x, y, f]) => `<rect x="${(-22 + x * 1.76).toFixed(2)}" y="${(-61 + y * 1.76).toFixed(2)}" width="1.6" height="1.6" fill="${f ? '#C9414B' : '#211B16'}"/>`).join('')}
       <text y="-9" font-size="6.5" font-weight="700" text-anchor="middle" fill="#211B16">TABLE 12</text><circle id="qrDot" cx="0" cy="3" r="4.5" fill="#C9414B"/></g>
@@ -519,12 +541,15 @@ function t12SVG() {
   // Everyone's phone lies at their right hand; the guest we follow has the real one, drawn over the world.
   for (const i of [0, 1, 3]) {
     const [x, y] = place(i, 126, 150);
-    s += `<g id="ph${i}" transform="translate(${f1(x)} ${f1(y)}) rotate(${GA[i] - 90})"><rect x="-23.5" y="-46" width="47" height="92" rx="9" fill="#1E1916"/><rect id="phs${i}" x="-20" y="-42" width="40" height="84" rx="6.5" fill="#0E0C0B"/><rect x="-20" y="-42" width="40" height="84" rx="6.5" fill="url(#phGlare)"/>
+    s += `<g id="ph${i}" transform="translate(${f1(x)} ${f1(y)}) rotate(${GA[i] - 90})"><ellipse cx="3" cy="5" rx="38" ry="62" fill="url(#soft)" opacity=".8"/><rect x="-23.5" y="-46" width="47" height="92" rx="9" fill="#1E1916"/><rect id="phs${i}" x="-20" y="-42" width="40" height="84" rx="6.5" fill="#0E0C0B"/>
+      ${i === 0 ? `<g id="calc" opacity="0"><rect x="-20" y="-42" width="40" height="84" rx="6.5" fill="#1C1C1E"/><text x="15" y="-16" font-size="11" font-weight="500" text-anchor="end" fill="#fff" id="calcTx">152.5</text>
+        ${[0, 1, 2, 3, 4].map(r => [0, 1, 2, 3].map(c => `<circle id="ck${r * 4 + c}" cx="${-13.5 + c * 9}" cy="${-4 + r * 9}" r="3.6" fill="${c === 3 ? '#F09A36' : r === 0 ? '#A5A5A5' : '#333335'}"/>`).join('')).join('')}</g>` : ''}
+      <rect x="-20" y="-42" width="40" height="84" rx="6.5" fill="url(#phGlare)"/>
       <g id="pht${i}" opacity="0"><text y="-8" font-size="6.5" font-weight="700" text-anchor="middle" fill="#0F4B3A" letter-spacing=".5">YOUR SHARE</text><text y="8" font-size="12" font-weight="700" text-anchor="middle" fill="#0F4B3A">$38.13</text></g>
       <g id="phk${i}" opacity="0"><circle cy="-6" r="11" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M-5-6l3.5 3.5 7-7.5" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><text id="phc${i}" y="20" font-size="7.5" font-weight="700" text-anchor="middle" fill="#fff"></text></g></g>`;
   }
   for (let i = 0; i < 4; i++) {
-    s += `<g id="card${i}" opacity="0"><rect x="-27" y="-37" width="54" height="74" rx="8" fill="#fff" stroke="#E6DCCF" stroke-width="1.5"/><circle cy="-15" r="11" fill="${NAMES[i][1]}"/>
+    s += `<g id="card${i}" opacity="0"><ellipse cx="3" cy="5" rx="42" ry="54" fill="url(#soft)" opacity=".65"/><rect x="-27" y="-37" width="54" height="74" rx="8" fill="#fff" stroke="#E6DCCF" stroke-width="1.5"/><circle cy="-15" r="11" fill="${NAMES[i][1]}"/>
       <text y="${NAMES[i][0].length > 1 ? -12.5 : -11}" font-size="${NAMES[i][0].length > 1 ? 7.5 : 11}" font-weight="700" text-anchor="middle" fill="#fff">${NAMES[i][0]}</text><text y="14" font-size="13.5" font-weight="700" text-anchor="middle" fill="#211B16">$38.13</text>
       <text y="26" font-size="6.5" text-anchor="middle" fill="#6E635B">EACH</text>
       <g id="cardok${i}" opacity="0"><rect x="-27" y="-37" width="54" height="74" rx="8" fill="#3E8E6A"/><circle cy="-6" r="13" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M-6-6l4 4 8-8.5" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><text y="20" font-size="9" font-weight="700" text-anchor="middle" fill="#fff">PAID</text></g></g>`;
@@ -532,9 +557,8 @@ function t12SVG() {
   for (let i = 0; i < 4; i++) s += `<g id="rs${i}" opacity="0"><g clip-path="url(#rc${i})"><use href="#rcArt"/></g></g>`;
   for (let i = 0; i < 4; i++) s += `<g id="ok${i}" opacity="0"><circle r="21" fill="#3E8E6A" stroke="#FAF6F1" stroke-width="3"/><path d="M-8 0l5 5 11-11" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>`;
   s += `<g id="waiter0" opacity="0">${standerSVG(WAITER, 'w0', TRAY)}</g><g id="waiter" opacity="0">${standerSVG(WAITER, 'w1', FOLDER)}</g>
-    <g id="tray" opacity="0"><rect x="-37" y="-52" width="74" height="104" rx="9" fill="#2B211B"/><rect x="-27" y="-42" width="54" height="74" rx="3" fill="#fff"/>
+    <g id="tray" opacity="0"><ellipse cx="4" cy="7" rx="56" ry="74" fill="url(#soft)"/><rect x="-37" y="-52" width="74" height="104" rx="9" fill="#2B211B"/><rect x="-27" y="-42" width="54" height="74" rx="3" fill="#fff"/>
       <rect x="-19" y="-33" width="28" height="5" rx="2" fill="#D8CFC3"/><rect x="-19" y="-22" width="38" height="4" rx="2" fill="#E7E0D6"/><rect x="-19" y="-13" width="35" height="4" rx="2" fill="#E7E0D6"/><rect x="-19" y="-4" width="38" height="4" rx="2" fill="#E7E0D6"/><rect x="-19" y="9" width="38" height="6" rx="2" fill="#C9414B"/></g>
-    <g font-size="52" font-weight="700" fill="#211B16" text-anchor="middle">${['÷', '+', '×', '?'].map((g, i) => `<text id="gl${i}" opacity="0">${g}</text>`).join('')}</g>
     ${[0, 1, 2].map(i => `<g id="co${i}" opacity="0"><circle r="13" fill="#D8B45A" stroke="#B8923A" stroke-width="3"/><circle r="6.5" fill="none" stroke="#B8923A" stroke-width="2"/></g>`).join('')}
     <circle id="dot1" r="26" fill="#C9414B" opacity="0"/>
     <circle id="pulse12" r="330" fill="none" stroke="#3E8E6A" stroke-width="18" opacity="0"/>
@@ -553,7 +577,7 @@ const TWO = { 10: 1, 5: 1 };
 const STATUS = { 1: [[0, 'e'], [35.4, 'p'], [37.3, 'd']], 2: [[0, 'd']], 3: [[0, 'e'], [36.1, 'd']], 4: [[0, 'p'], [38.6, 'd']], 5: [[0, 'o']], 6: [[0, 'e']], 7: [[0, 'd']],
   8: [[0, 'e'], [37.6, 'p']], 9: [[0, 'd']], 10: [[0, 'e']], 11: [[0, 'p'], [35.9, 'd']], 13: [[0, 'e'], [38.9, 'd']], 14: [[0, 'o'], [36.5, 'e']], 15: [[0, 'd']] };
 const SC = { e: [111, 150, 146], p: [224, 163, 58], d: [62, 142, 106], o: [60, 80, 82] };
-const SHIRTS = ['#3E8E6A', '#C9414B', '#E4DACB', '#F6C39F', '#5B7C99', '#B98E63', '#2F5D66', '#8C6BA8', '#D8C9B0', '#E0A33A'];
+const SHIRTS = ['#5E7D74', '#8A6F5A', '#6B7A8F', '#9C8B74', '#4F6B64', '#7D6A7F', '#A0896B', '#566573', '#8C8C7A', '#6F5E4E', '#C9BFAE'];
 const SKINS = ['#E0B08A', '#C68B63', '#D9A47E', '#A9714D', '#EDC4A0', '#B57B55'];
 const HAIRS = ['#2A1D16', '#1B1614', '#4A2C1C', '#6B3A26', '#8A5A3C', '#3A2A20'];
 const STYLES = ['short', 'long', 'bun', 'buzz', 'short', 'long', 'scarf'];
@@ -578,7 +602,7 @@ function floorSVG() {
     s += `<g id="fg${n}">`;
     seats.forEach(a => {
       const [bx, by] = at(a, 0, gRad), pick = arr => arr[Math.floor(gr() * arr.length)];
-      const o = { shirt: pick(SHIRTS), skin: pick(SKINS), hair: pick(HAIRS), style: pick(STYLES), scarf: pick(['#C9414B', '#2F5D66', '#D8C9B0', '#8C6BA8']) };
+      const o = { shirt: pick(SHIRTS), skin: pick(SKINS), hair: pick(HAIRS), style: pick(STYLES), scarf: pick(['#7D5A5A', '#4F6B64', '#A89A86', '#6B6280']) };
       s += `<g transform="translate(${f1(bx)} ${f1(by)}) rotate(${f1(a - 90)}) scale(.78)">${sitterSVG(o)}</g>`;
     });
     s += `</g><circle id="fx${n}" r="${R + 10}" fill="none" stroke="#F6C39F" stroke-width="10" opacity="0"/>
@@ -601,8 +625,8 @@ const MENU = [
   ['Fattoush', 'فتوش', 'Rocca, lettuce, tomatoes, cucumbers, purslane, radish, lemon juice, olive oil', ['$4.75', 'LL 425,000']],
   ['Tabbouleh', 'تبولة', 'Fresh parsley, tomatoes, cracked wheat, onions, lemon juice and virgin olive oil', ['$5.00', 'LL 448,000']],
   ['Raheb Salad', 'سلطة راهب', 'Charcoal-grilled eggplant with diced tomatoes, bell peppers, parsley, garlic', ['$7.00', 'LL 627,000']],
-  ['Hummus', 'حمص', 'Blended chickpeas, tahini and lemon juice topped with virgin olive oil', ['$4.00', 'LL 358,000']],
   ['Hummus Meat and Almond', 'حمص مع لحمة ولوز', 'Hummus topped with sauteed minced meat and almonds', ['$13.00', 'LL 1,164,000']],
+  ['Arayess Kafta', 'عرايس كفتة', 'Grilled pita filled with spiced minced beef and parsley', ['$8.00', 'LL 716,000']],
 ];
 const ROWY = [180, 266, 352, 470, 556];
 const BILL = [['2×', 'Shish Taouk', '32.00'], ['3×', 'Lahme Ba’ajine', '18.00'], ['2×', 'Arayess Kafta', '15.00'], ['2×', 'Fattoush', '12.00'], ['2×', 'Hummus', '10.00'], ['1×', 'Batata w Kezbara', '6.50'], ['4×', 'Warak Enab', '18.00'], ['2×', 'Moutabal', '8.00']];
@@ -615,21 +639,26 @@ const APP = `
  <div class="scr" id="sMenu">
    <div class="back">←</div><div class="m-title">Table 12</div><div class="m-sub">Dinner menu</div>
    <div class="pill" id="pLang">${pvHTML(['EN', 'AR'])}<u>▾</u></div><div class="pill" id="pCur">${pvHTML(['USD $', 'LBP LL'])}<u>▾</u></div>
-   <div class="filt">≡ Dietary filters</div>
+   <div class="filt" id="fBtn">≡ Dietary filters<i id="fBadge">1</i></div><div id="fSum"></div>
    <div class="tabs"><b>Salads</b><span>Appetizers</span><span>All Day Breakfast</span><span>Charcoal Grill</span></div>
    <div class="hair" style="top:146px"></div>
    <div class="sec" style="top:160px">SALADS</div><div class="sec" style="top:450px">APPETIZERS</div>
-   ${MENU.map((m, i) => `<div class="row" id="mr${i}" style="top:${ROWY[i]}px">
-      <div class="v en"><div class="nm">${m[0]}</div><div class="ds">${m[2]}</div><div class="pr">${pvHTML(m[3])}<u>›</u></div></div>
-      <div class="v ar"><div class="nm">${m[1]}</div><div class="ds">${m[2]}</div><div class="pr"><u>‹</u><span>${m[3][0]}</span></div></div></div>`).join('')}
+   ${MENU.map((m, i) => `<div class="row${i >= 3 ? ' one' : ''}" id="mr${i}" style="top:${ROWY[i]}px">
+      <div class="v en"><div class="nm">${m[0]}</div><div class="ds">${m[2]}</div><div class="pr">${pvHTML(m[3])}<u>›</u></div>${i >= 3 ? '<div class="why"><b>✕</b>has meat</div>' : ''}</div>
+      <div class="v ar"><div class="nm">${m[1]}</div><div class="ds">${m[2]}</div><div class="pr"><u>‹</u><span>${m[3][0]}</span></div>${i >= 3 ? '<div class="why"><b>✕</b>يحتوي على لحم</div>' : ''}</div></div>`).join('')}
    <div id="billBtn">Open the bill ${pvHTML(['$152.50', 'LL 13,649,000'])}</div>
    <div id="ddLang"><div>English</div><div>Français</div><div>العربية</div></div>
+   <div id="fScrim"></div>
+   <div id="fSheet"><div class="gr"></div><div class="t">Dietary filters</div><div class="s">Dishes that don't fit stay visible but fade, with the reason shown.</div>
+     <div class="fchips"><span class="fc" id="fcVeg">Vegetarian</span><span class="fc">No nuts</span><span class="fc">No dairy</span><span class="fc">Under 400 kcal</span><span class="fc">High protein</span></div>
+     <div id="fBar"><b>8</b>of 13 dishes work for you<u>Clear</u></div>
+     <div class="disc">Always confirm allergies with staff.</div><div id="fDone">Done</div></div>
    <div class="dim"></div>
  </div>
  <div class="scr" id="sBill">
    <div class="back">←</div><div class="c-title">Table 12</div><div class="c-sub">4 guests · opened 8:42 pm</div>
    <div class="billcard"><div class="bc-h">THE BILL</div>${BILL.map(r => `<div class="bc-r"><i>${r[0]}</i>${r[1]}<b>$${r[2]}</b></div>`).join('')}<div class="bc-m">+ 4 more items</div>
-     <div class="bc-t"><span>Total</span><b>$152.50</b></div></div>
+     <div class="bc-t"><span>Total</span><b>$152.50</b></div><div class="bc-ll">≈ LL 13,648,750</div></div>
    <div class="cta" id="settleBtn">Settle my share</div><div class="pw">powered by <b>Aalayna</b></div><div class="dim"></div>
  </div>
  <div class="scr" id="sSplit">
@@ -748,12 +777,11 @@ const SCREENS = [...document.querySelectorAll('.scr')];
 const POOLS = [...document.querySelectorAll('.fpool')];
 
 /* ---------- Timeline ---------- */
-const CH = [11.875, 15, 18.75, 23.75, 26.875, 29.375, 31.875, 34.375];   // six guest chapters, the settle beat, then the room
+const CH = [11.875, 15, 20, 24.375, 26.875, 29.375, 31.875, 34.375];   // six guest chapters, the settle beat, then the room
 const SIDE = [34.375, 38.125, 41.25];
-const HITS = [[7.5, 12], [8.125, 10], [21.85, 10], [29.9, 7], [36.6, 7], [42.5, 8]];
-const NAV = [[11.2, 'sCam', 0], [14.6, 'sMenu', 0], [18.95, 'sBill', 1], [19.7, 'sSplit', 1], [23.95, 'sPay', 1], [28.45, 'sPaid', 0]];
-const TAPS = [[14.45, 195, 590], [15.4, 244, 29], [15.72, 197, 154], [16.55, 244, 29], [16.7, 197, 82], [17.1, 328, 29], [17.95, 328, 29],
-  [18.75, 195, 724], [19.5, 195, 713], [19.95, 322, 198], [20.3, 322, 198], [27.85, 195, 713], [29.75, 291, 458], [31.05, 195, 713]];
+const NAV = [[11.2, 'sCam', 0], [14.6, 'sMenu', 0], [19.65, 'sBill', 1], [20.4, 'sSplit', 1], [24.55, 'sPay', 1], [28.45, 'sPaid', 0]];
+const TAPS = [[14.45, 195, 590], [15.35, 82, 80], [15.95, 72, 553], [16.45, 195, 737], [17.35, 244, 29], [17.65, 197, 154], [18.6, 244, 29], [18.85, 197, 82],
+  [19.45, 195, 724], [20.2, 195, 713], [20.65, 322, 198], [21.0, 322, 198], [27.85, 195, 713], [29.75, 291, 458], [31.05, 195, 713]];
 const K = 410 / 390, PS = 90 / 888, HOME = [195, 364.3];
 const PH = { s: lay(1, 1.32) };
 const F = { a1: lay([1215, 548], [540, 1262]), wide: lay([600, 560], [540, 1235]), close: lay([640, 540], [540, 1222]), floor: lay([1268, 545], [540, 1062]), end: [CX, CY] };
@@ -761,7 +789,7 @@ const ZW = lay(1.1, .98), ZF = lay(.275, .24);
 
 // The guest's phone: lying at their place, lifted over the QR to scan, put back down for the split.
 function phonePose(t) {
-  const up = E.inOutCubic(p(t, 12.05, 12.85)), down = E.inOutCubic(p(t, 20.65, 21.45)), k = up * (1 - down);
+  const up = E.inOutCubic(p(t, 12.05, 12.85)), down = E.inOutCubic(p(t, 21.3, 22.1)), k = up * (1 - down);
   return { x: lerp(126, 0, k), y: lerp(150, -28, k), r: 0, lift: 1 + .12 * k, k };
 }
 const phoneWorld = (pp, ax, ay) => { const s = PS * pp.lift, [dx, dy] = rot((15 + ax * K - 220) * s, (61 + ay * K - 444) * s, pp.r); return { x: pp.x + dx, y: pp.y + dy }; };
@@ -774,14 +802,16 @@ const CAM = [
   [11.2, 11.2, () => view(0, 15, ZW, 0)],
   [11.3, 12.95, () => view(0, 10, ZW * 1.07, 2), E.inOutCubic],
   [12.95, 13.75, t => closeUp(t), E.inOutCubic],
-  [15.25, 15.85, t => closeUp(t, 250, 60, 1.55), E.inOutCubic],
-  [17.1, 17.6, t => closeUp(t, 250, 250, 1.35), E.inOutCubic],
-  [18.2, 18.65, t => closeUp(t), E.inOutCubic],
-  [19.75, 20.2, t => closeUp(t, 200, 262, 1.35), E.inOutCubic],
-  [20.65, 21.55, () => view(0, 20, ZW * 1.02, 0), E.inOutCubic],
-  [21.55, 23.6, () => view(0, 20, ZW * 1.09, 5), E.inOutSine],
-  [23.7, 24.45, t => closeUp(t), E.inOutCubic],
-  [24.55, 25.1, t => closeUp(t, 195, 180, 1.45), E.inOutCubic],
+  [15.0, 15.4, t => closeUp(t, 165, 230, 1.32), E.inOutCubic],
+  [15.45, 15.85, t => closeUp(t, 195, 560, 1.26), E.inOutCubic],
+  [16.5, 16.95, t => closeUp(t, 195, 440, 1.3), E.inOutCubic],
+  [17.15, 17.55, t => closeUp(t, 240, 230, 1.34), E.inOutCubic],
+  [19.05, 19.45, t => closeUp(t), E.inOutCubic],
+  [20.45, 20.9, t => closeUp(t, 200, 262, 1.35), E.inOutCubic],
+  [21.3, 22.2, () => view(0, 20, ZW * 1.02, 0), E.inOutCubic],
+  [22.2, 24.2, () => view(0, 20, ZW * 1.09, 5), E.inOutSine],
+  [24.3, 25.05, t => closeUp(t), E.inOutCubic],
+  [25.1, 25.6, t => closeUp(t, 195, 180, 1.45), E.inOutCubic],
   [25.95, 26.5, t => closeUp(t, 195, 330, 1.3), E.inOutCubic],
   [27.55, 28.05, t => closeUp(t), E.inOutCubic],
   [29.4, 29.9, t => closeUp(t, 195, 400, 1.4), E.inOutCubic],
@@ -811,7 +841,7 @@ const L1 = lay({ cap: [120, 236, 600, 96], pain: [120, 560, 102, 42], clock: [18
 const L2 = lay({ x: 170, tops: [180, 362, 544], fs: 176, th: [176, 800, 1500, 50] }, { x: 86, tops: [470, 634, 798], fs: 150, th: [90, 1060, 900, 58] });
 const LA = lay({ x: 1110, y: 250, w: 700, fl: 28, fh: 84, fs: 40 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
 const LB = lay({ x: 110, y: 170, w: 470, fl: 28, fh: 78, fs: 36 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
-const LR = lay({ x0: 1116, step: 134, y: 905, fs: 22 }, { x0: 140, step: 160, y: 86, fs: 24 });
+const LR = lay({ x0: 1116, step: 134, y: 910, fs: 19 }, { x0: 140, step: 160, y: 86, fs: 21 });
 const PNL = lay({ x: 372, y: 718, s: .82 }, { x: 540, y: 1722, s: 1.2 });
 const SCRIM = { A: lay('linear-gradient(90deg,rgba(9,28,30,0),rgba(9,28,30,.84) 27%,rgba(9,28,30,.9))', 'linear-gradient(180deg,rgba(9,28,30,.92),rgba(9,28,30,.8) 55%,rgba(9,28,30,0))'),
                 B: lay('linear-gradient(270deg,rgba(9,28,30,0),rgba(9,28,30,.8) 30%,rgba(9,28,30,.9))', 'linear-gradient(180deg,rgba(9,28,30,.92),rgba(9,28,30,.8) 55%,rgba(9,28,30,0))') };
@@ -851,10 +881,6 @@ function scrim(el, key, t, a, b) {
 const layers = ['ui1', 'uiA', 'uiB', 'red', 'close', 'phoneLayer'].reduce((o, k) => (o[k] = $(k), o), {});
 function render(t) {
   t = clamp(t, 0, DUR);
-  let sx = 0, sy = 0;
-  for (const [h, a] of HITS) { sx += a * wobble(t - h, 13, 9); sy += a * .7 * wobble(t - h + .02, 17, 9); }
-  $('cam').style.transform = `translate(${sx}px,${sy}px)`;
-
   // The camera over the world; in portrait, close-ups never climb over the caption.
   cam = camAt(t);
   if (P && t > 11) { const pp = phonePose(t), c = proj(pp.x, pp.y), top = c.y - 444 * cam.z * PS * pp.lift; if (top < 612) cam.fy += 612 - top; }
@@ -896,10 +922,12 @@ function table12(t) {
   const armUp = t >= 4.3 && down < 1 ? Math.min(1, (t - 4.3) * 8) : 0;
   attr($('arm'), 'transform', `rotate(${lerp(-81, 0, up * (1 - down)) + wave} 82 -4)`);
   attr($('arm'), 'opacity', armUp); attr($('armRest'), 'opacity', 1 - armUp);
-  for (let i = 0; i < 4; i++) {
-    const st = 4.95 + i * .32, k = p(t, st, st + 1.5), el = $('gl' + i);
-    attr(el, 'transform', `translate(${[-58, 52, -22, 66][i]} ${40 - 150 * E.outCubic(k)})`);
-    attr(el, 'opacity', k > 0 && k < 1 ? Math.sin(Math.PI * k) * (1 - p(t, 7.4, 7.6)) : 0);
+  // Doing the maths: Maya's calculator, keys lighting as she types 152.5 / 4.
+  attr($('calc'), 'opacity', p(t, 4.95, 5.12) * (1 - p(t, 7.3, 7.5)));
+  if (t > 4.9 && t < 7.6) {
+    const seq = [[5.2, 9, '152.5'], [5.5, 3, '÷'], [5.8, 8, '4'], [6.1, 19, '38.125']], kt = seq.filter(q => t >= q[0]).pop();
+    $('calcTx').textContent = kt ? (kt[2] === '÷' ? '152.5' : kt[2]) : '152.5';
+    for (let k = 0; k < 20; k++) attr($('ck' + k), 'opacity', kt && kt[1] === k && t - kt[0] < .18 ? .45 : 1);
   }
   for (let i = 0; i < 3; i++) {
     const st = 5.6 + i * .12, k = E.outBack(p(t, st, st + .35));
@@ -914,23 +942,23 @@ function table12(t) {
   attr($('qrDot'), 'r', 4.5 * (1 + .6 * wobble(t - 11.9, 2.5, 6) * (t > 11.9 ? 1 : 0)));
 
   // The split: the receipt prints, tears in four and flies to each guest, who gets their share.
-  const pr = E.outExpo(p(t, 21.15, 21.75));
+  const pr = E.outExpo(p(t, 21.75, 22.35));
   for (let i = 0; i < 4; i++) {
     const el = $('rs' + i), xc = -36 + 24 * i, [cx, cy] = place(i, -124, 150);
-    const tear = E.inOutCubic(p(t, 22.0, 22.2)), fly = E.outExpo(p(t, 22.15 + i * .06, 22.85 + i * .06)), flip = p(t, 22.8 + i * .06, 22.95 + i * .06);
+    const tear = E.inOutCubic(p(t, 22.65, 22.85)), fly = E.outExpo(p(t, 22.8 + i * .06, 23.5 + i * .06)), flip = p(t, 23.45 + i * .06, 23.6 + i * .06);
     const x0 = xc + (xc > 0 ? 1 : -1) * 6 * tear, y0 = 20 + 4 * tear * (i % 2 ? 1 : -1);
     const x = lerp(x0, cx, fly), y = lerp(y0, cy, fly), r = lerp(0, GA[i] - 90, fly) + (1 - fly) * fly * (i % 2 ? 40 : -40);
     const s = lerp(1, .8, fly);
     attr(el, 'transform', `translate(${x} ${y}) rotate(${r}) scale(${s * (1 - flip)} ${s * lerp(.12, 1, pr)}) translate(${-xc} 0)`);
-    attr(el, 'opacity', t > 21.15 && flip < 1 ? 1 : 0);
-    const card = $('card' + i), cf = E.outBack(p(t, 22.95 + i * .06, 23.2 + i * .06), 1.6);
+    attr(el, 'opacity', t > 21.75 && flip < 1 ? 1 : 0);
+    const card = $('card' + i), cf = E.outBack(p(t, 23.6 + i * .06, 23.85 + i * .06), 1.6);
     attr(card, 'transform', `translate(${cx} ${cy}) rotate(${GA[i] - 90}) scale(${cf} 1)`);
-    attr(card, 'opacity', t > 22.95 + i * .06 && t < 34.6 ? 1 : 0);
+    attr(card, 'opacity', t > 23.6 + i * .06 && t < 34.6 ? 1 : 0);
   }
   // Everyone else's phone lights up with their share, then turns green (card, Whish) or amber (cash).
   const PAY = { 0: [32.7, 'card'], 1: [33.1, 'whish'], 3: [33.5, 'cash'] };
   for (const i of [0, 1, 3]) {
-    const lit = p(t, 23.0 + i * .05, 23.25 + i * .05), [pt, how] = PAY[i], paid = p(t, pt, pt + .2);
+    const lit = p(t, 23.65 + i * .05, 23.9 + i * .05), [pt, how] = PAY[i], paid = p(t, pt, pt + .2);
     const cash = how === 'cash', ok = cash ? p(t, 36.6, 36.8) : paid;
     attr($('phs' + i), 'fill', paid > 0 ? mixRGB([255, 255, 255], cash && ok < 1 ? [224, 163, 58] : [62, 142, 106], Math.max(paid, ok)) : mixRGB([14, 12, 11], [255, 255, 255], lit));
     attr($('pht' + i), 'opacity', lit * (1 - paid));
@@ -1078,7 +1106,7 @@ function guestUI(t) {
     const reached = pos >= k - .01, act = Math.abs(pos - k) < .5 && done < 1;
     n.style.borderColor = reached ? col : 'rgba(250,246,241,.3)'; n.style.background = reached ? col : '#10302F';
     T(n, { x: x0 + k * LR.step, y, s: kin, o: rout });
-    lb.style.fontSize = LR.fs + 'px'; lb.style.color = act ? '#F6C39F' : reached ? '#FAF6F1' : 'rgba(250,246,241,.6)'; lb.style.fontWeight = act ? 700 : 600;
+    lb.style.fontSize = LR.fs + 'px'; lb.style.color = act ? '#F6C39F' : reached ? 'rgba(250,246,241,.82)' : 'rgba(250,246,241,.45)'; lb.style.fontWeight = act ? 600 : 500;
     T(lb, { x: x0 + k * LR.step, y: y + lay(34, 36), o: kin * rout });
   }
   $('rdot').style.background = col;
@@ -1127,10 +1155,10 @@ function phone(t) {
   } else { td.style.opacity = 0; tr.style.opacity = 0; }
 
   // ÷ 4 stamped on the receipt as it tears.
-  const rc = proj(0, 20), bk = p(t, 21.85, 22.15), bo = E.inExpo(p(t, 22.9, 23.2));
+  const rc = proj(0, 20), bk = p(t, 22.5, 22.8), bo = E.inExpo(p(t, 23.55, 23.85));
   const sxy = { x: rc.x + lay(150, 120), y: rc.y - lay(130, 150) };
   T($('stamp'), { x: sxy.x, y: sxy.y, s: (bk > 0 ? lerp(2.4, 1, E.outBack(bk, 2.4)) : 0) * (1 - bo) * lay(.9, 1), r: lerp(-28, -10, E.outExpo(bk)), o: bk > 0 ? Math.min(1, bk * 4) : 0 });
-  const rk2 = p(t, 21.9, 22.35);
+  const rk2 = p(t, 22.55, 23.0);
   T($('stampRing'), { x: sxy.x, y: sxy.y, s: lerp(1, 2.5, E.outCubic(rk2)) * lay(.9, 1), o: rk2 > 0 ? 1 - rk2 : 0 });
 
   cctx.clearRect(0, 0, W, H);
@@ -1163,49 +1191,65 @@ function scrCam(t) {
 
 function rollPV(pv, idx) { if (!pv._h) pv._h = pv.offsetHeight || pv.firstElementChild.offsetHeight; pv.firstElementChild.style.marginTop = (-idx * (pv._h || 0)) + 'px'; }
 function scrMenu(t) {
-  if (t < 14.55 || t > 19.6) return;
-  const kar = E.inOutCubic(p(t, 15.74, 16.1)) - E.inOutCubic(p(t, 16.74, 17.05));
-  const kll = E.inOutCubic(p(t, 17.15, 17.45)) - E.inOutCubic(p(t, 17.97, 18.25));
+  if (t < 14.55 || t > 20.4) return;
+  // Filters first: the sheet rises, Vegetarian goes on, Done; the two meat dishes fade with the reason shown.
+  const up = E.outExpo(p(t, 15.45, 15.85)) * (1 - E.inOutCubic(p(t, 16.5, 16.78)));
+  $('fSheet').style.transform = `translateY(${(-352 * up).toFixed(1)}px)`;
+  $('fScrim').style.opacity = (.38 * up).toFixed(3);
+  $('fcVeg').classList.toggle('on', t >= 15.95);
+  $('fcVeg').style.transform = `scale(${t >= 15.9 && t < 16.04 ? .95 : 1})`;
+  const bar = E.outCubic(p(t, 15.97, 16.2));
+  $('fBar').style.opacity = bar; $('fBar').style.transform = `translateY(${8 * (1 - bar)}px)`;
+  $('fDone').style.transform = `scale(${t >= 16.4 && t < 16.54 ? .96 : 1})`;
+  $('fBtn').style.transform = `scale(${t >= 15.3 && t < 15.44 ? .95 : 1})`;
+  const bk = clamp(spring(t - 16.6, 2.2, 7), 0, 1.3);
+  $('fBadge').style.display = t > 16.6 ? '' : 'none'; $('fBadge').style.transform = `scale(${bk})`;
+  const dim = E.inOutCubic(p(t, 16.55, 16.9));
+  // Then the language: العربية, and back to English before the bill.
+  const kar = E.inOutCubic(p(t, 17.67, 18.0)) - E.inOutCubic(p(t, 18.87, 19.15));
   rollPV($('pLang').querySelector('.pv'), kar);
-  rollPV($('pCur').querySelector('.pv'), kll);
-  rollPV($('billBtn').querySelector('.pv'), kll);
+  const fs = $('fSum'); fs.textContent = kar > .5 ? '8 من 13 أطباق تناسبك' : '8 of 13 dishes work for you'; fs.dir = kar > .5 ? 'rtl' : 'ltr';
+  fs.style.opacity = E.outCubic(p(t, 16.7, 17.0)) * (1 - 2 * Math.min(kar, 1 - kar));
   MENU.forEach((m, i) => {
     const row = $('mr' + i), en = row.querySelector('.v.en'), ar = row.querySelector('.v.ar');
     const kin = E.outCubic(p(t, 14.65 + i * .07, 15.05 + i * .07));
     row.style.opacity = kin; row.style.transform = `translateY(${16 * (1 - kin)}px)`;
+    if (i >= 3) {
+      (row._t || (row._t = [...row.querySelectorAll('.nm,.ds,.pr')])).forEach(e => { e.style.opacity = lerp(1, .38, dim); });
+      row.querySelectorAll('.why').forEach(w => { w.style.opacity = dim; w.style.transform = `translateY(${6 * (1 - dim)}px)`; });
+    }
     const kr = clamp(kar * 1.15 - i * .03, 0, 1);
     en.style.opacity = 1 - clamp(kr * 2); en.style.transform = `translateX(${-28 * kr}px)`;
     ar.style.opacity = clamp(kr * 2 - 1); ar.style.transform = `translateX(${28 * (1 - kr)}px)`;
-    rollPV(en.querySelector('.pv'), clamp(kll * 1.2 - i * .04, 0, 1));
   });
-  const dd = $('ddLang'), op = Math.max(p(t, 15.46, 15.58) * (1 - p(t, 15.74, 15.86)), p(t, 16.6, 16.68) * (1 - p(t, 16.74, 16.84)));
+  const dd = $('ddLang'), op = Math.max(p(t, 17.41, 17.52) * (1 - p(t, 17.67, 17.78)), p(t, 18.66, 18.74) * (1 - p(t, 18.87, 18.96)));
   dd.style.opacity = op; dd.style.transform = `scale(${lerp(.92, 1, op)})`;
-  [...dd.children].forEach((r, i) => { r.style.background = (i === 2 && t > 15.62 && t < 15.9) || (i === 0 && t > 16.64 && t < 16.9) ? '#EDF3EF' : 'transparent'; });
-  $('billBtn').style.transform = `scale(${t >= 18.7 && t < 18.86 ? .95 : 1})`;
+  [...dd.children].forEach((r, i) => { r.style.background = (i === 2 && t > 17.58 && t < 17.85) || (i === 0 && t > 18.8 && t < 19.0) ? '#EDF3EF' : 'transparent'; });
+  $('billBtn').style.transform = `scale(${t >= 19.4 && t < 19.56 ? .95 : 1})`;
 }
 
 function scrBill(t) {
-  if (t < 18.9 || t > 20.3) return;
-  const sb = $('sBill'); (sb._r || (sb._r = [...sb.querySelectorAll('.bc-r,.bc-m,.bc-t')])).forEach((r, i) => { const k = E.outCubic(p(t, 19.0 + i * .03, 19.25 + i * .03)); r.style.opacity = k; r.style.transform = `translateY(${10 * (1 - k)}px)`; });
-  $('settleBtn').style.transform = `scale(${t >= 19.45 && t < 19.61 ? .96 : 1})`;
+  if (t < 19.6 || t > 21.0) return;
+  const sb = $('sBill'); (sb._r || (sb._r = [...sb.querySelectorAll('.bc-r,.bc-m,.bc-t,.bc-ll')])).forEach((r, i) => { const k = E.outCubic(p(t, 19.7 + i * .03, 19.95 + i * .03)); r.style.opacity = k; r.style.transform = `translateY(${10 * (1 - k)}px)`; });
+  $('settleBtn').style.transform = `scale(${t >= 20.15 && t < 20.31 ? .96 : 1})`;
 }
 
 function scrSplit(t) {
-  if (t < 19.65 || t > 24.5) return;
-  const c1 = E.inOutCubic(p(t, 19.97, 20.2)), c2 = E.inOutCubic(p(t, 20.32, 20.55));
+  if (t < 20.35 || t > 25.2) return;
+  const c1 = E.inOutCubic(p(t, 20.67, 20.9)), c2 = E.inOutCubic(p(t, 21.02, 21.25));
   rollPV($('sSplit').querySelector('.cnt .pv'), c1 + c2);
   const v = c2 > 0 ? lerp(50.84, 38.13, c2) : lerp(76.25, 50.84, c1);
   $('shareV').textContent = money(v); $('shareL').textContent = '≈ ' + lira(v * 89500);
   $('shareN').textContent = money(152.5 - v) + ' left for the other guests.';
   $('contBtn').textContent = 'Continue · ' + money(v);
-  $('plusBtn').style.transform = `scale(${(t >= 19.9 && t < 20.05) || (t >= 20.25 && t < 20.4) ? .9 : 1})`;
+  $('plusBtn').style.transform = `scale(${(t >= 20.6 && t < 20.75) || (t >= 20.95 && t < 21.1) ? .9 : 1})`;
 }
 
 function scrPay(t) {
-  if (t < 23.9 || t > 29) return;
-  const k = E.inOutCubic(p(t, 24.6, 25.15)), sel = t >= 24.6;
+  if (t < 24.5 || t > 29) return;
+  const k = E.inOutCubic(p(t, 25.0, 25.55)), sel = t >= 25.0;
   $('chip0').classList.toggle('sel', !sel); $('chip2').classList.toggle('sel', sel);
-  $('chip2').style.transform = `scale(${1 + .1 * wobble(t - 24.6, 3, 8) * (sel ? 1 : 0)})`;
+  $('chip2').style.transform = `scale(${1 + .1 * wobble(t - 25.0, 3, 8) * (sel ? 1 : 0)})`;
   const tot = 38.13 + 3.81 * k;
   $('payT').textContent = money(tot); $('payTip').textContent = money(3.81 * k); $('payL').textContent = '≈ ' + lira(tot * 89500);
   const rows = [335, 405, 475], hops = [26.95, 27.2, 27.45];
