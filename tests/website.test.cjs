@@ -319,19 +319,24 @@ test('share previews: og and twitter tags on every marketing page, image at an a
   assert.ok(fs.existsSync(path.join(ROOT, 'images', 'og-image.png')));
 });
 
-test('product screens: every image exists in WebP and PNG, has its size, an alt, and is lazy except the hero', () => {
+test('product screens: every image exists in WebP and PNG, has its size, an alt, and is lazy; the hero is the reel', () => {
   const s = read('index.html');
   const pics = [...s.matchAll(/<picture><source srcset="images\/([\w-]+)\.webp" type="image\/webp"><img ([^>]*)><\/picture>/g)];
   assert.equal(pics.length, (s.match(/<img\b/g) || []).length, 'every img sits in a picture with a WebP source');
-  assert.ok(pics.length >= 6, 'hero, three steps, guest menu and editor');
-  pics.forEach(([, name, attrs], i) => {
+  assert.ok(pics.length >= 5, 'three steps, guest menu and editor');
+  pics.forEach(([, name, attrs]) => {
     assert.match(attrs, new RegExp('src="images/' + name + '\\.png"'), name);
     ['webp', 'png'].forEach(ext => assert.ok(fs.existsSync(path.join(ROOT, 'images', name + '.' + ext)), name + '.' + ext));
     assert.match(attrs, /width="\d+" height="\d+"/, name + ' size');
     assert.match(attrs, /alt="[^"]{20,}"/, name + ' alt');
-    if (i === 0) { assert.equal(name, 'guest-pay', 'the hero shows the pay screen'); assert.ok(!/loading=/.test(attrs), 'the hero is not lazy'); }
-    else assert.match(attrs, /loading="lazy"/, name + ' is lazy');
+    assert.match(attrs, /loading="lazy"/, name + ' is lazy');
   });
+  const hero = s.slice(s.indexOf('class="hero wrap"'), s.indexOf('</section>'));
+  const video = hero.match(/<video ([^>]*)><source src="images\/reel-web\.mp4" type="video\/mp4"><\/video>/);
+  assert.ok(video, 'the hero plays the web cut of the reel');
+  ['autoplay', 'muted', 'loop', 'playsinline', 'poster="images/reel-poster.jpg"', 'width="1280" height="720"'].forEach(a => assert.ok(video[1].includes(a), 'reel ' + a));
+  assert.match(video[1], /aria-label="[^"]{40,}"/, 'reel description');
+  ['reel-web.mp4', 'reel-poster.jpg'].forEach(f => assert.ok(fs.existsSync(path.join(ROOT, 'images', f)), f));
   assert.ok(!/conversation-card|Tell us about your floor/.test(s), 'the mid-page booking card is gone');
   assert.ok(!/w1-/.test(s + read('website.css')), 'W1 classes folded into the system');
 });

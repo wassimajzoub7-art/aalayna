@@ -240,10 +240,10 @@ already off.
 
 ## Reel
 
-`reel.html` is a 15-second motion piece: a table QR is scanned, the $152.50 bill tears into four $38.13 shares, one guest adds the 10% tip and pays $41.94 with Whish Money, and the wordmark closes on "scan, split, settle." Every frame is a pure function of time (`__render(t)`), so the page plays live at any size (click to pause, `?loop` to loop, reduced motion shows the last frame) and renders frame-exact to video. It is not linked from the site yet.
+`reel.html` is a 15-second motion piece: a table QR is scanned, the $152.50 bill tears into four $38.13 shares, one guest adds the 10% tip and pays $41.94 with Whish Money, and the wordmark closes on "scan, split, settle." Every frame is a pure function of time (`__render(t)`), so the page plays live at any size (click to pause, `?loop` to loop, reduced motion shows the last frame) and renders frame-exact to video. The homepage hero (English and French) plays the web cut as a muted loop with a Sound on button; with reduced motion or Data Saver it stays on the poster with player controls.
 
 - `images/reel.mp4`: 1920 x 1080, 60 fps, with sound, for social and the pitch.
-- `images/reel-web.mp4`: 1280 x 720, 30 fps, muted, about 1 MB, for a website embed; `images/reel-poster.jpg` is its poster.
+- `images/reel-web.mp4`: 1280 x 720, 30 fps, with sound, about 1.2 MB, for the homepage hero; `images/reel-poster.jpg` (the closing wordmark) is its poster.
 
 To re-render after changing the page: `node tools/reel-audio.js reel.wav`, then `node tools/render-reel.js --audio reel.wav --out images/reel.mp4` (Playwright's Chromium and an ffmpeg with libx264; `--fonts <dir>` serves Google Fonts from a local folder when the browser cannot reach them, `--stills 1,5.2,11` writes review PNGs instead). The soundtrack is synthesised by the script, so there is no music licence to clear.
 

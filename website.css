@@ -64,12 +64,16 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .panel img{display:block;width:100%;height:auto;aspect-ratio:960/1300;object-fit:cover;object-position:50% 63.4%}
 
 /* Hero */
-.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);align-items:center;gap:4rem;padding-block:4.5rem 5rem}
+.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);align-items:center;gap:3rem;padding-block:4.5rem 5rem}
 .hero h1{font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em}
 .hero h1 em{font-style:normal;color:var(--brand-text)}
 .lead{font-size:var(--fs-lead);line-height:1.6;margin-top:1.7rem;max-width:30rem}
 .supporting{font-size:var(--fs-small);line-height:1.9;margin-top:1rem;color:var(--ink)}
-.hero-shot{justify-self:center}
+/* The reel: muted loop with its last frame (the wordmark) as poster; sound only on request. */
+.hero-reel{position:relative}
+.hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:1rem;background:var(--bg);box-shadow:0 1.5rem 3rem rgba(33,27,22,.16)}
+.reel-sound{position:absolute;right:.75rem;bottom:.75rem;min-height:44px;padding:.5rem 1rem;border:0;border-radius:999px;background:rgba(33,27,22,.8);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
+.reel-sound:hover{background:var(--ink)}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
@@ -142,7 +146,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .footer>a:last-child{padding-block:.6875rem;text-underline-offset:.2rem}
 
 @media(max-width:1199px){.outcomes{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:1023px){.hero{gap:2.5rem}.hero h1{font-size:var(--fs-display)}.experience-grid{grid-template-columns:1fr;gap:2.5rem}.both-sides{max-width:40rem}}
+@media(max-width:1023px){.hero{grid-template-columns:1fr;gap:2.5rem}.hero h1{font-size:var(--fs-display)}.experience-grid{grid-template-columns:1fr;gap:2.5rem}.both-sides{max-width:40rem}}
 @media(max-width:960px){.faq-section{grid-template-columns:1fr;gap:1.5rem}.retention-heading{gap:2rem}.retention-steps{gap:1.5rem}}
 @media(max-width:767px){
   .wrap{width:calc(100% - 2rem)}

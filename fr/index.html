@@ -50,7 +50,14 @@
       </div>
       <p class="fine">Deux mois gratuits à partir de la mise en service. Vous continuez seulement si cela fonctionne pour votre restaurant.</p>
     </div>
-    <figure class="hero-shot"><div class="phone"><picture><source srcset="../images/guest-pay.webp" type="image/webp"><img src="../images/guest-pay.png" width="780" height="1688" fetchpriority="high" alt="Le téléphone d’un client à la table 12&#8239;: $41.94 à payer, soit environ LL 3,753,630, un pourboire de 10% pour le serveur, et le choix entre Whish Money, la carte ou les espèces."></picture></div></figure>
+    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="../images/reel-poster.jpg" aria-label="Un film de 15 secondes&#8239;: un client scanne le QR de la table, l’addition de $152.50 se partage en quatre à $38.13 chacun, un client ajoute 10% de pourboire et paie $41.94 avec Whish Money, soit environ LL 3,753,630."><source src="../images/reel-web.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-mute="Couper le son">Activer le son</button></figure>
+<script>
+(function(){var v=document.getElementById('reel'),b=document.getElementById('reel-sound');if(!v||!b)return;
+var mq=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)'),sd=navigator.connection&&navigator.connection.saveData;
+if((mq&&mq.matches)||sd){v.removeAttribute('autoplay');v.pause();v.controls=true;b.hidden=true;return;}
+var onLabel=b.textContent,offLabel=b.getAttribute('data-mute');
+b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;v.play();b.textContent=offLabel;b.setAttribute('aria-pressed','true');}else{v.muted=true;b.textContent=onLabel;b.setAttribute('aria-pressed','false');}});})();
+</script>
   </section>
 
   <section class="wrap section" id="how" aria-labelledby="how-title">
