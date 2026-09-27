@@ -139,8 +139,10 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .benefits-band .eyebrow{color:var(--peach)}
 .benefits-band p{color:var(--on-petrol)}
 .outcomes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:2rem;row-gap:0;margin-top:2.5rem}
-.outcomes article{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;align-content:start;padding-bottom:2rem}
+.outcomes article{display:grid;grid-row:span 5;grid-template-rows:subgrid;row-gap:0;align-content:start;padding-bottom:2rem}
 .outcomes h3{margin-top:1.1rem;color:var(--peach)}.outcomes p{margin-top:.75rem}
+.outcome-icon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:1rem;background:rgba(246,195,159,.12);color:var(--peach)}
+.outcome-icon svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
 .benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-heading);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
 .benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
 .source-tag{display:inline-block;margin-inline-end:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
@@ -177,7 +179,8 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .price{color:#fff;font-size:var(--fs-display);font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .price span{display:block;margin-top:.5rem;font-size:var(--fs-body);font-weight:400;letter-spacing:0;color:var(--on-petrol)}
 .founder{padding-block:1.25rem;border-bottom:1px solid #ffffff30;color:var(--peach);font-size:var(--fs-body)}
-.price-card ul{padding-inline-start:1.2rem;list-style:square;color:var(--on-petrol)}.price-card li{margin-bottom:.5rem}
+.price-card ul{padding:0;list-style:none;color:var(--on-petrol)}.price-card li{position:relative;margin-bottom:.6rem;padding-inline-start:1.75rem}
+.price-card li::before{content:'';position:absolute;inset-inline-start:.1rem;top:.45em;width:.8rem;height:.42rem;border-left:2px solid var(--peach);border-bottom:2px solid var(--peach);transform:rotate(-45deg)}
 .price-note{margin-block:1.2rem;font-size:var(--fs-small);color:var(--on-petrol)}
 
 /* Coming next: return visits */
