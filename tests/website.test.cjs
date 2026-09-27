@@ -332,10 +332,13 @@ test('product screens: every image exists in WebP and PNG, has its size, an alt,
     assert.match(attrs, /loading="lazy"/, name + ' is lazy');
   });
   const hero = s.slice(s.indexOf('class="hero wrap"'), s.indexOf('</section>'));
-  // 16:9 from 768 px (browsers that ignore media fall back to it), 9:16 below; both languages ship both cuts and posters.
-  const video = hero.match(/<video ([^>]*)><source src="images\/film-en\.mp4" type="video\/mp4" media="\(min-width: 768px\)"><source src="images\/film-en-portrait\.mp4" type="video\/mp4"><\/video>/);
-  assert.ok(video, 'the hero plays the film, 16:9 first');
-  ['autoplay', 'muted', 'loop', 'playsinline', 'poster="images/film-en.jpg"', 'data-poster-portrait="images/film-en-portrait.jpg"', 'width="1280" height="720"'].forEach(a => assert.ok(video[1].includes(a), 'film ' + a));
+  // The 16:9 cut everywhere: on phones it sits first, edge to edge, and "Watch with sound" opens it full screen.
+  // The 9:16 cuts stay in images/ for social.
+  const video = hero.match(/<video ([^>]*)><source src="images\/film-en\.mp4" type="video\/mp4"><\/video>/);
+  assert.ok(video, 'the hero plays the 16:9 film');
+  ['autoplay', 'muted', 'loop', 'playsinline', 'poster="images/film-en.jpg"', 'width="1280" height="720"'].forEach(a => assert.ok(video[1].includes(a), 'film ' + a));
+  assert.match(hero, /<button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-watch="Watch with sound" data-mute="Mute">Sound on<\/button>/);
+  assert.ok(s.includes('v.webkitEnterFullscreen') && s.includes('v.requestFullscreen'), 'phones open the film full screen');
   assert.match(video[1], /aria-label="[^"]{80,}"/, 'film description');
   ['en', 'fr'].forEach(l => ['.mp4', '-portrait.mp4', '.jpg', '-portrait.jpg'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, 'images', 'film-' + l + x)), 'film-' + l + x)));
   assert.ok(!fs.existsSync(path.join(ROOT, 'images', 'reel-web.mp4')), 'the 15-second cut is retired');

@@ -96,14 +96,10 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
 .reel-sound{position:absolute;right:0;bottom:0;min-height:44px;padding:.5rem 1rem;border:0;background:var(--ink);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
 .reel-sound:hover{background:var(--brand)}
-/* Phones: the film is the hero. It comes first, edge to edge, and fills the screen under the header (cropping the
-   sides a little on short phones rather than letterboxing); the headline follows, and the header keeps the booking
-   button in view. The markup keeps the headline first, so a screen reader still hears it first. */
-@media(max-width:767px){
-  .hero{padding-top:0}
-  .hero-reel{order:-1;margin-inline:-1rem}
-  .hero-reel video{aspect-ratio:9/16;max-height:calc(100svh - var(--header-h));object-fit:cover}
-}
+/* Phones: the film is the hero. The 16:9 cut comes first, edge to edge (about a third of the screen), with the headline
+   and buttons in view below it; "Watch with sound" opens it full screen. The markup keeps the headline first, so a
+   screen reader still hears it first. */
+@media(max-width:767px){.hero-reel{order:-1;margin-inline:-1rem}}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
@@ -181,7 +177,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media(max-width:767px){
   .wrap{width:calc(100% - 2rem)}
   .nav-in{gap:.75rem}.nav-links{display:none}.nav-in>.btn{margin-left:auto}
-  .hero{grid-template-columns:1fr;gap:2.5rem;padding-block:2.5rem 3rem}
+  .hero{grid-template-columns:1fr;gap:2.5rem;padding-block:0 3rem}
   .phone{max-width:16rem}.phone.small{max-width:12rem}
   .section{padding-block:3rem}
   .steps,.outcomes,.pricing-grid,.retention-heading,.retention-steps{grid-template-columns:1fr}
