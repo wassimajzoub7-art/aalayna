@@ -137,13 +137,14 @@ test('type: Saira for reading, Kode Mono for labels, Aalayna Block for the name 
   ['.eyebrow', '.number', '.source-tag'].forEach(sel => assert.match(css, new RegExp('\\n' + sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-label\\)'), sel + ' in Kode Mono'));
   const covered = t => [...t.toUpperCase()].filter(ch => !/\s/.test(ch) && !Logo.TYPE[ch]);
   for (const f of SITE_PAGES) {
-    const s = read(f), p = f.startsWith('fr/') ? '../' : '';
+    const s = read(f), p = /^(?:fr|ar)\//.test(f) ? '../' : '';
     const fonts = s.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1];
     assert.ok(fonts.includes('family=Saira:'), f + ' loads Saira');
     assert.ok(!/IBM\+Plex/.test(fonts), f + ': no IBM Plex on the site (it is the app\'s face)');
     assert.ok(fonts.includes('family=Kode+Mono:'), f + ' loads Kode Mono');
     assert.ok(s.includes('<link rel="preload" href="' + p + 'brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>'), f + ' preloads the name font');
-    for (const m of s.matchAll(/<span class="name"[^>]*>([\s\S]*?)<\/span>/g)) assert.deepEqual(covered(m[1].replace(/<[^>]*>/g, '')), [], f + ': "' + m[1] + '"');
+    // The Arabic page sets its name, علينا, in Noto Kufi Arabic (the Block has no Arabic letters).
+    if (!f.startsWith('ar/')) for (const m of s.matchAll(/<span class="name"[^>]*>([\s\S]*?)<\/span>/g)) assert.deepEqual(covered(m[1].replace(/<[^>]*>/g, '')), [], f + ': "' + m[1] + '"');
   }
 });
 

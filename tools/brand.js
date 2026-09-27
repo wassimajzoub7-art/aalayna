@@ -62,7 +62,7 @@ function svgFiles() {
 
 // The logo in the site's pages: the Block in the header, the Kufi lockup in the footer. Inline, so they cost no
 // request and take the page's colours (.logo-ink follows the text colour); the link around each names it.
-const SITE_PAGES = ['index.html', 'fr/index.html', 'book.html', 'numbers.html'];
+const SITE_PAGES = ['index.html', 'fr/index.html', 'ar/index.html', 'book.html', 'numbers.html'];
 function siteLogo(mark) {
   const p = (cls, d) => (d ? '<path class="' + cls + '" d="' + d + '"/>' : '');
   return '<svg viewBox="0 0 ' + mark.w + ' ' + mark.h + '" aria-hidden="true" focusable="false">' + p('logo-ink', mark.ink) + p('logo-red', mark.red) + '</svg>';

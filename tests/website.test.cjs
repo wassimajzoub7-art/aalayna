@@ -351,7 +351,7 @@ const FR = 'fr/index.html';
 const FR_CTA = ['Réserver un appel de 15 min', 'Écrivez-nous sur WhatsApp'];
 const decode = s => s.replace(/&#8239;/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 // The language switch is the one link with hreflang; the English page has it in the header, the French page in the footer.
-const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr)"[^>]*>(?:EN|FR)<\/a>/g;
+const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr|ar)"[^>]*>(?:EN|FR|عربي)<\/a>/g;
 const noSwitch = s => s.replace(LANG_SWITCH, '');
 const all = (s, re) => [...s.matchAll(re)].map(m => m[1]);
 // What a reader or a screen reader gets: text between tags in the body, alt and aria-label, and the head's title and meta contents.
@@ -423,9 +423,10 @@ test('languages: lang, hreflang on both pages, a 44 px switch each way, French s
   assert.match(fr, /<html lang="fr">/);
   [en, fr].forEach((s, i) => {
     const alt = all(s, /<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g);
-    assert.deepEqual(alt, ['en', 'fr', 'x-default'], ['index.html', FR][i] + ' hreflang set');
+    assert.deepEqual(alt, ['en', 'fr', 'ar', 'x-default'], ['index.html', FR][i] + ' hreflang set');
     assert.ok(s.includes('<link rel="alternate" hreflang="en" href="https://aalayna.com/">'));
     assert.ok(s.includes('<link rel="alternate" hreflang="fr" href="https://aalayna.com/fr/">'));
+    assert.ok(s.includes('<link rel="alternate" hreflang="ar" href="https://aalayna.com/ar/">'));
     assert.ok(s.includes('<link rel="alternate" hreflang="x-default" href="https://aalayna.com/">'));
   });
   const toFr = en.match(/<a href="fr\/" hreflang="fr" lang="fr"([^>]*)>FR<\/a>/);
@@ -469,4 +470,69 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
   assert.ok(!/<p class="price">\$(?!150 )/.test(fr), 'standard price');
   ['Aalayna', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
+});
+
+/* ---------- Arabic homepage (ar/index.html) ---------- */
+const AR = 'ar/index.html';
+const AR_CTA = ['احجز مكالمة من 15 دقيقة', 'راسلنا على واتساب'];
+
+test('ar homepage: right to left, same ids, classes, tags, images and tracked placements as index.html', () => {
+  const en = noSwitch(read('index.html')), ar = noSwitch(read(AR));
+  assert.match(ar, /<html lang="ar" dir="rtl">/);
+  assert.deepEqual(all(ar, /\bid="([^"]*)"/g), all(en, /\bid="([^"]*)"/g), 'ids');
+  assert.deepEqual(all(ar, /\bclass="([^"]*)"/g), all(en, /\bclass="([^"]*)"/g), 'classes');
+  const tags = s => all(s.slice(s.indexOf('<body')), /<([a-z][a-z0-9]*)\b/g);
+  assert.deepEqual(tags(ar), tags(en), 'element sequence in the body');
+  const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
+  assert.deepEqual(pairs(ar), pairs(en), 'tracked placements, in order');
+  assert.deepEqual(all(ar, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/');
+  assert.equal((ar.match(/(?:src|srcset|href)="(?:images|brand|website\.css|book\.html|numbers\.html)/g) || []).length, 0, 'no path left relative to the root');
+  const dir = path.dirname(path.join(ROOT, AR));
+  all(read(AR), /\b(?:href|src|srcset)="([^"]*)"/g).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u)).forEach(u => {
+    let p = path.resolve(dir, u.split(/[?#]/)[0] || '.');
+    if (/\/$/.test(u.split(/[?#]/)[0]) || (fs.existsSync(p) && fs.statSync(p).isDirectory())) p = path.join(p, 'index.html');
+    assert.ok(fs.existsSync(p), AR + ': "' + u + '" does not resolve');
+  });
+  assert.match(read('.gitignore'), /^!ar\/\*$/m);
+});
+
+test('ar homepage: the two Arabic CTA labels, WhatsApp to the same number in Arabic, switches to English and French', () => {
+  const s = read(AR), en = read('index.html'), fr = read(FR);
+  const number = en.match(/wa\.me\/(\d+)/)[1];
+  for (const m of s.matchAll(/<(a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)) {
+    const attrs = m[2], text = decode(strip(m[3]));
+    if (/class="[^"]*\bbtn\b/.test(attrs)) assert.ok(AR_CTA.includes(text), 'button "' + text + '"');
+    if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, AR_CTA[0]); assert.match(attrs, /href="\.\.\/book\.html"/); }
+    if (/data-track="whatsapp_click"/.test(attrs)) {
+      assert.equal(text, AR_CTA[1]);
+      const href = attrs.match(/href="https:\/\/wa\.me\/(\d+)\?text=([^"]*)"/);
+      assert.equal(href[1], number, 'the same WhatsApp number');
+      assert.match(decodeURIComponent(href[2]), /^مرحباً، /, 'the prefilled message is Arabic');
+    }
+  }
+  const foot = s.match(/<footer[\s\S]*?<\/footer>/)[0];
+  assert.match(foot, /<a href="\.\.\/" hreflang="en" lang="en"[^>]*min-height:44px[^>]*>EN<\/a>/);
+  assert.match(foot, /<a href="\.\.\/fr\/" hreflang="fr" lang="fr"[^>]*min-height:44px[^>]*>FR<\/a>/);
+  assert.match(en.match(/<header[\s\S]*?<\/header>/)[0], /<a href="ar\/" hreflang="ar" lang="ar"[^>]*min-height:44px[^>]*>عربي<\/a>/, 'Arabic sits in the English header');
+  assert.match(fr.match(/<footer[\s\S]*?<\/footer>/)[0], /<a href="\.\.\/ar\/" hreflang="ar" lang="ar"[^>]*min-height:44px[^>]*>عربي<\/a>/, 'and in the French footer');
+  assert.deepEqual(all(s, /<link rel="alternate" hreflang="([^"]+)"/g), ['en', 'fr', 'ar', 'x-default']);
+  const meta = k => { const m = s.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
+  assert.equal(meta('og:url'), 'https://aalayna.com/ar/');
+  assert.equal(meta('og:locale'), 'ar_LB');
+});
+
+test('ar copy: nothing left in English, the same prices and percentages, the name in the hero is علينا', () => {
+  const en = read('index.html'), ar = read(AR);
+  assert.ok(!/—|&mdash;/.test(ar), 'em dash');
+  const keep = ['English · Français · العربية', 'Whish Money', 'version française'];   // the French switch keeps its French label
+  const arText = visible(ar).join('\n');
+  const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()]/))).map(t => t.trim()).filter(t => (t.match(/\p{L}{2,}/gu) || []).length >= 2 && !keep.includes(t));
+  assert.ok(phrases.length > 150, phrases.length + ' English phrases checked');
+  phrases.forEach(t => assert.ok(!arText.includes(t), 'still in English: "' + t + '"'));
+  const figures = s => [...new Set(visible(s).join(' ').match(/\$\d[\d,.]*\d|\d+%/g))].sort();
+  assert.deepEqual(figures(ar), figures(en), 'the same dollar amounts and percentages');
+  assert.match(ar, /<h1 id="hero-title">الفاتورة\.<br>التقسيم\.<br><span class="sr-only">علينا\.<\/span><span class="name" aria-hidden="true"><em>علينا\.<\/em><\/span><\/h1>/);
+  assert.match(read('website.css'), /\[lang="ar"\]\{--font-text:'Noto Kufi Arabic',/);
+  assert.match(read('website.css'), /\[lang="ar"\] :is\(h1,h2,h3,\.eyebrow,\.number,\.source-tag,\.btn,\.name\)\{letter-spacing:0;text-transform:none\}/, 'Arabic is never tracked or capitalised');
+  assert.ok(!/margin-(?:left|right)|padding-(?:left|right)/.test(read('website.css')), 'spacing is logical, so it mirrors in Arabic');
 });
