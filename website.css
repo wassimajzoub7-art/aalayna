@@ -58,6 +58,15 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .nav-links a,.nav-links button{display:inline-block;padding:.6875rem .5rem;font-size:var(--fs-small);text-decoration:none;white-space:nowrap}
 .nav-links a:hover,.nav-links button:hover{color:var(--brand-text)}
 .nav-in>.btn{white-space:nowrap}
+/* Language: the current one in the header, the other two in a small menu under it (44 px targets). */
+.lang{position:relative;flex-shrink:0}
+.lang summary{display:inline-flex;align-items:center;gap:.4rem;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;cursor:pointer;list-style:none}
+.lang summary::-webkit-details-marker{display:none}
+.lang summary::after{content:'';width:.4rem;height:.4rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-25%) rotate(45deg)}
+.lang[open] summary::after{transform:translateY(25%) rotate(-135deg)}
+.lang div{position:absolute;top:100%;inset-inline-end:0;z-index:30;display:grid;min-width:9rem;background:var(--surface);border:1px solid var(--line)}
+.lang a{display:flex;align-items:center;min-height:44px;padding-inline:1rem;font-size:var(--fs-small);font-weight:600;text-decoration:none;white-space:nowrap}
+.lang a:hover{color:var(--brand-text);background:var(--bg)}
 
 /* Buttons */
 .btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.8rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;text-decoration:none;font-size:var(--fs-body);font-weight:600;text-align:center;cursor:pointer;line-height:1.4}
@@ -126,7 +135,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 /* Arabic (ar/): the page runs right to left in Noto Kufi Arabic, geometric like the Kufi mark. Arabic letters join, so
    nothing is tracked or set in capitals, and the lines are opened up for the taller script. The name in the hero is
    علينا itself, in the same face. */
-[lang="ar"]{--font-text:'Noto Kufi Arabic','Saira',system-ui,sans-serif;--font-label:'Noto Kufi Arabic','Kode Mono',system-ui,sans-serif}
+[lang="ar"]{--font-text:'Noto Kufi Arabic','Saira',system-ui,sans-serif;--font-label:'Noto Kufi Arabic','Kode Mono',system-ui,sans-serif;font-family:var(--font-text)}
 [lang="ar"] body{line-height:1.85}
 [lang="ar"] :is(h1,h2,h3,.eyebrow,.number,.source-tag,.btn,.name){letter-spacing:0;text-transform:none}
 [lang="ar"] h1,[lang="ar"] h2{line-height:1.35}
