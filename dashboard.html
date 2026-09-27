@@ -3,10 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>Aalayna · operations</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
+<link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <script src="aalayna-store.js?v=22"></script>
 <script src="restaurant-growth.js?v=6"></script>
 <script src="owner-metrics.js?v=7"></script>
@@ -15,26 +19,31 @@
 
 <style>
   :root{
-    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
-    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
-    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
-    --red:#B4423A; --red-bg:#F9EEEC;
+    /* Aalayna brand: cream, ink, red for actions, petrol for the frame and positive states. */
+    --bg:#FAF6F1; --surface:#FFFFFF; --line:#EAE2D8; --line-soft:#F2ECE4;
+    --ink:#211B16; --sub:#5E544C; --faint:#6E635B;
+    --green:#173E43; --green-bg:#E6EEED; --green-line:#C5D6D4;
+    --brand:#C9414B; --brand-hover:#AC303B; --brand-text:#B3363F;
+    --red:#B3363F; --red-bg:#FBECE8;
     --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
-    --side:#0F2E24;
+    --side:#173E43; --frame:#173E43;   /* --side is re-tinted by a venue link; Aalayna's frame stays petrol */
+    --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
+    --font-label:'Kode Mono',ui-monospace,monospace;
     --eo:cubic-bezier(0.23,1,0.32,1);
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  body{font-family:var(--font-text);
     background:var(--bg);color:var(--ink);display:flex;min-height:100vh;
     font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
 
   /* ───────── sidebar ───────── */
-  .side{width:218px;flex-shrink:0;background:var(--side);color:#fff;position:sticky;top:0;
+  .side{width:218px;flex-shrink:0;background:var(--frame);color:#fff;position:sticky;top:0;
     height:100vh;display:flex;flex-direction:column}
   .brand{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
-  .brand .n{font-family:'Amiri',serif;font-size:21px;font-weight:700;color:#fff;line-height:1}
-  .brand .n b{color:#E8B4B8;font-weight:700}
-  .brand .s{font-size:10px;color:#8FA79A;margin-top:7px;letter-spacing:.06em;text-transform:uppercase}
+  .brand .n{display:block;color:#FAF6F1;line-height:0}
+  .brand .n svg{display:block;height:20px;width:auto}
+  .brand .n .logo-ink{fill:currentColor}.brand .n .logo-red{fill:#F6C39F}
+  .brand .s{font-family:var(--font-label);font-size:10px;color:#B9C7C4;margin-top:10px;letter-spacing:.06em;text-transform:uppercase}
   nav{padding:10px 10px;flex:1}
   .ni{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;
     color:#9DB4A9;font-family:inherit;font-size:13px;font-weight:500;text-align:left;
@@ -205,11 +214,11 @@
   .rv .h{display:flex;align-items:center;gap:8px}
   .st{color:var(--amber);font-size:11px;letter-spacing:1px}
   .rv .w{font-size:11px;color:var(--faint);margin-left:auto}
-  .rv .t{font-size:12.5px;line-height:1.55;margin-top:5px;color:#3C453F}
+  .rv .t{font-size:12.5px;line-height:1.55;margin-top:5px;color:#3A322C}
   .fb{padding:12px 0;border-bottom:1px solid var(--line-soft);display:flex;gap:10px}
   .fb:last-child{border-bottom:none}
   .fb .dt2{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;margin-top:6px}
-  .fb .t{font-size:12.5px;line-height:1.55;color:#3C453F}
+  .fb .t{font-size:12.5px;line-height:1.55;color:#3A322C}
   .fb .m{font-size:11px;color:var(--faint);margin-top:3px}
 
   .lock{display:flex;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft);
@@ -229,7 +238,7 @@
     .btn:active{transform:none}
   }
 </style>
-<link rel="stylesheet" href="restaurant-ops.css?v=6">
+<link rel="stylesheet" href="restaurant-ops.css?v=7">
 <style>
   /* ==== T4 staff sign-in: start ==== */
   .staff-gate{position:fixed;inset:0;z-index:10000;background:var(--bg);overflow:auto;display:flex;
@@ -242,7 +251,7 @@
   .staff-gate #staff-msg{margin-top:12px}
   .staff-gate #staff-msg[data-kind=err]{color:var(--red)}
   .staff-gate #staff-msg[data-kind=ok]{color:var(--green)}
-  .staff-gate a,.staff-bar a{color:var(--green);font-weight:500}
+  .staff-gate a,.staff-bar a{color:var(--brand-text);font-weight:500}
   .staff-gate ul{margin:10px 0 0 18px;line-height:1.8}
   .staff-links{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
   .staff-bar{font-size:12.5px;color:var(--sub);padding:0 0 14px}
@@ -254,14 +263,14 @@
 
 <aside class="side">
   <div class="brand">
-    <div class="n">aalay<b>na</b></div>
-    <div class="s" id="v-sub">Hallab 1881 · Kasr El Helou</div>
+    <a class="n" href="system.html" aria-label="Aalayna demo hub"><svg viewBox="0 0 350 50" aria-hidden="true" focusable="false"><path class="logo-ink" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM180 0L190 0L190 20.4L220 20.4L220 0L230 0L230 29.6L210 29.6L210 50L200 50L200 29.6L180 29.6ZM240 0L250 0L250 50L240 50ZM280 0L290 0L290 50L280 50ZM240 0L252.5 0L290 50L277.5 50ZM300 0L350 0L350 50L340 50L340 29.6L310 29.6L310 50L300 50ZM310 9.2L310 20.4L340 20.4L340 9.2Z"/><path class="logo-red" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></svg></a>
+    <div class="s" id="v-sub">Restaurant</div>
   </div>
   <nav>
     <button class="ni on" onclick="go(this,'tonight')">Service</button>
     <button class="ni" data-owner-only onclick="go(this,'week')">Overview</button>
     <button class="ni" data-owner-only onclick="go(this,'guests')">Customers</button>
-    <button class="ni" data-owner-only onclick="go(this,'reviews')">Reviews<span class="bg">2</span></button>
+    <button class="ni" data-owner-only onclick="go(this,'reviews')">Reviews<span class="bg" id="reviews-badge" hidden></span></button>
     <button class="ni" data-owner-only onclick="go(this,'team')">Team</button>
   </nav>
   <div class="side-f">Insights use recorded activity. Messaging and POS connections are not configured.</div>
@@ -339,7 +348,7 @@
         <div style="margin-top:12px">
           <div class="sr"><span class="rail"><span class="dot" style="background:#C4283C"></span>Whish Money</span><span class="amt" id="r-whish">$0.00</span></div>
           <div class="sr"><span class="rail"><span class="dot" style="background:#26327A"></span>Card</span><span class="amt" id="r-card">$0.00</span></div>
-          <div class="sr"><span class="rail"><span class="dot" style="background:#0F4B3A"></span>Cash collected</span><span class="amt" id="r-cash">$0.00</span></div>
+          <div class="sr"><span class="rail"><span class="dot" style="background:#173E43"></span>Cash collected</span><span class="amt" id="r-cash">$0.00</span></div>
           <div class="sr tot"><span class="rail">Total settled in-app</span><span class="amt" id="r-tot">$0.00</span></div>
         </div>
         <div class="note warn" id="shortbox" style="display:none"></div>
@@ -447,7 +456,7 @@
     <div class="top">
       <div>
         <h1>Reviews &amp; feedback</h1>
-        <div class="sub">Both channels are offered to every guest after settlement, independent of rating</div>
+        <div class="sub">After paying, guests who give 4 or 5 stars are invited to review on Google; 1 to 3 stars send a private note to you</div>
       </div>
     </div>
 
@@ -465,7 +474,7 @@
         <div class="d">31 at five stars</div></div>
       <div class="card"><div class="k">Review conversion</div><div class="v">47.9%</div>
         <div class="d">34 of 71 settled tables</div></div>
-      <div class="card"><div class="k">Private feedback, unread</div><div class="v" style="color:var(--red)">2</div>
+      <div class="card"><div class="k">Private feedback, unread</div><div class="v" style="color:var(--red)" id="fb-unread">0</div>
         <div class="d">not published anywhere</div></div>
     </div>
 
@@ -479,7 +488,7 @@
       </div>
       <div class="card">
         <h3>Private feedback</h3>
-        <div class="cs">Submitted by guests who chose not to post publicly.</div>
+        <div class="cs">Notes from guests who rated 1 to 3 stars. Never published.</div>
         <div id="fbs" style="margin-top:4px"></div>
       </div>
     </div>
@@ -555,6 +564,9 @@
    Waiters see the Live floor without owner-only controls. */
 (function(){
   if(!window.AalaynaAuth){ document.getElementById('staff-gate').hidden = true; return; }
+  /* Opened from the demo hub (system.html adds demo=1): skip the panel. The gate honours this only
+     in demo mode (no staff session, no venue key), so a real venue keeps its sign-in. */
+  try{ if(new URLSearchParams(location.search).get('demo')==='1') sessionStorage.setItem('aal.gate','demo'); }catch(e){}
   window.staffGate = AalaynaAuth.gate({ roles: ['owner', 'manager', 'waiter'] });
 })();
 </script>
@@ -564,12 +576,12 @@
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
 var RVS = [
-  {s:5, w:'2 days ago', t:'Paid on my phone before the waiter came back. Knefeh remains the best in Tripoli.'},
-  {s:5, w:'3 days ago', t:'Split the bill four ways in seconds. Service was excellent.'},
-  {s:4, w:'5 days ago', t:'Busy on a Friday but the table was ready quickly. Baklava worth the drive.'}];
+  {s:5, w:'2 days ago', t:'Paid on my phone before the waiter came back. The shish taouk was spot on.'},
+  {s:5, w:'3 days ago', t:'Split the bill four ways in seconds. Great mixed grill and a generous fattoush.'},
+  {s:4, w:'5 days ago', t:'Busy on a Friday but the table was ready quickly. Hummus and grills worth coming back for.'}];
 var FBS = [
   {t:'The terrace took around twenty minutes to be cleared although the table was free.', m:'Saturday · table 8'},
-  {t:'Coffee arrived cold. Everything else was very good.', m:'Sunday · table 21'}];
+  {t:'The kafta came out a little dry. Everything else was very good.', m:'Sunday · table 12'}];
 var WEEKTEAM = [
   {n:'Abou Karim', t:156.00, k:44}, {n:'Georges', t:121.00, k:38},
   {n:'Mariam', t:98.00, k:29}, {n:'Rami', t:43.00, k:18}];
@@ -605,6 +617,7 @@ function paintTonight(){
   $('t-note').textContent=money(m.grossCents/100)+' confirmed, including '+money(m.tipCents/100)+' in tips, across '+m.bills+' bills with a payment in this period. This is recorded Aalayna activity, not a POS closing statement.';
 
   paintRows();
+  paintReviewsBadge();
   paintFloor();
   paintGuests();
   var box = $('shortbox');
@@ -615,11 +628,19 @@ function paintTonight(){
   } else box.style.display = 'none';
 }
 
+/* The Reviews badge counts recorded guest feedback that needs attention in the reporting period
+   (the same rows as "Guest feedback needing attention"); no badge when there is none. */
+function paintReviewsBadge(){
+  var badge = $('reviews-badge'), n = 0;
+  try { n = Aalayna.lowRatings(Aalayna.ownerWindow($('report-period').value).start).length; } catch (e) { n = 0; }
+  badge.textContent = n; badge.hidden = !n;
+}
+
 /* ---- floor assignment ----
    The plan is a stylised room, not a survey: default positions sketch a dining
    room (window row, centre cluster, bar, terrace); dragging persists percent
    coordinates so a venue can roughly mirror its real floor in a minute. */
-var FL_COLORS = ['#0F4B3A', '#B4423A', '#26327A', '#8A6A1F', '#5B3E82', '#3A6B78'];
+var FL_COLORS = ['#173E43', '#B3363F', '#26327A', '#8A6A1F', '#5B3E82', '#3A6B78'];
 var FL_DEFAULT = {
   1:{x:10,y:22}, 2:{x:24,y:22}, 3:{x:38,y:22}, 4:{x:52,y:22},
   5:{x:14,y:50}, 6:{x:30,y:52}, 7:{x:46,y:50}, 8:{x:22,y:78,sq:1}, 9:{x:40,y:80,sq:1},
@@ -844,6 +865,7 @@ function paintReviews(){
     box.insertAdjacentHTML('beforeend','<div class="rv"><div class="h"><span class="st">' +
       '★'.repeat(r.s) + '</span><span class="w">' + r.w + '</span></div><div class="t">' + r.t + '</div></div>');
   });
+  $('fb-unread').textContent = FBS.length;   // the sample notes listed below
   var f = $('fbs'); f.innerHTML = '';
   FBS.forEach(function(x){
     f.insertAdjacentHTML('beforeend','<div class="fb"><span class="dt2"></span><span><div class="t">' +
