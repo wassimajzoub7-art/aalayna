@@ -96,7 +96,14 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
 .reel-sound{position:absolute;right:0;bottom:0;min-height:44px;padding:.5rem 1rem;border:0;background:var(--ink);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
 .reel-sound:hover{background:var(--brand)}
-@media(max-width:767px){.hero-reel{justify-self:center;width:100%;max-width:22rem}.hero-reel video{aspect-ratio:9/16}}
+/* Phones: the film is the hero. It comes first, edge to edge, and fills the screen under the header (cropping the
+   sides a little on short phones rather than letterboxing); the headline follows, and the header keeps the booking
+   button in view. The markup keeps the headline first, so a screen reader still hears it first. */
+@media(max-width:767px){
+  .hero{padding-top:0}
+  .hero-reel{order:-1;margin-inline:-1rem}
+  .hero-reel video{aspect-ratio:9/16;max-height:calc(100svh - var(--header-h));object-fit:cover}
+}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
