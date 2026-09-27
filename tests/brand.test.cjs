@@ -71,9 +71,9 @@ test('the Block: 3LAYNA fills 2 x 3 with the 3 in red; AALAYNA takes 2 x 4 with 
   assert.equal(Logo.line('AALAYNA').w / Logo.U, 43, 'a one-module full stop after the name');
 });
 
-test('the site carries the logo brand/logo.js draws: the Block in every header, the Kufi lockup in every footer (node tools/brand.js site)', () => {
+test('the site carries the logo brand/logo.js draws: the Block in every header (the Kufi mark on the Arabic page), the Kufi lockup in every footer (node tools/brand.js site)', () => {
   const want = sitePages();
-  const header = '<svg viewBox="0 0 ' + Logo.block().w + ' ' + Logo.block().h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="';
+  const mark = m => '<svg viewBox="0 0 ' + m.w + ' ' + m.h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="' + m.ink;
   const footer = '<svg viewBox="0 0 ' + Logo.lockup().w + ' ' + Logo.lockup().h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="';
   for (const f of SITE_PAGES) {
     const s = read(f);
@@ -81,7 +81,8 @@ test('the site carries the logo brand/logo.js draws: the Block in every header, 
     assert.ok(!/aalay<b>na<\/b>|Amiri/.test(s), f + ': the old wordmark is gone');
     const links = [...s.matchAll(/<a class="logo" href="index\.html" aria-label="[^"]+">(<svg [^>]*>)/g)].map(m => m[1]);
     assert.equal(links.length, f === 'book.html' ? 1 : 2, f + ': every logo is a named link around an inline SVG');
-    assert.ok(s.match(/<header[\s\S]*?<\/header>/)[0].includes(header), f + ': the Block in the header');
+    const ar = f.startsWith('ar/');
+    assert.ok(s.match(/<header[\s\S]*?<\/header>/)[0].includes(mark(ar ? Logo.kufi() : Logo.block())), f + (ar ? ': the Kufi mark in the header' : ': the Block in the header'));
     if (links.length > 1) assert.ok(s.match(/<footer[\s\S]*?<\/footer>/)[0].includes(footer), f + ': the lockup in the footer');
   }
 });
@@ -137,13 +138,14 @@ test('type: Saira for reading, Kode Mono for labels, Aalayna Block for the name 
   ['.eyebrow', '.number', '.source-tag'].forEach(sel => assert.match(css, new RegExp('\\n' + sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-label\\)'), sel + ' in Kode Mono'));
   const covered = t => [...t.toUpperCase()].filter(ch => !/\s/.test(ch) && !Logo.TYPE[ch]);
   for (const f of SITE_PAGES) {
-    const s = read(f), p = f.startsWith('fr/') ? '../' : '';
+    const s = read(f), p = /^(?:fr|ar)\//.test(f) ? '../' : '';
     const fonts = s.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1];
     assert.ok(fonts.includes('family=Saira:'), f + ' loads Saira');
     assert.ok(!/IBM\+Plex/.test(fonts), f + ': no IBM Plex on the site (it is the app\'s face)');
     assert.ok(fonts.includes('family=Kode+Mono:'), f + ' loads Kode Mono');
     assert.ok(s.includes('<link rel="preload" href="' + p + 'brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>'), f + ' preloads the name font');
-    for (const m of s.matchAll(/<span class="name"[^>]*>([\s\S]*?)<\/span>/g)) assert.deepEqual(covered(m[1].replace(/<[^>]*>/g, '')), [], f + ': "' + m[1] + '"');
+    // The Arabic page sets its name, علينا, in Noto Kufi Arabic (the Block has no Arabic letters).
+    if (!f.startsWith('ar/')) for (const m of s.matchAll(/<span class="name"[^>]*>([\s\S]*?)<\/span>/g)) assert.deepEqual(covered(m[1].replace(/<[^>]*>/g, '')), [], f + ': "' + m[1] + '"');
   }
 });
 

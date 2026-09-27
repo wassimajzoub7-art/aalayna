@@ -54,7 +54,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .logo svg{display:block;height:2.375rem;width:auto}
 .logo .logo-ink{fill:currentColor}.logo .logo-red{fill:var(--brand)}
 .footer .logo svg{height:2.25rem}
-.nav-links{display:flex;align-items:center;gap:.5rem;margin-left:auto}
+.nav-links{display:flex;align-items:center;gap:.5rem;margin-inline-start:auto}
 .nav-links a,.nav-links button{display:inline-block;padding:.6875rem .5rem;font-size:var(--fs-small);text-decoration:none;white-space:nowrap}
 .nav-links a:hover,.nav-links button:hover{color:var(--brand-text)}
 .nav-in>.btn{white-space:nowrap}
@@ -94,16 +94,15 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
    Phones get the 9:16 cut, everything else the 16:9 one (the sources choose by width). */
 .hero-reel{position:relative}
 .hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
-.reel-sound{position:absolute;right:0;bottom:0;min-height:44px;padding:.5rem 1rem;border:0;background:var(--ink);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
+.reel-sound{position:absolute;right:0;bottom:0;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:var(--ink);color:#fff;cursor:pointer}
+/* A speaker: crossed out while muted, sound waves once playing with sound. */
+.reel-sound svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}.reel-sound .spk{fill:currentColor}
+.reel-sound .on,.reel-sound[aria-pressed="true"] .off{display:none}.reel-sound[aria-pressed="true"] .on{display:inline}
 .reel-sound:hover{background:var(--brand)}
-/* Phones: the film is the hero. It comes first, edge to edge, and fills the screen under the header (cropping the
-   sides a little on short phones rather than letterboxing); the headline follows, and the header keeps the booking
-   button in view. The markup keeps the headline first, so a screen reader still hears it first. */
-@media(max-width:767px){
-  .hero{padding-top:0}
-  .hero-reel{order:-1;margin-inline:-1rem}
-  .hero-reel video{aspect-ratio:9/16;max-height:calc(100svh - var(--header-h));object-fit:cover}
-}
+/* Phones: the film is the hero. The 16:9 cut comes first, edge to edge (about a third of the screen), with the headline
+   and buttons in view below it; "Watch with sound" opens it full screen. The markup keeps the headline first, so a
+   screen reader still hears it first. */
+@media(max-width:767px){.hero-reel{order:-1;margin:-1px -1rem 0}}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
@@ -120,9 +119,20 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .outcomes h3{margin-top:1.1rem;color:var(--peach)}.outcomes p{margin-top:.75rem}
 .benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-heading);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
 .benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
-.source-tag{display:inline-block;margin-right:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.source-tag{display:inline-block;margin-inline-end:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .calc-link{display:inline-block;margin-top:.5rem;padding-block:.5625rem;color:var(--peach);font-weight:600;text-underline-offset:.25rem}
 .calc-link::after{content:' \2192'}
+
+/* Arabic (ar/): the page runs right to left in Noto Kufi Arabic, geometric like the Kufi mark. Arabic letters join, so
+   nothing is tracked or set in capitals, and the lines are opened up for the taller script. The name in the hero is
+   علينا itself, in the same face. */
+[lang="ar"]{--font-text:'Noto Kufi Arabic','Saira',system-ui,sans-serif;--font-label:'Noto Kufi Arabic','Kode Mono',system-ui,sans-serif}
+[lang="ar"] body{line-height:1.85}
+[lang="ar"] :is(h1,h2,h3,.eyebrow,.number,.source-tag,.btn,.name){letter-spacing:0;text-transform:none}
+[lang="ar"] h1,[lang="ar"] h2{line-height:1.35}
+[lang="ar"] .name{font-family:var(--font-text);font-weight:700}
+[lang="ar"] .site-nav .logo svg{height:2.75rem}   /* the Kufi mark is square and lighter than the Block */
+[dir="rtl"] .calc-link::after{content:' \2190'}
 
 /* Both sides of the table */
 .experience-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:4rem;align-items:start;margin-top:2.8rem}
@@ -143,7 +153,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .price{color:#fff;font-size:var(--fs-display);font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .price span{display:block;margin-top:.5rem;font-size:var(--fs-body);font-weight:400;letter-spacing:0;color:var(--on-petrol)}
 .founder{padding-block:1.25rem;border-bottom:1px solid #ffffff30;color:var(--peach);font-size:var(--fs-body)}
-.price-card ul{padding-left:1.2rem;list-style:square;color:var(--on-petrol)}.price-card li{margin-bottom:.5rem}
+.price-card ul{padding-inline-start:1.2rem;list-style:square;color:var(--on-petrol)}.price-card li{margin-bottom:.5rem}
 .price-note{margin-block:1.2rem;font-size:var(--fs-small);color:var(--on-petrol)}
 
 /* Coming next: return visits */
@@ -162,7 +172,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .faq details{border-bottom:1px solid var(--line)}
 .faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:3rem;padding:.75rem .2rem;cursor:pointer;font-weight:500;list-style:none}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:'';flex-shrink:0;width:.55rem;height:.55rem;margin-right:.4rem;border-right:2px solid var(--brand-text);border-bottom:2px solid var(--brand-text);transform:translateY(-25%) rotate(45deg);transition:transform .2s ease}
+.faq summary::after{content:'';flex-shrink:0;width:.55rem;height:.55rem;margin-inline-end:.4rem;border-right:2px solid var(--brand-text);border-bottom:2px solid var(--brand-text);transform:translateY(-25%) rotate(45deg);transition:transform .2s ease}
 .faq details[open]>summary::after{transform:translateY(25%) rotate(-135deg)}
 .faq summary:hover{color:var(--brand-text)}
 .faq summary:focus-visible{outline-offset:2px}
@@ -180,8 +190,8 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media(max-width:960px){.faq-section{grid-template-columns:1fr;gap:1.5rem}.retention-heading{gap:2rem}.retention-steps{gap:1.5rem}}
 @media(max-width:767px){
   .wrap{width:calc(100% - 2rem)}
-  .nav-in{gap:.75rem}.nav-links{display:none}.nav-in>.btn{margin-left:auto}
-  .hero{grid-template-columns:1fr;gap:2.5rem;padding-block:2.5rem 3rem}
+  .nav-in{gap:.75rem}.nav-links{display:none}.nav-in>.btn{margin-inline-start:auto}
+  .hero{grid-template-columns:1fr;gap:2.5rem;padding-block:0 3rem}
   .phone{max-width:16rem}.phone.small{max-width:12rem}
   .section{padding-block:3rem}
   .steps,.outcomes,.pricing-grid,.retention-heading,.retention-steps{grid-template-columns:1fr}

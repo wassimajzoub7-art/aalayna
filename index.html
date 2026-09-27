@@ -12,6 +12,7 @@
 <meta property="og:url" content="https://aalayna.com/">
 <meta property="og:locale" content="en_GB">
 <meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="ar_LB">
 <meta property="og:image" content="https://aalayna.com/images/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -19,6 +20,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" hreflang="en" href="https://aalayna.com/">
 <link rel="alternate" hreflang="fr" href="https://aalayna.com/fr/">
+<link rel="alternate" hreflang="ar" href="https://aalayna.com/ar/">
 <link rel="alternate" hreflang="x-default" href="https://aalayna.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,6 +42,7 @@
     <div class="nav-links"><a href="#how">How it works</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
     <a class="btn compact" data-track="booking_click" data-placement="navigation" href="book.html">Book a 15-min call</a>
     <a href="fr/" hreflang="fr" lang="fr" aria-label="FR, version française" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;text-decoration:none">FR</a>
+    <a href="ar/" hreflang="ar" lang="ar" aria-label="العربية" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding-inline:.25rem;font-family:'Noto Kufi Arabic',sans-serif;font-size:var(--fs-small);font-weight:600;text-decoration:none">عربي</a>
   </nav>
 </header>
 <main id="main">
@@ -55,14 +58,18 @@
       </div>
       <p class="fine">Two months free from go-live. Continue only if it works for your restaurant.</p>
     </div>
-    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="images/film-en.jpg" data-poster-portrait="images/film-en-portrait.jpg" aria-label="A 96-second film. It opens on close-ups of a table at the end of dinner: every night, every table, the same wait. Then four friends sit down, scan the table QR and read the menu in their language and currency, filtered for their diet. After dinner comes the wait for the bill. With Aalayna, they split the $152.50 bill four ways, tip the waiter, pay $41.94 with Whish Money and rate the night, while the restaurant sees payments live, confirms cash and publishes a price change to every table in seconds. It closes on the 3LAYNA logo: the table QR flies into its letters."><source src="images/film-en.mp4" type="video/mp4" media="(min-width: 768px)"><source src="images/film-en-portrait.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-mute="Mute">Sound on</button></figure>
+    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="images/film-en.jpg" aria-label="A 96-second film. It opens on close-ups of a table at the end of dinner: every night, every table, the same wait. Then four friends sit down, scan the table QR and read the menu in their language and currency, filtered for their diet. After dinner comes the wait for the bill. With Aalayna, they split the $152.50 bill four ways, tip the waiter, pay $41.94 with Whish Money and rate the night, while the restaurant sees payments live, confirms cash and publishes a price change to every table in seconds. It closes on the 3LAYNA logo: the table QR flies into its letters."><source src="images/film-en.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" aria-label="Sound on" data-watch="Watch with sound" data-mute="Mute"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path class="spk" d="M3 9h4l5-4v14l-5-4H3z"/><path class="off" d="M16 9l6 6M22 9l-6 6"/><path class="on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg></button></figure>
 <script>
 (function(){var v=document.getElementById('reel'),b=document.getElementById('reel-sound');if(!v||!b)return;
-if(window.matchMedia&&window.matchMedia('(max-width: 767px)').matches)v.poster=v.getAttribute('data-poster-portrait');
 var mq=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)'),sd=navigator.connection&&navigator.connection.saveData;
 if((mq&&mq.matches)||sd){v.removeAttribute('autoplay');v.pause();v.controls=true;b.hidden=true;return;}
-var onLabel=b.textContent,offLabel=b.getAttribute('data-mute');
-b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;v.play();b.textContent=offLabel;b.setAttribute('aria-pressed','true');}else{v.muted=true;b.textContent=onLabel;b.setAttribute('aria-pressed','false');}});})();
+var onLabel=b.getAttribute('aria-label'),offLabel=b.getAttribute('data-mute');
+// On a phone the film is small, so the button opens it full screen, from the start, with sound; leaving full screen mutes it again.
+var phone=window.matchMedia&&window.matchMedia('(max-width: 767px)').matches;
+if(phone){b.setAttribute('aria-label',b.getAttribute('data-watch'));b.removeAttribute('aria-pressed');
+b.addEventListener('click',function(){v.muted=false;v.currentTime=0;v.play();if(v.webkitEnterFullscreen)v.webkitEnterFullscreen();else if(v.requestFullscreen)v.requestFullscreen();});
+var back=function(){if(!document.fullscreenElement){v.muted=true;v.play();}};v.addEventListener('webkitendfullscreen',back);document.addEventListener('fullscreenchange',back);return;}
+b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;v.play();b.setAttribute('aria-label',offLabel);b.setAttribute('aria-pressed','true');}else{v.muted=true;b.setAttribute('aria-label',onLabel);b.setAttribute('aria-pressed','false');}});})();
 </script>
   </section>
 
