@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aalayna Film</title>
-<meta name="description" content="Aalayna in 75 seconds, all at one table: four friends sit down, scan and read the menu, eat, wait for the bill, then split, tip, pay and rate, and the restaurant's live floor.">
+<meta name="description" content="Aalayna in 81 seconds, all at one table: four friends sit down, scan and read the menu, eat, wait for the bill, then split, tip, pay and rate, and the restaurant's live floor.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,6 +114,20 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #fSheet .disc{position:absolute;left:20px;top:266px;font-size:12.5px;color:var(--a-faint)}
 #fDone{position:absolute;left:16px;right:16px;top:292px;height:50px;border-radius:12px;background:var(--a-green);color:#fff;display:grid;place-items:center;font-weight:600;font-size:16px}
 .bc-ll{text-align:right;font-size:12.5px;color:var(--a-sub);margin-top:2px;font-variant-numeric:tabular-nums}
+#sHome{background:#fff}
+.h-hero{position:absolute;left:0;right:0;top:0;height:318px;background:#173E43;overflow:hidden}
+.h-pat{position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(246,195,159,.16) 1.2px,transparent 1.6px);background-size:18px 18px}
+.h-crest{position:absolute;left:0;right:0;top:92px;text-align:center;color:#FAF6F1}
+.h-crest small{display:block;font-size:11.5px;font-weight:700;letter-spacing:.2em;color:#F6C39F}
+.h-crest b{display:block;font-family:'Amiri',serif;font-size:46px;line-height:60px;margin-top:8px}
+.h-crest span{display:block;font-size:13.5px;color:rgba(250,246,241,.72)}
+.h-crest i{display:block;width:44px;height:2px;background:#F6C39F;margin:16px auto 0}
+.h-greet{position:absolute;left:24px;top:346px;font-family:'Amiri',serif;font-size:30px;font-weight:700}
+.h-tbl{position:absolute;left:24px;top:398px;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--a-green)}
+.h-tbl i{width:8px;height:8px;border-radius:50%;background:#3E8E6A}
+.h-note{position:absolute;left:24px;right:24px;top:430px;font-size:15px;line-height:23px;color:var(--a-sub)}
+#hMenu{position:absolute;left:16px;right:16px;top:600px;height:52px;border-radius:12px;background:var(--a-green);color:#fff;display:grid;place-items:center;font-weight:600;font-size:16px}
+#hBill{position:absolute;left:16px;right:16px;top:664px;height:52px;border-radius:12px;border:1.5px solid var(--a-green);color:var(--a-green);display:grid;place-items:center;font-weight:600;font-size:16px;background:#fff}
 .tabs{position:absolute;left:16px;top:112px;display:flex;gap:18px;font-size:14px;color:var(--a-sub);white-space:nowrap}
 .tabs b{color:var(--a-ink);font-weight:600;border-bottom:2px solid var(--a-ink);padding-bottom:9px}
 .hair{position:absolute;left:0;right:0;height:1px;background:var(--a-soft)}
@@ -288,7 +302,7 @@ const q = new URLSearchParams(location.search);
 const capture = q.has('capture');
 const LANG = q.get('lang') === 'fr' ? 'fr' : 'en';
 const P = q.has('format') ? q.get('format') === 'portrait' : !capture && innerHeight > innerWidth * 1.1;
-const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2, DUR = 75;
+const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2, DUR = 81;
 const lay = (l, p) => P ? p : l;
 const $ = id => document.getElementById(id);
 document.documentElement.lang = LANG;
@@ -637,6 +651,10 @@ const APP = `
  <div class="scr" id="sCam"><div id="tent"><canvas id="qrc" width="196" height="196"></canvas><b>Table 12</b><small>Scan to view and pay</small></div>
    <svg id="brk" width="390" height="772"><g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path id="bk0"/><path id="bk1"/><path id="bk2"/><path id="bk3"/></g></svg>
    <div id="scanl"></div><div id="scanPill"><i></i>${C.url} · Table 12</div></div>
+ <div class="scr" id="sHome"><div class="h-hero"><div class="h-pat"></div><div class="h-crest"><small>WELCOME TO</small><b>Table 12</b><span>Dinner service</span><i></i></div></div>
+   <div class="h-greet">Ahla w sahla</div><div class="h-tbl"><i></i>Table 12 · 4 guests</div>
+   <div class="h-note">Explore the menu. When you’re ready, split the bill your way and pay from your table.</div>
+   <div id="hMenu">See the menu</div><div id="hBill">Open the bill · $152.50</div><div class="pw">powered by <b>Aalayna</b></div></div>
  <div class="scr" id="sMenu">
    <div class="back">←</div><div class="m-title">Table 12</div><div class="m-sub">Dinner menu</div>
    <div class="pill" id="pLang">${pvHTML(['EN', 'AR'])}<u>▾</u></div><div class="pill" id="pCur">${pvHTML(['USD $', 'LBP LL'])}<u>▾</u></div>
@@ -779,7 +797,7 @@ const SCREENS = [...document.querySelectorAll('.scr')];
 const POOLS = [...document.querySelectorAll('.fpool')];
 
 /* ---------- Timeline ---------- */
-const CH = [11.875, 15, 19.2, 24.375, 26.875, 29.375, 31.875, 34.375];   // six guest chapters, the settle beat, then the room
+const CH = [11.875, 15, 19.62, 24.375, 26.875, 29.375, 31.875, 34.375];   // six guest chapters, the settle beat, then the room
 const SIDE = [34.375, 38.125, 41.25];
 const NAV = [[11.2, 'sCam', 0], [14.6, 'sMenu', 0], [19.65, 'sBill', 1], [20.4, 'sSplit', 1], [24.55, 'sPay', 1], [28.45, 'sPaid', 0]];
 const TAPS = [[14.45, 195, 590], [15.35, 82, 80], [15.95, 72, 553], [16.45, 195, 737], [17.35, 244, 29], [17.65, 197, 154], [18.6, 244, 29], [18.85, 197, 82],
@@ -892,13 +910,16 @@ function scrim(el, key, t, a, b) {
    then the room and the close. Each segment maps T onto a stretch of t, slower than the material was cut. */
 const SEG = [
   [0, 6, 11.96, 11.96, 'arrive'],
-  [6, 18, 11.96, 19.2, 'scan'],
-  [18, 24, 19.2, 19.2, 'dinner'],
-  [24, 37.32, 0, 11.1, 'wait'],
-  [37.32, 40.137, 11.1, 13.75, 'reopen'],
-  [40.137, 62.5, 19.2, 34.375, 'bill'],
-  [62.5, 70.5, 34.375, 41.25, 'room'],
-  [70.5, 75, 41.25, 45, 'close'],
+  [6, 10.37, 11.96, 14.6, 'scan'],
+  [10.37, 13.37, 14.6, 14.6, 'home1'],
+  [13.37, 21, 14.6, 19.2, 'scan'],
+  [21, 27, 19.2, 19.2, 'dinner'],
+  [27, 40.32, 0, 11.1, 'wait'],
+  [40.32, 43.137, 11.1, 13.75, 'reopen'],
+  [43.137, 46.65, 13.75, 13.75, 'home2'],
+  [46.65, 68.81, 19.65, 34.375, 'bill'],
+  [68.81, 76.5, 34.375, 41.25, 'room'],
+  [76.5, 81, 41.25, 45, 'close'],
 ];
 let OV = { id: '', T: 0, l: 0 };
 const NEWCAP = {
@@ -919,19 +940,20 @@ function render(T) {
   if (id === 'dinner') { const k = 1 - E.inOutCubic(p(l, .2, 1.2)); OV.pp = { x: lerp(126, 0, k), y: lerp(150, -28, k), r: 0, lift: 1 + .12 * k, k }; }
   // The camera over the world; in portrait, close-ups never climb over the caption.
   cam = camAt(t);
+  if (id === 'home1' || id === 'home2') { const e = id === 'home1' ? 3 : 3.51; cam = mixCam(cam, closeUp(t, 195, 540, lay(1.32, 1.02)), E.inOutCubic(p(l, .15, .9)) * (1 - E.inOutCubic(p(l, e - .55, e)))); }
   if (id === 'arrive') cam = mixCam(view(0, 22, ZW * .86, -6), camAt(11.96), E.inOutSine(u));
   if (id === 'dinner') {
     cam = mixCam(cam, view(0, 20, ZW * 1.02, 0), E.inOutCubic(p(l, .3, 1.7)));
     cam = mixCam(cam, view(0, 20, ZW * 1.08, 3), E.inOutSine(p(l, 1.7, 4.4)));
     cam = mixCam(cam, camAt(0), E.inOutCubic(p(l, 4.4, 6)));
   }
-  if (P && t > 11 && (id === 'scan' || id === 'reopen' || id === 'bill')) { const pp = phonePose(t), c = proj(pp.x, pp.y), top = c.y - 444 * cam.z * PS * pp.lift; if (top < 612) cam.fy += 612 - top; }
+  if (P && t > 11 && (id === 'scan' || id === 'reopen' || id === 'bill' || id === 'home1' || id === 'home2')) { const pp = phonePose(t), c = proj(pp.x, pp.y), top = c.y - 444 * cam.z * PS * pp.lift; if (top < 612) cam.fy += 612 - top; }
   $('world').style.transform = `translate(${cam.fx}px,${cam.fy}px) rotate(${cam.r}deg) scale(${cam.z}) translate(${-cam.lx}px,${-cam.ly}px)`;
   const near = clamp((cam.z * PS - .32) / .5);
   $('worldWrap').style.filter = near > .01 ? `blur(${(7 * near).toFixed(2)}px) brightness(${1 - .2 * near})` : 'none';
   lighting(t);
 
-  const ga = id === 'scan' || id === 'bill';
+  const ga = id === 'scan' || id === 'bill' || id === 'home1';
   show(layers.ui1, t < 7.9 && id === 'wait'); show(layers.red, t >= 7.5 && t < 11.95); show(layers.uiA, ga && t >= 11.8 && t < 34.45);
   layers.uiA.style.opacity = id === 'bill' ? E.outCubic(p(l, 0, .5)) : 1;
   show(layers.uiN, id === 'arrive' || id === 'dinner');
@@ -1189,7 +1211,9 @@ function phone(t, st = OV.st) {
   const [ct, cid, dir] = NAV[cur], k = E.inOutCubic(p(st, ct, ct + .45)), inc = $(cid);
   inc.style.display = ''; inc.style.zIndex = 2;
   if (cur > 0 && k < 1) {
-    const out = $(NAV[cur - 1][1]); out.style.display = ''; out.style.zIndex = 1;
+    let out = $(NAV[cur - 1][1]);
+    if (NAV[cur - 1][1] === 'sCam' || (NAV[cur - 1][1] === 'sMenu' && cid === 'sBill')) out = $('sHome');
+    out.style.display = ''; out.style.zIndex = 1;
     out.style.transform = dir === 0 ? '' : `translateX(${-110 * k}px)`;
     const od = out.querySelector('.dim'); if (od) od.style.opacity = dir > 0 ? .12 * k : 0;
   }
@@ -1202,9 +1226,21 @@ function phone(t, st = OV.st) {
   $('sbar').className = dom === 'sCam' || dom === 'sPaid' ? 'light' : '';
   $('app').style.transform = `scale(${K})`;
   scrCam(st); scrMenu(st); scrBill(st); scrSplit(st); scrPay(st); scrPaid(st);
+  const home = OV.id === 'home1' || OV.id === 'home2' || OV.id === 'reopen', hm = $('sHome');
+  if (home) {
+    SCREENS.forEach(el => { el.style.display = 'none'; });
+    const kin = OV.id === 'home1' ? E.inOutCubic(p(OV.l, 0, .45)) : 1;
+    if (kin < 1) { const c0 = $('sCam'); c0.style.display = ''; c0.style.zIndex = 1; c0.style.transform = ''; }
+    hm.style.display = ''; hm.style.zIndex = 2; hm.style.opacity = kin; hm.style.transform = `scale(${lerp(.94, 1, kin)})`;
+    $('screen').style.background = '#173E43'; $('sbar').className = 'light';
+    const btn = OV.id === 'home1' ? $('hMenu') : $('hBill'), at = OV.id === 'home1' ? 1.9 : 2.9;
+    btn.style.transform = `scale(${OV.id !== 'reopen' && OV.l >= at - .06 && OV.l < at + .1 ? .96 : 1})`;
+  } else { hm.style.opacity = 1; hm.style.transform = ''; ['hMenu', 'hBill'].forEach(k => { $(k).style.transform = ''; }); }
 
   let tap = null;
   for (const tp of TAPS) if (t >= tp[0] - .32 && t < tp[0] + .6) tap = tp;
+  if (OV.id === 'home1') tap = [t - OV.l + 1.9, 195, 626]; else if (OV.id === 'home2') tap = [t - OV.l + 2.9, 195, 690]; else if (OV.id === 'reopen') tap = null;
+  if (tap && (OV.id === 'home1' || OV.id === 'home2')) { const d = OV.l - (OV.id === 'home1' ? 1.9 : 2.9); if (d < -.32 || d >= .6) tap = null; }
   const td = $('tapDot'), tr = $('tapRing');
   if (tap) {
     const [at, ax, ay] = tap, pre = E.outCubic(p(t, at - .32, at - .08)), press = t >= at - .06 && t < at + .1 ? .82 : 1;

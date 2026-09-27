@@ -8,7 +8,7 @@
 'use strict';
 const fs = require('fs');
 
-const SR = 48000, DUR = 75, N = SR * DUR;
+const SR = 48000, DUR = 81, N = SR * DUR;
 const BEAT = .75, S16 = BEAT / 4, BAR = BEAT * 4, O16 = .15625; // 80 bpm; bar 24 (72 s) is the logo. O16: a sixteenth on the material's clock
 const TAU = Math.PI * 2;
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -25,8 +25,8 @@ const bus = {};
 for (const b of BUSES) bus[b] = [new Float32Array(N), new Float32Array(N)];
 const kicks = [];
 // The film plays its material in story order (reel.html's SEG): film time T0-T1 shows material time a-b.
-const SEG = [[0, 6, 11.96, 11.96], [6, 18, 11.96, 19.2], [18, 24, 19.2, 19.2], [24, 37.32, 0, 11.1], [37.32, 40.137, 11.1, 13.75],
-  [40.137, 62.5, 19.2, 34.375], [62.5, 70.5, 34.375, 41.25], [70.5, 75, 41.25, 45]];
+const SEG = [[0, 6, 11.96, 11.96], [6, 10.37, 11.96, 14.6], [10.37, 13.37, 14.6, 14.6], [13.37, 21, 14.6, 19.2], [21, 27, 19.2, 19.2], [27, 40.32, 0, 11.1],
+  [40.32, 43.137, 11.1, 13.75], [43.137, 46.65, 13.75, 13.75], [46.65, 68.81, 19.65, 34.375], [68.81, 76.5, 34.375, 41.25], [76.5, 81, 41.25, 45]];
 const M = t => SEG.filter(([, , a, b]) => b > a && t >= a - 1e-9 && t < b + (b === 45 ? 1 : 0)).map(([T0, T1, a, b]) => T0 + (t - a) * (T1 - T0) / (b - a));
 let MAP = false;                                              // while true, times given to voices are material times
 const mapped = (t0, go) => { MAP = false; M(t0).forEach(go); MAP = true; };
@@ -223,10 +223,10 @@ const CH = {
   Abmaj7: [32, [60, 63, 67, 68]], Fm6: [29, [60, 62, 65, 68]], G7b9: [31, [59, 62, 65, 68]],
 };
 // Chords on the film's clock: the table (0-24), the wait (24-35, darker), the guest's payment and the room.
-const PROG = [[0, 'Cmaj9'], [3, 'Am9'], [6, 'Fmaj9'], [9, 'Em7'], [12, 'Dm9'], [15, 'G13s'], [16.5, 'G13'], [18, 'Cmaj9'], [21, 'Am9'],
-  [24, 'Cmaj9'], [27.18, 'Abmaj7'], [30, 'Fm6'], [31.5, 'G7b9'], [33.75, 'Fmaj9'], [34.125, 'G13'], [34.5, 'Cmaj9'],
-  [36, 'Am9'], [39, 'Fmaj9'], [42, 'Dm9'], [43.5, 'G13'], [45, 'Cmaj9'], [48, 'Am9'], [51, 'Fmaj9'], [54, 'G13s'], [55.5, 'G13'], [57, 'Cmaj9'],
-  [60, 'Am9'], [61.5, 'G13'], [63, 'Fmaj9'], [66, 'Em7'], [67.5, 'Am9'], [69, 'Dm9'], [70.5, 'G13'], [72, 'Cmaj9']];
+const PROG = [[0, 'Cmaj9'], [3, 'Am9'], [6, 'Fmaj9'], [9, 'Em7'], [12, 'Dm9'], [15, 'G13s'], [16.5, 'G13'], [18, 'Cmaj9'], [21, 'Am9'], [24, 'Fmaj9'],
+  [27, 'Cmaj9'], [30.18, 'Abmaj7'], [33, 'Fm6'], [34.5, 'G7b9'], [36.75, 'Fmaj9'], [37.125, 'G13'], [37.5, 'Cmaj9'],
+  [39, 'Am9'], [42, 'Fmaj9'], [45, 'Dm9'], [48, 'G13s'], [49.5, 'G13'], [51, 'Cmaj9'], [54, 'Am9'], [57, 'Fmaj9'], [60, 'G13s'], [61.5, 'G13'], [63, 'Cmaj9'],
+  [66, 'Am9'], [67.5, 'G13'], [69, 'Fmaj9'], [72, 'Em7'], [73.5, 'Am9'], [75, 'Dm9'], [76.5, 'G13'], [78, 'Cmaj9']];
 const chordAt = t => { let c = PROG[0][1]; for (const [a, n] of PROG) if (t + 1e-6 >= a) c = n; return CH[c]; };
 const toneAt = (t, k, oct = 1) => { const v = chordAt(t)[1]; return v[((k % v.length) + v.length) % v.length] + 12 * (oct + Math.floor(k / v.length)); };
 const toneAtO = (t, k, oct) => toneAt(M(t)[0] ?? t, k, oct);
@@ -234,29 +234,29 @@ const toneAtO = (t, k, oct) => toneAt(M(t)[0] ?? t, k, oct);
 /* ---------- The table: they sit down, read the menu, order, eat (0-24) ---------- */
 {
   const nz = pink(), lp = biquad('lp', 900), lp2 = biquad('lp', 900);
-  voice(0, 24.2, s => lp(nz()) * (.6 + .4 * Math.sin(s * 1.3) * Math.sin(s * .7 + 1)) * Math.min(1, s / 1.2) * Math.min(1, (24.2 - s) / .6), { gain: .07, pan: -.3, to: 'amb' });
-  voice(0, 24.2, s => lp2(nz()) * (.6 + .4 * Math.sin(s * 1.1 + 2)) * Math.min(1, s / 1.2) * Math.min(1, (24.2 - s) / .6), { gain: .07, pan: .3, to: 'amb' });
-  [[1.2, -.5], [3.4, .4], [5.1, -.2], [19.9, .3], [20.15, -.4], [20.4, .5], [21.3, -.3], [22.2, .2]].forEach(([x, pn], i) => clink(x, .012 + .004 * (i % 2), pn, 2400 + i * 150));
+  voice(0, 27.2, s => lp(nz()) * (.6 + .4 * Math.sin(s * 1.3) * Math.sin(s * .7 + 1)) * Math.min(1, s / 1.2) * Math.min(1, (27.2 - s) / .6), { gain: .07, pan: -.3, to: 'amb' });
+  voice(0, 27.2, s => lp2(nz()) * (.6 + .4 * Math.sin(s * 1.1 + 2)) * Math.min(1, s / 1.2) * Math.min(1, (27.2 - s) / .6), { gain: .07, pan: .3, to: 'amb' });
+  [[1.2, -.5], [3.4, .4], [5.1, -.2], [22.9, .3], [23.15, -.4], [23.4, .5], [24.3, -.3], [25.2, .2]].forEach(([x, pn], i) => clink(x, .012 + .004 * (i % 2), pn, 2400 + i * 150));
 }
 chordEP(.4, CH.Cmaj9[1], 2.5, .5, { roll: .03 }); pad(.2, CH.Cmaj9[1].map(m => m + 12), 2.9, .016, { atk: 1.2 }); bass(.4, 36, 2.5, .1);
 chordEP(3, CH.Am9[1], 2.8, .5, { roll: .03 }); pad(3, CH.Am9[1].slice(0, 3).map(m => m + 12), 3, .016, { atk: .8 }); bass(3, 45, 2.8, .1);
 
 /* ---------- The wait, on the material's cues stretched to 80 bpm (24-35) ---------- */
-pad(24.12, [59, 64, 67, 71], 3, .018, { atk: 1 });
-chordEP(24.36, CH.Cmaj9[1], 2.64, .55, { roll: .03 }); bass(24.36, 36, 2.64, .12);
-pad(27.12, [56, 63, 67, 72], 2.88, .02); chordEP(27.18, CH.Abmaj7[1], 2.64, .5, { roll: .025 }); bass(27.18, 32, 2.7, .14);
-chordEP(30, CH.Fm6[1], 1.38, .52); bass(30, 29, 1.38, .15); pad(30, [56, 60, 65, 68], 1.44, .022, { atk: .3, rel: .3 });
-chordEP(31.5, CH.G7b9[1], 1.32, .58); bass(31.5, 31, 1.44, .17); pad(31.5, [55, 59, 62, 65], 1.5, .024, { atk: .2, rel: .2 });
-[[33.75, 'Fmaj9'], [34.125, 'G13'], [34.5, 'Cmaj9']].forEach(([x, c], i) => {
+pad(27.12, [59, 64, 67, 71], 3, .018, { atk: 1 });
+chordEP(27.36, CH.Cmaj9[1], 2.64, .55, { roll: .03 }); bass(27.36, 36, 2.64, .12);
+pad(30.12, [56, 63, 67, 72], 2.88, .02); chordEP(30.18, CH.Abmaj7[1], 2.64, .5, { roll: .025 }); bass(30.18, 32, 2.7, .14);
+chordEP(33, CH.Fm6[1], 1.38, .52); bass(33, 29, 1.38, .15); pad(33, [56, 60, 65, 68], 1.44, .022, { atk: .3, rel: .3 });
+chordEP(34.5, CH.G7b9[1], 1.32, .58); bass(34.5, 31, 1.44, .17); pad(34.5, [55, 59, 62, 65], 1.5, .024, { atk: .2, rel: .2 });
+[[36.75, 'Fmaj9'], [37.125, 'G13'], [37.5, 'Cmaj9']].forEach(([x, c], i) => {
   chordEP(x, CH[c][1], i === 2 ? 1.1 : .31, .9, { gain: .12 }); pad(x, CH[c][1].map(m => m + 12), i === 2 ? 1.1 : .34, .016, { atk: .02, rel: .3 });
   bass(x, CH[c][0], i === 2 ? .72 : .31, .22); kick(x, i === 2 ? 1 : .8); clap(x, .11);
 });
 
 /* ---------- The groove ---------- */
 // L: light (reading the menu, dinner). in: intro. A: the guest pays. thin: pull-outs. build: the rise. B: the room.
-const SECT = [[6, 'L'], [22.5, 'none'], [35.25, 'in'], [36, 'A'], [37.32, 'gap'], [38.25, 'A'], [43.4, 'thin'], [45, 'A'], [57.5, 'thin'], [59.25, 'A2'], [61, 'build'], [63, 'B'], [70.5, 'end']];
+const SECT = [[6, 'L'], [25.5, 'none'], [38.25, 'in'], [39, 'A'], [40.32, 'gap'], [41.25, 'A'], [49.2, 'thin'], [51, 'A'], [64.4, 'thin'], [66, 'A2'], [67.9, 'build'], [69, 'B'], [76.5, 'end']];
 const sectAt = t => { let s = 'none'; for (const [a, n] of SECT) if (t + 1e-6 >= a) s = n; return s; };
-for (let i = Math.round(6 / S16); i * S16 < 70.5 - 1e-6; i++) {
+for (let i = Math.round(6 / S16); i * S16 < 76.5 - 1e-6; i++) {
   const t = i * S16, sx = sectAt(t), pos = i % 16, sw = pos % 2 ? S16 * .12 : 0, full = sx === 'A' || sx === 'B' || sx === 'A2', lite = sx === 'L';
   if (sx === 'gap' || sx === 'none' || sx === 'end') continue;
   if (lite) {
@@ -272,33 +272,33 @@ for (let i = Math.round(6 / S16); i * S16 < 70.5 - 1e-6; i++) {
   if (pos % 4 === 2 && sx !== 'build') hat(t, full ? .034 : .022, sx === 'B' && pos % 8 === 6, .2);
   if (pos % 2 === 1 && full) hat(t + sw, .012 + (pos % 4 === 3 ? .004 : 0), false, .3);
   if (full || sx === 'thin') shaker(t + sw, sx === 'B' ? .014 : .01);
-  if (sx === 'build') { const k = p(t, 61, 63); if (pos % 2 === 0 || t > 62.2) snap(t, .025 + .06 * k * k, (pos % 4) / 4 - .4); }
+  if (sx === 'build') { const k = p(t, 67.9, 69); if (pos % 2 === 0 || t > 68.4) snap(t, .025 + .06 * k * k, (pos % 4) / 4 - .4); }
 }
-[6, 45, 63].forEach(x => crash(x, x === 6 ? .015 : .03));
+[6, 51, 69].forEach(x => crash(x, x === 6 ? .015 : .03));
 const BL = [[0, 5, 0, .95], [6, 2, 0, .7], [8, 3, 7, .8], [11, 2, 0, .65], [14, 2, 12, .7]];
 const KP = [[0, 5, .72], [6, 3, .52], [10, 5, .6]];
-for (let bar = 2; bar < 24; bar++) {
+for (let bar = 2; bar < 26; bar++) {
   const t0 = bar * BAR;
   for (const [pos, len, iv, v] of BL) {
     const t = t0 + pos * S16, sx = sectAt(t);
-    if (sx === 'none' || sx === 'gap' || sx === 'end' || (sx === 'build' && t > 62.2) || (t >= 22.5 && t < 35.25)) continue;
+    if (sx === 'none' || sx === 'gap' || sx === 'end' || (sx === 'build' && t > 68.4) || (t >= 25.5 && t < 38.25)) continue;
     if ((sx === 'thin' || sx === 'L') && pos > 8) continue;
     bass(t, chordAt(t)[0] + iv, len * S16 * .92 * (sx === 'thin' ? 3 : 1), .2 * v * (sx === 'L' ? .8 : 1));
   }
   for (const [pos, len, v] of KP) {
     const t = t0 + pos * S16, sx = sectAt(t);
-    if (sx === 'none' || sx === 'gap' || sx === 'end' || sx === 'build' || (t >= 22.5 && t < 35.25)) continue;
+    if (sx === 'none' || sx === 'gap' || sx === 'end' || sx === 'build' || (t >= 25.5 && t < 38.25)) continue;
     if (sx === 'thin' && pos > 0) continue;
     chordEP(t, chordAt(t)[1], len * S16 * (sx === 'thin' ? 4 : 1), v * (sx === 'B' ? 1.05 : sx === 'L' ? .85 : 1), { roll: .008 });
   }
 }
-bass(35.25, 36, .6, .18); chordEP(35.25, CH.Cmaj9[1], .6, .6);
+bass(38.25, 36, .6, .18); chordEP(38.25, CH.Cmaj9[1], .6, .6);
 for (let k = 0; k < PROG.length - 1; k++) {
   const [a, c] = PROG[k], b = PROG[k + 1][0];
-  if (a < 6 || (a >= 22.5 && a < 35.25) || a >= 70.5) continue;
+  if (a < 6 || (a >= 25.5 && a < 38.25) || a >= 76.5) continue;
   const [, v] = CH[c]; pad(a, v.slice(0, 3).map(m => m + 12), b - a, sectAt(a) === 'B' ? .024 : .017, { atk: .35, rel: .6 });
 }
-for (let i = Math.round(9 / S16); i * S16 < 70.5 - 1e-6; i++) {
+for (let i = Math.round(9 / S16); i * S16 < 76.5 - 1e-6; i++) {
   const t = i * S16, sx = sectAt(t), pos = i % 16;
   if (!(sx === 'A' || sx === 'B' || sx === 'A2' || sx === 'L')) continue;
   if (sx === 'L' && pos % 8 !== 2) continue;
@@ -308,9 +308,12 @@ for (let i = Math.round(9 / S16); i * S16 < 70.5 - 1e-6; i++) {
   pluck(t, toneAt(t, k, 1), sx === 'B' ? .05 : .04, { pan: pos % 8 < 4 ? -.4 : .4, bright: sx === 'B' ? .55 : .42, t60: 1.1 });
 }
 // The close: the logo lands on bar 24 and rings out.
-kick(72, .9); crash(72, .03, 3);
-chordEP(72, CH.Cmaj9[1], 2.8, .8, { roll: .02, gain: .11 }); ep(72, 64, 2.8, .6, { gain: .08 });
-bass(72, 36, 2.9, .2); pad(72, [60, 67, 71, 74, 76, 83], 2.9, .026, { atk: .05, rel: .3 });
+kick(78, .9); crash(78, .03, 3);
+chordEP(78, CH.Cmaj9[1], 2.8, .8, { roll: .02, gain: .11 }); ep(78, 64, 2.8, .6, { gain: .08 });
+bass(78, 36, 2.9, .2); pad(78, [60, 67, 71, 74, 76, 83], 2.9, .026, { atk: .05, rel: .3 });
+// The home screen, twice: in, then the tap on See the menu, later on Open the bill.
+air(10.37, .4, .01, 900, 2600); tock(12.27, 84, .045); air(13.37, .35, .01, 1200, 3200, .4, -.2);
+tock(46.04, 79, .05); air(46.65, .35, .01, 1200, 3200, .4, -.2);
 
 /* ---------- Sound effects, on the material's cues ---------- */
 MAP = true;
