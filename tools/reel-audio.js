@@ -4,7 +4,7 @@
 // per-bus EQ, a kick sidechain, a convolution reverb, a glue compressor and a limiter, and is normalised to -14 LUFS.
 // Nothing is sampled, so there is no licence to clear.
 //
-//   node tools/reel-audio.js [out.wav]
+//   node tools/reel-audio.js [out.wav] [ar]      (ar: the Arabic cut, which closes on the Kufi mark's reveal)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -17,7 +17,13 @@ global.Path2D = class {};
 require('../brand/motion.js');
 const join = fs.readFileSync(path.join(__dirname, '..', 'reel.html'), 'utf8').match(/const LOGO_AT = ([\d.]+), logo = AalaynaMotion\.block\(\{ tagAt: ([\d.]+)/);
 if (!join) throw new Error('reel.html: LOGO_AT and tagAt not found');
-const LOGO_AT = Number(join[1]), cue = global.AalaynaMotion.block({ tagAt: Number(join[2]) }).cues, at = t => LOGO_AT - 12 + t;   // on the story clock
+const LOGO_AT = Number(join[1]), cue = global.AalaynaMotion.block({ tagAt: Number(join[2]) }).cues;
+// The Arabic cut closes on the Kufi reveal instead, joined at LOGO_AR (also read from reel.html).
+const AR = process.argv[3] === 'ar';
+const joinAr = fs.readFileSync(path.join(__dirname, '..', 'reel.html'), 'utf8').match(/const LOGO_AR = \{ at: ([\d.]+), piece: AalaynaMotion\.kufi\(\{ tagAt: ([\d.]+)/);
+if (!joinAr) throw new Error('reel.html: LOGO_AR not found');
+const kcue = global.AalaynaMotion.kufi({ tagAt: Number(joinAr[2]) }).cues;
+const at = t => (AR ? Number(joinAr[1]) : LOGO_AT) - 12 + t;   // a cue of the closing reveal, on the story clock
 
 const SR = 48000, DUR = 96, N = SR * DUR;
 const BEAT = .75, S16 = BEAT / 4, BAR = BEAT * 4, O16 = .15625; // 80 bpm; bar 24 (78 s on the story clock) is the logo. O16: a sixteenth on the material's clock
@@ -340,18 +346,34 @@ for (let i = Math.round(9 / S16); i * S16 < 76.5 - 1e-6; i++) {
   const k = sx === 'B' ? [0, 2, 1, 3, 2, 4, 3, 1][(pos / 2) % 8] : [0, 2, 1, 3][Math.floor(pos / 4) % 4];
   pluck(t, toneAt(t, k, 1), sx === 'B' ? .05 : .04, { pan: pos % 8 < 4 ? -.4 : .4, bright: sx === 'B' ? .55 : .42, t60: 1.1 });
 }
-// The close: G under the logo's bloom and flight from bar 24, resolving to C when the modules snap into 3LAYNA.
-kick(78, .6); pad(78, [55, 59, 62, 67], at(cue.snap) - 78, .02, { atk: .5, rel: .15 }); bass(78, 43, at(cue.snap) - 78, .14);
-kick(at(cue.snap), .9); crash(at(cue.snap), .03, 3);
-chordEP(at(cue.snap), CH.Cmaj9[1], 3, .8, { roll: .02, gain: .11 }); ep(at(cue.snap), 64, 3, .6, { gain: .08 });
-bass(at(cue.snap), 36, 3.2, .2); pad(at(cue.snap), [60, 67, 71, 74, 76, 83], 3.2, .026, { atk: .05, rel: .3 });
-// And the reveal's own sounds, as tools/brand-audio.js scores them: the scan confirms, the modules fly and land, they snap, the bell.
-tock(at(cue.scan[1]) - .02, 96, .03); tock(at(cue.scan[1]) + .09, 101, .026);
-air(at(cue.fly), 1.1, .02, 250, 3000, .6, -.4);
-cue.lands.forEach((t, i) => { if (i % 3 === 0) key(at(t), .012); });
-woodblock(at(cue.snap), 2400, .05, 0); air(at(cue.snap), .14, .008, 3000, 7000, -.3, .3);
-[79, 84, 88].forEach((m, i) => bell(at(cue.snap) + .1 + i * .07, m, .04, { pan: -.35 + i * .35, len: 2.4 }));
-[0, 1, 2].forEach(i => tock(at(cue.tag) + i * .1, 88 + i * 3, .02, -.2 + i * .2));
+// The close: G under the logo's reveal from bar 24, resolving to C when it is done: the Block's modules snap into 3LAYNA,
+// or, in Arabic, the Kufi pen sets علينا's last dot (both on beat 4 of bar 24).
+const done = at(AR ? kcue.hops[2][1] : cue.snap);
+kick(78, .6); pad(78, [55, 59, 62, 67], done - 78, .02, { atk: .5, rel: .15 }); bass(78, 43, done - 78, .14);
+kick(done, .9); crash(done, .03, 3);
+chordEP(done, CH.Cmaj9[1], 3, .8, { roll: .02, gain: .11 }); ep(done, 64, 3, .6, { gain: .08 });
+bass(done, 36, 3.2, .2); pad(done, [60, 67, 71, 74, 76, 83], 3.2, .026, { atk: .05, rel: .3 });
+if (!AR) {
+  // The Block's own sounds, as tools/brand-audio.js scores them: the scan confirms, the modules fly and land, they snap, the bell.
+  tock(at(cue.scan[1]) - .02, 96, .03); tock(at(cue.scan[1]) + .09, 101, .026);
+  air(at(cue.fly), 1.1, .02, 250, 3000, .6, -.4);
+  cue.lands.forEach((t, i) => { if (i % 3 === 0) key(at(t), .012); });
+  woodblock(done, 2400, .05, 0); air(done, .14, .008, 3000, 7000, -.3, .3);
+  [79, 84, 88].forEach((m, i) => bell(done + .1 + i * .07, m, .04, { pan: -.35 + i * .35, len: 2.4 }));
+  [0, 1, 2].forEach(i => tock(at(cue.tag) + i * .1, 88 + i * 3, .02, -.2 + i * .2));
+} else {
+  // The Kufi's: the pen drops and bounces, runs the baseline as each letter rises, climbs the alif, hops three times
+  // to set the dots, then 3LAYNA pops in letter by letter and the tagline follows.
+  air(at(kcue.drop), kcue.land - kcue.drop, .012, 3000, 700, .5, .5);
+  tock(at(kcue.land), 72, .05, .5); boom(at(kcue.land), .08, 90); tock(at(kcue.bounce), 74, .03, .5);
+  air(at(kcue.run), kcue.climb - kcue.run + .2, .01, 500, 1400, .5, -.5);
+  [62, 63, 66, 67].forEach((m, i) => pluck(at(kcue.rises[i]) + .02, m + 12, .04, { pan: .5 - i * .25, t60: 1 }));
+  [69, 74].forEach((m, i) => pluck(at(kcue.climb) + .05 + i * .09, m + 12, .035, { pan: -.6, t60: 1 }));
+  kcue.hops.forEach(([a, b], i) => { air(at(a), b - a, .008, 800, 2400, -.3 + i * .3, -.1 + i * .3); tock(at(b), [79, 82, 86][i], .04, [.1, -.1, -.3][i]); });
+  [79, 84, 88].forEach((m, i) => bell(done + .1 + i * .07, m, .04, { pan: -.35 + i * .35, len: 2.4 }));
+  for (let i = 0; i < kcue.letters; i++) key(at(kcue.latin) + i * .06 + .05, .014);
+  [0, 1, 2].forEach(i => tock(at(kcue.tag) + i * .1, 88 + i * 3, .02, .2 - i * .2));
+}
 // The home screen, twice: in, then the tap on See the menu, later on Open the bill.
 air(10.37, .4, .01, 900, 2600); tock(12.27, 84, .045); air(13.37, .35, .01, 1200, 3200, .4, -.2);
 tock(46.04, 79, .05); air(46.65, .35, .01, 1200, 3200, .4, -.2);

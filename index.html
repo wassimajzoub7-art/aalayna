@@ -26,13 +26,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="preload" href="brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="website.css?v=8">
+<link rel="stylesheet" href="website.css?v=10">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <script src="aalayna-config.js"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
+<script src="site.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -70,23 +71,24 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
   <section class="wrap section" id="how" aria-labelledby="how-title">
     <p class="eyebrow">From the first scan to the last payment</p><h2 id="how-title">Three steps. At their own pace.</h2>
     <div class="steps">
-      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-menu-plain.webp" type="image/webp"><img src="images/guest-menu-plain.png" width="780" height="1688" loading="lazy" alt="The menu on a guest's phone at table 12, with the language and currency switches at the top and dishes priced in dollars."></picture></div><figcaption>The table’s menu, in English and dollars.</figcaption></figure><span class="number">01 · Menu</span><h3>Scan &amp; browse</h3><p>Open the restaurant’s menu from the table QR. Choose a language and view prices in dollars or lira.</p></article>
-      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-split.webp" type="image/webp"><img src="images/guest-split.png" width="780" height="1688" loading="lazy" alt="The split screen: the bill divided evenly between 4 people, $38.13 each, about LL 3,412,635."></picture></div><figcaption>Split evenly between four: $38.13 each.</figcaption></figure><span class="number">02 · Bill</span><h3>View &amp; split</h3><p>See the bill. Pay for the whole table, split evenly, select items or choose an amount.</p></article>
-      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-pay-cash.webp" type="image/webp"><img src="images/guest-pay-cash.png" width="780" height="1688" loading="lazy" alt="The payment screen with paying cash selected and the guest choosing to hand over a $50 note for a $23.60 total."></picture></div><figcaption>Paying cash: the guest picks their note.</figcaption></figure><span class="number">03 · Payment</span><h3>Settle your way</h3><p>Use a supported digital payment method, or request cash collection with the change needed. Staff confirm cash when it is collected.</p></article>
+      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-menu-plain.webp" type="image/webp"><img src="images/guest-menu-plain.png" width="780" height="1688" loading="lazy" alt="The menu on a guest's phone at table 12, with the language and currency switches at the top and dishes priced in dollars."></picture></div><figcaption>The table’s menu, in English and dollars.</figcaption></figure><span class="number">01 · Menu</span><h3>Scan &amp; browse</h3><p>Scan the table QR. The menu in their language, in dollars or lira.</p></article>
+      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-split.webp" type="image/webp"><img src="images/guest-split.png" width="780" height="1688" loading="lazy" alt="The split screen: the bill divided evenly between 4 people, $38.13 each, about LL 3,412,635."></picture></div><figcaption>Split evenly between four: $38.13 each.</figcaption></figure><span class="number">02 · Bill</span><h3>View &amp; split</h3><p>Pay it all, split evenly, pick items or choose an amount.</p></article>
+      <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-pay-cash.webp" type="image/webp"><img src="images/guest-pay-cash.png" width="780" height="1688" loading="lazy" alt="The payment screen with paying cash selected and the guest choosing to hand over a $50 note for a $23.60 total."></picture></div><figcaption>Paying cash: the guest picks their note.</figcaption></figure><span class="number">03 · Payment</span><h3>Settle your way</h3><p>Whish, card or cash. Staff confirm cash when they collect it.</p></article>
     </div>
+    <div class="steps-nav" hidden><button class="steps-arrow" type="button" data-step="-1" aria-label="Previous step"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></button><span class="steps-dots"><button type="button" aria-label="Step 1"></button><button type="button" aria-label="Step 2"></button><button type="button" aria-label="Step 3"></button></span><button class="steps-arrow" type="button" data-step="1" aria-label="Next step"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></button></div>
   </section>
 
   <section class="benefits-band" id="outcomes">
     <div class="wrap section" aria-labelledby="benefits-title">
       <p class="eyebrow">What changes, in numbers</p><h2 id="benefits-title">Four things owners can measure.</h2>
       <div class="outcomes">
-        <article><p class="outcome-figure">13 min</p><p class="outcome-source"><span class="source-tag">Assumption</span> Calculator defaults: 20 min today, 4 min to settle on the phone, the same 3 min change trip in both.</p><h3>Tables turn faster</h3><p>Up to 13 minutes back per table (illustrative): no waiting to catch the waiter, for the printed bill or for the trip to the till. On a night with a queue, that is the next party seated sooner.</p></article>
-        <article><p class="outcome-figure">10%</p><p class="outcome-source"><span class="source-tag">Product</span> The tip preselected at payment. The calculator assumes 75% of tables tip, 9% on average.</p><h3>Servers earn more tips</h3><p>A tip prompt at the moment of payment, 10% preselected, three taps. Tables that never tipped start to, and the ones that did tip more.</p></article>
-        <article><p class="outcome-figure">1 tap</p><p class="outcome-source"><span class="source-tag">Product</span> To rate the visit after paying. The calculator assumes 4% of Aalayna bills lead to a Google review.</p><h3>More Google reviews</h3><p>One tap to rate after paying. Happy guests go straight to your Google page; unhappy ones send a private note to you instead.</p></article>
-        <article><p class="outcome-figure">Your list</p><p class="outcome-source"><span class="source-tag">Product</span> Contacts guests choose to leave. The calculator assumes 20% leave one, and half of new ones agree to offers.</p><h3>Guests who come back</h3><p>A number or email left at the receipt, with separate permission for offers, becomes a list you own, linked to what each guest spent and when they last came.</p></article>
+        <article><span class="outcome-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><rect x="3" y="3" width="18" height="18"/><path d="M12 7v5h4"/></svg></span><p class="outcome-figure">13 min</p><p class="outcome-source"><span class="source-tag">Assumption</span> Calculator default: 20 min today, 7 with Aalayna.</p><h3>Tables turn faster</h3><p>Up to 13 minutes back per table (illustrative): no waiting for the waiter, the bill or the change.</p></article>
+        <article><span class="outcome-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M6 18L18 6"/><rect x="4" y="4" width="4" height="4"/><rect x="16" y="16" width="4" height="4"/></svg></span><p class="outcome-figure">10%</p><p class="outcome-source"><span class="source-tag">Product</span> Preselected at payment.</p><h3>Servers earn more tips</h3><p>A tip prompt at the moment of payment. Tables that never tipped start to.</p></article>
+        <article><span class="outcome-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4l-5.3 3 1.2-6L3.4 9.3l6-.7z"/></svg></span><p class="outcome-figure">1 tap</p><p class="outcome-source"><span class="source-tag">Product</span> To rate the visit after paying.</p><h3>More Google reviews</h3><p>Happy guests go to your Google page. Unhappy ones send you a private note.</p></article>
+        <article><span class="outcome-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M10 6h10M10 12h10M10 18h10"/><rect x="3" y="4.5" width="3" height="3"/><rect x="3" y="10.5" width="3" height="3"/><rect x="3" y="16.5" width="3" height="3"/></svg></span><p class="outcome-figure">Your list</p><p class="outcome-source"><span class="source-tag">Product</span> Contacts guests choose to leave.</p><h3>Guests who come back</h3><p>Numbers and emails left at the receipt, with separate consent for offers, become a list you own.</p></article>
       </div>
       <a class="calc-link" data-track="numbers_click" data-placement="outcomes" href="numbers.html?focus=all">Calculate it for your restaurant</a>
-      <p class="fine outcomes-note">Figures on the calculator are either what you type or our assumption, and each assumption is labelled. The two-month pilot replaces every assumption with your own data.</p>
+      <p class="fine outcomes-note">Every assumption is labelled. The pilot replaces them with your own data.</p>
     </div>
   </section>
 
@@ -95,9 +97,9 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
     <div class="experience-grid">
       <div>
         <h3>Your menu, in your restaurant’s style.</h3>
-        <p>Guests browse dishes, explore options and choose how to split. The menu editor lets your team update dishes, prices and service hours before publishing.</p>
+        <p>Your team updates dishes, prices and hours, then publishes.</p>
         <h3 class="subheading">Make it easy to share feedback.</h3>
-        <p>After payment, guests can rate their visit and choose public review or private feedback in one simple flow. Feedback stays optional.</p>
+        <p>After paying, a public review or a private note. Always optional.</p>
       </div>
       <div class="both-sides">
         <figure class="shot"><div class="phone small"><picture><source srcset="images/guest-menu.webp" type="image/webp"><img src="images/guest-menu.png" width="780" height="1688" loading="lazy" alt="The guest menu with the dietary filters open and Vegetarian selected: 58 of 72 dishes work for this guest."></picture></div><figcaption><strong>The guest’s menu</strong>Filtered to vegetarian dishes.</figcaption></figure>
@@ -108,19 +110,19 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
 
   <section class="wrap section" id="pricing" aria-labelledby="pricing-title">
     <p class="eyebrow">Start with your own floor</p><h2 id="pricing-title">Two months to see what changes.</h2>
-    <p class="section-intro">First, we check your POS and payment-provider compatibility. Once your restaurant goes live, we run Aalayna with your team for two months with no subscription fee. We review usage and results together before you decide whether to continue.</p>
+    <p class="section-intro">We check your POS and payment setup, then run Aalayna with your team for two months, free. Then you decide.</p>
     <div class="pricing-grid">
       <div class="pilot">
         <span class="pill">Free two-month pilot</span><h3>A practical test with your team.</h3>
-        <ol class="pilot-steps"><li><span class="number">01 · Check the fit</span> Share your menu, POS and payment setup. We agree the supported workflow before scheduling.</li><li><span class="number">02 · Prepare your floor</span> Menu setup, table QR cards and staff onboarding are included.</li><li><span class="number">03 · Look at the evidence</span> Review guest usage, settlement time, staff workload, payment reconciliation and recorded customer opt-ins. Assess return visits over time where records are available.</li></ol>
+        <ol class="pilot-steps"><li><span class="number">01 · Check the fit</span> Share your menu, POS and payment setup.</li><li><span class="number">02 · Prepare your floor</span> Menu setup, table QR cards and staff training, included.</li><li><span class="number">03 · Look at the evidence</span> Usage, settlement time, tips and cash, reviewed together.</li></ol>
         <a class="btn" data-track="booking_click" data-placement="pilot" href="book.html">Book a 15-min call</a>
-        <p class="fine">The two free months start at go-live, after POS and payment setup are ready. No automatic paid renewal: you choose whether to continue.</p>
+        <p class="fine">The free months start at go-live. No automatic renewal.</p>
       </div>
       <div class="price-card">
         <p class="eyebrow">After your two free months</p><p class="price">$150 <span>/ month / location</span></p>
         <p class="founder">First 10 founding restaurants lock in <strong>$100/month per location.</strong></p>
         <ul><li>QR menu, bill splitting &amp; supported settlement methods</li><li>Menu editor &amp; service hours</li><li>Payment records, cash requests &amp; tip attribution</li><li>Optional customer opt-ins &amp; recorded visit history</li><li>Return-visit campaign planning &amp; weekly recommendations</li><li>Guest feedback</li><li>Menu setup &amp; staff onboarding</li></ul>
-        <p class="price-note">No Aalayna commission on restaurant sales. WhatsApp and email sending are upcoming; messaging-provider charges will be confirmed before activation. Payment-provider fees may apply separately. Supported integrations and any additional setup costs are agreed before the pilot.</p>
+        <p class="price-note">No commission on your sales. Payment-provider fees are separate.</p>
         <a class="btn light full" data-track="whatsapp_click" data-placement="pricing" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20check%20POS%20compatibility%20and%20pilot%20pricing.%20My%20restaurant%20is%3A%20">WhatsApp us</a>
       </div>
     </div>
@@ -129,14 +131,14 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
   <section class="wrap section retention-section" id="return-visits" aria-labelledby="retention-title">
     <div class="retention-heading">
       <div><p class="eyebrow">Coming next</p><h2 id="retention-title">Bring guests back.</h2></div>
-      <p>A good visit can be the start of a lasting relationship. Give guests an optional way to stay in touch, understand their recorded visits and prepare a relevant invitation to return.</p>
+      <p>Turn a good visit into the next one.</p>
     </div>
     <div class="retention-steps">
-      <article><span class="number">01 · Connect</span><h3>Build your own customer list.</h3><p>Guests can leave an email or WhatsApp number after a confirmed payment. Permission for offers is separate from their receipt, and always optional.</p></article>
-      <article><span class="number">02 · Understand</span><h3>See who comes back.</h3><p>Link opted-in customers to confirmed bills. Recognise first-time guests, regulars and customers who haven’t visited recently.</p></article>
-      <article><span class="number">03 · Invite</span><h3>Make the next visit relevant.</h3><p>Prepare an invitation for a specific group, review the audience and follow recorded return visits. Your team stays in control of each campaign.</p></article>
+      <article><span class="number">01 · Connect</span><h3>Build your own customer list.</h3><p>Guests leave an email or WhatsApp number, if they want to.</p></article>
+      <article><span class="number">02 · Understand</span><h3>See who comes back.</h3><p>First visits, regulars, and who hasn’t been back.</p></article>
+      <article><span class="number">03 · Invite</span><h3>Make the next visit relevant.</h3><p>Invite the right group. Your team approves every campaign.</p></article>
     </div>
-    <div class="retention-status"><span class="retention-badge">In development</span><p>Customer history and campaign planning are available in the prototype. <strong>WhatsApp and email sending are upcoming.</strong> No messages are sent today.</p></div>
+    <div class="retention-status"><span class="retention-badge">In development</span><p>In the prototype today. <strong>WhatsApp and email sending are coming.</strong></p></div>
   </section>
 
   <section class="wrap section faq-section" id="faq" aria-labelledby="faq-title">
