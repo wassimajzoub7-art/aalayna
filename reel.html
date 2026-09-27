@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aalayna Film</title>
-<meta name="description" content="Aalayna in 81 seconds, all at one table: four friends sit down, scan and read the menu, eat, wait for the bill, then split, tip, pay and rate, and the restaurant's live floor.">
+<meta name="description" content="Aalayna in 93 seconds, all at one table: four friends sit down, scan and read the menu, eat, wait for the bill, then split, tip, pay and rate, and the restaurant's live floor.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,6 +32,14 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #world svg{position:absolute;overflow:visible}
 #vig{pointer-events:none}
 
+/* The cold open: letterboxed macro shots, cut on the beat */
+#tsT,#tsB{left:0;width:100%;-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}
+#tsT{top:0;-webkit-mask-image:linear-gradient(#000 20%,transparent);mask-image:linear-gradient(#000 20%,transparent)}
+#tsB{bottom:0;top:auto;-webkit-mask-image:linear-gradient(transparent,#000 80%);mask-image:linear-gradient(transparent,#000 80%)}
+#coldT{z-index:6;font-weight:700;letter-spacing:-.02em;color:#FAF6F1;text-align:center;white-space:nowrap;text-shadow:0 2px 24px rgba(0,0,0,.6)}
+#coldDot{width:56px;height:56px;border-radius:50%;background:var(--red);box-shadow:0 0 60px rgba(201,65,75,.5)}
+#lbT,#lbB{left:0;width:100%;background:#000;z-index:5}
+#iris{background:#000}
 /* Act 1: the wait */
 .cap1{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);text-wrap:balance}
 .cap1 .em{color:var(--peach)}
@@ -302,7 +310,7 @@ const q = new URLSearchParams(location.search);
 const capture = q.has('capture');
 const LANG = q.get('lang') === 'fr' ? 'fr' : 'en';
 const P = q.has('format') ? q.get('format') === 'portrait' : !capture && innerHeight > innerWidth * 1.1;
-const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2, DUR = 81;
+const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2, DUR = 93;
 const lay = (l, p) => P ? p : l;
 const $ = id => document.getElementById(id);
 document.documentElement.lang = LANG;
@@ -776,6 +784,9 @@ stage.innerHTML = `
    ${C.kinetic.map((t, i) => `<div class="kl" id="k${i + 1}"><span>${t}</span></div>`).join('')}
    <div class="a" id="thesis">${words(C.thesis)}</div>
  </div>
+ <div id="cold" class="layer"><div class="layer" id="coldBlack" style="background:#000"></div><div class="a" id="tsT"></div><div class="a" id="tsB"></div><div class="a" id="coldT"></div><div class="a" id="coldDot"></div></div>
+ <div id="iris" class="layer"></div>
+ <div id="lbT" class="a"></div><div id="lbB" class="a"></div>
  <div id="close" class="layer"><div class="fill"></div>
    <div class="a" id="ar">علينا</div>
    <div class="a" id="mark">${'aalayna'.split('').map((c, i) => `<span${i >= 5 ? ' class="na"' : ''}>${c}</span>`).join('')}</div>
@@ -908,29 +919,39 @@ function scrim(el, key, t, a, b) {
    The material above is laid out on one clock (t). The film plays it in story order on its own clock (T, 75 s):
    they sit down, scan and read the menu, order and eat, wait for the bill, reopen the app to split and pay,
    then the room and the close. Each segment maps T onto a stretch of t, slower than the material was cut. */
+const COLD = 12;
 const SEG = [
-  [0, 6, 11.96, 11.96, 'arrive'],
-  [6, 10.37, 11.96, 14.6, 'scan'],
-  [10.37, 13.37, 14.6, 14.6, 'home1'],
-  [13.37, 21, 14.6, 19.2, 'scan'],
-  [21, 27, 19.2, 19.2, 'dinner'],
-  [27, 40.32, 0, 11.1, 'wait'],
-  [40.32, 43.137, 11.1, 13.75, 'reopen'],
-  [43.137, 46.65, 13.75, 13.75, 'home2'],
-  [46.65, 68.81, 19.65, 34.375, 'bill'],
-  [68.81, 76.5, 34.375, 41.25, 'room'],
-  [76.5, 81, 41.25, 45, 'close'],
+  [12, 18, 11.96, 11.96, 'arrive'],
+  [18, 22.37, 11.96, 14.6, 'scan'],
+  [22.37, 25.37, 14.6, 14.6, 'home1'],
+  [25.37, 33, 14.6, 19.2, 'scan'],
+  [33, 39, 19.2, 19.2, 'dinner'],
+  [39, 52.32, 0, 11.1, 'wait'],
+  [52.32, 55.137, 11.1, 13.75, 'reopen'],
+  [55.137, 58.65, 13.75, 13.75, 'home2'],
+  [58.65, 80.81, 19.65, 34.375, 'bill'],
+  [80.81, 88.5, 34.375, 41.25, 'room'],
+  [88.5, 93, 41.25, 45, 'close'],
 ];
 let OV = { id: '', T: 0, l: 0 };
+const SHOTS = [
+  [.75, 3, 11.96, 11.96, 0, -30, 4.3, 4.9, 8, 14],       // the QR card and its red dot
+  [3, 5.25, 5.3, 6.4, -126, -150, 4.6, 5.2, 172, 180],   // the calculator: 152.5 / 4
+  [5.25, 7.5, 4.6, 6.4, 430, -70, 2.5, 2.9, -18, -10],  // a hand up; the waiter walks past
+  [7.5, 9, 22.62, 23.45, 10, 40, 3.9, 3.3, 6, 2],          // the receipt tears four ways
+];
+const COLDTX = { en: ['Every night.', 'Every table.', 'The same wait.', 'Until now.'], fr: ['Chaque soir.', 'Chaque table.', 'La même attente.', 'Jusqu’à maintenant.'] }[LANG];
 const NEWCAP = {
   en: [['Table 12 · 8:30 pm', 'Four friends *sit down.*', 'The menu is one scan away.'], ['8:45 pm', 'The waiter takes *the order.*', 'Then dinner. Nobody thinks about the bill.']],
   fr: [['Table 12 · 20 h 30', 'Quatre amis *s’installent.*', 'Le menu est à un scan.'], ['20 h 45', 'Le serveur prend *la commande.*', 'Puis le dîner. Personne ne pense à l’addition.']],
 }[LANG];
 
 /* ---------- Render ---------- */
-const layers = ['ui1', 'uiA', 'uiN', 'uiB', 'red', 'close', 'phoneLayer'].reduce((o, k) => (o[k] = $(k), o), {});
+const layers = ['ui1', 'uiA', 'uiN', 'uiB', 'red', 'close', 'phoneLayer', 'cold', 'iris'].reduce((o, k) => (o[k] = $(k), o), {});
 function render(T) {
   T = clamp(T, 0, DUR);
+  if (T < COLD) return coldOpen(T);
+  show(layers.cold, false); $('worldWrap').style.visibility = '';
   const sg = SEG.find(q => T < q[1]) || SEG[SEG.length - 1], u = clamp((T - sg[0]) / (sg[1] - sg[0]));
   const t = lerp(sg[2], sg[3], u), id = sg[4], l = T - sg[0];
   OV = { id, T, l, u, st: id === 'reopen' || id === 'dinner' ? 19.2 : t, course: 2, arr: [1, 1, 1, 1] };
@@ -966,7 +987,50 @@ function render(T) {
   if (t < 41.4) phone(t);
   if (t >= 34.3 && t < 41.6) roomUI(t);
   if (t >= 41.7) closing(t);
+  // Out of the cold open: an iris from the red dot, and the letterbox opening to the full frame.
+  const ir = id === 'arrive' ? E.inOutCubic(p(l, 0, 1)) : 1;
+  show(layers.iris, ir < 1);
+  if (ir < 1) { const r = lerp(28, Math.hypot(W, H) * .6, ir); layers.iris.style.webkitMaskImage = layers.iris.style.maskImage = `radial-gradient(circle at ${CX}px ${CY}px, transparent ${r.toFixed(1)}px, #000 ${(r + 1.5).toFixed(1)}px)`; }
+  letterbox(id === 'arrive' ? 1 - E.inOutCubic(p(l, .4, 1.6)) : 0);
 }
+const LBH = lay((1080 - 1920 / 2.39) / 2, 250);
+function letterbox(k) {
+  const h = (LBH * k).toFixed(1);
+  ['lbT', 'lbB'].forEach(id => { const el = $(id); el.style.height = h + 'px'; el.style.display = k > .001 ? '' : 'none'; });
+  $('lbT').style.top = '0px'; $('lbB').style.top = (H - LBH * k).toFixed(1) + 'px';
+}
+function coldOpen(TT) {
+  ['ui1', 'uiA', 'uiN', 'uiB', 'red', 'close', 'iris'].forEach(k => show(layers[k], false));
+  show(layers.cold, true); letterbox(1);
+  const shot = SHOTS.find(q => TT >= q[0] && TT < q[1]);
+  const dark = !shot;
+  $('worldWrap').style.visibility = dark ? 'hidden' : ''; show(layers.phoneLayer, !dark);
+  if (shot) {
+    const [a, b, m0, m1, x, y, z0, z1, r0, r1] = shot, u = E.inOutSine(p(TT, a, b)), t = lerp(m0, m1, p(TT, a, b));
+    OV = { id: 'cold', T: TT, l: TT - a, u, st: t, course: 2, arr: [1, 1, 1, 1] };
+    cam = { fx: CX, fy: CY, lx: x, ly: y, z: lerp(z0, z1, u) * lay(1, 1.25), r: lerp(r0, r1, u) };
+    $('world').style.transform = `translate(${cam.fx}px,${cam.fy}px) rotate(${cam.r}deg) scale(${cam.z}) translate(${-cam.lx}px,${-cam.ly}px)`;
+    $('worldWrap').style.filter = `brightness(${(.78 + .22 * Math.min(1, (TT - a) * 3)).toFixed(3)}) saturate(1.08)`;
+    lighting(t);
+    table12(t); floor(t);
+    if (t < 41.4) phone(t);
+    $('vig').style.background = 'radial-gradient(ellipse 70% 62% at 50% 50%,rgba(6,20,22,0) 40%,rgba(6,20,22,.82) 100%)';
+  }
+  // Tilt-shift focus bands above and below the subject.
+  ['tsT', 'tsB'].forEach(id => { $(id).style.height = (H * .34) + 'px'; $(id).style.opacity = dark ? 0 : 1; });
+  $('tsB').style.top = (H * .66) + 'px';
+  // One line per shot, low in the frame; then the dot falls and lands.
+  $('coldBlack').style.display = dark ? '' : 'none';
+  const tx = $('coldT'); tx.style.fontSize = lay(72, 78) + 'px';
+  const lines = [[1.1, 2.8], [3.35, 5.05], [5.6, 7.3], [9.95, 11.2]];
+  let li = -1; lines.forEach(([a, b], k) => { if (TT >= a && TT < b + .3) li = k; });
+  if (li >= 0) { const [a, b] = lines[li], k = E.outCubic(p(TT, a, a + .5)) * (1 - p(TT, b, b + .3)); tx.textContent = COLDTX[li]; T0(tx, CX, li === 3 ? CY + 120 : H - LBH / 2, k, 10 * (1 - k)); }
+  else tx.style.opacity = 0;
+  const dot = $('coldDot'), fall = p(TT, 9.1, 9.75), land = TT >= 9.75;
+  const sq = land ? .45 * wobble(TT - 9.75, 3, 8) : 0, y = land ? CY : lerp(-80, CY, E.inQuad(fall));
+  T(dot, { x: CX, y, sx: 1 + sq, sy: 1 - sq, o: TT >= 9.1 ? 1 : 0 });
+}
+const T0 = (el, x, y, o, dy) => { el.style.transform = `translate(${x}px,${y + dy}px) translate(-50%,-50%)`; el.style.opacity = o; };
 
 // Night, then the lights come up at the table, then over the whole room.
 function lighting(t) {

@@ -8,7 +8,7 @@
 'use strict';
 const fs = require('fs');
 
-const SR = 48000, DUR = 81, N = SR * DUR;
+const SR = 48000, DUR = 93, N = SR * DUR;
 const BEAT = .75, S16 = BEAT / 4, BAR = BEAT * 4, O16 = .15625; // 80 bpm; bar 24 (72 s) is the logo. O16: a sixteenth on the material's clock
 const TAU = Math.PI * 2;
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -28,11 +28,12 @@ const kicks = [];
 const SEG = [[0, 6, 11.96, 11.96], [6, 10.37, 11.96, 14.6], [10.37, 13.37, 14.6, 14.6], [13.37, 21, 14.6, 19.2], [21, 27, 19.2, 19.2], [27, 40.32, 0, 11.1],
   [40.32, 43.137, 11.1, 13.75], [43.137, 46.65, 13.75, 13.75], [46.65, 68.81, 19.65, 34.375], [68.81, 76.5, 34.375, 41.25], [76.5, 81, 41.25, 45]];
 const M = t => SEG.filter(([, , a, b]) => b > a && t >= a - 1e-9 && t < b + (b === 45 ? 1 : 0)).map(([T0, T1, a, b]) => T0 + (t - a) * (T1 - T0) / (b - a));
-let MAP = false;                                              // while true, times given to voices are material times
+let MAP = false, OFF = 0;                                  // OFF: where the story starts (after the cold open)                                              // while true, times given to voices are material times
 const mapped = (t0, go) => { MAP = false; M(t0).forEach(go); MAP = true; };
 // Adds fn(s) for len seconds from t0 to a bus, panned, with reverb and delay sends. trem: stereo tremolo depth.
 function voice(t0, len, fn, o = {}) {
   if (MAP) return mapped(t0, x => voice(x, len, fn, o));
+  t0 += OFF;
   const { gain = 1, pan = 0, to = 'fx', rev = 0, dly = 0, trem = 0 } = o;
   const [bl, br] = bus[to], [rl, rr] = bus.rev, [dl, dr] = bus.dly;
   const s0 = Math.round(t0 * SR), n = Math.round(len * SR);
@@ -152,7 +153,7 @@ function bass(t0, m, len, g = .22) {
 /* ---------- Drums ---------- */
 function kick(t0, g = 1) {
   if (MAP) return mapped(t0, x => kick(x, g));
-  kicks.push(t0);
+  kicks.push(t0 + OFF);
   let ph = 0; const lp = biquad('lp', 3500);
   voice(t0, .55, s => {
     ph += TAU * (50 + 70 * Math.exp(-s * 22) + 30 * Math.exp(-s * 180)) / SR;
@@ -198,6 +199,7 @@ function pop(t0, m, g = .05, pan = 0) { const f = hz(m); let ph = 0; voice(t0, .
 // Air: filtered noise whose cutoff rises (in) or falls (out), for camera moves. Kept low.
 function air(t0, len, g = .03, f0 = 300, f1 = 2400, pan0 = 0, pan1 = 0) {
   if (MAP) return mapped(t0, x => air(x, len, g, f0, f1, pan0, pan1));
+  t0 += OFF;
   const nz = pink(), sv = svf(), s0 = Math.round(t0 * SR), n = Math.round(len * SR);
   for (let i = 0; i < n && s0 + i < N; i++) {
     const k = i / n, f = f0 * Math.pow(f1 / f0, k), e = Math.pow(Math.sin(Math.PI * k), 1.6) * g;
@@ -230,6 +232,26 @@ const PROG = [[0, 'Cmaj9'], [3, 'Am9'], [6, 'Fmaj9'], [9, 'Em7'], [12, 'Dm9'], [
 const chordAt = t => { let c = PROG[0][1]; for (const [a, n] of PROG) if (t + 1e-6 >= a) c = n; return CH[c]; };
 const toneAt = (t, k, oct = 1) => { const v = chordAt(t)[1]; return v[((k % v.length) + v.length) % v.length] + 12 * (oct + Math.floor(k / v.length)); };
 const toneAtO = (t, k, oct) => toneAt(M(t)[0] ?? t, k, oct);
+
+/* ---------- The cold open (0-12): macro shots cut on the beat, a drone, the dot ---------- */
+{
+  const nz = pink(), lp = biquad('lp', 260), lp2 = biquad('lp', 260);
+  voice(.7, 8.6, s => lp(nz()) * Math.min(1, s / 1.5) * Math.min(1, (8.6 - s) / .3), { gain: .16, pan: -.4, to: 'amb' });
+  voice(.7, 8.6, s => lp2(nz()) * Math.min(1, s / 1.5) * Math.min(1, (8.6 - s) / .3), { gain: .16, pan: .4, to: 'amb' });
+}
+pad(.75, [45, 52, 57, 60], 8.4, .03, { atk: 1.5, rel: .4, table: WARM });
+bass(.75, 33, 8.2, .1);
+[.75, 3, 5.25, 7.5].forEach((x, i) => { boom(x, .34 + i * .03, 52); kick(x, .7); swell(x, .5, .015, 2500); });
+[3, 5.25, 7.5].forEach(x => air(x - .02, .3, .02, 3000, 600));
+for (let x = 1.5; x < 9; x += BEAT) woodblock(x, (x / BEAT) % 2 ? 1500 : 1900, .02 + .025 * p(x, 1.5, 9));
+[[1.1, 69], [3.35, 72], [5.6, 76]].forEach(([x, m]) => ep(x, m, 1.4, .5, { gain: .08, rev: .4 }));
+[5.3, 5.62, 5.94].forEach(x => tock(x, 67, .03, .4));            // keys on the calculator
+tear(7.62, .25, .04);
+swell(9.75, .75, .045, 1200); glide(9.1, .65, 91, 67, .018);
+boom(9.75, .42, 48); bell(9.75, 96, .04); bell(9.75, 84, .03);
+ep(9.95, 72, 1.6, .45, { gain: .08, rev: .45 }); ep(10.05, 76, 1.5, .4, { gain: .06, rev: .45 });
+air(11.9, .9, .03, 300, 2400);                                  // the iris opens on the table
+OFF = 12;
 
 /* ---------- The table: they sit down, read the menu, order, eat (0-24) ---------- */
 {
