@@ -101,7 +101,7 @@ async function browserPage(w, h) {
   await routeFonts(page);
   const piece = opt('piece', 'block'), ground = opt('ground', 'cream'), word = opt('word');
   await page.goto('file://' + path.join(root, 'brand/motion.html') + `?capture&piece=${piece}&w=${w}&h=${h}&ground=${ground}` + (word ? '&word=' + word : '') + (args.includes('--notag') ? '&notag' : ''));
-  await page.evaluate(async () => { await document.fonts.load("500 20px 'IBM Plex Sans'"); await document.fonts.ready; });
+  await page.evaluate(async () => { await document.fonts.load("40px 'Aalayna Block'"); await document.fonts.ready; });
   return { browser, page };
 }
 
@@ -161,14 +161,14 @@ function shareHtml() {
   lines.forEach((t, i) => { const l = typeLine(t, u, 0, i * pitch); ink += l.ink; red += l.red; });
   const h = 2 * pitch + 5 * u, file = f => 'file://' + path.join(root, f);
   return `<!doctype html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@600&display=block" rel="stylesheet">
 <style>
 html,body{margin:0}
 body{position:relative;width:1200px;height:630px;overflow:hidden;background:${C.cream}}
 .copy{position:absolute;left:90px;top:50%;transform:translateY(-50%)}
-.eyebrow{margin:0 0 34px;font:500 22px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:#B3363F}
+.eyebrow{margin:0 0 34px;font:600 22px/1 'Kode Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#B3363F}
 .copy svg{display:block}
-.phone{position:absolute;left:818px;top:38px;width:250px;height:552px;padding:10px;border-radius:42px;background:${C.ink};box-shadow:0 34px 110px -10px rgba(140,60,50,.22)}
+.phone{position:absolute;left:818px;top:38px;width:250px;height:552px;padding:10px;border-radius:42px;background:${C.ink};box-shadow:18px 18px 0 rgba(33,27,22,.08)}
 .phone img{display:block;width:100%;height:100%;border-radius:32px;object-fit:cover;object-position:50% 0}
 </style></head><body>
 <div class="copy"><p class="eyebrow">For restaurants in Lebanon</p>

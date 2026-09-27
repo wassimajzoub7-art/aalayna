@@ -38,13 +38,15 @@
   const finder = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= QN - 7) || (r >= QN - 7 && c < 7);
 
   const colorsOf = o => Object.assign({ bg: C.cream, ink: C.ink, red: C.red, sub: '#6E635B' }, o && o.colors);
-  const FONT = "'IBM Plex Sans', system-ui, sans-serif";
+  // The tagline is set in the logo's own capitals (the page loads Aalayna Block), a size under the logo.
+  const FONT = "'Aalayna Block', monospace";
 
   function tagline(g, t, t0, x, y, size, col, words = ['scan,', 'split,', 'settle.']) {
     g.save();
-    g.font = '500 ' + size + 'px ' + FONT;
+    size = Math.round(size * 0.72);
+    g.font = '400 ' + size + 'px ' + FONT;
     g.textBaseline = 'alphabetic';
-    const gap = size * 0.32, ws = words.map(w => g.measureText(w).width);
+    const gap = size * 0.42, ws = words.map(w => g.measureText(w).width - size * 0.14);   // word gaps as in set text (three modules); drop each word's trailing module
     let cx = x - (ws.reduce((a, b) => a + b, 0) + gap * (words.length - 1)) / 2;
     words.forEach((w, i) => {
       const k = E.outExpo(seg(t, t0 + i * 0.1, t0 + i * 0.1 + 0.55));

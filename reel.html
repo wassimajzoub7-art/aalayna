@@ -8,28 +8,29 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&display=block" rel="stylesheet">
 <style>
 /* Aalayna reel: one 15 s timeline. Every frame is a pure function of t (render(t)), so the page plays live,
    scrubs, and renders frame-exact to video through tools/render-reel.js. Stage is 1920 x 1080, scaled to fit. */
-/* Type as on the site: the big words in Aalayna Block (the logo's capitals), labels in IBM Plex Mono, the product in IBM Plex Sans. */
+/* As on the site: words and figures in Aalayna Block (the logo's capitals), everything else in Kode Mono. Every corner is
+   square and every shadow hard; only the phone keeps its own rounding, and the screenshot inside it is the product. */
 @font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-display:block}
-:root{--bg:#FAF6F1;--ink:#211B16;--sub:#6E635B;--line:#EAE2D8;--red:#C9414B;--petrol:#173E43;--peach:#F6C39F;--paper:#fff;--display:'Aalayna Block',monospace;--mono:'IBM Plex Mono',monospace}
+:root{--bg:#FAF6F1;--ink:#211B16;--sub:#6E635B;--line:#EAE2D8;--red:#C9414B;--petrol:#173E43;--peach:#F6C39F;--paper:#fff;--display:'Aalayna Block',monospace;--text:'Kode Mono',monospace}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;background:var(--bg);overflow:hidden}
-body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased}
 #view{position:fixed;inset:0;display:grid;place-items:center}
 #stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg);transform-origin:0 0}
 #cam{position:absolute;inset:0;transform-origin:50% 50%}
 .L{position:absolute;inset:0}
 .a{position:absolute;left:0;top:0;will-change:transform,opacity}
-.wipe{position:absolute;left:0;top:0;width:2400px;height:2400px;border-radius:50%}
+.wipe{position:absolute;left:0;top:0;width:2400px;height:2400px}
 
 /* S1 scan */
-#dot{width:56px;height:56px;background:var(--red);border-radius:50%}
+#dot{width:56px;height:56px;background:var(--red)}
 #qr{position:absolute;left:0;top:0}
 #brackets{position:absolute;left:0;top:0;overflow:visible}
-#scan{width:470px;height:6px;border-radius:3px;background:var(--red);box-shadow:0 0 24px 4px rgba(201,65,75,.55)}
+#scan{width:470px;height:6px;background:var(--red)}
 #scanTrail{width:470px;height:120px;background:linear-gradient(to top,rgba(201,65,75,.22),rgba(201,65,75,0))}
 
 /* S2 kinetic type */
@@ -37,36 +38,36 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .kl{position:absolute;left:200px;overflow:hidden;padding:0 30px 24px 0;font-family:var(--display);font-size:196px;font-weight:400;line-height:1;color:var(--bg);white-space:nowrap}
 .kl span{display:inline-block;transform-origin:0 100%}
 #k3{color:var(--ink)}
-#eye2{left:206px;top:170px;font-family:var(--mono);font-size:30px;font-weight:500;letter-spacing:.06em;color:var(--peach);white-space:nowrap}
+#eye2{left:206px;top:170px;font-family:var(--text);font-size:30px;font-weight:500;letter-spacing:.06em;color:var(--peach);white-space:nowrap}
 #w2{width:3400px;height:1600px;background:var(--bg);transform-origin:50% 50%}
 
 /* S3 receipt */
 .strip{width:540px;height:760px}
 .paper{position:absolute;inset:0;background:var(--paper);padding:56px 52px 0}
 .rc-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:26px;border-bottom:2px solid var(--line);margin-bottom:22px}
-.rc-head b{font-size:40px;letter-spacing:-.02em}.rc-head span{font-size:22px;color:var(--sub)}
+.rc-head b{font-size:40px}.rc-head span{font-size:22px;color:var(--sub)}
 .rc-row{display:flex;justify-content:space-between;font-size:26px;line-height:2.05;color:var(--ink)}
 .rc-row span:last-child{font-variant-numeric:tabular-nums;color:var(--sub)}
 .rc-sep{margin:20px 0 18px;border-top:3px dashed var(--line)}
 .rc-total{display:flex;justify-content:space-between;align-items:baseline;font-size:34px;font-weight:700}
-.rc-total span:last-child{font-size:54px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.rc-total span:last-child{font-size:54px;font-variant-numeric:tabular-nums}
 .rc-ll{text-align:right;font-size:22px;color:var(--sub);margin-top:4px;font-variant-numeric:tabular-nums}
-#badge{width:176px;height:176px;border-radius:50%;background:var(--red);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-size:64px;font-weight:400;box-shadow:0 18px 40px rgba(201,65,75,.35)}
-#ring{width:176px;height:176px;border-radius:50%;border:6px solid var(--red)}
-.card{width:320px;height:440px;border-radius:28px;background:var(--paper);box-shadow:0 30px 50px rgba(33,27,22,.14);display:flex;flex-direction:column;align-items:center;padding-top:44px;backface-visibility:hidden}
-.card i{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:40px;font-weight:700;color:#fff}
-.card small{margin-top:34px;font-size:20px;font-weight:600;letter-spacing:.14em;color:var(--sub)}
-.card b{margin-top:6px;font-size:76px;letter-spacing:-.04em;color:var(--ink)}
+#badge{width:176px;height:176px;background:var(--red);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-size:64px;font-weight:400}
+#ring{width:176px;height:176px;border:6px solid var(--red)}
+.card{width:320px;height:440px;background:var(--paper);box-shadow:14px 14px 0 rgba(33,27,22,.08);display:flex;flex-direction:column;align-items:center;padding-top:44px;backface-visibility:hidden}
+.card i{width:110px;height:110px;display:grid;place-items:center;font-style:normal;font-family:var(--display);font-size:40px;font-weight:400;color:#fff}
+.card small{margin-top:34px;font-size:20px;font-weight:600;letter-spacing:.12em;color:var(--sub)}
+.card b{margin-top:14px;font-family:var(--display);font-size:56px;font-weight:400;line-height:1.2;color:var(--ink)}
 .card em{font-style:normal;font-size:20px;color:var(--sub)}
 .card.you{outline:6px solid var(--red)}.card.you small{color:var(--red)}
 
 /* S4 phone */
 #s4{perspective:2200px}
-#phone{width:440px;height:888px;padding:15px;border-radius:66px;background:var(--ink);box-shadow:0 60px 90px rgba(33,27,22,.28),inset 0 0 0 2px #3a322b;transform-style:preserve-3d}
+#phone{width:440px;height:888px;padding:15px;border-radius:66px;background:var(--ink);box-shadow:inset 0 0 0 2px #3a322b;transform-style:preserve-3d}
 #screen{position:relative;width:410px;height:858px;border-radius:52px;overflow:hidden;background:#fff}
 #screen img{display:block;width:410px;height:858px;object-fit:cover;object-position:50% 100%}
-.rip{position:absolute;left:0;top:0;width:120px;height:120px;border-radius:50%;border:5px solid var(--red)}
-#eye4{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:.06em;color:var(--red);white-space:nowrap;height:40px;overflow:hidden}
+.rip{position:absolute;left:0;top:0;width:120px;height:120px;border:5px solid var(--red)}
+#eye4{font-family:var(--text);font-size:28px;font-weight:500;letter-spacing:.06em;color:var(--red);white-space:nowrap;height:40px;overflow:hidden}
 #eye4 div{height:40px;line-height:40px}
 #amtWrap{perspective:900px}
 #amt{font-family:var(--display);font-size:150px;font-weight:400;line-height:1;display:flex;transform-origin:50% 50%;backface-visibility:hidden}
@@ -75,9 +76,9 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 .col span{height:1em;display:block}
 #ll{font-family:var(--display);font-size:88px;font-weight:400;line-height:1;white-space:nowrap;color:var(--petrol);transform-origin:50% 50%;backface-visibility:hidden}
 #tipTag{font-family:var(--display);font-size:40px;font-weight:400;color:var(--red);white-space:nowrap}
-.chip{width:200px;height:100px;border-radius:50px;border:3px solid var(--line);background:#fff;display:grid;place-items:center;font-size:44px;font-weight:700}
+.chip{width:200px;height:100px;border:3px solid var(--line);background:#fff;display:grid;place-items:center;font-family:var(--display);font-size:44px;font-weight:400}
 .chip.on{background:var(--red);border-color:var(--red);color:#fff}
-.pm{height:92px;padding:0 34px;border-radius:22px;display:flex;align-items:center;font-size:40px;font-weight:700;color:#fff;letter-spacing:-.01em;white-space:nowrap}
+.pm{height:92px;padding:0 34px;display:flex;align-items:center;font-size:40px;font-weight:700;color:#fff;white-space:nowrap}
 #pmNote{font-size:30px;color:var(--sub);white-space:nowrap}
 
 /* S5 paid */
@@ -91,7 +92,7 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 /* S6 the logo */
 #w4{background:var(--bg)}
 #logo{position:absolute;left:0;top:0}
-#url{font-family:var(--mono);font-size:30px;font-weight:500;letter-spacing:.18em;color:var(--sub);white-space:nowrap}
+#url{font-family:var(--text);font-size:30px;font-weight:500;letter-spacing:.18em;color:var(--sub);white-space:nowrap}
 
 /* Finish */
 #grain{position:absolute;inset:-64px;opacity:.035;mix-blend-mode:overlay;pointer-events:none}
@@ -99,9 +100,9 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 /* Controls: hidden while capturing */
 #ui{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 16px;opacity:0;transition:opacity .25s}
 body:hover #ui,#ui:focus-within,body.ended #ui,body.paused #ui{opacity:1}
-#ui button{min-width:44px;min-height:44px;border:0;border-radius:22px;background:rgba(33,27,22,.82);color:#fff;font:600 14px/1 'IBM Plex Sans',sans-serif;padding:0 16px;cursor:pointer}
+#ui button{min-width:44px;min-height:44px;border:0;background:rgba(33,27,22,.82);color:#fff;font:600 14px/1 'Kode Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:0 16px;cursor:pointer}
 #ui button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
-#bar{flex:1;height:4px;border-radius:2px;background:rgba(33,27,22,.15);overflow:hidden}
+#bar{flex:1;height:4px;background:rgba(33,27,22,.15);overflow:hidden}
 #bar i{display:block;height:100%;width:0;background:var(--red)}
 body.capture #ui{display:none}
 </style>
@@ -112,7 +113,7 @@ body.capture #ui{display:none}
   <div class="L" id="s1">
     <div class="a" id="dot"></div>
     <canvas id="qr" width="1920" height="1080"></canvas>
-    <svg id="brackets" width="1920" height="1080"><g fill="none" stroke="#C9414B" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path id="bk0"/><path id="bk1"/><path id="bk2"/><path id="bk3"/></g></svg>
+    <svg id="brackets" width="1920" height="1080"><g fill="none" stroke="#C9414B" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"><path id="bk0"/><path id="bk1"/><path id="bk2"/><path id="bk3"/></g></svg>
     <div class="a" id="scanTrail"></div><div class="a" id="scan"></div>
   </div>
   <div class="a wipe" id="w1"></div>
@@ -137,7 +138,7 @@ body.capture #ui{display:none}
   <div class="a wipe" id="w3"></div>
   <div class="L" id="s5">
     <canvas id="confetti" width="1920" height="1080"></canvas>
-    <svg class="a" id="check" width="260" height="260" viewBox="0 0 260 260"><circle id="ckFill" cx="130" cy="130" r="118" fill="#F6C39F"/><circle id="ckRing" cx="130" cy="130" r="118" fill="none" stroke="#F6C39F" stroke-width="12" stroke-linecap="round" transform="rotate(-90 130 130)"/><path id="ckMark" d="M78 134 L114 170 L184 96" fill="none" stroke="#F6C39F" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="a" id="check" width="260" height="260" viewBox="0 0 260 260"><rect id="ckFill" x="18" y="18" width="224" height="224" fill="#F6C39F"/><path id="ckRing" d="M130 18H242V242H18V18Z" fill="none" stroke="#F6C39F" stroke-width="12" stroke-linejoin="miter"/><path id="ckMark" d="M80 132 L114 166 L182 98" fill="none" stroke="#F6C39F" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/></svg>
     <div class="a word" id="wd1">Paid.</div><div class="a word" id="wd2">Tipped.</div><div class="a word" id="wd3">Rated.</div>
   </div>
   <div class="a wipe" id="w4"></div>
@@ -250,7 +251,7 @@ for (let i = 0; i < 4; i++) {
 }
 const badge = document.createElement('div'); badge.className = 'a'; badge.id = 'badge'; badge.textContent = '÷ 4';
 const ring = document.createElement('div'); ring.className = 'a'; ring.id = 'ring';
-const shadow = document.createElement('div'); shadow.className = 'a'; shadow.style.cssText = `width:${RW}px;height:${RH - 14}px;box-shadow:0 30px 60px rgba(33,27,22,.16)`;
+const shadow = document.createElement('div'); shadow.className = 'a'; shadow.style.cssText = `width:${RW}px;height:${RH - 14}px;box-shadow:18px 18px 0 rgba(33,27,22,.08)`;
 s3.prepend(shadow); s3.append(ring, badge);
 
 // Odometer for the amount: one rolling column per digit.
@@ -274,19 +275,18 @@ function odo(v) {
 // The close is the logo's own reveal (brand/motion.js): the table QR's modules fly into 3LAYNA. The reel joins
 // it at LOGO_AT, just after its QR has bloomed, and starts the tagline early enough to settle by the last frame.
 const LOGO_AT = 11.4, logo = AalaynaMotion.block({ tagAt: 2.8, colors: { bg: 'rgba(0,0,0,0)' } }), lctx = $('logo').getContext('2d');
-document.fonts.load("500 40px 'IBM Plex Sans'"); document.fonts.load("40px 'Aalayna Block'");
+document.fonts.load("600 40px 'Kode Mono'"); document.fonts.load("40px 'Aalayna Block'");
 // The confetti field.
 const conf = [], crand = rng(99), palette = ['#C9414B', '#F6C39F', '#FAF6F1', '#ffffff', '#E0A77F'];
 for (let i = 0; i < 170; i++) {
   const a = crand() * Math.PI * 2, sp = 500 + crand() * 1500;
-  conf.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 500, w: 10 + crand() * 16, h: 6 + crand() * 10, c: palette[i % palette.length], spin: (crand() - .5) * 24, round: crand() < .3, flip: 4 + crand() * 8 });
+  conf.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 500, w: 10 + crand() * 16, h: 6 + crand() * 10, c: palette[i % palette.length], spin: (crand() - .5) * 24, flip: 4 + crand() * 8 });
 }
 
 // Grain: one noise tile, shifted each frame.
 (() => { const g = $('grain').getContext('2d'), d = g.createImageData(1024, 1024), r = rng(3); for (let i = 0; i < d.data.length; i += 4) { const v = r() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; } g.putImageData(d, 0, 0); })();
 
 const qctx = $('qr').getContext('2d'), cctx = $('confetti').getContext('2d');
-const rr = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); };
 const layers = ['s1', 's2', 's3', 's4', 's5', 's6', 'w1', 'w2', 'w3', 'w4'].reduce((o, k) => (o[k] = $(k), o), {});
 
 /* ---------- Render: everything on screen at time t ---------- */
@@ -329,9 +329,8 @@ function scene1(t) {
   const m = E.outExpo(p(t, .9, 1.3));
   const size = lerp(56, 470, m);
   dot.style.width = dot.style.height = size + 'px';
-  dot.style.borderRadius = lerp(28, 40, m) + 'px';
   dot.style.background = `rgb(${lerp(201, 255, m)},${lerp(65, 255, m)},${lerp(75, 255, m)})`;
-  dot.style.boxShadow = `0 ${30 * m}px ${60 * m}px rgba(33,27,22,${.14 * m})`;
+  dot.style.boxShadow = `${16 * m}px ${16 * m}px 0 rgba(33,27,22,${(.08 * m).toFixed(3)})`;
   T(dot, { x: CX, y, sx, sy, r: lerp(-45, 0, m) * (m > 0 ? 1 : 0) });
 
   qctx.clearRect(0, 0, W, H);
@@ -341,7 +340,7 @@ function scene1(t) {
     const k = spring(s, 2.4, 8), mv = E.outExpo(clamp(s / .45));
     const x = lerp(CX, q.x, mv), yy = lerp(CY, q.y, mv), sz = (QM - 2) * clamp(k, 0, 1.25);
     qctx.fillStyle = q.f ? '#C9414B' : '#211B16';
-    rr(qctx, x - sz / 2, yy - sz / 2, sz, sz, q.f ? 2 : 4);
+    qctx.fillRect(x - sz / 2, yy - sz / 2, sz, sz);
   }
 
   // Viewfinder brackets close in, then the scan line sweeps.
@@ -384,7 +383,7 @@ function scene3(t) {
   strips.forEach((st, i) => {
     const tear = E.outExpo(p(t, 5.5, 6.05)), fl = p(t, 6.0 + i * .125, 6.3 + i * .125);
     const tx = cardX[i] - st.cx, dir = i % 2 ? 1 : -1;
-    st.el.style.filter = `drop-shadow(0 30px 40px rgba(33,27,22,${(.16 * tear).toFixed(3)}))`;
+    st.el.style.filter = `drop-shadow(14px 14px 0 rgba(33,27,22,${(.08 * tear).toFixed(3)}))`;
     T(st.el, { x: RX + tx * tear, y: lerp(1500, RY, inK) - 30 * Math.sin(Math.PI * tear), r: lerp(9, 0, settle) + dir * 5 * tear * (1 - fl), ry: 90 * E.inOutCubic(Math.min(fl * 2, 1)), o: fl < .5 ? 1 : 0 });
     st.rows.forEach((row, j) => { const k = E.outExpo(p(t, 3.9 + j * .1, 4.3 + j * .1)); row.style.opacity = k; row.style.transform = `translateX(${lerp(24, 0, k)}px)`; });
     st.total.textContent = '$' + tot.toFixed(2);
@@ -461,11 +460,12 @@ function scene5(t) {
   wipe($('w3'), 620, 930, lerp(0, 2400, E.inOutQuart(p(t, 9.98, 10.5))));
   const C = [CX, 360];
   const ring = E.inOutCubic(p(t, 10.35, 10.8)), mk = E.outCubic(p(t, 10.75, 11)), fill = E.outBack(p(t, 11, 11.25), 2.2);
-  const circ = 2 * Math.PI * 118;
+  const circ = 4 * 224;                                  // the square's perimeter, drawn from the top centre
   $('ckRing').setAttribute('stroke-dasharray', `${circ * ring} ${circ}`);
-  $('ckMark').setAttribute('stroke-dasharray', `${170 * mk} 400`);
+  $('ckMark').setAttribute('stroke-dasharray', `${150 * mk} 400`);
   $('ckMark').setAttribute('stroke', t >= 11 ? '#173E43' : '#F6C39F');
-  $('ckFill').setAttribute('r', 118 * clamp(fill, 0, 1.2));
+  const fs = 224 * clamp(fill, 0, 1.2);
+  ['x', 'y'].forEach(a => $('ckFill').setAttribute(a, 130 - fs / 2)); ['width', 'height'].forEach(a => $('ckFill').setAttribute(a, fs));
   const collapse = E.inExpo(p(t, 12.2, 12.5));
   T($('check'), { x: C[0], y: C[1], s: (1 + .1 * wobble(t - 11, 2.5, 7) * (t >= 11 ? 1 : 0)) * (1 - collapse), o: 1 });
 
@@ -478,7 +478,7 @@ function scene5(t) {
     const a = Math.max(0, 1 - s / 1.7);
     if (!a) continue;
     cctx.save(); cctx.globalAlpha = a; cctx.translate(x, y); cctx.rotate(q.spin * s); cctx.scale(1, Math.cos(q.flip * s)); cctx.fillStyle = q.c;
-    if (q.round) { cctx.beginPath(); cctx.arc(0, 0, q.h * .6, 0, Math.PI * 2); cctx.fill(); } else cctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h);
+    cctx.fillRect(-q.w / 2, -q.h / 2, q.w, q.h);
     cctx.restore();
   }
 
@@ -501,19 +501,21 @@ function scene6(t) {
   wipe($('w4'), CX, CY, r);
   lctx.clearRect(0, 0, W, H);
   lctx.save();
-  if (r < 1300) { lctx.beginPath(); lctx.arc(CX, CY, Math.max(r, 0), 0, Math.PI * 2); lctx.clip(); }
+  if (r < 1300) { const q = Math.max(r, 0); lctx.beginPath(); lctx.rect(CX - q, CY - q, 2 * q, 2 * q); lctx.clip(); }
   logo.render(lctx, t - LOGO_AT, W, H);
   lctx.restore();
   const uk = E.outCubic(p(t, 14.4, 14.9));
   T($('url'), { x: CX, y: 985, o: uk, s: lerp(.96, 1, uk) });
 }
 
-// Stars are built once.
+// Stars are built once, on a 7 x 7 grid of modules, like the letters.
+const STAR = ['...#...', '...#...', '#######', '.#####.', '..###..', '.##.##.', '##...##']
+  .map((row, y) => [...row].map((c, x) => (c === '#' ? `M${x} ${y}h1v1h-1z` : '')).join('')).join('');
 const s5 = $('s5');
 for (let i = 0; i < 5; i++) {
   const sv = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  sv.setAttribute('viewBox', '0 0 24 24'); sv.setAttribute('class', 'a star');
-  sv.innerHTML = '<path fill="#F6C39F" d="M12 1.8l3.1 6.4 7 1-5.1 4.9 1.2 7L12 17.8l-6.2 3.3 1.2-7L1.9 9.2l7-1z"/>';
+  sv.setAttribute('viewBox', '0 0 7 7'); sv.setAttribute('class', 'a star'); sv.setAttribute('shape-rendering', 'crispEdges');
+  sv.innerHTML = '<path fill="#F6C39F" d="' + STAR + '"/>';
   s5.appendChild(sv);
 }
 

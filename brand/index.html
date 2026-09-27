@@ -8,11 +8,11 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* Aalayna logo proposal. One look on purpose: the brand's own grounds (cream, ink, petrol) are the content,
-   so the page does not switch palettes with the viewer's theme. Type as on the site: headlines in Aalayna Block
-   (the logo's capitals), IBM Plex Mono for labels and specs, IBM Plex Sans for reading. */
+   so the page does not switch palettes with the viewer's theme. As on the site: headings in Aalayna Block (the
+   logo's capitals), everything else in Kode Mono, and square corners (only the phone's icons keep theirs). */
 @font-face{font-family:'Aalayna Block';src:url(fonts/aalayna-block.woff) format('woff');font-display:swap}
 :root{
   --cream:#FAF6F1;--paper:#FFFFFF;--ink:#211B16;--sub:#6E635B;--line:#E4DBD0;--red:#C9414B;--red-text:#B3363F;
@@ -22,15 +22,15 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--cream);color:var(--ink);font:400 var(--fs-b)/1.6 'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 var(--fs-b)/1.6 'Kode Mono','Noto Kufi Arabic',ui-monospace,monospace;-webkit-font-smoothing:antialiased}
 h1,h2,h3,p,figure,dl,dd{margin:0}
 h1,h2,h3{text-wrap:balance;letter-spacing:-.02em}
-h1,h2,.block-type{font-family:'Aalayna Block','IBM Plex Mono',monospace;font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0}
+h1,h2,h3,.block-type{font-family:'Aalayna Block','Kode Mono',monospace;font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0}
 p{color:var(--sub);max-width:62ch}
 .wrap{width:min(1120px,100%);margin-inline:auto;padding-inline:var(--gut)}
-.eyebrow{font:500 var(--fs-s)/1.4 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--sub)}
-.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:500;font-size:var(--fs-s)}
-[lang=ar]{font-family:'IBM Plex Sans Arabic','IBM Plex Sans',sans-serif}
+.eyebrow{font:500 var(--fs-s)/1.4 'Kode Mono',ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--sub)}
+.mono{font-family:'Kode Mono',ui-monospace,monospace;font-weight:500;font-size:var(--fs-s)}
+[lang=ar]{font-family:'Noto Kufi Arabic',sans-serif}
 .logo svg,.fit svg{display:block;width:100%;height:auto}
 button{font:inherit}
 :focus-visible{outline:3px solid var(--red);outline-offset:3px}
@@ -41,20 +41,20 @@ button{font:inherit}
 .top .lead{font-size:var(--fs-l);margin-top:16px;color:var(--ink)}
 .spell{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:22px}
 .spell .mono{color:var(--sub);margin-right:6px}
-.seg{min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:500 var(--fs-s)/1 'IBM Plex Mono',monospace;letter-spacing:.06em;cursor:pointer}
+.seg{min-height:44px;padding:0 18px;border-radius:0;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:500 var(--fs-s)/1 'Kode Mono',monospace;letter-spacing:.06em;cursor:pointer}
 .seg[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--cream)}
 .seg:hover{border-color:var(--ink)}
 
 /* The two stages */
 .stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(16px,2.4vw,28px);padding-bottom:clamp(40px,6vw,72px)}
 .stage{display:grid;gap:14px;align-content:start}
-.screen{position:relative;aspect-ratio:16/11;max-width:100%;border-radius:14px;overflow:hidden;background:var(--cream);box-shadow:0 0 0 1px var(--line),0 18px 40px -24px rgba(33,27,22,.35)}
+.screen{position:relative;aspect-ratio:16/11;max-width:100%;border-radius:0;overflow:hidden;background:var(--cream);box-shadow:0 0 0 1px var(--line)}
 .screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .stage-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .stage-head h2{font-size:var(--fs-h);line-height:1.1}
-.stage-head h2 span{color:var(--red-text);font:500 var(--fs-s) 'IBM Plex Mono',monospace;letter-spacing:.04em;margin-right:10px;vertical-align:.35em}
+.stage-head h2 span{color:var(--red-text);font:500 var(--fs-s) 'Kode Mono',monospace;letter-spacing:.04em;margin-right:10px;vertical-align:.35em}
 .controls{display:flex;gap:8px;flex-wrap:wrap}
-.btn{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-weight:600;font-size:var(--fs-s);cursor:pointer}
+.btn{min-height:44px;padding:0 16px;border-radius:0;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-weight:600;font-size:var(--fs-s);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
 .btn:hover{border-color:var(--ink)}
 .btn.sound{background:var(--ink);color:var(--cream);border-color:var(--ink)}
 .btn.sound:hover{background:#3a312a}
@@ -74,34 +74,34 @@ button{font:inherit}
 .brief .pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .brief figure{display:grid;gap:10px;min-width:0}
 .brief figcaption{font-size:var(--fs-s);color:var(--sub)}
-.brief .cell{aspect-ratio:1/1;min-width:0;min-height:0;overflow:hidden;background:var(--cream);border-radius:12px;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:14%}
+.brief .cell{aspect-ratio:1/1;min-width:0;min-height:0;overflow:hidden;background:var(--cream);border-radius:0;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:14%}
 .brief .no{color:var(--red-text);font-weight:600}
 .brief p{color:var(--ink)}
 
 /* Grounds */
 .grounds{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;margin-top:32px}
-.ground{border-radius:14px;display:grid;place-items:center;padding:clamp(24px,5vw,56px);min-height:220px}
+.ground{border-radius:0;display:grid;place-items:center;padding:clamp(24px,5vw,56px);min-height:220px}
 .ground .logo{width:100%}
 .g-cream{background:var(--cream);box-shadow:inset 0 0 0 1px var(--line)}.g-ink{background:var(--ink)}.g-petrol{background:var(--petrol)}.g-red{background:var(--red)}.g-paper{background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
 
 /* Construction */
 .build{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);margin-top:36px;align-items:start}
-.build .fit{background:var(--paper);border-radius:14px;padding:clamp(16px,3vw,32px);box-shadow:inset 0 0 0 1px var(--line)}
+.build .fit{background:var(--paper);border-radius:0;padding:clamp(16px,3vw,32px);box-shadow:inset 0 0 0 1px var(--line)}
 .band.paper .build .fit{background:var(--cream)}
 .specs{display:grid;gap:0}
 .specs div{display:grid;grid-template-columns:9.5rem 1fr;gap:12px;padding-block:12px;border-top:1px solid var(--line)}
-.specs dt{font:500 var(--fs-s)/1.5 'IBM Plex Mono',monospace;color:var(--sub)}
+.specs dt{font:500 var(--fs-s)/1.5 'Kode Mono',monospace;color:var(--sub)}
 .specs dd{font-size:var(--fs-s);line-height:1.5}
 .read{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));margin-top:8px;text-align:center;direction:ltr}
 .read span{justify-self:center;white-space:nowrap}
 .read span{display:grid;gap:2px;font-size:var(--fs-s);color:var(--sub)}
-.read b{font:600 1.35rem/1.2 'IBM Plex Sans Arabic',sans-serif;color:var(--ink)}
+.read b{font:600 1.35rem/1.2 'Noto Kufi Arabic',sans-serif;color:var(--ink)}
 
 /* Lockups */
 .lockups{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin-top:32px}
-.lock{border-radius:14px;display:grid;gap:14px;align-content:space-between;padding:clamp(20px,3vw,32px)}
+.lock{border-radius:0;display:grid;gap:14px;align-content:space-between;padding:clamp(20px,3vw,32px)}
 .lock .logo{margin-block:auto}
-.lock figcaption{font:500 var(--fs-s)/1.4 'IBM Plex Mono',monospace;color:var(--sub)}
+.lock figcaption{font:500 var(--fs-s)/1.4 'Kode Mono',monospace;color:var(--sub)}
 .g-ink figcaption,.g-petrol figcaption,.g-red figcaption{color:var(--on-dark-sub)}
 .span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
 .icons{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
@@ -109,27 +109,27 @@ button{font:inherit}
 
 /* In use */
 .use{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:32px}
-.scene{border-radius:14px;padding:clamp(20px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr);place-items:center}
-.card{width:min(100%,300px);aspect-ratio:5/7;background:var(--cream);border-radius:10px;box-shadow:0 30px 50px -20px rgba(0,0,0,.45),0 2px 0 rgba(0,0,0,.06);padding:11% 11% 9%;display:grid;grid-template-rows:auto 1fr auto;gap:8%;text-align:center}
+.scene{border-radius:0;padding:clamp(20px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr);place-items:center}
+.card{width:min(100%,300px);aspect-ratio:5/7;background:var(--cream);border-radius:0;box-shadow:14px 14px 0 rgba(0,0,0,.28);padding:11% 11% 9%;display:grid;grid-template-rows:auto 1fr auto;gap:8%;text-align:center}
 .card .qr{width:78%;margin-inline:auto;align-self:center}
 .card .qr svg{display:block;width:100%;height:auto}
-.card .t{font-weight:600;font-size:clamp(.8rem,2.4vw,.95rem);color:var(--ink)}
-.card .t small{display:block;font-weight:400;color:var(--sub);font-size:.8em;margin-top:2px}
+.card .t{font:400 clamp(.8rem,2.4vw,.95rem)/1.3 'Aalayna Block',monospace;text-transform:uppercase;color:var(--ink)}
+.card .t small{display:block;font-family:'Kode Mono','Noto Kufi Arabic',monospace;text-transform:none;font-weight:400;color:var(--sub);font-size:.8em;margin-top:4px}
 .card .mark{height:clamp(64px,18vw,92px);display:flex;justify-content:center}
 .homescreen{display:flex;gap:clamp(14px,3vw,28px);flex-wrap:wrap;justify-content:center}
 .app{display:grid;gap:8px;justify-items:center;font-size:.75rem;color:var(--on-petrol)}
-.app .ic{width:clamp(56px,12vw,72px);filter:drop-shadow(0 8px 14px rgba(0,0,0,.28))}
+.app .ic{width:clamp(56px,12vw,72px)}
 .app .ic svg{border-radius:22%}  /* the phone rounds the square icon, as iOS and Android do */
-.tab{margin-top:26px;width:min(100%,420px);background:#2A5157;border-radius:10px 10px 0 0;padding:8px 10px 0;display:flex;gap:6px}
-.tab div{display:flex;align-items:center;gap:8px;background:var(--cream);color:var(--ink);border-radius:8px 8px 0 0;padding:8px 12px;font-size:.78rem;min-width:0;flex:1}
+.tab{margin-top:26px;width:min(100%,420px);background:#2A5157;border-radius:0;padding:8px 10px 0;display:flex;gap:6px}
+.tab div{display:flex;align-items:center;gap:8px;background:var(--cream);color:var(--ink);border-radius:0;padding:8px 12px;font-size:.78rem;min-width:0;flex:1}
 .tab div span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tab img,.tab svg{width:16px;height:16px;flex:none}
-.site{grid-column:1/-1;background:var(--paper);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.site{grid-column:1/-1;background:var(--paper);border-radius:0;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
 .nav{display:flex;align-items:center;gap:20px;height:64px;padding-inline:clamp(14px,3vw,28px);border-bottom:1px solid var(--line);background:rgba(250,246,241,.97)}
 .nav .brand{height:26px;flex:none}.nav .brand svg{height:100%;width:auto;display:block}
 .nav .brand.tall{height:40px}
 .nav .links{display:flex;gap:18px;margin-left:auto;font-size:var(--fs-s)}
-.nav .cta{min-height:40px;padding:0 14px;border-radius:.65rem;background:var(--red);color:#fff;font-weight:600;font-size:var(--fs-s);display:grid;place-items:center;white-space:nowrap}
+.nav .cta{min-height:40px;padding:0 14px;border-radius:0;background:var(--red);color:#fff;font-weight:600;font-size:var(--fs-s);letter-spacing:.06em;text-transform:uppercase;display:grid;place-items:center;white-space:nowrap}
 .hero-mock{padding:clamp(18px,3vw,32px) clamp(14px,3vw,28px) clamp(22px,3vw,36px);display:grid;gap:6px}
 .hero-mock b{font-size:clamp(1.25rem,3.4vw,2.1rem);line-height:1.15}
 .hero-mock b em{font-style:normal;color:var(--red-text)}
@@ -137,17 +137,17 @@ button{font:inherit}
 
 /* System */
 .chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:28px}
-.chip{border-radius:12px;padding:14px;min-height:132px;display:grid;align-content:space-between;gap:10px;font-size:var(--fs-s)}
+.chip{border-radius:0;padding:14px;min-height:132px;display:grid;align-content:space-between;gap:10px;font-size:var(--fs-s)}
 .chip b{display:block;font-weight:600}
 .chip .mono{opacity:.8}
 .rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:36px}
 .rules div{border-top:2px solid rgba(250,246,241,.2);padding-top:14px}
 .rules h3{font-size:var(--fs-l);color:var(--cream)}
 .rules p{margin-top:8px;font-size:var(--fs-s)}
-.pair-guides{margin-top:36px;background:rgba(250,246,241,.04);border-radius:14px;padding:clamp(16px,3vw,32px);box-shadow:inset 0 0 0 1px rgba(250,246,241,.12)}
+.pair-guides{margin-top:36px;background:rgba(250,246,241,.04);border-radius:0;padding:clamp(16px,3vw,32px);box-shadow:inset 0 0 0 1px rgba(250,246,241,.12)}
 
 /* Typeface */
-.specimen{margin-top:32px;display:grid;gap:clamp(18px,3vw,30px);padding:clamp(20px,4vw,44px);border-radius:14px;background:var(--cream);box-shadow:inset 0 0 0 1px var(--line)}
+.specimen{margin-top:32px;display:grid;gap:clamp(18px,3vw,30px);padding:clamp(20px,4vw,44px);border-radius:0;background:var(--cream);box-shadow:inset 0 0 0 1px var(--line)}
 .specimen p{max-width:none;color:var(--ink)}
 .sp-big{font-size:clamp(1.75rem,6.2vw,4.25rem);line-height:1.12}
 .sp-big em,.hero-mock em{font-style:normal;color:var(--red-text)}
@@ -156,16 +156,17 @@ button{font:inherit}
 .band.paper .rules div{border-top-color:var(--line)}
 .band.paper .rules h3{color:var(--ink)}
 .roles .r1{font:400 var(--fs-l)/1.3 'Aalayna Block',monospace;text-transform:uppercase;letter-spacing:0}
-.roles .r2{font:500 var(--fs-l)/1.3 'IBM Plex Mono',monospace}
+.roles .r2{font:600 var(--fs-l)/1.3 'Kode Mono',monospace}
+.roles .r3{font:400 var(--fs-l)/1.3 'Aalayna Block',monospace;text-transform:uppercase}
 
 /* Pick */
 .pick{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center;margin-top:28px}
-.pick .fit{background:var(--cream);border-radius:14px;padding:clamp(24px,5vw,48px)}
+.pick .fit{background:var(--cream);border-radius:0;padding:clamp(24px,5vw,48px)}
 .pick ol{margin:16px 0 0;padding-left:1.2em;display:grid;gap:10px;color:var(--ink)}
-.pick li::marker{font-family:'IBM Plex Mono',monospace;color:var(--red-text)}
+.pick li::marker{font-family:'Kode Mono',monospace;color:var(--red-text)}
 .files{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px;margin-top:28px}
 .files div{border-top:1px solid var(--line);padding-top:10px}
-.files code{font:500 .8rem/1.6 'IBM Plex Mono',monospace;color:var(--ink);display:block;overflow-wrap:anywhere}
+.files code{font:500 .8rem/1.6 'Kode Mono',monospace;color:var(--ink);display:block;overflow-wrap:anywhere}
 .files p{font-size:var(--fs-s);margin-top:4px}
 footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
 
@@ -349,9 +350,9 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
       <p class="sp-set block-type">À Â Ä Ç É È Ê Ë Î Ï Ô Ö Ù Û Ü</p>
     </div>
     <div class="rules roles">
-      <div><h3 class="r1">Aalayna Block</h3><p>Headlines and big figures. Capitals, one weight, no tracking: the gaps between the letters are part of the grid.</p></div>
-      <div><h3 class="r2">IBM Plex Mono</h3><p>Labels, step numbers, tags and the address. Medium, in capitals, a little tracking.</p></div>
-      <div><h3>IBM Plex Sans</h3><p>Everything you read: sentences, buttons, and the product’s own screens.</p></div>
+      <div><h3 class="r1">Aalayna Block</h3><p>Every heading and big figure. Capitals, one weight, no tracking: the gaps between the letters are part of the grid.</p></div>
+      <div><h3 class="r2">Kode Mono</h3><p>Everything you read or press: sentences, buttons, labels and numbers. Square and monospaced, so every letter sits in a box of the same width.</p></div>
+      <div><h3 class="r3">Square corners</h3><p>Buttons, cards, frames, tags and inputs, as in the logo. Shadows are hard or absent. Only a phone keeps its rounding, because phones have it.</p></div>
     </div>
   </div>
 </section>

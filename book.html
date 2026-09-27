@@ -17,7 +17,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="preload" href="brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="website.css?v=6">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
@@ -40,13 +40,13 @@
   /* Two columns only when the calendar column is at least 640 px wide, where Google uses its wide layout. */
   .grid{display:grid;grid-template-columns:1fr;gap:32px;margin-top:40px;align-items:start}
   @media(min-width:1060px){.grid{grid-template-columns:340px 1fr}}
-  .what{background:var(--petrol);color:#fff;border-radius:16px;padding:28px 26px}
+  .what{background:var(--petrol);color:#fff;padding:28px 26px}
   .what h2{font-size:var(--fs-lead);line-height:1.2;color:var(--peach)}
   .what ul{list-style:none;margin:14px 0 0;padding:0}
   .what li{line-height:1.6;padding:6px 0;display:flex;gap:10px;color:#D9E2E0}
   .what li::before{content:'';flex-shrink:0;width:10px;height:2px;margin-top:.8em;background:var(--peach)}
   .what .dur{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.16);font-size:var(--fs-small);color:#D9E2E0}
-  .sched{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .sched{background:var(--surface);border:1px solid var(--line);overflow:hidden}
   /* The calendar is as tall as Google's page at that width (a full day of slots), so only the page scrolls.
      Measured: about 2,220 px below 600 px wide, 1,760 px at 600 px, 1,600 px from 640 px. */
   .sched iframe{width:100%;height:2240px;border:0;display:block}

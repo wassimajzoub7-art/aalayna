@@ -123,17 +123,17 @@ test('Aalayna Block, the site font, is built from the typeface in brand/logo.js 
   for (const ch of new Set(Logo.NAME)) assert.equal(Logo.glyph(ch, 0, 0, Logo.U), Logo.typeGlyph(ch, 0, 0, Logo.U), ch);
 });
 
-test('the site sets its headlines and big figures in Aalayna Block, and every character they use is in it', () => {
+test('the site sets every heading and big figure in Aalayna Block, and every character they use is in it', () => {
   const css = read('website.css');
   assert.match(css, /@font-face\{font-family:'Aalayna Block';src:url\(brand\/fonts\/aalayna-block\.woff\) format\('woff'\)/);
   assert.match(css, /--font-display:'Aalayna Block',/);
-  assert.match(css, /\nh1,h2\{font-family:var\(--font-display\);font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0/);
+  assert.match(css, /\nh1,h2,h3\{font-family:var\(--font-display\);font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0/);
   ['.benefits-band .outcome-figure', '.price'].forEach(sel => assert.match(css, new RegExp(sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-display\\)'), sel));
   const covered = t => [...t.toUpperCase()].filter(ch => !/\s/.test(ch) && !Logo.TYPE[ch]);
   for (const f of SITE_PAGES) {
     const s = read(f), p = f.startsWith('fr/') ? '../' : '';
     assert.ok(s.includes('<link rel="preload" href="' + p + 'brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>'), f + ' preloads the font');
-    for (const m of s.matchAll(/<(h1|h2)\b[^>]*>([\s\S]*?)<\/\1>|<p class="(?:outcome-figure|price)">([^<]*)/g)) {
+    for (const m of s.matchAll(/<(h1|h2|h3)\b[^>]*>([\s\S]*?)<\/\1>|<p class="(?:outcome-figure|price)">([^<]*)/g)) {
       const text = (m[2] || m[3]).replace(/<span class="sr-only">[^<]*<\/span>/g, '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;|&#8239;/g, ' ');
       assert.deepEqual(covered(text), [], f + ': "' + text.trim() + '"');
     }
@@ -141,6 +141,24 @@ test('the site sets its headlines and big figures in Aalayna Block, and every ch
   // numbers.html builds its figures and titles from digits, $ , . + − and % (and a * after the figure).
   assert.deepEqual(covered('0123456789$,.+−%*'), []);
   for (const m of read('numbers.html').matchAll(/el\('h[12]', '[^']*', '([^']*)'\)|title: '([^']*)'/g)) assert.deepEqual(covered(m[1] || m[2]), [], m[0]);
+});
+
+test('no soft spots on the site: Kode Mono for all other text, and square corners except the phones', () => {
+  const css = read('website.css');
+  assert.match(css, /--font-text:'Kode Mono',/);
+  assert.match(css, /\nbody\{[^}]*font-family:var\(--font-text\)/);
+  for (const f of SITE_PAGES) {
+    const s = read(f);
+    const fonts = s.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1];
+    assert.ok(fonts.includes('family=Kode+Mono:'), f + ' loads Kode Mono');
+    assert.ok(!/IBM\+Plex/.test(fonts), f + ': no IBM Plex (Noto Kufi Arabic sets the Arabic words)');
+  }
+  // Every radius is 0, bar the phone frames (a phone has rounded corners); no blurred shadows anywhere.
+  const styles = ['website.css'].concat(SITE_PAGES).map(f => [f, f.endsWith('.css') ? read(f) : (read(f).match(/<style>[\s\S]*?<\/style>/g) || []).join('')]);
+  for (const [f, css2] of styles) {
+    for (const m of css2.matchAll(/([^{}]*)\{[^}]*border-radius:([^;}]+)/g)) assert.ok(m[2].trim() === '0' || /\.phone/.test(m[1]), f + ': ' + m[1].trim() + ' has border-radius ' + m[2]);
+    for (const m of css2.matchAll(/box-shadow:([^;}]+)/g)) assert.match(m[1], /^(?:inset )?0 0 0 \d+px /, f + ': box-shadow ' + m[1]);
+  }
 });
 
 test('the reel closes on the logo: reel.html plays the Block reveal, and its soundtrack reads the same join', () => {

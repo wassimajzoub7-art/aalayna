@@ -18,7 +18,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preload" href="brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="website.css?v=6">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
@@ -28,7 +28,7 @@
   /* Sizes and colours come from the tokens in website.css. */
   .num-wrap{width:min(1040px,calc(100% - 3rem));margin-inline:auto;padding-block:2rem 4rem}
   .num-title{font-size:var(--fs-heading);line-height:1.15}
-  .result{background:var(--petrol);color:#fff;border-radius:1.25rem;padding:2rem 2.25rem}
+  .result{background:var(--petrol);color:#fff;padding:2rem 2.25rem}
   .result .eyebrow{color:var(--peach)}
   .result .figure{font-family:var(--font-display);font-size:var(--fs-hero);font-weight:400;font-synthesis:none;line-height:1;margin-top:.6rem;white-space:nowrap}
   .result .figure sup{font-size:var(--fs-heading);vertical-align:top;color:var(--peach);margin-left:.1em}
@@ -41,31 +41,31 @@
   .inputs{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;margin-top:.75rem;align-items:flex-end}
   .inputs label{font-size:var(--fs-small);line-height:1.4;color:var(--on-petrol);display:flex;flex-direction:column;justify-content:flex-end;gap:.3rem;min-width:9rem;flex:1}
   .inputs .hint{font-size:var(--fs-small);color:var(--on-petrol-sub);font-weight:400;min-height:1.4em}
-  .inputs input{font:inherit;font-size:var(--fs-lead);font-weight:600;padding:.55rem .75rem;border:0;border-radius:.6rem;background:#fff;color:var(--ink);width:100%;cursor:text;margin-top:auto}
+  .inputs input{font:inherit;font-size:var(--fs-lead);font-weight:600;padding:.55rem .75rem;border:0;border-radius:0;background:#fff;color:var(--ink);width:100%;cursor:text;margin-top:auto}
   .inputs input:focus{outline:none;box-shadow:0 0 0 3px var(--peach)}
-  .how{margin-top:1.5rem;background:var(--surface);border:1px solid var(--line);border-radius:1.25rem;padding:1.75rem 2rem}
+  .how{margin-top:1.5rem;background:var(--surface);border:1px solid var(--line);padding:1.75rem 2rem}
   .how h2,.story h2,.proof h2{font-size:var(--fs-lead);line-height:1.25}
   .calc-steps{list-style:none;margin:1rem 0 0;padding:0;counter-reset:s;display:block}
   .calc-steps li{display:grid;grid-template-columns:2rem 1fr auto;gap:1rem;align-items:baseline;padding:.75rem 0;border-top:1px solid var(--line)}
-  .calc-steps li::before{counter-increment:s;content:counter(s,decimal-leading-zero);font-family:var(--font-mono);font-weight:500;color:var(--brand-text)}
+  .calc-steps li::before{counter-increment:s;content:counter(s,decimal-leading-zero);font-weight:600;color:var(--brand-text)}
   .calc-steps li span:last-child{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--petrol)}
   .calc-steps li.final{border-top:2px solid var(--petrol)}
   .calc-steps li.final span:last-child{font-size:var(--fs-lead)}
   .calc-steps small{display:block;color:var(--sub);font-size:var(--fs-small);margin-top:.15rem}
-  .story{margin-top:1.5rem;border:1px solid var(--line);border-radius:1.25rem;padding:1.75rem 2rem;background:var(--surface)}
+  .story{margin-top:1.5rem;border:1px solid var(--line);padding:1.75rem 2rem;background:var(--surface)}
   .story p{margin-top:.4rem}
   .timelines{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1rem}
-  .tl h3{font-family:var(--font-mono);font-size:var(--fs-small);font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--brand-text);margin-bottom:.5rem}
+  .tl h3{font-family:var(--font-text);font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-text);margin-bottom:.5rem}
   .tl ol{list-style:none;padding:0;margin:0}
   .tl li{display:flex;justify-content:space-between;gap:1rem;padding:.4rem 0;border-top:1px solid var(--line)}
   .tl li span:last-child{white-space:nowrap;font-weight:600;font-variant-numeric:tabular-nums;color:var(--petrol)}
   .tl li.total{border-top:2px solid var(--petrol);font-weight:600}
-  .proof{margin-top:1.5rem;padding:1.5rem 2rem;border:1px solid var(--line);border-radius:1.25rem;background:var(--surface)}
+  .proof{margin-top:1.5rem;padding:1.5rem 2rem;border:1px solid var(--line);background:var(--surface)}
   .proof ul{margin:.6rem 0 0;padding-left:1.2rem;color:var(--sub)}.proof li{margin:.3rem 0}
   .proof .actions{margin-top:1.2rem}
   .other{margin-top:2rem}.other p{color:var(--sub)}
   .pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
-  .pills a{text-decoration:none;font-size:var(--fs-small);font-weight:500;padding:.625rem .9rem;border:1px solid var(--line);border-radius:2rem;background:var(--surface);color:var(--ink)}
+  .pills a{text-decoration:none;font-size:var(--fs-small);font-weight:600;padding:.625rem .9rem;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
   .pills a.on{background:var(--petrol);border-color:var(--petrol);color:#fff}
   .sources{margin-top:1.5rem;font-size:var(--fs-small);color:var(--sub);line-height:1.6}
   .print-link{background:none;border:0;font:inherit;color:inherit;cursor:pointer}
