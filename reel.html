@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aalayna Film</title>
-<meta name="description" content="Aalayna in 45 seconds, all at one table: the wait for the bill, then scan, menu, split, tip, pay and rate, and the restaurant's live floor.">
+<meta name="description" content="Aalayna in 75 seconds, all at one table: four friends sit down, scan and read the menu, eat, wait for the bill, then split, tip, pay and rate, and the restaurant's live floor.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -288,7 +288,7 @@ const q = new URLSearchParams(location.search);
 const capture = q.has('capture');
 const LANG = q.get('lang') === 'fr' ? 'fr' : 'en';
 const P = q.has('format') ? q.get('format') === 'portrait' : !capture && innerHeight > innerWidth * 1.1;
-const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2, DUR = 45;
+const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2, DUR = 75;
 const lay = (l, p) => P ? p : l;
 const $ = id => document.getElementById(id);
 document.documentElement.lang = LANG;
@@ -469,6 +469,7 @@ const knifeSVG = L => `<rect x="${-L / 2}" y="-3.2" width="${f1(L * .48)}" heigh
 const forkSVG = L => `<rect x="${-L / 2}" y="-3.2" width="${f1(L * .56)}" height="6.4" rx="3.2" fill="#B5AA9A"/><rect x="${f1(L * .04)}" y="-6" width="${f1(L * .14)}" height="12" rx="3.5" fill="#D9D2C8"/>${[-4.5, -1.5, 1.5, 4.5].map(d => `<rect x="${f1(L * .15)}" y="${d - .9}" width="${f1(L * .35)}" height="1.8" rx=".9" fill="#D9D2C8"/>`).join('')}`;
 // What is left on a plate, or still on it.
 const FOOD = {
+  none: () => '',
   left: (r, q) => `<path d="M${f1(-r * .42)} ${f1(r * .12)}q${f1(r * .3)} ${f1(-r * .36)} ${f1(r * .72)} ${f1(-r * .14)}" fill="none" stroke="${['#E0C48E', '#D98A62', '#C9B27E'][Math.floor(q() * 3)]}" stroke-width="${f1(r * .15)}" stroke-linecap="round" stroke-opacity=".7"/>`
     + [0, 1, 2].map(() => `<circle cx="${f1((q() - .5) * r * .9)}" cy="${f1((q() - .2) * r * .6)}" r="${f1(1.5 + q() * 2.5)}" fill="${['#8DB36B', '#C85A3C', '#9C6B3A'][Math.floor(q() * 3)]}"/>`).join(''),
   hummus: r => `<circle r="${f1(r * .62)}" fill="#E7CFA0"/><circle r="${f1(r * .38)}" fill="none" stroke="#D3B67F" stroke-width="${f1(r * .07)}"/><circle r="${f1(r * .17)}" fill="#B3A134" fill-opacity=".85"/><circle cx="${f1(r * .24)}" cy="${f1(-r * .22)}" r="${f1(r * .06)}" fill="#C85A3C"/><circle cx="${f1(-r * .28)}" cy="${f1(r * .14)}" r="${f1(r * .05)}" fill="#C85A3C"/>`,
@@ -517,10 +518,10 @@ function t12SVG() {
   <circle r="238" fill="none" stroke="#E2D1BA" stroke-width="3" stroke-dasharray="1 12" stroke-linecap="round"/>`;
   for (let i = 0; i < 4; i++) {
     const [px, py] = place(i, 0, 162), [gx, gy] = place(i, -92, 92);
-    s += plateSVG(px, py, 54, 'left', q, GA[i] - 90, true) + glassSVG(f1(gx), f1(gy));
+    s += `<g id="pe${i}">${plateSVG(px, py, 54, 'none', q, GA[i] - 90, false)}</g><g id="pf${i}" opacity="0">${plateSVG(px, py, 54, ['grill', 'salad', 'grill', 'hummus'][i], q, GA[i] - 90, false)}</g><g id="pd${i}" opacity="0">${plateSVG(px, py, 54, 'left', q, GA[i] - 90, true)}</g>` + glassSVG(f1(gx), f1(gy));
   }
-  s += `<g transform="translate(-86 16)"><circle r="48" fill="url(#soft)" opacity=".5"/><circle r="37" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.hummus(40)}</g>
-    <g transform="translate(86 18)"><circle r="50" fill="url(#soft)" opacity=".5"/><circle r="39" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.salad(40, q)}</g>
+  s += `<g id="bowls" opacity="0"><g transform="translate(-86 16)"><circle r="48" fill="url(#soft)" opacity=".5"/><circle r="37" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.hummus(40)}</g>
+    <g transform="translate(86 18)"><circle r="50" fill="url(#soft)" opacity=".5"/><circle r="39" fill="#fff" stroke="#EDE4D8" stroke-width="3"/>${FOOD.salad(40, q)}</g></g>
     <ellipse cx="6" cy="-18" rx="50" ry="62" fill="url(#soft)" opacity=".7"/>
     <g id="qrTent"><rect x="-31" y="-68" width="62" height="80" rx="6" fill="#fff" stroke="#E6DCCF" stroke-width="1.5"/>
       ${QR.map(([x, y, f]) => `<rect x="${(-22 + x * 1.76).toFixed(2)}" y="${(-61 + y * 1.76).toFixed(2)}" width="1.6" height="1.6" fill="${f ? '#C9414B' : '#211B16'}"/>`).join('')}
@@ -722,6 +723,7 @@ stage.innerHTML = `
    ${C.pains.map((t, i) => `<div class="a pain" id="pain${i}"><i>${[ICON.hand, ICON.div, ICON.coin][i]}</i>${t}</div>`).join('')}
    <div class="a" id="clock"></div>
  </div>
+ <div id="uiN" class="layer"><div class="a" id="scrimN"></div><div class="a cap" id="capN0"><div class="lab"></div><div class="hd"></div><div class="sb"></div></div><div class="a cap" id="capN1"><div class="lab"></div><div class="hd"></div><div class="sb"></div></div></div>
  <div id="uiA" class="layer">
    <div class="a" id="scrimA"></div>
    <div class="a cap" id="capA"><div class="lab"></div><div class="hd"></div><div class="sb"></div></div>
@@ -777,7 +779,7 @@ const SCREENS = [...document.querySelectorAll('.scr')];
 const POOLS = [...document.querySelectorAll('.fpool')];
 
 /* ---------- Timeline ---------- */
-const CH = [11.875, 15, 20, 24.375, 26.875, 29.375, 31.875, 34.375];   // six guest chapters, the settle beat, then the room
+const CH = [11.875, 15, 19.2, 24.375, 26.875, 29.375, 31.875, 34.375];   // six guest chapters, the settle beat, then the room
 const SIDE = [34.375, 38.125, 41.25];
 const NAV = [[11.2, 'sCam', 0], [14.6, 'sMenu', 0], [19.65, 'sBill', 1], [20.4, 'sSplit', 1], [24.55, 'sPay', 1], [28.45, 'sPaid', 0]];
 const TAPS = [[14.45, 195, 590], [15.35, 82, 80], [15.95, 72, 553], [16.45, 195, 737], [17.35, 244, 29], [17.65, 197, 154], [18.6, 244, 29], [18.85, 197, 82],
@@ -789,6 +791,7 @@ const ZW = lay(1.1, .98), ZF = lay(.275, .24);
 
 // The guest's phone: lying at their place, lifted over the QR to scan, put back down for the split.
 function phonePose(t) {
+  if (OV.pp) return OV.pp;
   const up = E.inOutCubic(p(t, 12.05, 12.85)), down = E.inOutCubic(p(t, 21.3, 22.1)), k = up * (1 - down);
   return { x: lerp(126, 0, k), y: lerp(150, -28, k), r: 0, lift: 1 + .12 * k, k };
 }
@@ -806,7 +809,7 @@ const CAM = [
   [15.45, 15.85, t => closeUp(t, 195, 560, 1.26), E.inOutCubic],
   [16.5, 16.95, t => closeUp(t, 195, 440, 1.3), E.inOutCubic],
   [17.15, 17.55, t => closeUp(t, 240, 230, 1.34), E.inOutCubic],
-  [19.05, 19.45, t => closeUp(t), E.inOutCubic],
+  [18.9, 19.2, t => closeUp(t), E.inOutCubic],
   [20.45, 20.9, t => closeUp(t, 200, 262, 1.35), E.inOutCubic],
   [21.3, 22.2, () => view(0, 20, ZW * 1.02, 0), E.inOutCubic],
   [22.2, 24.2, () => view(0, 20, ZW * 1.09, 5), E.inOutSine],
@@ -846,7 +849,7 @@ const PNL = lay({ x: 372, y: 718, s: .82 }, { x: 540, y: 1722, s: 1.2 });
 const SCRIM = { A: lay('linear-gradient(90deg,rgba(9,28,30,0),rgba(9,28,30,.84) 27%,rgba(9,28,30,.9))', 'linear-gradient(180deg,rgba(9,28,30,.92),rgba(9,28,30,.8) 55%,rgba(9,28,30,0))'),
                 B: lay('linear-gradient(270deg,rgba(9,28,30,0),rgba(9,28,30,.8) 30%,rgba(9,28,30,.9))', 'linear-gradient(180deg,rgba(9,28,30,.92),rgba(9,28,30,.8) 55%,rgba(9,28,30,0))') };
 
-const capState = { A: -1, B: -1 };
+const capState = { A: -1, B: -1, N0: -1, N1: -1 };
 function setCaption(el, spec, L) {
   el.style.width = L.w + 'px';
   const [lab, hd, sb] = el.children;
@@ -872,29 +875,72 @@ function caption(el, key, specs, times, t, L) {
   sb.style.transform = `translateY(${20 * (1 - ks)}px)`; sb.style.opacity = ks;
   return i;
 }
+// The two scenes around the menu (sitting down, ordering) have their own captions on the guest act's layout.
+function newCaption(k, l, [a, b]) {
+  const el = $('capN' + k); $('capN' + (1 - k)).style.opacity = 0;
+  caption(el, 'N' + k, [NEWCAP[k]], [a - .1, b + .45], l, LA);
+  scrim($('scrimN'), 'A', l, 0, 6.2);
+}
 function scrim(el, key, t, a, b) {
   el.style.background = SCRIM[key]; el.style.width = lay(key === 'A' ? 1060 : 800, W) + 'px'; el.style.height = lay(H, 760) + 'px';
   TL(el, lay(key === 'A' ? W - 1060 : 0, 0), 0, E.outCubic(p(t, a, a + .6)) * (1 - p(t, b - .4, b)));
 }
 
+/* ---------- The film's order ----------
+   The material above is laid out on one clock (t). The film plays it in story order on its own clock (T, 75 s):
+   they sit down, scan and read the menu, order and eat, wait for the bill, reopen the app to split and pay,
+   then the room and the close. Each segment maps T onto a stretch of t, slower than the material was cut. */
+const SEG = [
+  [0, 6, 11.96, 11.96, 'arrive'],
+  [6, 18, 11.96, 19.2, 'scan'],
+  [18, 24, 19.2, 19.2, 'dinner'],
+  [24, 37.32, 0, 11.1, 'wait'],
+  [37.32, 40.137, 11.1, 13.75, 'reopen'],
+  [40.137, 62.5, 19.2, 34.375, 'bill'],
+  [62.5, 70.5, 34.375, 41.25, 'room'],
+  [70.5, 75, 41.25, 45, 'close'],
+];
+let OV = { id: '', T: 0, l: 0 };
+const NEWCAP = {
+  en: [['Table 12 · 8:30 pm', 'Four friends *sit down.*', 'The menu is one scan away.'], ['8:45 pm', 'The waiter takes *the order.*', 'Then dinner. Nobody thinks about the bill.']],
+  fr: [['Table 12 · 20 h 30', 'Quatre amis *s’installent.*', 'Le menu est à un scan.'], ['20 h 45', 'Le serveur prend *la commande.*', 'Puis le dîner. Personne ne pense à l’addition.']],
+}[LANG];
+
 /* ---------- Render ---------- */
-const layers = ['ui1', 'uiA', 'uiB', 'red', 'close', 'phoneLayer'].reduce((o, k) => (o[k] = $(k), o), {});
-function render(t) {
-  t = clamp(t, 0, DUR);
+const layers = ['ui1', 'uiA', 'uiN', 'uiB', 'red', 'close', 'phoneLayer'].reduce((o, k) => (o[k] = $(k), o), {});
+function render(T) {
+  T = clamp(T, 0, DUR);
+  const sg = SEG.find(q => T < q[1]) || SEG[SEG.length - 1], u = clamp((T - sg[0]) / (sg[1] - sg[0]));
+  const t = lerp(sg[2], sg[3], u), id = sg[4], l = T - sg[0];
+  OV = { id, T, l, u, st: id === 'reopen' || id === 'dinner' ? 19.2 : t, course: 2, arr: [1, 1, 1, 1] };
+  if (id === 'arrive' || id === 'scan') OV.course = 0;
+  if (id === 'dinner') OV.course = E.inOutCubic(p(l, 1.9, 2.6)) + E.inOutCubic(p(l, 3.6, 4.6));
+  if (id === 'arrive') OV.arr = [0, 1, 2, 3].map(i => E.outCubic(p(l, .3 + i * .35, 1.6 + i * .35)));
+  if (id === 'dinner') { const k = 1 - E.inOutCubic(p(l, .2, 1.2)); OV.pp = { x: lerp(126, 0, k), y: lerp(150, -28, k), r: 0, lift: 1 + .12 * k, k }; }
   // The camera over the world; in portrait, close-ups never climb over the caption.
   cam = camAt(t);
-  if (P && t > 11) { const pp = phonePose(t), c = proj(pp.x, pp.y), top = c.y - 444 * cam.z * PS * pp.lift; if (top < 612) cam.fy += 612 - top; }
+  if (id === 'arrive') cam = mixCam(view(0, 22, ZW * .86, -6), camAt(11.96), E.inOutSine(u));
+  if (id === 'dinner') {
+    cam = mixCam(cam, view(0, 20, ZW * 1.02, 0), E.inOutCubic(p(l, .3, 1.7)));
+    cam = mixCam(cam, view(0, 20, ZW * 1.08, 3), E.inOutSine(p(l, 1.7, 4.4)));
+    cam = mixCam(cam, camAt(0), E.inOutCubic(p(l, 4.4, 6)));
+  }
+  if (P && t > 11 && (id === 'scan' || id === 'reopen' || id === 'bill')) { const pp = phonePose(t), c = proj(pp.x, pp.y), top = c.y - 444 * cam.z * PS * pp.lift; if (top < 612) cam.fy += 612 - top; }
   $('world').style.transform = `translate(${cam.fx}px,${cam.fy}px) rotate(${cam.r}deg) scale(${cam.z}) translate(${-cam.lx}px,${-cam.ly}px)`;
   const near = clamp((cam.z * PS - .32) / .5);
   $('worldWrap').style.filter = near > .01 ? `blur(${(7 * near).toFixed(2)}px) brightness(${1 - .2 * near})` : 'none';
   lighting(t);
 
-  show(layers.ui1, t < 7.9); show(layers.red, t >= 7.5 && t < 11.95); show(layers.uiA, t >= 11.8 && t < 34.45);
+  const ga = id === 'scan' || id === 'bill';
+  show(layers.ui1, t < 7.9 && id === 'wait'); show(layers.red, t >= 7.5 && t < 11.95); show(layers.uiA, ga && t >= 11.8 && t < 34.45);
+  layers.uiA.style.opacity = id === 'bill' ? E.outCubic(p(l, 0, .5)) : 1;
+  show(layers.uiN, id === 'arrive' || id === 'dinner');
+  if (id === 'arrive' || id === 'dinner') newCaption(id === 'arrive' ? 0 : 1, l, id === 'arrive' ? [.5, 5.7] : [1.4, 4.1]);
   show(layers.uiB, t >= 34.3 && t < 41.6); show(layers.close, t >= 41.7); show(layers.phoneLayer, t < 41.4);
   table12(t); floor(t);
-  if (t < 7.9) act1ui(t);
+  if (t < 7.9 && id === 'wait') act1ui(t);
   if (t >= 7.5 && t < 11.95) red(t);
-  if (t >= 11.8 && t < 34.45) guestUI(t);
+  if (ga && t >= 11.8 && t < 34.45) guestUI(t);
   if (t < 41.4) phone(t);
   if (t >= 34.3 && t < 41.6) roomUI(t);
   if (t >= 41.7) closing(t);
@@ -902,7 +948,7 @@ function render(t) {
 
 // Night, then the lights come up at the table, then over the whole room.
 function lighting(t) {
-  const lit = E.inOutCubic(p(t, 11.1, 11.4)), room = E.inOutCubic(p(t, 34.4, 35.4));
+  const lit = OV.id === 'dinner' ? 1 - E.inOutCubic(p(OV.l, 4.2, 6)) : E.inOutCubic(p(t, 11.1, 11.4)), room = E.inOutCubic(p(t, 34.4, 35.4));
   const c = proj(0, 0), strength = lerp(lerp(.96, .62, lit), .4, room);
   $('vig').style.background = `radial-gradient(ellipse ${lay(62, 95)}% ${lay(75, 52)}% at ${(c.x / W * 100).toFixed(2)}% ${(c.y / H * 100).toFixed(2)}%,rgba(6,20,22,0) 38%,rgba(6,20,22,${strength}) 100%)`;
   attr($('pool12'), 'opacity', lerp(.55, 1, lit));
@@ -911,7 +957,17 @@ function lighting(t) {
 
 /* ---------- Table 12 ---------- */
 function table12(t) {
-  for (let i = 0; i < 4; i++) attr($('gp' + i), 'transform', `translate(${(3 * Math.sin(t * 1.7 + i * 1.3)).toFixed(2)} ${(3 * Math.cos(t * 1.3 + i)).toFixed(2)})`);
+  const Tt = OV.T;
+  for (let i = 0; i < 4; i++) {
+    const a = OV.arr[i], [ox, oy] = place(i, 0, 300 * (1 - a));
+    attr($('gp' + i), 'transform', `translate(${(ox + 3 * Math.sin(Tt * 1.7 + i * 1.3)).toFixed(2)} ${(oy + 3 * Math.cos(Tt * 1.3 + i)).toFixed(2)})`);
+    attr($('gp' + i), 'opacity', clamp(a * 2));
+    if (i !== 2) attr($('ph' + i), 'opacity', clamp(a * 3 - 2));
+    const c = OV.course, pop = c > 0 && c < 1 ? 1 + .12 * Math.sin(Math.PI * clamp(c * 1.3 - i * .1)) : 1;
+    attr($('pe' + i), 'opacity', clamp(1 - c)); attr($('pf' + i), 'opacity', clamp(Math.min(c, 2 - c) * 1.5 - i * .08));
+    attr($('pd' + i), 'opacity', clamp(c - 1));
+  }
+  attr($('bowls'), 'opacity', clamp(OV.course * 1.4));
   // The bill arrives and waits; the red dot lands on it.
   const tr = E.outExpo(p(t, 2.55, 3.3)), gone = Math.max(0, 1 - E.inBack(p(t, 7.55, 7.8)));
   attr($('tray'), 'transform', `translate(0 ${lerp(480, 58, tr)}) rotate(${lerp(28, -3, tr) + 4 * wobble(t - 3.15, 2, 6) * (t > 3.15 ? 1 : 0)}) scale(${gone})`);
@@ -939,7 +995,7 @@ function table12(t) {
     const sq = t > 7.5 ? .5 * wobble(t - 7.5, 3.2, 9) : 0;
     attr(dot, 'transform', `translate(0 ${lerp(-900, 58, E.inQuad(p(t, 7.1, 7.5)))}) scale(${1 + sq} ${1 - sq})`); attr(dot, 'opacity', 1);
   } else attr(dot, 'opacity', 0);
-  attr($('qrDot'), 'r', 4.5 * (1 + .6 * wobble(t - 11.9, 2.5, 6) * (t > 11.9 ? 1 : 0)));
+  attr($('qrDot'), 'r', 4.5 * (OV.id === 'arrive' ? 1 + .6 * Math.max(0, Math.sin(Math.PI * 2 * p(OV.l, 3.6, 5.6))) : 1 + .6 * wobble(t - 11.9, 2.5, 6) * (t > 11.9 ? 1 : 0)));
 
   // The split: the receipt prints, tears in four and flies to each guest, who gets their share.
   const pr = E.outExpo(p(t, 21.75, 22.35));
@@ -978,7 +1034,10 @@ function table12(t) {
   }
   // A waiter walks straight past the raised hand; later one comes over for the cash, and one crosses the floor.
   const w0a = p(t, 4.55, 6.9), w0b = p(t, 35.2, 40.6);
-  if (t < 20) {
+  if (OV.id === 'dinner') {
+    const a = E.inOutCubic(p(OV.l, 0, 1.8)), b = E.inOutCubic(p(OV.l, 3.2, 4.8)), x = lerp(lerp(1100, 330, a), 1300, b), y = lerp(lerp(-900, -330, a), -760, b);
+    walker('waiter0', 'w0', x, y, b > 0 ? -60 : a < 1 ? -130 : -135, (a + b) * 1400 / 130 * Math.PI, clamp(Math.sin(Math.PI * a) * 4 + Math.sin(Math.PI * b) * 4), 1);
+  } else if (t < 20) {
     const [x, y] = P ? [lerp(1000, -1000, w0a), -600] : [520, lerp(-820, 820, w0a)];
     walker('waiter0', 'w0', x, y, P ? -90 : 180, w0a * (P ? 2000 : 1640) / 130 * Math.PI, clamp(Math.sin(Math.PI * w0a) * 4), w0a > 0 && w0a < 1 ? 1 : 0);
   }
@@ -1114,20 +1173,20 @@ function guestUI(t) {
 }
 
 /* ---------- The guest's phone ---------- */
-function phone(t) {
+function phone(t, st = OV.st) {
   const pp = phonePose(t), c = proj(pp.x, pp.y), s = cam.z * PS * pp.lift, near = clamp((s - .25) / .6);
   const rx = lerp(14 * pp.k, 3, near), ry = lerp(-6 * pp.k, -7 + 3 * Math.sin(t * .6), near);
   const ph = $('phone');
-  T(ph, { x: c.x, y: c.y, s, r: cam.r + pp.r, rx, ry, o: 1 - p(t, 41.1, 41.35) });
+  T(ph, { x: c.x, y: c.y, s, r: cam.r + pp.r, rx, ry, o: (1 - p(t, 41.1, 41.35)) * clamp(OV.arr[2] * 3 - 2) });
   const lift = pp.k + near * .6;
   ph.style.boxShadow = `0 ${(10 + 60 * lift).toFixed(1)}px ${(18 + 90 * lift).toFixed(1)}px rgba(0,0,0,${(.45 - .12 * lift).toFixed(3)}),inset 0 0 0 2px #463d35,inset 0 0 0 6px #0d0b09`;
   $('glare').style.backgroundPosition = `${50 + ry * 3}% 0`;
-  $('off').style.opacity = 1 - E.outCubic(p(t, 12.0, 12.3));
+  $('off').style.opacity = OV.id === 'dinner' ? E.inOutCubic(p(OV.l, 1.0, 1.5)) : 1 - E.outCubic(p(t, 12.0, 12.3));
 
   let cur = 0;
-  NAV.forEach((n, i) => { if (t >= n[0]) cur = i; });
+  NAV.forEach((n, i) => { if (st >= n[0]) cur = i; });
   SCREENS.forEach(el => { el.style.display = 'none'; });
-  const [ct, cid, dir] = NAV[cur], k = E.inOutCubic(p(t, ct, ct + .45)), inc = $(cid);
+  const [ct, cid, dir] = NAV[cur], k = E.inOutCubic(p(st, ct, ct + .45)), inc = $(cid);
   inc.style.display = ''; inc.style.zIndex = 2;
   if (cur > 0 && k < 1) {
     const out = $(NAV[cur - 1][1]); out.style.display = ''; out.style.zIndex = 1;
@@ -1142,7 +1201,7 @@ function phone(t) {
   const dom = k > .5 || cur === 0 ? cid : NAV[cur - 1][1];
   $('sbar').className = dom === 'sCam' || dom === 'sPaid' ? 'light' : '';
   $('app').style.transform = `scale(${K})`;
-  scrCam(t); scrMenu(t); scrBill(t); scrSplit(t); scrPay(t); scrPaid(t);
+  scrCam(st); scrMenu(st); scrBill(st); scrSplit(st); scrPay(st); scrPaid(st);
 
   let tap = null;
   for (const tp of TAPS) if (t >= tp[0] - .32 && t < tp[0] + .6) tap = tp;
