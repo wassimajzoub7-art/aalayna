@@ -12,7 +12,7 @@ const SITE = ['index.html', 'book.html', 'numbers.html'];
 const rootFiles = ext => fs.readdirSync(ROOT).filter(f => f.endsWith(ext));
 const strip = h => h.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').trim();
 const OPS = ['×', '÷', '+', '−'];
-const CTA_LABELS = ['Book a 15-min call', 'WhatsApp us'];
+const CTA_LABELS = ['Book a demo', 'WhatsApp us'];
 
 /* ---------- numbers.html in a DOM stub ---------- */
 function makeEl(tag) {
@@ -204,7 +204,7 @@ test('CTAs: two labels site-wide, booking goes to book.html, WhatsApp goes to wa
     for (const m of s.matchAll(/<(a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)) {
       const attrs = m[2], text = strip(m[3]);
       if (/class="[^"]*\bbtn\b/.test(attrs)) assert.ok(CTA_LABELS.includes(text), f + ': button "' + text + '"');
-      if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, 'Book a 15-min call', f); assert.match(attrs, /href="book\.html"/); }
+      if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, 'Book a demo', f); assert.match(attrs, /href="book\.html"/); }
       if (/data-track="whatsapp_click"/.test(attrs)) {
         assert.match(attrs, /href="https:\/\/wa\.me\//);
         assert.ok(text === 'WhatsApp us' || (f === 'book.html' && text === 'Message us'), f + ': WhatsApp link "' + text + '"');
@@ -212,7 +212,7 @@ test('CTAs: two labels site-wide, booking goes to book.html, WhatsApp goes to wa
     }
   });
   runNumbers('?focus=all').forEach(o => o.buttons.forEach(b => {
-    assert.equal(b.text, 'Book a 15-min call'); assert.equal(b.href, 'book.html');
+    assert.equal(b.text, 'Book a demo'); assert.equal(b.href, 'book.html');
     assert.equal(b.track, 'booking_click'); assert.equal(b.placement, 'numbers_' + o.key);
   }));
   const book = read('book.html');
@@ -223,9 +223,10 @@ test('funnel: tracked placements keep their names and every event is one analyti
   const allowed = JSON.parse(read('analytics.js').match(/var allowed = (\[[^\]]*\])/)[1].replace(/'/g, '"'));
   const pairs = f => [...read(f).matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
   const index = pairs('index.html');
-  // booking_click:experience went with the mid-page booking card (W2, item 23); the editor screenshot sits there now.
-  ['booking_click:navigation', 'booking_click:hero', 'booking_click:pilot', 'booking_click:footer',
-   'whatsapp_click:hero', 'whatsapp_click:pricing', 'whatsapp_click:footer', 'whatsapp_click:footer_contact', 'numbers_click:outcomes']
+  // Every section ends on Book a demo, each with its own placement, so the funnel shows which section converts.
+  assert.deepEqual(index.filter(p => p.startsWith('booking_click')),
+    ['booking_click:navigation', 'booking_click:hero', 'booking_click:how', 'booking_click:outcomes', 'booking_click:pricing', 'booking_click:faq', 'booking_click:footer']);
+  ['whatsapp_click:hero', 'whatsapp_click:footer', 'whatsapp_click:footer_contact', 'numbers_click:outcomes']
     .forEach(p => assert.ok(index.includes(p), 'index.html lost ' + p));
   assert.deepEqual(pairs('book.html'), ['whatsapp_click:booking_fallback']);
   assert.deepEqual(pairs('numbers.html').sort(), ['booking_click:numbers_nav', 'whatsapp_click:numbers_footer']);
@@ -234,37 +235,36 @@ test('funnel: tracked placements keep their names and every event is one analyti
   assert.equal((read('index.html').match(/href="numbers\.html/g) || []).length, 1);
 });
 
-test('homepage structure: hero, WhatsApp first, nav, coming-next section, FAQ order, numbering', () => {
+test('homepage structure: four sections that each end on Book a demo, six questions, nothing that is not shipped', () => {
   const s = read('index.html');
   assert.ok(s.includes('<p class="lead">Guests view, split and pay from the table: one QR, their language, USD or LBP.</p>'));
-  const nav = s.match(/<div class="nav-links">([\s\S]*?)<\/div>/)[1];
-  assert.ok(!/Bring guests back|return-visits/.test(nav));
+  assert.deepEqual(all(s, /<section[^>]*\bid="([^"]+)"/g), ['how', 'outcomes', 'pricing', 'faq', 'contact'], 'the sections, in order');
+  assert.ok(!/id="experience"|id="return-visits"|Coming next|Bring guests back/.test(s), 'no both-sides or coming-next section');
+  assert.equal(s.match(/<div class="nav-links">([\s\S]*?)<\/div>/)[1], '<a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">Questions</a>');
   ['hero-copy', 'id="contact"'].forEach(anchor => {
     const block = s.slice(s.indexOf(anchor)), actions = block.match(/<div class="actions">([\s\S]*?)<\/div>/)[1].trim();
-    assert.match(actions, /^<a class="btn" data-track="whatsapp_click"[^>]*>WhatsApp us<\/a>\s*<a class="btn outline" data-track="booking_click"[^>]*>Book a 15-min call<\/a>$/, anchor);
+    assert.match(actions, /^<a class="btn" data-track="booking_click"[^>]*>Book a demo<\/a>\s*<a class="btn outline" data-track="whatsapp_click"[^>]*>WhatsApp us<\/a>$/, anchor);
   });
-  const retention = s.match(/<section[^>]*id="return-visits"[\s\S]*?<\/section>/)[0];
-  assert.ok(s.indexOf('id="return-visits"') > s.indexOf('id="pricing"'), 'Bring guests back sits below pricing');
-  assert.match(retention, /<p class="eyebrow">Coming next<\/p>/);
-  assert.ok(!/data-track|href=/.test(retention), 'no CTA in the coming-next section');
+  ['how', 'outcomes', 'faq'].forEach(id => assert.match(s.match(new RegExp('<section[^>]*id="' + id + '"[\\s\\S]*?</section>'))[0], /<div class="section-cta"><a class="btn(?: light)?" data-track="booking_click" data-placement="[a-z]+" href="book\.html">Book a demo<\/a><\/div>/, id + ' ends on Book a demo'));
+  assert.match(s, /<a class="btn light full" data-track="booking_click" data-placement="pricing" href="book\.html">Book a demo<\/a>/);
   const faq = [...s.matchAll(/<summary>([^<]*)<\/summary>/g)].map(m => m[1]);
-  assert.deepEqual(faq.slice(0, 3), ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?']);
-  assert.ok(faq.indexOf('Is this ready to take real payments?') > 2);
+  assert.deepEqual(faq, ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?', 'Where do payments and tips go?', 'Is this ready to take real payments?', 'What is included in the price?']);
   const numbers = [...s.matchAll(/<span class="number">([^<]*)<\/span>/g)].map(m => m[1]);
-  assert.ok(numbers.length >= 9);
+  assert.equal(numbers.length, 6, 'three steps and three pilot steps');
   numbers.forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
   const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> [^<]+<\/p>/g)].map(m => m[1]);
   assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'Your list']);
+  assert.equal(all(s, /<ul>([\s\S]*?)<\/ul>/g).map(u => (u.match(/<li>/g) || []).length)[0], 5, 'the price card lists what ships today');
 });
 
 test('book.html: site colour token, one calendar that needs no script, one WhatsApp line', () => {
   const s = read('book.html');
-  assert.equal(s.match(/<title>([^<]*)<\/title>/)[1], 'Book a 15-min call · Aalayna');
+  assert.equal(s.match(/<title>([^<]*)<\/title>/)[1], 'Book a demo · Aalayna');
   assert.ok(!/#E8555B/i.test(s) && !/--brand\s*:/.test(s), 'no local brand colour');
   assert.match(s, /<link rel="stylesheet" href="website\.css/);
   assert.equal((s.match(/<iframe\b/g) || []).length, 1);
-  assert.match(s, /<iframe [^>]*title="Book a 15-min call with Aalayna"/);
+  assert.match(s, /<iframe [^>]*title="Book a demo with Aalayna"/);
   assert.equal((s.match(/wa\.me\//g) || []).length, 1);
   assert.ok(!/mailto:/.test(s));
   assert.ok(!/<script>/.test(s), 'the calendar is in the HTML, not injected');
@@ -323,7 +323,7 @@ test('product screens: every image exists in WebP and PNG, has its size, an alt,
   const s = read('index.html');
   const pics = [...s.matchAll(/<picture><source srcset="images\/([\w-]+)\.webp" type="image\/webp"><img ([^>]*)><\/picture>/g)];
   assert.equal(pics.length, (s.match(/<img\b/g) || []).length, 'every img sits in a picture with a WebP source');
-  assert.ok(pics.length >= 5, 'three steps, guest menu and editor');
+  assert.ok(pics.length >= 3, 'the three steps');
   pics.forEach(([, name, attrs]) => {
     assert.match(attrs, new RegExp('src="images/' + name + '\\.png"'), name);
     ['webp', 'png'].forEach(ext => assert.ok(fs.existsSync(path.join(ROOT, 'images', name + '.' + ext)), name + '.' + ext));
@@ -348,7 +348,7 @@ test('product screens: every image exists in WebP and PNG, has its size, an alt,
 
 /* ---------- W4: French homepage (fr/index.html) ---------- */
 const FR = 'fr/index.html';
-const FR_CTA = ['Réserver un appel de 15 min', 'Écrivez-nous sur WhatsApp'];
+const FR_CTA = ['Réserver une démo', 'Écrivez-nous sur WhatsApp'];
 const decode = s => s.replace(/&#8239;/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 // The language switch is the one link with hreflang; the English page has it in the header, the French page in the footer.
 const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr|ar)"[^>]*>(?:EN|FR|عربي|English|Français|العربية)<\/a>/g;
@@ -397,7 +397,7 @@ test('fr homepage: exactly the two French CTA labels, booking to ../book.html, W
   ['Book a 15-min call', 'WhatsApp us', 'Message us', 'Hi%2C', 'Let’s talk', 'Discuss a pilot'].forEach(t => assert.ok(!s.includes(t), 'English CTA text left: ' + t));
   ['hero-copy', 'id="contact"'].forEach(anchor => {
     const actions = s.slice(s.indexOf(anchor)).match(/<div class="actions">([\s\S]*?)<\/div>/)[1].trim();
-    assert.match(actions, /^<a class="btn" data-track="whatsapp_click"[^>]*>Écrivez-nous sur WhatsApp<\/a>\s*<a class="btn outline" data-track="booking_click"[^>]*>Réserver un appel de 15 min<\/a>$/, anchor);
+    assert.match(actions, /^<a class="btn" data-track="booking_click"[^>]*>Réserver une démo<\/a>\s*<a class="btn outline" data-track="whatsapp_click"[^>]*>Écrivez-nous sur WhatsApp<\/a>$/, anchor);
   });
 });
 
@@ -472,9 +472,6 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   const tags = { Assumption: 'Hypothèse', Product: 'Produit', Benchmark: 'Référence' };
   assert.deepEqual(all(fr, /<span class="source-tag">([^<]*)<\/span>/g), all(en, /<span class="source-tag">([^<]*)<\/span>/g).map(t => tags[t]));
   assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g).slice(0, 2), ['13 min', '10%']);
-  const retention = fr.match(/<section[^>]*id="return-visits"[\s\S]*?<\/section>/)[0];
-  assert.match(retention, /<p class="eyebrow">Prochainement<\/p>/);
-  assert.ok(!/data-track|href=/.test(retention), 'no CTA in the coming-next section');
   ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
   assert.ok(!/<p class="price">\$(?!150 )/.test(fr), 'standard price');
   ['Aalayna', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
@@ -482,7 +479,7 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
 
 /* ---------- Arabic homepage (ar/index.html) ---------- */
 const AR = 'ar/index.html';
-const AR_CTA = ['احجز مكالمة من 15 دقيقة', 'راسلنا على واتساب'];
+const AR_CTA = ['احجز عرضاً توضيحياً', 'راسلنا على واتساب'];
 
 test('ar homepage: right to left, same ids, classes, tags, images and tracked placements as index.html', () => {
   const en = noSwitch(read('index.html')), ar = noSwitch(read(AR));

@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="preload" href="../brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="../website.css?v=11">
+<link rel="stylesheet" href="../website.css?v=12">
 <link rel="icon" href="../brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="../brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../brand/icons/icon-180.png">
@@ -40,8 +40,8 @@
 <header class="site-nav">
   <nav class="wrap nav-in" aria-label="Navigation principale">
     <a class="logo" href="index.html" aria-label="Accueil Aalayna"><svg viewBox="0 0 170 110" aria-hidden="true" focusable="false"><path class="logo-ink" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM0 60L10 60L10 80.4L40 80.4L40 60L50 60L50 89.6L30 89.6L30 110L20 110L20 89.6L0 89.6ZM60 60L70 60L70 110L60 110ZM100 60L110 60L110 110L100 110ZM60 60L72.5 60L110 110L97.5 110ZM120 60L170 60L170 110L160 110L160 89.6L130 89.6L130 110L120 110ZM130 69.2L130 80.4L160 80.4L160 69.2Z"/><path class="logo-red" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></svg></a>
-    <div class="nav-links"><a href="#how">Comment ça marche</a><a href="#pricing">Pilote et tarifs</a><a href="#faq">Questions</a></div>
-    <a class="btn compact" data-track="booking_click" data-placement="navigation" href="../book.html">Réserver un appel de 15 min</a>
+    <div class="nav-links"><a href="#how">Comment ça marche</a><a href="#pricing">Tarifs</a><a href="#faq">Questions</a></div>
+    <a class="btn compact" data-track="booking_click" data-placement="navigation" href="../book.html">Réserver une démo</a>
     <details class="lang"><summary aria-label="Langue, français">FR</summary><div><a href="../" hreflang="en" lang="en">English</a><a href="../ar/" hreflang="ar" lang="ar">العربية</a></div></details>
   </nav>
 </header>
@@ -53,8 +53,8 @@
       <p class="lead">Vos clients consultent l’addition, la partagent et la règlent depuis la table&#8239;: un seul QR, dans leur langue, en USD ou en LBP.</p>
       <p class="supporting">English · Français · العربية<br>Conçu pour Whish, la carte et les espèces</p>
       <div class="actions">
-        <a class="btn" data-track="whatsapp_click" data-placement="hero" href="https://wa.me/33665745963?text=Bonjour%2C%20je%20souhaite%20parler%20d%E2%80%99Aalayna%20pour%20mon%20restaurant">Écrivez-nous sur WhatsApp</a>
-        <a class="btn outline" data-track="booking_click" data-placement="hero" href="../book.html">Réserver un appel de 15 min</a>
+        <a class="btn" data-track="booking_click" data-placement="hero" href="../book.html">Réserver une démo</a>
+        <a class="btn outline" data-track="whatsapp_click" data-placement="hero" href="https://wa.me/33665745963?text=Bonjour%2C%20je%20souhaite%20parler%20d%E2%80%99Aalayna%20pour%20mon%20restaurant">Écrivez-nous sur WhatsApp</a>
       </div>
       <p class="fine">Deux mois gratuits à partir de la mise en service. Vous continuez seulement si cela fonctionne pour votre restaurant.</p>
     </div>
@@ -76,6 +76,7 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
       <article><figure class="shot"><div class="phone small"><picture><source srcset="../images/guest-pay-cash.webp" type="image/webp"><img src="../images/guest-pay-cash.png" width="780" height="1688" loading="lazy" alt="L’écran de paiement avec les espèces sélectionnées&#8239;: le client indique qu’il remettra un billet de $50 pour un total de $23.60."></picture></div><figcaption>Paiement en espèces&#8239;: le client choisit son billet.</figcaption></figure><span class="number">03 · Paiement</span><h3>Régler à sa façon</h3><p>Whish, carte ou espèces. L’équipe confirme les espèces à l’encaissement.</p></article>
     </div>
     <div class="steps-nav" hidden><button class="steps-arrow" type="button" data-step="-1" aria-label="Étape précédente"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></button><span class="steps-dots"><button type="button" aria-label="Étape 1"></button><button type="button" aria-label="Étape 2"></button><button type="button" aria-label="Étape 3"></button></span><button class="steps-arrow" type="button" data-step="1" aria-label="Étape suivante"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></button></div>
+    <div class="section-cta"><a class="btn" data-track="booking_click" data-placement="how" href="../book.html">Réserver une démo</a></div>
   </section>
 
   <section class="benefits-band" id="outcomes">
@@ -88,58 +89,29 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
         <article><span class="outcome-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" focusable="false"><path d="M10 6h10M10 12h10M10 18h10"/><rect x="3" y="4.5" width="3" height="3"/><rect x="3" y="10.5" width="3" height="3"/><rect x="3" y="16.5" width="3" height="3"/></svg></span><p class="outcome-figure">Votre liste</p><p class="outcome-source"><span class="source-tag">Produit</span> Les coordonnées que les clients choisissent de laisser.</p><h3>Des clients qui reviennent</h3><p>Numéros et e-mails laissés au reçu, avec un accord distinct pour les offres, forment une liste qui vous appartient.</p></article>
       </div>
       <a class="calc-link" data-track="numbers_click" data-placement="outcomes" href="../numbers.html?focus=all">Faites le calcul pour votre restaurant</a>
-      <p class="fine outcomes-note">Chaque hypothèse est signalée. Le pilote les remplace par vos données. Le calculateur est pour l’instant en anglais.</p>
+      <div class="section-cta"><a class="btn light" data-track="booking_click" data-placement="outcomes" href="../book.html">Réserver une démo</a></div>
     </div>
   </section>
 
-  <section class="wrap section" id="experience" aria-labelledby="experience-title">
-    <p class="eyebrow">Des deux côtés de la table</p><h2 id="experience-title">Votre restaurant. Votre façon de servir.</h2>
-    <div class="experience-grid">
-      <div>
-        <h3>Votre menu, dans le style de votre restaurant.</h3>
-        <p>Votre équipe met à jour plats, prix et horaires, puis publie.</p>
-        <h3 class="subheading">Facilitez les retours de vos clients.</h3>
-        <p>Après le paiement, un avis public ou un mot privé. Toujours facultatif.</p>
-      </div>
-      <div class="both-sides">
-        <figure class="shot"><div class="phone small"><picture><source srcset="../images/guest-menu.webp" type="image/webp"><img src="../images/guest-menu.png" width="780" height="1688" loading="lazy" alt="Le menu client avec les filtres alimentaires ouverts et le filtre végétarien sélectionné&#8239;: 58 plats sur 72 conviennent à ce client."></picture></div><figcaption><strong>Le menu du client</strong>Filtré sur les plats végétariens.</figcaption></figure>
-        <figure class="shot"><div class="panel"><picture><source srcset="../images/editor-panel.webp" type="image/webp"><img src="../images/editor-panel.png" width="960" height="1600" loading="lazy" alt="L’éditeur de menu du restaurant&#8239;: le menu Kababji marqué en ligne, les salades et les entrées avec leurs prix, et un bouton pour modifier les prix de tout le menu."></picture></div><figcaption><strong>Publiez un changement de prix en quelques secondes.</strong>Aucune application à installer pour le restaurateur&#8239;: tout se fait dans le navigateur.</figcaption></figure>
-      </div>
-    </div>
-  </section>
 
   <section class="wrap section" id="pricing" aria-labelledby="pricing-title">
     <p class="eyebrow">Commencez par votre propre salle</p><h2 id="pricing-title">Deux mois pour voir ce qui change.</h2>
-    <p class="section-intro">Nous vérifions votre POS et votre paiement, puis faisons tourner Aalayna avec votre équipe pendant deux mois, gratuitement. Ensuite, vous décidez.</p>
     <div class="pricing-grid">
       <div class="pilot">
         <span class="pill">Pilote gratuit de deux mois</span><h3>Un test concret avec votre équipe.</h3>
         <ol class="pilot-steps"><li><span class="number">01 · Vérifier la compatibilité</span> Partagez votre menu, votre POS et votre paiement.</li><li><span class="number">02 · Préparer votre salle</span> Menu, cartes QR des tables et formation de l’équipe, inclus.</li><li><span class="number">03 · Regarder les résultats</span> Utilisation, temps de règlement, pourboires et espèces, examinés ensemble.</li></ol>
-        <a class="btn" data-track="booking_click" data-placement="pilot" href="../book.html">Réserver un appel de 15 min</a>
         <p class="fine">Les mois gratuits commencent à la mise en service. Pas de renouvellement automatique.</p>
       </div>
       <div class="price-card">
         <p class="eyebrow">Après vos deux mois gratuits</p><p class="price">$150 <span>/ mois / établissement</span></p>
         <p class="founder">Les 10 premiers restaurants fondateurs gardent un tarif fixe de <strong>$100/mois par établissement.</strong></p>
-        <ul><li>Menu QR, partage de l’addition et moyens de règlement pris en charge</li><li>Éditeur de menu et horaires de service</li><li>Historique des paiements, demandes d’espèces et attribution des pourboires</li><li>Inscriptions clients facultatives et historique des visites enregistrées</li><li>Préparation de campagnes de retour et recommandations hebdomadaires</li><li>Retours clients</li><li>Mise en place du menu et formation du personnel</li></ul>
+        <ul><li>Menu QR, partage de l’addition et moyens de règlement pris en charge</li><li>Éditeur de menu et horaires de service</li><li>Historique des paiements, demandes d’espèces et attribution des pourboires</li><li>Retours clients</li><li>Mise en place du menu et formation du personnel</li></ul>
         <p class="price-note">Aucune commission sur vos ventes. Les frais du prestataire de paiement sont à part.</p>
-        <a class="btn light full" data-track="whatsapp_click" data-placement="pricing" href="https://wa.me/33665745963?text=Bonjour%2C%20je%20voudrais%20v%C3%A9rifier%20la%20compatibilit%C3%A9%20avec%20mon%20POS%20et%20le%20tarif%20du%20pilote.%20Mon%20restaurant%E2%80%AF%3A%20">Écrivez-nous sur WhatsApp</a>
+        <a class="btn light full" data-track="booking_click" data-placement="pricing" href="../book.html">Réserver une démo</a>
       </div>
     </div>
   </section>
 
-  <section class="wrap section retention-section" id="return-visits" aria-labelledby="retention-title">
-    <div class="retention-heading">
-      <div><p class="eyebrow">Prochainement</p><h2 id="retention-title">Faites revenir vos clients.</h2></div>
-      <p>Faites d’une bonne visite la suivante.</p>
-    </div>
-    <div class="retention-steps">
-      <article><span class="number">01 · Relier</span><h3>Constituez votre propre liste de clients.</h3><p>Les clients laissent un e-mail ou un numéro WhatsApp, s’ils le souhaitent.</p></article>
-      <article><span class="number">02 · Comprendre</span><h3>Voyez qui revient.</h3><p>Premières visites, habitués, et ceux qui ne sont pas revenus.</p></article>
-      <article><span class="number">03 · Inviter</span><h3>Rendez la prochaine visite pertinente.</h3><p>Invitez le bon groupe. Votre équipe valide chaque campagne.</p></article>
-    </div>
-    <div class="retention-status"><span class="retention-badge">En développement</span><p>Déjà dans le prototype. <strong>L’envoi par WhatsApp et par e-mail arrive prochainement.</strong></p></div>
-  </section>
 
   <section class="wrap section faq-section" id="faq" aria-labelledby="faq-title">
     <div><p class="eyebrow">Avant de commencer</p><h2 id="faq-title">Questions pratiques.<br>Réponses claires.</h2></div>
@@ -149,15 +121,11 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
       <details><summary>Chaque client doit-il avoir une application ou un compte&#8239;?</summary><p>Aucun téléchargement ni compte Aalayna n’est nécessaire pour consulter le menu ou découvrir le parcours client. Payer avec un portefeuille électronique peut demander l’application et le compte de ce prestataire. Le reçu et l’inscription aux offres sont facultatifs et distincts.</p></details>
       <details><summary>Où vont les paiements et les pourboires&#8239;?</summary><p>Le fonctionnement prévu utilise les comptes marchands du restaurant, auprès de prestataires pris en charge. Les délais de versement et les frais de traitement dépendent du prestataire et du contrat. Le restaurant gère la répartition des pourboires selon sa propre politique&#8239;; Aalayna enregistre l’attribution et les confirmations de versement.</p></details>
       <details><summary>Est-ce prêt pour de vrais paiements&#8239;?</summary><p>Les espèces, oui&#8239;: un client demande à payer en espèces depuis la table, et le paiement ne compte qu’une fois qu’un membre du personnel confirme l’avoir encaissé. La carte et Whish ne sont pas encore actifs. Il faut d’abord connecter votre prestataire de paiement&#8239;; nous le mettons en place et le testons avec vous avant qu’un client puisse payer ainsi.</p></details>
-      <details><summary>Comment fonctionnent les deux mois gratuits&#8239;?</summary><p>Votre essai commence à la mise en service de votre restaurant, une fois le POS et le paiement prêts. Pas de frais d’abonnement Aalayna pendant deux mois, et pas de renouvellement payant automatique. Si vous choisissez de continuer, le tarif est de $150/mois par établissement, ou $100/mois par établissement pour les dix premiers restaurants fondateurs. Les frais du prestataire de paiement sont à part&#8239;; les éventuels frais de mise en place d’une intégration et les futurs frais de messagerie sont convenus à l’avance.</p></details>
       <details><summary>Qu’est-ce qui est inclus dans le prix&#8239;?</summary><p>L’abonnement est par établissement et comprend les fonctionnalités listées, la mise en place du menu et la formation du personnel. Les dix premiers restaurants fondateurs bénéficient du tarif mensuel de $100&#8239;; le tarif standard est de $150. Les frais du prestataire de paiement sont à part. Nous convenons à l’avance du périmètre de l’intégration et des éventuels frais de mise en place supplémentaires.</p></details>
-      <details><summary>De quoi avez-vous besoin de la part de notre équipe&#8239;?</summary><p>Votre menu, le nombre de tables, les informations sur votre POS et la configuration de vos comptes marchands pris en charge. Votre cuisine vérifie les ingrédients et les informations alimentaires avant qu’ils ne s’affichent pour les clients. Nous organisons la formation du personnel en fonction de vos horaires de service.</p></details>
-      <details><summary>Aalayna peut-il nous aider à faire revenir les clients&#8239;?</summary><p>C’est l’objectif des outils de fidélisation&#8239;: recueillir des coordonnées facultatives avec une autorisation marketing distincte, les relier aux visites confirmées et préparer des invitations pertinentes. Le prototype gère l’historique client, la préparation des audiences et les visites de retour enregistrées. L’envoi par WhatsApp et par e-mail arrive prochainement. Nous ne promettons pas de revenus supplémentaires&#8239;; une fois la messagerie connectée, nous pourrons mesurer avec votre équipe, dans la durée, les messages remis et les visites qui suivent.</p></details>
-      <details><summary>Les clients doivent-ils donner leurs coordonnées&#8239;?</summary><p>Non. Payer et laisser un avis ne demandent ni e-mail ni numéro de téléphone. Les clients peuvent demander un reçu sans accepter les offres du restaurant. Le suivi des visites couvre les payeurs identifiés dont les additions sont reliées, pas toutes les personnes assises à la table.</p></details>
-      <details><summary>Que se passe-t-il si la connexion coupe&#8239;?</summary><p>Les clients peuvent revenir au paiement habituel, avec l’aide du personnel. Un paiement ne doit être marqué comme confirmé qu’après vérification&#8239;; le pilote testera avec votre équipe la procédure de secours et le rapprochement.</p></details>
+      <div class="section-cta"><a class="btn" data-track="booking_click" data-placement="faq" href="../book.html">Réserver une démo</a></div>
     </div>
   </section>
-  <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>Parlez-nous de votre restaurant.</h2><p>Dites-nous ce dont votre équipe a besoin. Nous vous aiderons à préparer la suite.</p><div class="actions"><a class="btn" data-track="whatsapp_click" data-placement="footer" href="https://wa.me/33665745963?text=Bonjour%2C%20je%20souhaite%20parler%20d%E2%80%99Aalayna%20pour%20mon%20restaurant">Écrivez-nous sur WhatsApp</a><a class="btn outline" data-track="booking_click" data-placement="footer" href="../book.html">Réserver un appel de 15 min</a></div></div></section>
+  <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>Parlez-nous de votre restaurant.</h2><p>Dites-nous ce dont votre équipe a besoin. Nous vous aiderons à préparer la suite.</p><div class="actions"><a class="btn" data-track="booking_click" data-placement="footer" href="../book.html">Réserver une démo</a><a class="btn outline" data-track="whatsapp_click" data-placement="footer" href="https://wa.me/33665745963?text=Bonjour%2C%20je%20souhaite%20parler%20d%E2%80%99Aalayna%20pour%20mon%20restaurant">Écrivez-nous sur WhatsApp</a></div></div></section>
 </main>
 <footer class="wrap footer"><a class="logo" href="index.html" aria-label="Accueil Aalayna"><svg viewBox="0 0 500 120" aria-hidden="true" focusable="false"><path class="logo-ink" d="M0 0L10 0L10 90.8L20 90.8L20 50L30 50L30 90.8L40 90.8L40 50L50 50L50 90.8L60 90.8L60 0L70 0L70 90.8L80 90.8L80 50L120 50L120 59.2L90 59.2L90 90.8L120 90.8L120 100L0 100ZM210 50L220 50L220 90.8L260 90.8L260 100L210 100ZM270 50L320 50L320 100L310 100L310 79.6L280 79.6L280 100L270 100ZM280 59.2L280 70.4L310 70.4L310 59.2ZM330 50L340 50L340 70.4L370 70.4L370 50L380 50L380 79.6L360 79.6L360 100L350 100L350 79.6L330 79.6ZM390 50L400 50L400 100L390 100ZM430 50L440 50L440 100L430 100ZM390 50L402.5 50L440 100L427.5 100ZM450 50L500 50L500 100L490 100L490 79.6L460 79.6L460 100L450 100ZM460 59.2L460 70.4L490 70.4L490 59.2Z"/><path class="logo-red" d="M20 30L30 30L30 40L20 40ZM30 110L40 110L40 120L30 120ZM50 110L60 110L60 120L50 120ZM150 50L200 50L200 100L150 100L150 90.8L190 90.8L190 79.6L170 79.6L170 70.4L190 70.4L190 59.2L150 59.2Z"/></svg></a><p>© 2026 Aalayna · Pour les restaurants au Liban</p><a href="../" hreflang="en" lang="en" aria-label="EN, English version" style="display:inline-flex;align-items:center;min-width:44px;min-height:44px;font-size:var(--fs-small);font-weight:600;text-underline-offset:.2rem">EN</a><a href="../ar/" hreflang="ar" lang="ar" aria-label="العربية" style="display:inline-flex;align-items:center;min-width:44px;min-height:44px;font-family:'Noto Kufi Arabic',sans-serif;font-size:var(--fs-small);font-weight:600;text-underline-offset:.2rem">عربي</a><a data-track="whatsapp_click" data-placement="footer_contact" href="https://wa.me/33665745963?text=Bonjour%2C%20j%E2%80%99aimerais%20en%20savoir%20plus%20sur%20Aalayna">Écrivez-nous sur WhatsApp</a></footer>
 <script>document.addEventListener('click',function(e){document.querySelectorAll('details.lang[open]').forEach(function(d){if(!d.contains(e.target))d.removeAttribute('open');});});</script>

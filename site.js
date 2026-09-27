@@ -47,11 +47,9 @@
   /* ---------- Sections rise in as they arrive; items in a row follow one another ---------- */
   var groups = [
     '#how > .eyebrow, #how > h2', '#how .steps article',
-    '#outcomes .wrap > .eyebrow, #outcomes h2', '.outcomes article', '.calc-link, .outcomes-note',
-    '#experience > .eyebrow, #experience > h2', '.experience-grid > *',
-    '#pricing > .eyebrow, #pricing > h2, .section-intro', '.pricing-grid > *',
-    '.retention-heading > *', '.retention-steps article', '.retention-status',
-    '.faq-section > div:first-child', '.faq details',
+    '#outcomes .wrap > .eyebrow, #outcomes h2', '.outcomes article', '.calc-link',
+    '#pricing > .eyebrow, #pricing > h2', '.pricing-grid > *',
+    '.faq-section > div:first-child', '.faq details', '.section-cta',
     '#contact .wrap > *'
   ];
   var rise = new IntersectionObserver(function (es) {
