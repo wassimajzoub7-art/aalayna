@@ -174,6 +174,7 @@
     '*': { bits: ['#.#.#', '.###.', '#.#.#', '.....', '.....'] },
     '+': { bits: ['...', '.#.', '###', '.#.', '...'] },
     '×': { bits: ['...', '#.#', '.#.', '#.#', '...'] },
+    '÷': { bits: ['.#.', '...', '###', '...', '.#.'] },
     '(': { bits: ['##', '#.', '#.', '#.', '##'] },
     ')': { bits: ['##', '.#', '.#', '.#', '##'] },
     '/': { bits: ['....', '....', '....', '....', '....'], extra: [slant(4 - DIAG, 0, 0, 5)] },
@@ -181,11 +182,12 @@
     '$': { bits: ['#####', '#....', '#####', '....#', '#####'], extra: [box(2, -0.9, 3, 0), box(2, 5, 3, 5.9)] },
     '&': { bits: ['###..', '#.#..', '###..', '#....', '####.'], extra: [slant(1.5, RB[2], 3.75, 5), box(3.2, RB[2], 5, RB[3])] },
   };
-  // Typographic twins and French capitals.
+  // Typographic twins and French capitals. Î and Ï stand the I in a three-module cell so the accent stays over its own letter.
+  const I3 = { bits: ['.#.', '.#.', '.#.', '.#.', '.#.'] };
   Object.assign(TYPE, { '’': TYPE["'"], '‘': TYPE["'"], '“': TYPE['"'], '”': TYPE['"'], '—': TYPE['–'], '−': TYPE['-'] });
   [['À', 'A', 'grave'], ['Â', 'A', 'circ'], ['Ä', 'A', 'uml'], ['É', 'E', 'acute'], ['È', 'E', 'grave'], ['Ê', 'E', 'circ'], ['Ë', 'E', 'uml'],
     ['Î', 'I', 'circ'], ['Ï', 'I', 'uml'], ['Ô', 'O', 'circ'], ['Ö', 'O', 'uml'], ['Ù', 'U', 'grave'], ['Û', 'U', 'circ'], ['Ü', 'U', 'uml']]
-    .forEach(([ch, base, acc]) => { const g = TYPE[base], c = g.bits[0].length / 2; TYPE[ch] = { bits: g.bits, extra: (g.extra || []).concat(ACCENT[acc](c)) }; });
+    .forEach(([ch, base, acc]) => { const g = base === 'I' ? I3 : TYPE[base], c = g.bits[0].length / 2; TYPE[ch] = { bits: g.bits, extra: (g.extra || []).concat(ACCENT[acc](c)) }; });
   TYPE['Ç'] = { bits: TYPE.C.bits, extra: [box(2, 5, 3, 5.9)] };
   const SPACE = 2;                               // word space in modules; every glyph also carries a one-module gap
 

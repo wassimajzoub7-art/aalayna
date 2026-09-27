@@ -5,7 +5,8 @@
    fly into the capitals; the red finder eyes become the red 3 (or the full stop). The modules fuse and it is done.
    Kufi (5.6 s): a red module is the pen. It writes علينا right to left along the baseline, each letter
    rising as it passes, climbs the alif, then hops three times to set the dots. The Latin name follows, letter by letter.
-   Both take { word } (a spelling from AalaynaLogo.SPELLINGS; 3LAYNA by default) and { colors, tagline }.
+   Both take { word } (a spelling from AalaynaLogo.SPELLINGS; 3LAYNA by default) and { colors, tagline }; the
+   Block also takes { tagAt }, when the tagline starts (3 s), so the reel can close on it.
 
    Every piece: { duration, cues, render(g, t, W, H) }, g already scaled to W x H logical pixels. */
 (function (root) {
@@ -105,7 +106,7 @@
       T.bend = (rand() - 0.5) * 0.36;
       T.turn = rand() < 0.5 ? 90 : -90;
     }
-    const FUSE = [2.42, 2.58], SNAP = 2.6, SLASH = [2.6, 2.72];
+    const FUSE = [2.42, 2.58], SNAP = 2.6, SLASH = [2.6, 2.72], TAG = (opt && opt.tagAt) || 3.0;
 
     function layout(W, H) {
       const m = Math.min((W * (W / H < 1.2 ? 0.8 : 0.62)) / BW, (H * (withTag ? 0.44 : 0.52)) / 11);
@@ -180,13 +181,13 @@
       }
 
       g.restore();
-      if (withTag) tagline(g, t, 3.0, W / 2, by + 11 * m + 2.5 * m, Math.round(Math.max(m * 0.78, Math.min(W, H) * 0.04)), col);
+      if (withTag) tagline(g, t, TAG, W / 2, by + 11 * m + 2.5 * m, Math.round(Math.max(m * 0.78, Math.min(W, H) * 0.04)), col);
     }
     // Cue times for the soundtrack (tools/brand-audio.js).
     const eye = (top, right) => Math.min(...src.filter(x => x.red && (x.r >= 7) === top && (x.c >= 7) === right).map(x => x.bloom));
     const cues = {
       bloom: src.filter(x => !x.red).map(x => x.bloom), finders: [eye(false, false), eye(false, true), eye(true, false)],
-      scan: [0.92, 1.3], fly: 1.32, lands: tgt.map(T => T.start + 0.62), snap: SNAP, tag: 3.0,
+      scan: [0.92, 1.3], fly: 1.32, lands: tgt.map(T => T.start + 0.62), snap: SNAP, tag: TAG,
     };
     return { duration: DUR, render, cues };
   }

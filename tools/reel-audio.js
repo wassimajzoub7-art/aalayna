@@ -5,6 +5,17 @@
 //   node tools/reel-audio.js [out.wav]
 'use strict';
 const fs = require('fs');
+const path = require('path');
+
+// The close is brand/motion.js's Block reveal, joined at LOGO_AT (read from reel.html, so the two cannot drift):
+// its cue times, shifted onto the reel's clock, place the sounds of the modules flying, landing and snapping.
+global.self = global;
+global.AalaynaLogo = require('../brand/logo.js');
+global.Path2D = class {};
+require('../brand/motion.js');
+const join = fs.readFileSync(path.join(__dirname, '..', 'reel.html'), 'utf8').match(/const LOGO_AT = ([\d.]+), logo = AalaynaMotion\.block\(\{ tagAt: ([\d.]+)/);
+if (!join) throw new Error('reel.html: LOGO_AT and tagAt not found');
+const LOGO_AT = Number(join[1]), cue = global.AalaynaMotion.block({ tagAt: Number(join[2]) }).cues, at = t => LOGO_AT + t;
 
 const SR = 48000, DUR = 15, N = SR * DUR;
 const L = new Float32Array(N), R = new Float32Array(N);   // effects, straight to master
@@ -55,6 +66,8 @@ function whoosh(t, len, g = .45, f0 = 300, f1 = 3500, pan0 = 0, pan1 = 0) {
   }
 }
 const bell = (t, m, g = .22, pan = 0, len = 2.2) => { const f = hz(m); voice(t, len, s => (Math.sin(TAU * f * s) + .45 * Math.sin(TAU * f * 2.76 * s) * Math.exp(-s * 5) + .2 * Math.sin(TAU * f * 5.4 * s) * Math.exp(-s * 9)) * Math.exp(-s * 2.6) * Math.min(1, s * 400), { gain: g, pan, send: .45 }); };
+const beep = (t, f = 1760, len = .09, g = .12) => voice(t, len, s => Math.sin(TAU * f * s) * Math.min(1, s * 600, (len - s) * 600), { gain: g, send: .2 });
+const tok = (t, f = 900, g = .3, pan = 0) => voice(t, .09, s => (Math.sin(TAU * f * s) + .5 * Math.sin(TAU * f * 2.3 * s)) * Math.exp(-s * 55) * Math.min(1, s * 2000), { gain: g, pan, send: .18 });
 const clap = (t, g = .35) => { const bp = bandpass(); voice(t, .22, s => bp(noise(), 1800, .9) * (Math.exp(-s * 30) + (s > .012 ? .7 * Math.exp(-(s - .012) * 22) : 0)) * 2.2, { gain: g, send: .35 }); };
 function tear(t, len, g = .5) {
   const bp = bandpass();
@@ -73,7 +86,7 @@ function pad(t, len, notes, g = .07) {
 }
 const bass = (t, m, len = .24, g = .32) => { const f = hz(m), lp = onepole(.08); voice(t, len, s => lp(Math.tanh(2 * Math.sin(TAU * f * s) + .6 * Math.sin(TAU * f * 2 * s))) * Math.min(1, s * 300) * Math.min(1, (len - s) * 60), { gain: g, bus: 'music' }); };
 
-/* Score: 120 bpm, bar = 2 s. Am, F, C, G, F, then G into C for the logo. */
+/* Score: 120 bpm, bar = 2 s. Am, F, C, G, F, then G into C for the logo (C lands on its snap, at 14 s). */
 const bars = [[2, 57, [57, 60, 64, 67]], [4, 53, [53, 57, 60, 64]], [6, 48, [52, 55, 60, 64]], [8, 55, [55, 59, 62, 67]], [10, 53, [53, 57, 60, 65]]];
 const kicks = [];
 for (const [t, root, chord] of bars) {
@@ -82,9 +95,12 @@ for (const [t, root, chord] of bars) {
   for (let e = 0; e < 8; e++) bass(t + e * .25, e % 4 === 3 ? root + 12 : root - 12 + 12 * (e % 2) * 0);
   for (let e = 0; e < 16; e++) hat(t + e * .125, e % 2 ? .05 : .09, e % 4 < 2 ? .25 : -.25);
 }
-riser(12.5, 1.3, .3);
-pad(12.95, 2.05, [48, 55, 60, 62, 64, 71], .085);
-bass(12.95, 36, 2, .35);
+pad(12, 2.05, [55, 59, 62, 67], .09);                     // G under the flight, resolving to C on the snap
+bass(12, 43, 2, .22);
+for (let e = 0; e < 16; e++) hat(12 + e * .125, (e % 2 ? .03 : .055) * (1 - e / 20), e % 4 < 2 ? .25 : -.25);
+riser(at(cue.snap), 1.3, .3);
+pad(at(cue.snap), 1.6, [48, 55, 60, 62, 64, 71], .085);
+bass(at(cue.snap), 36, 1.6, .35);
 
 /* Effects, on reel.html's cue times */
 thud(.5, 80, .8); thud(.75, 95, .45);
@@ -120,11 +136,14 @@ for (let j = 0; j < 40; j++) click(11.0 + rnd() * .7, .03 + rnd() * .04, rnd() *
 [0, 1, 2].forEach(i => clap(11.15 + i * .16, .22 + i * .04));
 [84, 86, 88, 91, 93].forEach((m, i) => bell(11.6 + i * .07, m, .09, -.5 + i * .25, 1.4));
 whoosh(12.2, .5, .3, 3000, 400);
-pop(12.55, 420, .45);
-whoosh(12.8, .45, .2, 500, 2500);
-kick(12.95, .9); thud(12.95, 45, .8);
-[72, 76, 79, 83, 86].forEach((m, i) => bell(12.95 + i * .05, m, .1, -.4 + i * .2, 2));
-[0, 1, 2].forEach(i => click(13.75 + i * .15, .08, -.2 + i * .2, 2000));
+// The logo, as tools/brand-audio.js scores it: the scan confirms, the modules fly and land, they snap, the bell.
+beep(at(cue.scan[1]) - .02, 1760, .08, .1); beep(at(cue.scan[1]) + .09, 2349, .1, .09);
+whoosh(at(cue.fly), 1.1, .45, 250, 3000, .6, -.4);
+cue.lands.forEach(t => click(at(t), .04 + rnd() * .04, rnd() * .8 - .4, 1600 + rnd() * 1800));
+click(at(cue.snap), .3, 0, 2400); tok(at(cue.snap), 1300, .18);
+whoosh(at(cue.snap), .14, .12, 3000, 7000, -.3, .3);
+[79, 84, 88].forEach((m, i) => bell(at(cue.snap) + .1 + i * .07, m, .12, -.35 + i * .35, 2.4));
+[0, 1, 2].forEach(i => click(at(cue.tag) + i * .1, .07, -.2 + i * .2, 2000));
 
 /* Mix: duck the music on each kick, reverb the send, soft-clip, normalise, fade the tail. */
 for (let i = 0; i < N; i++) {

@@ -143,8 +143,22 @@ test('the site sets its headlines and big figures in Aalayna Block, and every ch
   for (const m of read('numbers.html').matchAll(/el\('h[12]', '[^']*', '([^']*)'\)|title: '([^']*)'/g)) assert.deepEqual(covered(m[1] || m[2]), [], m[0]);
 });
 
+test('the reel closes on the logo: reel.html plays the Block reveal, and its soundtrack reads the same join', () => {
+  const s = read('reel.html');
+  assert.ok(s.includes('<script src="brand/logo.js"></script>\n<script src="brand/motion.js"></script>'), 'reel.html loads the logo and its motion');
+  const join = s.match(/const LOGO_AT = ([\d.]+), logo = AalaynaMotion\.block\(\{ tagAt: ([\d.]+)/);
+  assert.ok(join, 'the reveal is joined at LOGO_AT, in the form tools/reel-audio.js reads');
+  // The tagline has settled and the modules have snapped before the last frame.
+  const cues = (() => { global.self = global; global.AalaynaLogo = Logo; global.Path2D = global.Path2D || class {}; require('../brand/motion.js'); return global.AalaynaMotion.block({ tagAt: Number(join[2]) }).cues; })();
+  const DUR = Number(s.match(/const DUR = ([\d.]+)/)[1]);
+  assert.ok(Number(join[1]) + cues.snap < DUR - 0.8, 'the logo holds for the last 0.8 s at least');
+  assert.ok(Number(join[1]) + cues.tag + 0.2 + 0.55 <= DUR, 'the third word of the tagline has settled by the last frame');
+  assert.ok(!/Amiri|aalay<b>na/.test(s), 'the old wordmark is gone');
+  assert.match(read('tools/reel-audio.js'), /const LOGO_AT = Number\(join\[1\]\), cue = global\.AalaynaMotion\.block/);
+});
+
 test('brand pages: every local src and href resolves to a file', () => {
-  for (const f of ['brand/index.html', 'brand/motion.html']) {
+  for (const f of ['brand/index.html', 'brand/motion.html', 'reel.html']) {
     const refs = [...read(f).matchAll(/\b(?:href|src|data-sound)="([^"]*)"/g)].map(m => m[1]).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u));
     assert.ok(refs.length, f + ' loads local files');
     for (const u of refs) assert.ok(fs.existsSync(path.join(ROOT, path.dirname(f), u.split(/[?#]/)[0])), f + ': ' + u);
