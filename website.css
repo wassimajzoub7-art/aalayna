@@ -112,14 +112,14 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .reel-sound svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}.reel-sound .spk{fill:currentColor}
 .reel-sound .on,.reel-sound[aria-pressed="true"] .off{display:none}.reel-sound[aria-pressed="true"] .on{display:inline}
 @media(hover:hover){.reel-sound:hover{background:var(--brand)}}
-/* Tap the film, or the button beside the speaker, to pause and play. Paused, a play mark sits in the middle. */
+/* Play and pause: one large button in the middle of the film. Paused, it stays; playing, it shows for a moment after
+   a tap (or on hover and keyboard focus) and fades, so it never sits on the film. */
 .hero-reel video{cursor:pointer}
-.reel-play{position:absolute;right:44px;bottom:0;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-right:1px solid rgba(255,255,255,.2);background:var(--ink);color:#fff;cursor:pointer}
-@media(hover:hover){.reel-play:hover{background:var(--brand)}}
-.reel-play svg{fill:currentColor}.reel-play .play,.is-paused .reel-play .pause{display:none}.is-paused .reel-play .play{display:inline}
-.hero-reel::after{content:"";position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;pointer-events:none;opacity:0;transition:opacity .2s;background:var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M8 5v14l11-7z'/%3E%3C/svg%3E") center/32px no-repeat}
-.hero-reel.is-paused::after{opacity:.9}
-@media(prefers-reduced-motion:reduce){.hero-reel::after{display:none}}
+.reel-play{position:absolute;left:50%;top:50%;display:grid;place-items:center;width:80px;height:80px;margin:-40px 0 0 -40px;padding:0;border:0;background:rgba(29,26,24,.82);color:#fff;cursor:pointer;opacity:0;transition:opacity .25s}
+.reel-play svg{width:36px;height:36px;fill:currentColor}.reel-play .play,.is-paused .reel-play .pause{display:none}.is-paused .reel-play .play{display:inline}
+.is-paused .reel-play,.hero-reel.show .reel-play,.reel-play:focus-visible{opacity:1}
+@media(hover:hover){.hero-reel:hover .reel-play{opacity:1}.reel-play:hover{background:var(--brand)}}
+@media(max-width:767px){.reel-play{width:64px;height:64px;margin:-32px 0 0 -32px}.reel-play svg{width:28px;height:28px}}
 /* Phones: the film is the hero. The 16:9 cut comes first, edge to edge (about a third of the screen), with the headline
    and buttons in view below it; "Watch with sound" opens it full screen. The markup keeps the headline first, so a
    screen reader still hears it first. */

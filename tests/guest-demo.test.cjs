@@ -158,3 +158,15 @@ test('sw.js exists, is published, and keeps the guest shell and menus with a ver
  assert.match(html,/'serviceWorker' in navigator && \/\^https\?:\$\/\.test\(location\.protocol\)/);
  assert.match(html,/register\('sw\.js', \{ scope: 'guest\.html', updateViaCache: 'none' \}\)\.catch/);
 });
+
+test('language and currency can be chosen on the landing screen, the place reads in the guest language, refusals are translated', () => {
+  const g = fs.readFileSync(path.join(__dirname, '..', 'guest.html'), 'utf8');
+  const land = g.slice(g.indexOf('id="v-land"'), g.indexOf('id="v-menu"'));
+  assert.match(land, /<select id="langsel-land" onchange="setLang\(this\.value\)"/);
+  assert.match(land, /<select id="ccysel-land" onchange="setCcy\(this\.value\)"/);
+  assert.match(g, /\$\('langsel'\)\.value = \$\('langsel-land'\)\.value = LANG;/);
+  assert.match(g, /function venuePlace\(v\)\{ return \(LANG !== 'en' && v\.placeTr && v\.placeTr\[LANG\]\) \|\| v\.place \|\| ''; \}/);
+  assert.doesNotMatch(g, /alert\(error\.message\)|textContent = error\.message/, 'store refusals go through errText');
+  const store = fs.readFileSync(path.join(__dirname, '..', 'aalayna-store.js'), 'utf8');
+  assert.match(store, /q\.get\('place_' \+ l\)/);
+});
