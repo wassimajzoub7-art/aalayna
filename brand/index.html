@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aalayna Logo</title>
+<meta name="description" content="Two logo directions for Aalayna on one module grid: the Block (square capitals) and the Kufi (علينا in square Kufic), with motion.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Aalayna logo proposal. One look on purpose: the brand's own grounds (cream, ink, petrol) are the content,
+   so the page does not switch palettes with the viewer's theme. Type: the site's IBM Plex Sans, Plex Mono for specs. */
+:root{
+  --cream:#FAF6F1;--paper:#FFFFFF;--ink:#211B16;--sub:#6E635B;--line:#E4DBD0;--red:#C9414B;--red-text:#B3363F;
+  --petrol:#173E43;--peach:#F6C39F;--on-dark:#E9E1D8;--on-dark-sub:#B8ADA3;--on-petrol:#D7E3E2;
+  --fs-s:.875rem;--fs-b:1rem;--fs-l:1.1875rem;--fs-h:1.875rem;--fs-d:3.375rem;
+  --gut:max(16px,4vw);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 var(--fs-b)/1.6 'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,figure,dl,dd{margin:0}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.02em}
+p{color:var(--sub);max-width:62ch}
+.wrap{width:min(1120px,100%);margin-inline:auto;padding-inline:var(--gut)}
+.eyebrow{font:500 var(--fs-s)/1.4 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--sub)}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:500;font-size:var(--fs-s)}
+[lang=ar]{font-family:'IBM Plex Sans Arabic','IBM Plex Sans',sans-serif}
+.logo svg,.fit svg{display:block;width:100%;height:auto}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+
+/* Opening */
+.top{padding-block:clamp(28px,6vw,64px) clamp(20px,3vw,32px)}
+.top h1{font-size:clamp(2.25rem,6vw,var(--fs-d));line-height:1.05;margin-top:14px}
+.top .lead{font-size:var(--fs-l);margin-top:16px;color:var(--ink)}
+
+/* The two stages */
+.stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(16px,2.4vw,28px);padding-bottom:clamp(40px,6vw,72px)}
+.stage{display:grid;gap:14px;align-content:start}
+.screen{position:relative;aspect-ratio:16/11;max-width:100%;border-radius:14px;overflow:hidden;background:var(--cream);box-shadow:0 0 0 1px var(--line),0 18px 40px -24px rgba(33,27,22,.35)}
+.screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.stage-head h2{font-size:var(--fs-h);line-height:1.1}
+.stage-head h2 span{color:var(--red-text);font:500 var(--fs-s) 'IBM Plex Mono',monospace;letter-spacing:.04em;margin-right:10px;vertical-align:.35em}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.btn{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-weight:600;font-size:var(--fs-s);cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.sound{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.btn.sound:hover{background:#3a312a}
+.stage p{font-size:var(--fs-s)}
+
+/* Sections */
+.band{padding-block:clamp(48px,7vw,88px)}
+.band.paper{background:var(--paper)}
+.band.ink{background:var(--ink);color:var(--cream)}.band.ink p{color:var(--on-dark-sub)}.band.ink .eyebrow{color:var(--on-dark-sub)}
+.band.petrol{background:var(--petrol);color:var(--cream)}.band.petrol p{color:var(--on-petrol)}.band.petrol .eyebrow{color:var(--peach)}
+.band h2{font-size:clamp(1.75rem,4vw,2.5rem);line-height:1.1;margin-top:10px}
+.band > .wrap > p{margin-top:14px;font-size:var(--fs-l)}
+.band.ink > .wrap > p,.band.petrol > .wrap > p{color:inherit;opacity:.86}
+
+/* Your brief, answered */
+.brief{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(24px,4vw,56px);align-items:center;margin-top:32px}
+.brief .pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.brief figure{display:grid;gap:10px;min-width:0}
+.brief figcaption{font-size:var(--fs-s);color:var(--sub)}
+.brief .cell{aspect-ratio:1/1;min-width:0;min-height:0;overflow:hidden;background:var(--cream);border-radius:12px;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:14%}
+.brief .no{color:var(--red-text);font-weight:600}
+.brief p{color:var(--ink)}
+
+/* Grounds */
+.grounds{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;margin-top:32px}
+.ground{border-radius:14px;display:grid;place-items:center;padding:clamp(24px,5vw,56px);min-height:220px}
+.ground .logo{width:100%}
+.g-cream{background:var(--cream);box-shadow:inset 0 0 0 1px var(--line)}.g-ink{background:var(--ink)}.g-petrol{background:var(--petrol)}.g-red{background:var(--red)}.g-paper{background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* Construction */
+.build{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);margin-top:36px;align-items:start}
+.build .fit{background:var(--paper);border-radius:14px;padding:clamp(16px,3vw,32px);box-shadow:inset 0 0 0 1px var(--line)}
+.band.paper .build .fit{background:var(--cream)}
+.specs{display:grid;gap:0}
+.specs div{display:grid;grid-template-columns:9.5rem 1fr;gap:12px;padding-block:12px;border-top:1px solid var(--line)}
+.specs dt{font:500 var(--fs-s)/1.5 'IBM Plex Mono',monospace;color:var(--sub)}
+.specs dd{font-size:var(--fs-s);line-height:1.5}
+.read{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));margin-top:8px;text-align:center;direction:ltr}
+.read span{justify-self:center;white-space:nowrap}
+.read span{display:grid;gap:2px;font-size:var(--fs-s);color:var(--sub)}
+.read b{font:600 1.35rem/1.2 'IBM Plex Sans Arabic',sans-serif;color:var(--ink)}
+
+/* Lockups */
+.lockups{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin-top:32px}
+.lock{border-radius:14px;display:grid;gap:14px;align-content:space-between;padding:clamp(20px,3vw,32px)}
+.lock .logo{margin-block:auto}
+.lock figcaption{font:500 var(--fs-s)/1.4 'IBM Plex Mono',monospace;color:var(--sub)}
+.g-ink figcaption,.g-petrol figcaption,.g-red figcaption{color:var(--on-dark-sub)}
+.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
+.icons{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.icons .i64{width:64px}.icons .i40{width:40px}.icons .i24{width:24px}.icons .i16{width:16px}
+
+/* In use */
+.use{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:32px}
+.scene{border-radius:14px;padding:clamp(20px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr);place-items:center}
+.card{width:min(100%,300px);aspect-ratio:5/7;background:var(--cream);border-radius:10px;box-shadow:0 30px 50px -20px rgba(0,0,0,.45),0 2px 0 rgba(0,0,0,.06);padding:11% 11% 9%;display:grid;grid-template-rows:auto 1fr auto;gap:8%;text-align:center}
+.card .qr{width:78%;margin-inline:auto;align-self:center}
+.card .qr svg{display:block;width:100%;height:auto}
+.card .t{font-weight:600;font-size:clamp(.8rem,2.4vw,.95rem);color:var(--ink)}
+.card .t small{display:block;font-weight:400;color:var(--sub);font-size:.8em;margin-top:2px}
+.card .mark{height:clamp(64px,18vw,92px);display:flex;justify-content:center}
+.homescreen{display:flex;gap:clamp(14px,3vw,28px);flex-wrap:wrap;justify-content:center}
+.app{display:grid;gap:8px;justify-items:center;font-size:.75rem;color:var(--on-petrol)}
+.app .ic{width:clamp(56px,12vw,72px);filter:drop-shadow(0 8px 14px rgba(0,0,0,.28))}
+.tab{margin-top:26px;width:min(100%,420px);background:#2A5157;border-radius:10px 10px 0 0;padding:8px 10px 0;display:flex;gap:6px}
+.tab div{display:flex;align-items:center;gap:8px;background:var(--cream);color:var(--ink);border-radius:8px 8px 0 0;padding:8px 12px;font-size:.78rem;min-width:0;flex:1}
+.tab div span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab img,.tab svg{width:16px;height:16px;flex:none}
+.site{grid-column:1/-1;background:var(--paper);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.nav{display:flex;align-items:center;gap:20px;height:64px;padding-inline:clamp(14px,3vw,28px);border-bottom:1px solid var(--line);background:rgba(250,246,241,.97)}
+.nav .brand{height:26px;flex:none}.nav .brand svg{height:100%;width:auto;display:block}
+.nav .brand.tall{height:40px}
+.nav .links{display:flex;gap:18px;margin-left:auto;font-size:var(--fs-s)}
+.nav .cta{min-height:40px;padding:0 14px;border-radius:.65rem;background:var(--red);color:#fff;font-weight:600;font-size:var(--fs-s);display:grid;place-items:center;white-space:nowrap}
+.hero-mock{padding:clamp(18px,3vw,32px) clamp(14px,3vw,28px) clamp(22px,3vw,36px);display:grid;gap:6px}
+.hero-mock b{font-size:clamp(1.6rem,4vw,2.4rem);letter-spacing:-.04em;line-height:1.05}
+.hero-mock b em{font-style:normal;color:var(--red-text)}
+.site + .site{margin-top:0}
+
+/* System */
+.chips{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:28px}
+.chip{border-radius:12px;padding:14px;min-height:132px;display:grid;align-content:space-between;gap:10px;font-size:var(--fs-s)}
+.chip b{display:block;font-weight:600}
+.chip .mono{opacity:.8}
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:36px}
+.rules div{border-top:2px solid rgba(250,246,241,.2);padding-top:14px}
+.rules h3{font-size:var(--fs-l);color:var(--cream)}
+.rules p{margin-top:8px;font-size:var(--fs-s)}
+.pair-guides{margin-top:36px;background:rgba(250,246,241,.04);border-radius:14px;padding:clamp(16px,3vw,32px);box-shadow:inset 0 0 0 1px rgba(250,246,241,.12)}
+
+/* Pick */
+.pick{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center;margin-top:28px}
+.pick .fit{background:var(--cream);border-radius:14px;padding:clamp(24px,5vw,48px)}
+.pick ol{margin:16px 0 0;padding-left:1.2em;display:grid;gap:10px;color:var(--ink)}
+.pick li::marker{font-family:'IBM Plex Mono',monospace;color:var(--red-text)}
+.files{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;margin-top:28px}
+.files div{border-top:1px solid var(--line);padding-top:10px}
+.files code{font:500 .8rem/1.6 'IBM Plex Mono',monospace;color:var(--ink);display:block;overflow-wrap:anywhere}
+.files p{font-size:var(--fs-s);margin-top:4px}
+footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
+
+@media (max-width:900px){
+  .stages,.brief,.build,.pick,.use{grid-template-columns:minmax(0,1fr)}
+  .grounds{grid-template-columns:1fr 1fr}.grounds .ground:first-child{grid-column:1/-1}
+  .span-8,.span-7,.span-6,.span-5,.span-4{grid-column:span 12}
+  .chips{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .rules,.files{grid-template-columns:1fr}
+  .nav .links{display:none}.nav .cta{margin-left:auto}
+}
+@media (max-width:560px){
+  .screen{aspect-ratio:4/5}
+  .grounds{grid-template-columns:1fr}
+  .chips{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .specs div{grid-template-columns:1fr;gap:2px}
+  .nav .cta{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <p class="eyebrow">Aalayna · logo proposal · September 2026</p>
+  <h1>Two logos, one grid.</h1>
+  <p class="lead">01 follows your brief: square capitals, all the same size, stacked. 02 is my read of the brand: the name in Arabic, drawn in square Kufic. Both sit on the same module, so whichever wins, the other can join it.</p>
+</header>
+
+<main>
+<section class="wrap stages" aria-label="The two logos in motion">
+  <article class="stage">
+    <div class="screen"><canvas id="cv-block" aria-label="Animation: the table QR code is scanned, its modules fly into the letters AALA YNA, and a red square lands last like a stamp."></canvas></div>
+    <div class="stage-head"><h2><span>01</span>Block</h2>
+      <div class="controls"><button class="btn" type="button" data-play="block">Replay</button><button class="btn sound" type="button" data-play="block" data-sound="video/block.mp3">Replay with sound</button></div></div>
+    <p>The table QR (a real one: it opens aalayna.com) is scanned and its modules fly into the letters. The red finder eyes become the full stop, which lands last, like a stamp on a paid bill.</p>
+  </article>
+  <article class="stage">
+    <div class="screen"><canvas id="cv-kufi" aria-label="Animation: a red square pen writes the Arabic word علينا right to left, each letter rising as it passes, then hops three times to set the dots. AALAYNA follows."></canvas></div>
+    <div class="stage-head"><h2><span>02</span>Kufi</h2>
+      <div class="controls"><button class="btn" type="button" data-play="kufi">Replay</button><button class="btn sound" type="button" data-play="kufi" data-sound="video/kufi.mp3">Replay with sound</button></div></div>
+    <p>A red module is the pen. It writes علينا right to left, the way Arabic is written; each letter stands up as the pen passes, then the pen hops three times to set the dots. The Latin name follows.</p>
+  </article>
+</section>
+
+<section class="band paper" id="block" aria-labelledby="block-title">
+  <div class="wrap">
+    <p class="eyebrow">01 · Your brief</p>
+    <h2 id="block-title">Block</h2>
+    <p>Square capitals on a 5 × 5 grid of modules: the same squares a QR code is made of, and the QR is how every guest meets you. The weight is heavy enough to hold at 16 pixels and on a thermal receipt.</p>
+
+    <div class="brief">
+      <div class="pair">
+        <figure><div class="cell logo" id="brief-23"></div><figcaption><span class="no">2 × 3 does not fit.</span> Seven letters, six cells: one A has to go, and that A is the ع of the name.</figcaption></figure>
+        <figure><div class="cell logo" id="brief-24"></div><figcaption><strong>2 × 4 does.</strong> The eighth cell goes to the full stop.</figcaption></figure>
+      </div>
+      <p>You asked for two lines of three letters. Aalayna has seven, so I went to two lines of four and gave the spare cell to the full stop: the same one that ends every headline on your site (“The bill. The split. Aalayna.”). It turns the leftover space into the brand’s one piece of colour.</p>
+    </div>
+
+    <div class="grounds">
+      <div class="ground g-cream"><div class="logo" data-mark="block"></div></div>
+      <div class="ground g-ink"><div class="logo" data-mark="block" data-ground="ink"></div></div>
+      <div class="ground g-petrol"><div class="logo" data-mark="block" data-ground="petrol"></div></div>
+    </div>
+
+    <div class="build">
+      <figure class="fit" id="grid-block" aria-label="The Block on its module grid"></figure>
+      <dl class="specs">
+        <div><dt>Grid</dt><dd>Every letter is 5 × 5 modules; one module is the stroke. Letters and lines are one module apart.</dd></div>
+        <div><dt>Corners</dt><dd>Outer corners turn on 1.5 modules, inner on 0.5, so each bend is one even stroke. Stroke ends are cut square.</dd></div>
+        <div><dt>Optics</dt><dd>Horizontals are 8% lighter than verticals. Drawn equal, they would look heavier.</dd></div>
+        <div><dt>The N</dt><dd>The only line off the grid. An arched N reads as a lowercase n; the diagonal keeps the name legible.</dd></div>
+        <div><dt>Full stop</dt><dd>Red, and the only red. It fills its cell in the block and shrinks to one module after the name on one line.</dd></div>
+      </dl>
+    </div>
+
+    <div class="lockups">
+      <figure class="lock g-cream span-7"><div class="logo" data-mark="line"></div><figcaption>One line · headers, receipts, email</figcaption></figure>
+      <figure class="lock g-cream span-5"><div class="icons"><div class="i64 logo" data-mark="iconBlock"></div><div class="i40 logo" data-mark="iconBlock"></div><div class="i24 logo" data-mark="iconBlock"></div><div class="i16 logo" data-mark="iconBlock"></div></div><figcaption>Icon · the full stop, with the A cut out</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="kufi" aria-labelledby="kufi-title">
+  <div class="wrap">
+    <p class="eyebrow">02 · My read</p>
+    <h2 id="kufi-title">Kufi</h2>
+    <p>Aalayna is an Arabic phrase before it is a brand: <span lang="ar">علينا</span>, “it’s on us”, the line every table in Lebanon argues over when the bill comes. Square Kufic has built Arabic out of square modules for centuries, in brick and tile, long before QR codes. So the name gets drawn in its own script, and the grid you wanted is already in it.</p>
+
+    <div class="grounds">
+      <div class="ground g-paper"><div class="logo" data-mark="kufi" style="width:min(100%,260px)"></div></div>
+      <div class="ground g-red"><div class="logo" data-mark="kufi" data-ground="red" style="width:min(100%,180px)"></div></div>
+      <div class="ground g-petrol"><div class="logo" data-mark="kufi" data-ground="petrol" style="width:min(100%,180px)"></div></div>
+    </div>
+
+    <div class="build">
+      <figure class="fit">
+        <div id="grid-kufi" aria-label="The Kufi mark on its module grid, with each letter named"></div>
+        <div class="read" aria-hidden="true"><span style="grid-column:2"><b>ا</b>alif</span><span style="grid-column:4"><b>ن</b>nūn</span><span style="grid-column:6"><b>ي</b>yā’</span><span style="grid-column:8"><b>ل</b>lām</span><span style="grid-column:10/14"><b>ع</b>‘ayn</span></div>
+      </figure>
+      <dl class="specs">
+        <div><dt>Reads</dt><dd>Right to left: <span lang="ar">ع ل ي ن ا</span>. A hook, a tall stroke, two short teeth, a tall stroke, on one baseline.</dd></div>
+        <div><dt>Grid</dt><dd>12 × 12 modules, with the Block’s module and corners. The tall strokes are twice the height of the teeth.</dd></div>
+        <div><dt>The dots</dt><dd>ي and ن are the same tooth; only their dots tell them apart. The three dots are the only red.</dd></div>
+        <div><dt>Square</dt><dd>It is its own icon: the app, the WhatsApp picture, the middle of a QR code. The Block needs a separate one.</dd></div>
+      </dl>
+    </div>
+
+    <div class="lockups">
+      <figure class="lock g-paper span-8"><div class="logo" data-mark="lockup"></div><figcaption>Arabic first · the Latin capitals are exactly as tall as the Kufi teeth</figcaption></figure>
+      <figure class="lock g-paper span-4"><div class="icons"><div class="i64 logo" data-mark="iconKufi"></div><div class="i40 logo" data-mark="iconKufi"></div><div class="i24 logo" data-mark="iconKufi"></div></div><figcaption>Icon</figcaption></figure>
+      <figure class="lock g-ink span-12"><div class="logo" data-mark="lockupLatin" data-ground="ink" style="width:min(100%,720px);margin-inline:auto"></div><figcaption>Latin first, for English and French pages</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band paper" id="use" aria-labelledby="use-title">
+  <div class="wrap">
+    <p class="eyebrow">In use</p>
+    <h2 id="use-title">Where guests meet it</h2>
+    <p>The table card is the first thing a guest sees, so both logos are shown on it next to the real QR code.</p>
+    <div class="use">
+      <div class="scene g-ink">
+        <div class="card"><div class="mark logo" data-mark="block" data-fit="height"></div><div class="qr" data-qr></div><p class="t">Table 12<small>Scan · Scannez · <span lang="ar">امسح</span></small></p></div>
+      </div>
+      <div class="scene g-petrol">
+        <div class="card"><div class="mark logo" data-mark="kufi" data-fit="height"></div><div class="qr" data-qr></div><p class="t">Table 12<small>Scan · Scannez · <span lang="ar">امسح</span></small></p></div>
+      </div>
+      <div class="site">
+        <div class="nav"><div class="brand logo" data-mark="line" data-fit="height"></div><div class="links"><span>How it works</span><span>Pilot &amp; pricing</span><span>Questions</span></div><span class="cta">Book a 15-min call</span></div>
+        <div class="hero-mock"><span class="eyebrow">For restaurants in Lebanon</span><b>The bill. The split. <em>Aalayna.</em></b></div>
+      </div>
+      <div class="site">
+        <div class="nav"><div class="brand tall logo" data-mark="lockup" data-fit="height"></div><div class="links"><span>How it works</span><span>Pilot &amp; pricing</span><span>Questions</span></div><span class="cta">Book a 15-min call</span></div>
+        <div class="hero-mock"><span class="eyebrow">For restaurants in Lebanon</span><b>The bill. The split. <em>Aalayna.</em></b></div>
+      </div>
+      <div class="scene g-petrol" style="grid-column:1/-1">
+        <div class="homescreen">
+          <div class="app"><div class="ic logo" data-mark="iconBlock"></div>Aalayna</div>
+          <div class="app"><div class="ic logo" data-mark="iconKufi"></div>Aalayna</div>
+          <div class="app"><div class="ic logo" data-mark="iconKufiCream"></div>Aalayna</div>
+        </div>
+        <div class="tab"><div><span class="logo" data-mark="iconBlock" style="width:16px"></span><span>Aalayna: scan, split, settle.</span></div><div><span class="logo" data-mark="iconKufi" style="width:16px"></span><span>Aalayna: scan, split, settle.</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band ink" id="system" aria-labelledby="system-title">
+  <div class="wrap">
+    <p class="eyebrow">The system</p>
+    <h2 id="system-title">One module, two scripts</h2>
+    <p>Same stroke, same corners, same baseline. The Latin capitals stand exactly as tall as the Kufi teeth, so either logo can sit next to the other without adjustment.</p>
+    <div class="pair-guides fit" id="guides"></div>
+    <div class="chips">
+      <div class="chip" style="background:var(--cream);color:var(--ink)"><b>Cream</b><span class="mono">#FAF6F1</span><span>Ground</span></div>
+      <div class="chip" style="background:#2E2621;color:var(--cream);box-shadow:inset 0 0 0 1px rgba(250,246,241,.18)"><b>Ink</b><span class="mono">#211B16</span><span>Letters</span></div>
+      <div class="chip" style="background:var(--red);color:#fff"><b>Red</b><span class="mono">#C9414B</span><span>Punctuation only</span></div>
+      <div class="chip" style="background:var(--petrol);color:var(--cream);box-shadow:inset 0 0 0 1px rgba(250,246,241,.18)"><b>Petrol</b><span class="mono">#173E43</span><span>Dark ground</span></div>
+      <div class="chip" style="background:var(--peach);color:var(--petrol)"><b>Peach</b><span class="mono">#F6C39F</span><span>Red’s stand-in on petrol</span></div>
+    </div>
+    <div class="rules">
+      <div><h3>Red is punctuation</h3><p>The full stop and the three dots, never a letter. On a red ground the dots turn ink.</p></div>
+      <div><h3>Keep the grid</h3><p>Don’t stretch, outline or respace. Clear space is two modules on every side.</p></div>
+      <div><h3>Smallest sizes</h3><p>Block: 16 px as the icon, 64 px wide on one line. Kufi: 24 px as the icon; under 32 px, set the Latin name beside it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="pick" aria-labelledby="pick-title">
+  <div class="wrap">
+    <p class="eyebrow">My pick</p>
+    <h2 id="pick-title">Lead with the Kufi. Write the name in the Block.</h2>
+    <div class="pick">
+      <div class="fit logo" data-mark="lockup"></div>
+      <div>
+        <p style="color:var(--ink)">The Kufi is the part that is yours alone: an Arabic name, in an Arabic script, that is also a square icon for the table card, the app and WhatsApp. The Block is the most legible Latin you have, so it carries the name beside it. Keep the stacked Block for loud moments: the reel’s end card, the door sticker, merch.</p>
+        <ol>
+          <li>Tell me which way you’re going.</li>
+          <li>I swap it into the site header, favicon, share image, table cards and the reel’s end card.</li>
+          <li>Print one table card and look at it on a real table before anything else.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="files">
+      <div><code>brand/svg/</code><p>Every lockup as SVG: ink, cream and petrol versions, and both icons.</p></div>
+      <div><code>brand/video/</code><p>Both reveals with sound, at 1920 × 1080, 1080 × 1080 and 1080 × 1920.</p></div>
+      <div><code>node tools/brand.js</code><p>Rebuilds the SVGs and the videos from <code style="display:inline">brand/logo.js</code>, the one file that draws both logos.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap">Drawn and animated for Aalayna. The QR codes on this page open aalayna.com.</footer>
+
+<script src="logo.js"></script>
+<script src="motion.js"></script>
+<script>
+(function () {
+  var L = AalaynaLogo, M = AalaynaMotion, C = L.COLORS;
+  var grounds = {
+    cream: { ink: C.ink, red: C.red },
+    ink: { ink: C.cream, red: C.red },
+    petrol: { ink: C.cream, red: C.peach },
+    red: { ink: C.cream, red: C.ink }
+  };
+  var marks = {
+    block: function () { return L.block(); }, line: function () { return L.line(); }, kufi: function () { return L.kufi(); },
+    lockup: function () { return L.lockup(); }, lockupLatin: function () { return L.lockupLatin(); },
+    iconBlock: function () { return L.iconBlock(); }, iconKufi: function () { return L.iconKufi(); }, iconKufiCream: function () { return L.iconKufi(); }
+  };
+  var iconColors = { iconBlock: { tile: C.red, ink: C.cream }, iconKufi: { tile: C.ink, ink: C.cream, red: C.red }, iconKufiCream: { tile: C.cream, ink: C.ink, red: C.red } };
+  function markSVG(name, ground) {
+    var colors = iconColors[name] || grounds[ground || 'cream'];
+    return L.svg(marks[name](), colors, 0, L.U, /^(kufi|iconKufi)/.test(name) ? 'علينا' : 'Aalayna');
+  }
+  document.querySelectorAll('[data-mark]').forEach(function (el) {
+    el.innerHTML = markSVG(el.getAttribute('data-mark'), el.getAttribute('data-ground'));
+    if (el.getAttribute('data-fit') === 'height') { var s = el.querySelector('svg'); s.style.height = '100%'; s.style.width = 'auto'; }
+  });
+
+  // The 2 x 3 that doesn't fit and the 2 x 4 that does.
+  (function () {
+    var u = L.U, ink = '', red = '', word = 'ALAYNA';
+    for (var i = 0; i < 6; i++) ink += L.glyph(word[i], (i % 3) * 6 * u, Math.floor(i / 3) * 6 * u, u);
+    var x = 'M' + (-1.5 * u) + ' ' + (5.5 * u) + 'L' + (18.5 * u) + ' ' + (5.5 * u);
+    document.getElementById('brief-23').innerHTML = L.svg({ ink: ink, red: '', w: 17 * u, h: 11 * u }, grounds.cream, 0, u, 'ALA YNA: one A missing');
+    document.getElementById('brief-24').innerHTML = markSVG('block');
+  })();
+
+  // Construction: the mark over its module grid.
+  function gridSVG(mark, cols, rows, extra, dark) {
+    var u = L.U, s = L.svg(mark, dark ? grounds.ink : grounds.cream, 1, u), g = '';
+    var line = dark ? 'rgba(250,246,241,.16)' : 'rgba(23,62,67,.28)';
+    for (var x = 0; x <= cols; x++) g += '<line x1="' + (x + 1) * u + '" y1="' + u + '" x2="' + (x + 1) * u + '" y2="' + (rows + 1) * u + '" stroke="' + line + '" stroke-width=".5"/>';
+    for (var y = 0; y <= rows; y++) g += '<line x1="' + u + '" y1="' + (y + 1) * u + '" x2="' + (cols + 1) * u + '" y2="' + (y + 1) * u + '" stroke="' + line + '" stroke-width=".5"/>';
+    return s.replace('<g transform', g + (extra || '') + '<g transform');
+  }
+  document.getElementById('grid-block').innerHTML = gridSVG(L.block(), 23, 11);
+  document.getElementById('grid-kufi').innerHTML = gridSVG(L.kufi(), 12, 12);
+  // Guides: the tooth line and the baseline run through both scripts.
+  (function () {
+    var u = L.U, top = 6 * u, base = 11 * u, w = 60 * u, dash = 'stroke="#F6C39F" stroke-width=".8" stroke-dasharray="3 3"';
+    var extra = '<line x1="0" y1="' + top + '" x2="' + w + '" y2="' + top + '" ' + dash + '/><line x1="0" y1="' + base + '" x2="' + w + '" y2="' + base + '" ' + dash + '/>';
+    document.getElementById('guides').innerHTML = L.svg(L.lockup(), grounds.ink, 1, u, 'علينا Aalayna').replace('<g transform', extra + '<g transform');
+  })();
+
+  // The real table QR: https://aalayna.com, red finder eyes like the reel.
+  (function () {
+    var q = M.QR, n = q.length, ink = '', red = '';
+    var eye = function (r, c) { return (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7); };
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q[r][c] === '#') { var d = 'M' + c + ' ' + r + 'h1v1h-1z'; if (eye(r, c)) red += d; else ink += d; }
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 ' + (n + 2) + ' ' + (n + 2) + '" shape-rendering="crispEdges" role="img" aria-label="QR code for aalayna.com"><path fill="' + C.ink + '" d="' + ink + '"/><path fill="' + C.red + '" d="' + red + '"/></svg>';
+    document.querySelectorAll('[data-qr]').forEach(function (el) { el.innerHTML = svg; });
+  })();
+
+  // Motion: each stage plays when it comes into view; the sound button restarts it with the soundtrack.
+  var players = {}, audio = {};
+  [['block', 'cv-block'], ['kufi', 'cv-kufi']].forEach(function (p) {
+    var cv = document.getElementById(p[1]);
+    players[p[0]] = M.player(cv, M[p[0]](), { autoplay: false });
+    if ('IntersectionObserver' in window) {
+      var seen = false, io = new IntersectionObserver(function (es) { if (!seen && es[0].isIntersecting) { seen = true; players[p[0]].play(); io.disconnect(); } }, { threshold: 0.4 });
+      io.observe(cv);
+    } else players[p[0]].play();
+  });
+  document.fonts && document.fonts.ready.then(function () { Object.keys(players).forEach(function (k) { players[k].redraw(); }); });
+  document.querySelectorAll('[data-play]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-play'), src = b.getAttribute('data-sound');
+      Object.keys(audio).forEach(function (a) { audio[a].pause(); });
+      if (src) {
+        var a = audio[k] || (audio[k] = new Audio(src));
+        try { a.currentTime = 0; } catch (e) {}
+        var go = a.play();
+        if (go && go.catch) go.catch(function () {});
+      }
+      players[k].play();
+    });
+  });
+})();
+</script>
+</body>
+</html>

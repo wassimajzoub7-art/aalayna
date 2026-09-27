@@ -247,6 +247,15 @@ already off.
 
 To re-render after changing the page: `node tools/reel-audio.js reel.wav`, then `node tools/render-reel.js --audio reel.wav --out images/reel.mp4` (Playwright's Chromium and an ffmpeg with libx264; `--fonts <dir>` serves Google Fonts from a local folder when the browser cannot reach them, `--stills 1,5.2,11` writes review PNGs instead). The soundtrack is synthesised by the script, so there is no music licence to clear.
 
+## Logo
+
+`brand/index.html` presents two logo directions on one module grid, with both reveals playing live (Replay with sound plays the soundtrack): **Block**, AALA / YNA in square capitals with a red full stop in the eighth cell, and **Kufi**, علينا in square Kufic with red dots. The page is `noindex`; merging it publishes it at `/brand/`. `brand/logo.js` draws every mark (the SVG files, the page and the motion all come from it) and `brand/motion.js` holds the two reveals, each a pure function of time like the reel.
+
+- `brand/svg/`: the Block (stacked and one line), the Kufi, both bilingual lockups and both icons, in ink, cream and petrol versions.
+- `brand/video/`: both reveals with sound at 1920 x 1080, 1080 x 1080 and 1080 x 1920, 60 fps; `block.mp3` and `kufi.mp3` are the soundtracks the page plays.
+
+To rebuild after changing `brand/logo.js` or `brand/motion.js`: `node tools/brand.js svg`, then `node tools/brand-audio.js block block.wav` and `node tools/brand.js video --piece block --size 1920x1080 --audio block.wav`, and `ffmpeg -i block.wav -b:a 160k brand/video/block.mp3` for the page (same for `kufi`; `--ground ink|petrol` for a dark ground, `--notag` without the tagline, `--fonts <dir>` as for the reel, `node tools/brand.js stills --piece kufi --at 1,2.5` for review PNGs). `brand/motion.html?piece=kufi` plays one reveal full window.
+
 ## Validation
 
 Run `node --test tests/*.test.cjs` for the cash-state, measurement and data-layer regressions. Static files require JavaScript syntax and local-link checks before release. The marketing page works without JavaScript.
