@@ -578,3 +578,14 @@ test('the three steps: a carousel on phones (arrows, three dots), a grid on comp
   assert.match(js, /el\.textContent = text;/, 'the figures end on the value in the page');
   assert.match(read('.gitignore'), /^!site\.js$/m);
 });
+
+test('tapping the hero film, or its play button, pauses and plays it on every homepage', () => {
+  for (const f of ['index.html', 'fr/index.html', 'ar/index.html']) {
+    const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    assert.match(s, /<button class="reel-play" id="reel-play" type="button" aria-label="[^"]+" data-play="[^"]+"><svg [^>]*aria-hidden="true"/, f);
+    assert.match(s, /v\.addEventListener\('click',toggle\);p\.addEventListener\('click',toggle\);/, f);
+    assert.match(s, /b\.hidden=true;p\.hidden=true;return;/, f + ': reduced motion hands over to native controls');
+  }
+  const css = fs.readFileSync(path.join(ROOT, 'website.css'), 'utf8');
+  assert.match(css, /\.hero-reel\.is-paused::after\{opacity/);
+});
