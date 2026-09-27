@@ -351,7 +351,7 @@ const FR = 'fr/index.html';
 const FR_CTA = ['Réserver un appel de 15 min', 'Écrivez-nous sur WhatsApp'];
 const decode = s => s.replace(/&#8239;/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 // The language switch is the one link with hreflang; the English page has it in the header, the French page in the footer.
-const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr|ar)"[^>]*>(?:EN|FR|عربي)<\/a>/g;
+const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr|ar)"[^>]*>(?:EN|FR|عربي|English|Français|العربية)<\/a>/g;
 const noSwitch = s => s.replace(LANG_SWITCH, '');
 const all = (s, re) => [...s.matchAll(re)].map(m => m[1]);
 // What a reader or a screen reader gets: text between tags in the body, alt and aria-label, and the head's title and meta contents.
@@ -417,7 +417,7 @@ test('fr homepage: every relative path on both homepages resolves to a file', ()
   assert.match(read('.gitignore'), /^!fr\/\*$/m);
 });
 
-test('languages: lang, hreflang on both pages, a 44 px switch each way, French share tags', () => {
+test('languages: lang, hreflang on both pages, a language menu in every header, French share tags', () => {
   const en = read('index.html'), fr = read(FR);
   assert.match(en, /<html lang="en">/);
   assert.match(fr, /<html lang="fr">/);
@@ -429,13 +429,21 @@ test('languages: lang, hreflang on both pages, a 44 px switch each way, French s
     assert.ok(s.includes('<link rel="alternate" hreflang="ar" href="https://aalayna.com/ar/">'));
     assert.ok(s.includes('<link rel="alternate" hreflang="x-default" href="https://aalayna.com/">'));
   });
-  const toFr = en.match(/<a href="fr\/" hreflang="fr" lang="fr"([^>]*)>FR<\/a>/);
+  // Every homepage carries a language menu in its header: the current language, then the other two by name.
+  const menu = (s, cur, others) => {
+    const m = s.match(/<header[\s\S]*?<\/header>/)[0].match(/<details class="lang"><summary aria-label="[^"]+">([^<]+)<\/summary><div>([\s\S]*?)<\/div><\/details>/);
+    assert.ok(m, cur + ': a language menu in the header');
+    assert.equal(m[1], cur);
+    assert.deepEqual(all(m[2], /<a href="[^"]*" hreflang="([a-z]+)" lang="\1">[^<]+<\/a>/g), others);
+  };
+  menu(en, 'EN', ['fr', 'ar']); menu(fr, 'FR', ['en', 'ar']); menu(read('ar/index.html'), 'عربي', ['en', 'fr']);
+  assert.match(en, /<details class="lang">[\s\S]*?<a href="fr\/" hreflang="fr" lang="fr">Français<\/a><a href="ar\/" hreflang="ar" lang="ar">العربية<\/a>/);
+  assert.match(fr, /<details class="lang">[\s\S]*?<a href="\.\.\/" hreflang="en" lang="en">English<\/a><a href="\.\.\/ar\/" hreflang="ar" lang="ar">العربية<\/a>/);
+  assert.match(read('website.css'), /\n\.lang summary\{[^}]*min-height:44px/);
+  assert.match(read('website.css'), /\n\.lang a\{[^}]*min-height:44px/);
+  // The French footer keeps its way back too.
   const toEn = fr.match(/<a href="\.\.\/" hreflang="en" lang="en"([^>]*)>EN<\/a>/);
-  assert.ok(toFr, 'FR link on the English page');
-  assert.ok(toEn, 'EN link on the French page');
-  [toFr[1], toEn[1]].forEach(a => assert.match(a, /min-height:44px/));
-  assert.ok(en.match(/<header[\s\S]*?<\/header>/)[0].includes(toFr[0]), 'FR sits in the English header, next to the CTA');
-  assert.ok(fr.match(/<footer[\s\S]*?<\/footer>/)[0].includes(toEn[0]), 'EN sits in the French footer (the French CTA leaves no room in the header at 375 px)');
+  assert.ok(toEn && /min-height:44px/.test(toEn[1]) && fr.match(/<footer[\s\S]*?<\/footer>/)[0].includes(toEn[0]), 'EN in the French footer');
   const meta = k => { const m = fr.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
   assert.equal(meta('og:url'), 'https://aalayna.com/fr/');
   assert.equal(meta('og:locale'), 'fr_FR');
@@ -513,7 +521,6 @@ test('ar homepage: the two Arabic CTA labels, WhatsApp to the same number in Ara
   const foot = s.match(/<footer[\s\S]*?<\/footer>/)[0];
   assert.match(foot, /<a href="\.\.\/" hreflang="en" lang="en"[^>]*min-height:44px[^>]*>EN<\/a>/);
   assert.match(foot, /<a href="\.\.\/fr\/" hreflang="fr" lang="fr"[^>]*min-height:44px[^>]*>FR<\/a>/);
-  assert.match(en.match(/<header[\s\S]*?<\/header>/)[0], /<a href="ar\/" hreflang="ar" lang="ar"[^>]*min-height:44px[^>]*>عربي<\/a>/, 'Arabic sits in the English header');
   assert.match(fr.match(/<footer[\s\S]*?<\/footer>/)[0], /<a href="\.\.\/ar\/" hreflang="ar" lang="ar"[^>]*min-height:44px[^>]*>عربي<\/a>/, 'and in the French footer');
   assert.deepEqual(all(s, /<link rel="alternate" hreflang="([^"]+)"/g), ['en', 'fr', 'ar', 'x-default']);
   const meta = k => { const m = s.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
