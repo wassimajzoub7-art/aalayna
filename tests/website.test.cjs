@@ -255,7 +255,7 @@ test('homepage structure: hero, WhatsApp first, nav, coming-next section, FAQ or
   numbers.forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
   const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> [^<]+<\/p>/g)].map(m => m[1]);
-  assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'your list']);
+  assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'Your list']);
 });
 
 test('book.html: site colour token, one calendar that needs no script, one WhatsApp line', () => {
