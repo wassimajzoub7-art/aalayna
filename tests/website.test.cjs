@@ -252,8 +252,10 @@ test('homepage structure: four sections that each end on Book a demo, six questi
   const faq = [...s.matchAll(/<summary>([^<]*)<\/summary>/g)].map(m => m[1]);
   assert.deepEqual(faq, ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?', 'Where do payments and tips go?', 'Is this ready to take real payments?', 'What is included in the price?']);
   const numbers = [...s.matchAll(/<span class="number">([^<]*)<\/span>/g)].map(m => m[1]);
-  assert.equal(numbers.length, 6, 'three steps and three pilot steps');
-  numbers.forEach(n => assert.match(n, /^\d{2} · \S/));
+  assert.equal(numbers.length, 7, 'three steps, and the pilot timeline: three steps and go-live');
+  assert.match(s, /<li class="go-live"><span class="number">[^<]+<\/span> [^<]+<\/li><li><span class="number">03 · /, 'go-live sits before the review');
+  assert.ok(!/commission/i.test(s), 'no commission line');
+  numbers.filter(n => n !== 'Go-live').forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
   const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> <span class="source-text">[^<]+<\/span><\/p>/g)].map(m => m[1]);
   assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'Your list']);
