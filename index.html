@@ -26,13 +26,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="preload" href="brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="website.css?v=8">
+<link rel="stylesheet" href="website.css?v=9">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <script src="aalayna-config.js"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
+<script src="site.js" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -74,6 +75,7 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
       <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-split.webp" type="image/webp"><img src="images/guest-split.png" width="780" height="1688" loading="lazy" alt="The split screen: the bill divided evenly between 4 people, $38.13 each, about LL 3,412,635."></picture></div><figcaption>Split evenly between four: $38.13 each.</figcaption></figure><span class="number">02 · Bill</span><h3>View &amp; split</h3><p>See the bill. Pay for the whole table, split evenly, select items or choose an amount.</p></article>
       <article><figure class="shot"><div class="phone small"><picture><source srcset="images/guest-pay-cash.webp" type="image/webp"><img src="images/guest-pay-cash.png" width="780" height="1688" loading="lazy" alt="The payment screen with paying cash selected and the guest choosing to hand over a $50 note for a $23.60 total."></picture></div><figcaption>Paying cash: the guest picks their note.</figcaption></figure><span class="number">03 · Payment</span><h3>Settle your way</h3><p>Use a supported digital payment method, or request cash collection with the change needed. Staff confirm cash when it is collected.</p></article>
     </div>
+    <div class="steps-nav" hidden><button class="steps-arrow" type="button" data-step="-1" aria-label="Previous step"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></button><span class="steps-dots"><button type="button" aria-label="Step 1"></button><button type="button" aria-label="Step 2"></button><button type="button" aria-label="Step 3"></button></span><button class="steps-arrow" type="button" data-step="1" aria-label="Next step"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></button></div>
   </section>
 
   <section class="benefits-band" id="outcomes">

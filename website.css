@@ -118,6 +118,21 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .steps article{border-top:1px solid var(--line);padding-top:1.75rem}
 .steps .shot{margin-bottom:1.75rem}
 .steps h3{margin-top:.7rem}.steps p{margin-top:.75rem}
+/* The carousel's arrows and dots (site.js shows them on phones only). Square, like everything else. */
+.steps-nav{display:none}
+.steps-arrow{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.steps-arrow:disabled{opacity:.35;cursor:default}
+.steps-arrow svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
+[dir="rtl"] .steps-arrow svg{transform:scaleX(-1)}
+.steps-dots{display:flex}
+.steps-dots button{display:grid;place-items:center;width:28px;height:44px;padding:0;border:0;background:none;cursor:pointer}
+.steps-dots button::before{content:'';width:10px;height:10px;border:2px solid var(--ink);box-sizing:border-box;transition:background .2s,border-color .2s}
+.steps-dots button[aria-current="true"]::before{background:var(--brand);border-color:var(--brand)}
+
+/* Sections rise in as they scroll into view (site.js adds the class, so without it nothing is hidden). */
+.js-reveal{opacity:0;transform:translateY(1.25rem);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.js-reveal.is-in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js-reveal{opacity:1;transform:none;transition:none}}
 
 /* Outcomes band: every article is a subgrid, so the figure, source line, heading and text line up across columns. */
 .benefits-band{background:var(--petrol);color:#fff}
@@ -224,3 +239,13 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media (min-width:1680px){html{zoom:1.15}}
 @media (min-width:2200px){html{zoom:1.4}}
 @media (min-width:3000px){html{zoom:1.8}}
+
+/* Phones: the three steps swipe sideways, one card centred with the next peeking in; the card in view is lit. */
+@media(max-width:767px){
+  .steps{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;margin-inline:-1rem;padding:0 1rem .25rem;scroll-padding-inline:1rem;scrollbar-width:none}
+  .steps::-webkit-scrollbar{display:none}
+  .steps article{flex:0 0 84%;scroll-snap-align:center}
+  .steps article>*{transition:opacity .35s ease}
+  .steps.is-live article:not(.is-active)>*{opacity:.4}
+  .steps-nav:not([hidden]){display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1.25rem}
+}

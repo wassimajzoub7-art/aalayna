@@ -553,3 +553,25 @@ test('every page asks for the same stylesheet version (bump ?v= on all of them w
   assert.equal(new Set(versions).size, 1, 'one version across pages: ' + versions.join(', '));
   assert.ok(Number(versions[0]) >= 7, 'the version that carries the phone hero and the Arabic page');
 });
+
+test('the three steps: a carousel on phones (arrows, three dots), a grid on computers, and motion only when it is wanted', () => {
+  const css = read('website.css'), js = read('site.js');
+  const labels = { 'index.html': ['Previous step', 'Next step', 'Step'], 'fr/index.html': ['Étape précédente', 'Étape suivante', 'Étape'], 'ar/index.html': ['الخطوة السابقة', 'الخطوة التالية', 'الخطوة'] };
+  for (const [f, [pv, nx, st]] of Object.entries(labels)) {
+    const s = read(f), how = s.match(/<section[^>]*id="how"[\s\S]*?<\/section>/)[0];
+    assert.match(how, new RegExp('<div class="steps-nav" hidden><button class="steps-arrow" type="button" data-step="-1" aria-label="' + pv + '">'), f + ': previous');
+    assert.match(how, new RegExp('<button class="steps-arrow" type="button" data-step="1" aria-label="' + nx + '">'), f + ': next');
+    assert.deepEqual(all(how, /<span class="steps-dots">([\s\S]*?)<\/span>/g).map(d => all(d, /aria-label="([^"]+)"/g))[0], [1, 2, 3].map(i => st + ' ' + i), f + ': three dots');
+    assert.ok(s.includes('<script src="' + (f.includes('/') ? '../' : '') + 'site.js" defer></script>'), f + ' loads site.js');
+  }
+  assert.match(css, /@media\(max-width:767px\)\{\n  \.steps\{display:flex;[^}]*overflow-x:auto;scroll-snap-type:x mandatory/, 'phones swipe the steps, with or without JavaScript');
+  assert.match(css, /\n\.steps\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, 'computers keep the three columns');
+  assert.match(css, /\n\.steps-nav\{display:none\}/, 'the arrows and dots only show on phones');
+  assert.match(css, /\.steps-arrow\{[^}]*width:44px;height:44px/);
+  assert.match(css, /\.steps-dots button\{[^}]*height:44px/);
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\)\{\.js-reveal\{opacity:1;transform:none;transition:none\}\}/);
+  assert.match(js, /prefers-reduced-motion: reduce/);
+  assert.match(js, /if \(reduce \|\| !io\) return;/, 'no rise-in or count-up with reduced motion');
+  assert.match(js, /el\.textContent = text;/, 'the figures end on the value in the page');
+  assert.match(read('.gitignore'), /^!site\.js$/m);
+});
