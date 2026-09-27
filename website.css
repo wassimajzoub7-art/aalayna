@@ -148,6 +148,9 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .source-tag{display:inline-block;margin-inline-end:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .calc-link{display:inline-block;margin-top:.5rem;padding-block:.5625rem;color:var(--peach);font-weight:600;text-underline-offset:.25rem}
 .calc-link::after{content:' \2192'}
+/* Every section ends on the same ask: Book a demo. */
+.section-cta{margin-top:2.5rem}
+.faq .section-cta{margin-top:2rem}
 
 /* Arabic (ar/): the page runs right to left in Noto Kufi Arabic, geometric like the Kufi mark. Arabic letters join, so
    nothing is tracked or set in capitals, and the lines are opened up for the taller script. The name in the hero is
