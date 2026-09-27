@@ -490,7 +490,9 @@ test('ar homepage: right to left, same ids, classes, tags, images and tracked pl
   assert.deepEqual(tags(ar), tags(en), 'element sequence in the body');
   const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
   assert.deepEqual(pairs(ar), pairs(en), 'tracked placements, in order');
-  assert.deepEqual(all(ar, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g).map(u => u.replace('film-ar', 'film-en')), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/');
+  assert.deepEqual(all(ar, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g).map(u => u.replace('film-ar', 'film-en')), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/ (the film in Arabic)');
+  assert.match(read(AR), /poster="\.\.\/images\/film-ar\.jpg"[^>]*><source src="\.\.\/images\/film-ar\.mp4" type="video\/mp4">/, 'the Arabic cut and its poster');
+  ['.mp4', '-portrait.mp4', '.jpg', '-portrait.jpg'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, 'images', 'film-ar' + x)), 'film-ar' + x));
   assert.equal((ar.match(/(?:src|srcset|href)="(?:images|brand|website\.css|book\.html|numbers\.html)/g) || []).length, 0, 'no path left relative to the root');
   const dir = path.dirname(path.join(ROOT, AR));
   all(read(AR), /\b(?:href|src|srcset)="([^"]*)"/g).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u)).forEach(u => {

@@ -6,7 +6,7 @@ The public homepage and booking page contain no interactive demos or app preview
 
 `fr/index.html` is the French homepage: the same ids, classes, images and tracked placements as `index.html`, linked both ways (FR in the English header, EN in the French footer) and declared with hreflang; the calculator and booking page are English only for now.
 
-`ar/index.html` is the Arabic homepage, right to left (`dir="rtl"`), built from `index.html` with the same ids, classes, images and tracked placements. It is set in Noto Kufi Arabic (geometric, like the Kufi mark), never tracked or capitalised, and its hero ends on the name itself: الفاتورة. التقسيم. علينا. Prices keep Western digits and dollars as in the other languages. The English header links to it (عربي, next to FR), the French footer too, and its own footer links back to EN and FR; all three pages declare `hreflang` en, fr and ar. Its hero plays the English cut of the film until the Arabic cut's web files are added. The Arabic copy should be read by a native speaker before launch.
+`ar/index.html` is the Arabic homepage, right to left (`dir="rtl"`), built from `index.html` with the same ids, classes, images and tracked placements. It is set in Noto Kufi Arabic (geometric, like the Kufi mark), never tracked or capitalised, and its hero ends on the name itself: الفاتورة. التقسيم. علينا. Prices keep Western digits and dollars as in the other languages. The English header links to it (عربي, next to FR), the French footer too, and its own footer links back to EN and FR; all three pages declare `hreflang` en, fr and ar. Its hero plays the Arabic cut of the film (`images/film-ar.mp4`), which closes on the Kufi mark. The Arabic copy should be read by a native speaker before launch.
 
 ## Demo limits
 
