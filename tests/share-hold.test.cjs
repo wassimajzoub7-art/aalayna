@@ -39,7 +39,7 @@ function makeDom(){
 function boot({local=new Map()}={}){
  const store=m=>({getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),key:i=>[...m.keys()][i],get length(){return m.size;}});
  const listeners={},timers=[],alerts=[],document=makeDom();
- const window={document,location:{pathname:'/guest.html',search:'?venue=Kababji',origin:'https://aalayna.com',href:'https://aalayna.com/guest.html?venue=Kababji',replace(){}},
+ const window={document,location:{pathname:'/guest.html',search:'?venue=Mayda',origin:'https://aalayna.com',href:'https://aalayna.com/guest.html?venue=Mayda',replace(){}},
   history:{replaceState(){}},localStorage:store(local),sessionStorage:store(new Map()),crypto:require('node:crypto').webcrypto,
   navigator:{userAgent:'test',clipboard:{writeText(){}},onLine:true},
   addEventListener(type,f){(listeners[type]=listeners[type]||[]).push(f);},removeEventListener(){},

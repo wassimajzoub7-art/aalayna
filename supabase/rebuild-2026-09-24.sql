@@ -6,7 +6,7 @@
 -- correction: functions that generate keys need the `extensions` schema on their
 -- search path, where Supabase installs pgcrypto. Safe to re-run.
 -- After it finishes, register venues again (their keys were lost with the data):
---   select * from aal_register_venue('Kababji', 'Lebanese Grill');
+--   select * from aal_register_venue('Mayda', 'Lebanese Grill');
 -- ============================================================================
 
 -- ---------- 1. migration.sql ----------
@@ -116,7 +116,7 @@ end $$;
 revoke all on function aal_register_venue(text, text) from public, anon, authenticated;
 
 -- Example (edit the names, run, copy the two keys it prints):
--- select * from aal_register_venue('Kababji', 'Lebanese Grill');
+-- select * from aal_register_venue('Mayda', 'Lebanese Grill');
 
 
 -- ---------- 2. site-events.sql ----------

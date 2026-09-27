@@ -168,7 +168,7 @@
                       payment ? { deviceId:payment.deviceId, sessionId:payment.sessionId, tableId:payment.table, customerId:payment.identityId } : {});
   };
   A.lowRatings = function (since) {
-    return A.events().filter(function(e){ return e.eventType === 'review_submitted' && e.payload.rating <= 2 && (!since || Date.parse(e.createdAt) >= since); });
+    return A.events().filter(function(e){ return e.eventType === 'review_submitted' && e.payload.rating <= 3 && (!since || Date.parse(e.createdAt) >= since); });
   };
   A.withdrawMarketing = function (id) {
     var all = read('aal.guests'), g = all.find(function(x){ return same(x) && x.id === id; });

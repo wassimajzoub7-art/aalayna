@@ -11,8 +11,8 @@ const root=path.join(__dirname,'..'),flush=async(n=6)=>{for(let i=0;i<n;i++)awai
 const html=fs.readFileSync(path.join(root,'guest.html'),'utf8');
 const inline=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 const TQ=inline.find(s=>s.indexOf('var AalaynaTableQR')>=0),PAGE=inline.find(s=>s.indexOf('function loadMenu')>=0);
-const SLUG='kababji-hamra',TOKEN='tbl_'+'ab'.repeat(24),RID=JSON.stringify(['kababji','hamra']);
-const VENUE={name:'Kababji',place:'Hamra',gplace:null,brand:'#EA312B',bg:null,font:null,menu_pack:'kababji'};
+const SLUG='mayda-hamra',TOKEN='tbl_'+'ab'.repeat(24),RID=JSON.stringify(['mayda','hamra']);
+const VENUE={name:'Mayda',place:'Hamra',gplace:null,brand:'#2F6B4F',bg:null,font:null,menu_pack:'mayda'};
 const MENU={version:7,sections:[{id:'grl',name:'Grill',win:'all'}],items:[{id:'k1',sec:'grl',name:'Shish taouk',desc:'',price:9,status:'incomplete',available:true}],at:'2026-09-24T09:00:00.000Z'};
 const DOCS=[{key:'aal.live',body:MENU,updated_at:'now'}];
 const CHECK={id:'bill-7',venueId:RID,table:7,source:'staff',openedAt:'2026-09-24T10:00:00.000Z',lines:[{id:'k1',q:2,p:18,name:'Shish taouk'}],totalCents:1800,amountUsd:18,revision:1};
@@ -90,7 +90,7 @@ test('a scan with v, t and s calls aal_table_session with the slug, table and co
  assert.equal(p.window.Aalayna.events().length,0);                           // nothing logged on the hidden load
  assert.equal(p.replaced.length,1);
  const next=new URLSearchParams(p.replaced[0].split('?')[1]);
- assert.equal(next.get('venue'),'Kababji');assert.equal(next.get('place'),'Hamra');assert.equal(next.get('brand'),'EA312B');
+ assert.equal(next.get('venue'),'Mayda');assert.equal(next.get('place'),'Hamra');assert.equal(next.get('brand'),'2F6B4F');
  assert.equal(next.get('k'),'chk_'+'cd'.repeat(24));assert.equal(next.get('s'),null);assert.equal(next.get('menu'),null);
 });
 
@@ -100,7 +100,7 @@ test('with an open bill the rewritten page is a bill link: TABLE from the server
  const first=boot({search:'?v='+SLUG+'&t=7&s='+TOKEN,server});await flush();
  const p=reload(first,server);
  assert.equal(p.run('TABLE'),7);                                            // from the answer, before the snapshot
- assert.equal(p.window.location.search,'?venue=Kababji&place=Hamra&brand=EA312B');   // k stripped by the sync layer
+ assert.equal(p.window.location.search,'?venue=Mayda&place=Hamra&brand=2F6B4F');   // k stripped by the sync layer
  assert.equal(p.local.get('aal.access:'+RID+':guest'),KEY);                  // held per venue and page role
  assert.equal(p.window.Aalayna.venueId(),RID);
  await flush();
@@ -187,7 +187,7 @@ test('sessions SQL: owner-issued table codes, anon table sessions, a chk_ key fo
   const hdr=async(h)=>{await db.query("select set_config('request.headers',$1,false),set_config('request.jwt.claims',$2,false)",[JSON.stringify(h),JSON.stringify({role:'anon'})]);};
   await db.query("insert into admin_keys(admin_key,label) values('adm_test','test')");
   await hdr({'x-aalayna-admin':'adm_test'});
-  const v=(await db.query("select aal_admin_register_venue('Kababji','Hamra','kababji-hamra','{}'::jsonb) as value")).rows[0].value;
+  const v=(await db.query("select aal_admin_register_venue('Mayda','Hamra','mayda-hamra','{}'::jsonb) as value")).rows[0].value;
   const other=(await db.query("select aal_admin_register_venue('Other','Hamra',null,'{}'::jsonb) as value")).rows[0].value;
   await db.query("insert into kv_docs values($1,'aal.live',$2,now()),($1,'aal.draft',$3,now())",[v.restaurant_id,JSON.stringify({version:3,sections:[],items:[]}),JSON.stringify({secret:'draft'})]);
   await db.exec('set role anon');
@@ -202,22 +202,22 @@ test('sessions SQL: owner-issued table codes, anon table sessions, a chk_ key fo
   await hdr({'x-aalayna-key':v.owner_key});
   await assert.rejects(tokens(v.restaurant_id,{op:'issue',table:'7'}),/whole number/);
   let list=await tokens(v.restaurant_id,{op:'issue',table:7});
-  assert.equal(list.slug,'kababji-hamra');assert.equal(list.tokens.length,1);assert.match(list.tokens[0].token,/^tbl_[0-9a-f]{48}$/);
+  assert.equal(list.slug,'mayda-hamra');assert.equal(list.tokens.length,1);assert.match(list.tokens[0].token,/^tbl_[0-9a-f]{48}$/);
   const first=list.tokens[0].token;
   list=await tokens(v.restaurant_id,{op:'issue',table:7});const code=list.tokens[0].token;
   assert.equal(list.tokens.length,1);assert.notEqual(code,first);                    // one live code per table
   await hdr({});
-  await assert.rejects(session('kababji-hamra',7,first),/This table code is not active/); // the replaced code is dead
-  await assert.rejects(session('kababji-hamra',8,code),/This table code is not active/);  // another table
+  await assert.rejects(session('mayda-hamra',7,first),/This table code is not active/); // the replaced code is dead
+  await assert.rejects(session('mayda-hamra',8,code),/This table code is not active/);  // another table
   await assert.rejects(session('nope',7,code),/This table code is not active/);
-  let s=await session('kababji-hamra',7,code);
-  assert.equal(s.restaurant_id,v.restaurant_id);assert.equal(s.venue.name,'Kababji');assert.equal(s.table,7);
+  let s=await session('mayda-hamra',7,code);
+  assert.equal(s.restaurant_id,v.restaurant_id);assert.equal(s.venue.name,'Mayda');assert.equal(s.table,7);
   assert.equal(s.checkId,null);assert.equal(s.key,null);assert.deepEqual(s.docs.map(d=>d.key),['aal.live']);   // never the draft
   await hdr({'x-aalayna-key':v.owner_key});
   await mutate('open_check',{id:'bill-7',table:7,lines:[{id:'k1',q:2,p:18,name:'Shish taouk'}],currency:'USD'});
   await mutate('open_check',{id:'bill-8',table:8,lines:[{id:'k1',q:1,p:9}],currency:'USD'});
   await hdr({});
-  s=await session('kababji-hamra',7,code);
+  s=await session('mayda-hamra',7,code);
   assert.equal(s.checkId,'bill-7');assert.match(s.key,/^chk_[0-9a-f]{48}$/);
   await hdr({'x-aalayna-key':s.key});
   const snap=(await db.query('select aal_snapshot($1) as value',[v.restaurant_id])).rows[0].value;
@@ -225,6 +225,6 @@ test('sessions SQL: owner-issued table codes, anon table sessions, a chk_ key fo
   await hdr({'x-aalayna-key':v.owner_key});
   list=await tokens(v.restaurant_id,{op:'revoke',table:7});assert.equal(list.tokens.length,0);
   await hdr({});
-  await assert.rejects(session('kababji-hamra',7,code),/This table code is not active/);
+  await assert.rejects(session('mayda-hamra',7,code),/This table code is not active/);
  }finally{await db.close();}
 });
