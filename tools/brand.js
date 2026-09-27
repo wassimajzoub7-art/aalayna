@@ -68,9 +68,11 @@ function siteLogo(mark) {
   return '<svg viewBox="0 0 ' + mark.w + ' ' + mark.h + '" aria-hidden="true" focusable="false">' + p('logo-ink', mark.ink) + p('logo-red', mark.red) + '</svg>';
 }
 // Every site page as it should read, as { file: html }: only what sits inside <a class="logo"> changes.
+// The Arabic page carries the Kufi mark, علينا, in its header; every other page the Block.
 function sitePages() {
-  const header = siteLogo(Logo.block()), footer = siteLogo(Logo.lockup()), out = {};
+  const block = siteLogo(Logo.block()), kufi = siteLogo(Logo.kufi()), footer = siteLogo(Logo.lockup()), out = {};
   for (const f of SITE_PAGES) {
+    const header = f.startsWith('ar/') ? kufi : block;
     out[f] = fs.readFileSync(path.join(root, f), 'utf8')
       .replace(/(<header[\s\S]*?<a class="logo"[^>]*>)[\s\S]*?(<\/a>)/, (_, a, b) => a + header + b)
       .replace(/(<footer[^>]*>\s*<a class="logo"[^>]*>)[\s\S]*?(<\/a>)/, (_, a, b) => a + footer + b);

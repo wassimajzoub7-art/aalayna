@@ -131,6 +131,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 [lang="ar"] :is(h1,h2,h3,.eyebrow,.number,.source-tag,.btn,.name){letter-spacing:0;text-transform:none}
 [lang="ar"] h1,[lang="ar"] h2{line-height:1.35}
 [lang="ar"] .name{font-family:var(--font-text);font-weight:700}
+[lang="ar"] .site-nav .logo svg{height:2.75rem}   /* the Kufi mark is square and lighter than the Block */
 [dir="rtl"] .calc-link::after{content:' \2190'}
 
 /* Both sides of the table */

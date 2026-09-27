@@ -71,9 +71,9 @@ test('the Block: 3LAYNA fills 2 x 3 with the 3 in red; AALAYNA takes 2 x 4 with 
   assert.equal(Logo.line('AALAYNA').w / Logo.U, 43, 'a one-module full stop after the name');
 });
 
-test('the site carries the logo brand/logo.js draws: the Block in every header, the Kufi lockup in every footer (node tools/brand.js site)', () => {
+test('the site carries the logo brand/logo.js draws: the Block in every header (the Kufi mark on the Arabic page), the Kufi lockup in every footer (node tools/brand.js site)', () => {
   const want = sitePages();
-  const header = '<svg viewBox="0 0 ' + Logo.block().w + ' ' + Logo.block().h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="';
+  const mark = m => '<svg viewBox="0 0 ' + m.w + ' ' + m.h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="' + m.ink;
   const footer = '<svg viewBox="0 0 ' + Logo.lockup().w + ' ' + Logo.lockup().h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="';
   for (const f of SITE_PAGES) {
     const s = read(f);
@@ -81,7 +81,8 @@ test('the site carries the logo brand/logo.js draws: the Block in every header, 
     assert.ok(!/aalay<b>na<\/b>|Amiri/.test(s), f + ': the old wordmark is gone');
     const links = [...s.matchAll(/<a class="logo" href="index\.html" aria-label="[^"]+">(<svg [^>]*>)/g)].map(m => m[1]);
     assert.equal(links.length, f === 'book.html' ? 1 : 2, f + ': every logo is a named link around an inline SVG');
-    assert.ok(s.match(/<header[\s\S]*?<\/header>/)[0].includes(header), f + ': the Block in the header');
+    const ar = f.startsWith('ar/');
+    assert.ok(s.match(/<header[\s\S]*?<\/header>/)[0].includes(mark(ar ? Logo.kufi() : Logo.block())), f + (ar ? ': the Kufi mark in the header' : ': the Block in the header'));
     if (links.length > 1) assert.ok(s.match(/<footer[\s\S]*?<\/footer>/)[0].includes(footer), f + ': the lockup in the footer');
   }
 });
