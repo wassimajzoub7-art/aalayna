@@ -163,13 +163,37 @@
      "choices": [
       {
        "n": "Half portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Demi-portion"
+        },
+        "ar": {
+         "n": "نصف حصة"
+        }
+       }
       },
       {
        "n": "Full portion",
-       "p": 3.5
+       "p": 3.5,
+       "tr": {
+        "fr": {
+         "n": "Portion entière"
+        },
+        "ar": {
+         "n": "حصة كاملة"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Portion"
+      },
+      "ar": {
+       "n": "الحصة"
+      }
+     }
     }
    ]
   },
@@ -212,13 +236,37 @@
      "choices": [
       {
        "n": "Half portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Demi-portion"
+        },
+        "ar": {
+         "n": "نصف حصة"
+        }
+       }
       },
       {
        "n": "Full portion",
-       "p": 3.5
+       "p": 3.5,
+       "tr": {
+        "fr": {
+         "n": "Portion entière"
+        },
+        "ar": {
+         "n": "حصة كاملة"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Portion"
+      },
+      "ar": {
+       "n": "الحصة"
+      }
+     }
     }
    ]
   },
@@ -293,17 +341,49 @@
      "choices": [
       {
        "n": "Half portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Demi-portion"
+        },
+        "ar": {
+         "n": "نصف حصة"
+        }
+       }
       },
       {
        "n": "Full portion",
-       "p": 3
+       "p": 3,
+       "tr": {
+        "fr": {
+         "n": "Portion entière"
+        },
+        "ar": {
+         "n": "حصة كاملة"
+        }
+       }
       },
       {
        "n": "As a sandwich",
-       "p": 1
+       "p": 1,
+       "tr": {
+        "fr": {
+         "n": "En sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Portion"
+      },
+      "ar": {
+       "n": "الحصة"
+      }
+     }
     }
    ]
   },
@@ -378,17 +458,49 @@
      "choices": [
       {
        "n": "Half portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Demi-portion"
+        },
+        "ar": {
+         "n": "نصف حصة"
+        }
+       }
       },
       {
        "n": "Full portion",
-       "p": 3
+       "p": 3,
+       "tr": {
+        "fr": {
+         "n": "Portion entière"
+        },
+        "ar": {
+         "n": "حصة كاملة"
+        }
+       }
       },
       {
        "n": "As a sandwich",
-       "p": 1
+       "p": 1,
+       "tr": {
+        "fr": {
+         "n": "En sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Portion"
+      },
+      "ar": {
+       "n": "الحصة"
+      }
+     }
     }
    ]
   },
@@ -426,17 +538,49 @@
      "choices": [
       {
        "n": "Half portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Demi-portion"
+        },
+        "ar": {
+         "n": "نصف حصة"
+        }
+       }
       },
       {
        "n": "Full portion",
-       "p": 4.5
+       "p": 4.5,
+       "tr": {
+        "fr": {
+         "n": "Portion entière"
+        },
+        "ar": {
+         "n": "حصة كاملة"
+        }
+       }
       },
       {
        "n": "As a sandwich",
-       "p": 0.5
+       "p": 0.5,
+       "tr": {
+        "fr": {
+         "n": "En sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Portion"
+      },
+      "ar": {
+       "n": "الحصة"
+      }
+     }
     }
    ]
   },
@@ -507,17 +651,49 @@
      "choices": [
       {
        "n": "Half portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Demi-portion"
+        },
+        "ar": {
+         "n": "نصف حصة"
+        }
+       }
       },
       {
        "n": "Full portion",
-       "p": 3
+       "p": 3,
+       "tr": {
+        "fr": {
+         "n": "Portion entière"
+        },
+        "ar": {
+         "n": "حصة كاملة"
+        }
+       }
       },
       {
        "n": "As a sandwich",
-       "p": 1
+       "p": 1,
+       "tr": {
+        "fr": {
+         "n": "En sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Portion"
+      },
+      "ar": {
+       "n": "الحصة"
+      }
+     }
     }
    ]
   },
@@ -583,17 +759,49 @@
      "choices": [
       {
        "n": "Half portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Demi-portion"
+        },
+        "ar": {
+         "n": "نصف حصة"
+        }
+       }
       },
       {
        "n": "Full portion",
-       "p": 3
+       "p": 3,
+       "tr": {
+        "fr": {
+         "n": "Portion entière"
+        },
+        "ar": {
+         "n": "حصة كاملة"
+        }
+       }
       },
       {
        "n": "As a sandwich",
-       "p": 1
+       "p": 1,
+       "tr": {
+        "fr": {
+         "n": "En sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Portion"
+      },
+      "ar": {
+       "n": "الحصة"
+      }
+     }
     }
    ]
   },
@@ -629,13 +837,37 @@
      "choices": [
       {
        "n": "Portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Portion"
+        },
+        "ar": {
+         "n": "الحصة"
+        }
+       }
       },
       {
        "n": "As a sandwich",
-       "p": 0.5
+       "p": 0.5,
+       "tr": {
+        "fr": {
+         "n": "En sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     }
    ]
   },
@@ -710,13 +942,37 @@
      "choices": [
       {
        "n": "Fried",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Frit"
+        },
+        "ar": {
+         "n": "مقلي"
+        }
+       }
       },
       {
        "n": "Grilled",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Grillé"
+        },
+        "ar": {
+         "n": "مشوي"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Préparation"
+      },
+      "ar": {
+       "n": "التحضير"
+      }
+     }
     }
    ]
   },
@@ -974,13 +1230,37 @@
      "choices": [
       {
        "n": "Portion",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Portion"
+        },
+        "ar": {
+         "n": "الحصة"
+        }
+       }
       },
       {
        "n": "As a sandwich",
-       "p": -2.5
+       "p": -2.5,
+       "tr": {
+        "fr": {
+         "n": "En sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     }
    ]
   },
@@ -1129,9 +1409,25 @@
      "choices": [
       {
        "n": "Add almonds",
-       "p": 1.5
+       "p": 1.5,
+       "tr": {
+        "fr": {
+         "n": "Avec amandes"
+        },
+        "ar": {
+         "n": "مع لوز"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Suppléments"
+      },
+      "ar": {
+       "n": "إضافات"
+      }
+     }
     }
    ]
   },
@@ -1203,13 +1499,37 @@
      "choices": [
       {
        "n": "Mini, per piece",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Mini, à la pièce"
+        },
+        "ar": {
+         "n": "ميني، بالقطعة"
+        }
+       }
       },
       {
        "n": "Portion",
-       "p": 3
+       "p": 3,
+       "tr": {
+        "fr": {
+         "n": "Portion"
+        },
+        "ar": {
+         "n": "الحصة"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Taille"
+      },
+      "ar": {
+       "n": "الحجم"
+      }
+     }
     },
     {
      "name": "Extras",
@@ -1217,9 +1537,25 @@
      "choices": [
       {
        "n": "Make it a sandwich: rocca, tomatoes, pickles",
-       "p": 0.75
+       "p": 0.75,
+       "tr": {
+        "fr": {
+         "n": "En sandwich : roquette, tomates, cornichons"
+        },
+        "ar": {
+         "n": "سندويش: روكا، بندورة، كبيس"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Suppléments"
+      },
+      "ar": {
+       "n": "إضافات"
+      }
+     }
     }
    ]
   },
@@ -1261,13 +1597,37 @@
      "choices": [
       {
        "n": "Mini, per piece",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Mini, à la pièce"
+        },
+        "ar": {
+         "n": "ميني، بالقطعة"
+        }
+       }
       },
       {
        "n": "Portion",
-       "p": 3
+       "p": 3,
+       "tr": {
+        "fr": {
+         "n": "Portion"
+        },
+        "ar": {
+         "n": "الحصة"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Taille"
+      },
+      "ar": {
+       "n": "الحجم"
+      }
+     }
     },
     {
      "name": "Extras",
@@ -1275,9 +1635,25 @@
      "choices": [
       {
        "n": "Make it a sandwich: rocca, tomatoes, pickles",
-       "p": 0.75
+       "p": 0.75,
+       "tr": {
+        "fr": {
+         "n": "En sandwich : roquette, tomates, cornichons"
+        },
+        "ar": {
+         "n": "سندويش: روكا، بندورة، كبيس"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Suppléments"
+      },
+      "ar": {
+       "n": "إضافات"
+      }
+     }
     }
    ]
   },
@@ -1317,13 +1693,37 @@
      "choices": [
       {
        "n": "Mini, per piece",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Mini, à la pièce"
+        },
+        "ar": {
+         "n": "ميني، بالقطعة"
+        }
+       }
       },
       {
        "n": "Portion",
-       "p": 3.5
+       "p": 3.5,
+       "tr": {
+        "fr": {
+         "n": "Portion"
+        },
+        "ar": {
+         "n": "الحصة"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Taille"
+      },
+      "ar": {
+       "n": "الحجم"
+      }
+     }
     }
    ]
   },
@@ -1360,13 +1760,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 7
+       "p": 7,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1374,17 +1798,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1422,13 +1878,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1436,17 +1916,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1485,13 +1997,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1499,17 +2035,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1549,13 +2117,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1563,17 +2155,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1611,13 +2235,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1625,17 +2273,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1672,13 +2352,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1686,17 +2390,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1734,13 +2470,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 11
+       "p": 11,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1748,17 +2508,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1795,13 +2587,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 7
+       "p": 7,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1809,17 +2625,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1856,13 +2704,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 7
+       "p": 7,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1870,17 +2742,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -1921,13 +2825,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -1935,17 +2863,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -2052,13 +3012,37 @@
      "choices": [
       {
        "n": "Regular",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Nature"
+        },
+        "ar": {
+         "n": "عادي"
+        }
+       }
       },
       {
        "n": "Spicy",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Épicé"
+        },
+        "ar": {
+         "n": "حرّ"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Piquant"
+      },
+      "ar": {
+       "n": "الحرارة"
+      }
+     }
     },
     {
      "name": "Extras",
@@ -2066,9 +3050,25 @@
      "choices": [
       {
        "n": "French bread instead of Arabic",
-       "p": 0.75
+       "p": 0.75,
+       "tr": {
+        "fr": {
+         "n": "Pain français au lieu du pain libanais"
+        },
+        "ar": {
+         "n": "خبز إفرنجي بدل العربي"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Suppléments"
+      },
+      "ar": {
+       "n": "إضافات"
+      }
+     }
     }
    ]
   },
@@ -2169,13 +3169,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 9
+       "p": 9,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -2183,17 +3207,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -2231,13 +3287,37 @@
      "choices": [
       {
        "n": "French fries",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Frites"
+        },
+        "ar": {
+         "n": "بطاطا مقلية"
+        }
+       }
       },
       {
        "n": "Grilled potatoes",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pommes de terre grillées"
+        },
+        "ar": {
+         "n": "بطاطا مشوية"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Accompagnement"
+      },
+      "ar": {
+       "n": "طبق جانبي"
+      }
+     }
     }
    ]
   },
@@ -2304,13 +3384,37 @@
      "choices": [
       {
        "n": "2 skewers Kabab Frangali",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "2 brochettes de kebab frangali"
+        },
+        "ar": {
+         "n": "سيخين كباب فرنجلي"
+        }
+       }
       },
       {
        "n": "2 skewers Makanek",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "2 brochettes de makanek"
+        },
+        "ar": {
+         "n": "سيخين مقانق"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Au choix"
+      },
+      "ar": {
+       "n": "اختيارك"
+      }
+     }
     }
    ]
   },
@@ -2350,13 +3454,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 7.5
+       "p": 7.5,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     }
    ]
   },
@@ -2399,13 +3527,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 7.5
+       "p": 7.5,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     }
    ]
   },
@@ -2591,13 +3743,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -2605,17 +3781,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -2653,13 +3861,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 8
+       "p": 8,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -2667,17 +3899,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -2714,13 +3978,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 7
+       "p": 7,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -2728,17 +4016,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -2775,13 +4095,37 @@
      "choices": [
       {
        "n": "Sandwich",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Sandwich"
+        },
+        "ar": {
+         "n": "سندويش"
+        }
+       }
       },
       {
        "n": "Platter",
-       "p": 9
+       "p": 9,
+       "tr": {
+        "fr": {
+         "n": "Assiette"
+        },
+        "ar": {
+         "n": "صحن"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Servi"
+      },
+      "ar": {
+       "n": "التقديم"
+      }
+     }
     },
     {
      "name": "Bread",
@@ -2789,17 +4133,49 @@
      "choices": [
       {
        "n": "White bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain blanc"
+        },
+        "ar": {
+         "n": "خبز أبيض"
+        }
+       }
       },
       {
        "n": "Brown bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain complet"
+        },
+        "ar": {
+         "n": "خبز أسمر"
+        }
+       }
       },
       {
        "n": "Oat bread",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Pain à l’avoine"
+        },
+        "ar": {
+         "n": "خبز الشوفان"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Pain"
+      },
+      "ar": {
+       "n": "الخبز"
+      }
+     }
     }
    ]
   },
@@ -3098,13 +4474,37 @@
      "choices": [
       {
        "n": "Small",
-       "p": 0
+       "p": 0,
+       "tr": {
+        "fr": {
+         "n": "Petit"
+        },
+        "ar": {
+         "n": "صغير"
+        }
+       }
       },
       {
        "n": "Large",
-       "p": 1
+       "p": 1,
+       "tr": {
+        "fr": {
+         "n": "Grand"
+        },
+        "ar": {
+         "n": "كبير"
+        }
+       }
       }
-     ]
+     ],
+     "tr": {
+      "fr": {
+       "n": "Taille"
+      },
+      "ar": {
+       "n": "الحجم"
+      }
+     }
     }
    ]
   },

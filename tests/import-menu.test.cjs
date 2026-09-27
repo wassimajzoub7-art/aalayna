@@ -43,7 +43,10 @@ test('the fixture becomes a pack that matches venues/mayda.json dish by dish',()
   const k=mayda.items.find(y=>y.name===x.name);assert.ok(k,x.name);
   assert.deepEqual(Object.keys(x),Object.keys(k),'key order');
   assert.equal(secName[x.sec],kSec[k.sec],x.name);
-  for(const f of ['desc','price','ing','al','tr','opts'])assert.deepEqual(x[f],k[f],x.name+' '+f);
+  for(const f of ['desc','price','ing','al','tr'])assert.deepEqual(x[f],k[f],x.name+' '+f);
+  /* option translations are added by hand after import, like the nutrition figures */
+  const bare=o=>JSON.parse(JSON.stringify(o||[],(key,v)=>key==='tr'?undefined:v));
+  assert.deepEqual(x.opts,bare(k.opts),x.name+' opts');
   assert.deepEqual([x.kcal,x.pr,x.ft,x.cb],[null,null,null,null]);
   assert.equal(x.conf,0);   // not the kitchen's confirmation: out of guest filters until confirmed
  }

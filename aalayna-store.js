@@ -204,6 +204,12 @@
 
   function centsEqual(value, amount) { return Math.round(Number(value) * 100) === amount; }
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  /* an option group's or choice's own name in French and Arabic, when the menu gives one */
+  function optTr(t) {
+    var o = {};
+    ['fr', 'ar'].forEach(function (l) { if (t && t[l] && t[l].n) o[l] = { n: String(t[l].n) }; });
+    return o;
+  }
   /* Shared primitives for the sibling modules (growth, metrics). One definition,
      one behaviour: ids are UUIDs, money is integer cents, time is ISO. */
   function uid(prefix) {
@@ -255,12 +261,14 @@
               return {
                 name: g.name || 'Options',
                 type: g.type === 'one' ? 'one' : 'many',
+                tr: optTr(g.tr),
                 choices: (Array.isArray(g.choices) ? g.choices : [])
                   .map(function (c) {
                     return { n: c.n || '', p: typeof c.p === 'number' ? c.p : (+c.p || 0),
                              /* what THIS choice adds to the dish — the dish's own al/ing stay the unavoidable base */
                              ing: Array.isArray(c.ing) ? c.ing : [],
-                             al: Array.isArray(c.al) ? c.al.filter(function (a) { return ALLERGENS.indexOf(a) > -1; }) : [] };
+                             al: Array.isArray(c.al) ? c.al.filter(function (a) { return ALLERGENS.indexOf(a) > -1; }) : [],
+                             tr: optTr(c.tr) };
                   })
                   .filter(function (c) { return c.n; })
               };

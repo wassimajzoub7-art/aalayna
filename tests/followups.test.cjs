@@ -398,20 +398,25 @@ test('from a table code: after the close the poll asks aal_table_session again a
  assert.throws(()=>p.window.Aalayna.sync.attach('chk_'+'99'.repeat(24)),/already has a bill key/);
 });
 
-test('the bill view shows the real party size or nothing in live mode; the demo keeps its line',async()=>{
- assert.match(html,/<div class="b-sub" id="bill-sub">4 guests &middot; opened 8:42 pm<\/div>/);
+test('the bill view shows the real party size and opening time, or nothing; the demo shows its sample check, never a made-up party',async()=>{
+ assert.match(html,/<div class="b-sub" id="bill-sub" hidden><\/div>/);   // nothing invented before the check is known
+ assert.ok(!/4 guests/.test(html));
+ const at=(iso)=>{const d=new Date(iso),h=d.getHours();return (h%12||12)+':'+String(d.getMinutes()).padStart(2,'0')+' '+(h<12?'am':'pm');};
  const server=guestServer();server.checks[CHECK.id]=Object.assign({},CHECK,{partySize:3});
  const p=guestBoot({search:LINK,server});await flush();
- assert.equal(p.$('bill-sub').textContent,'3 guests');assert.equal(p.$('bill-sub').hidden,false);
+ assert.equal(p.$('bill-sub').textContent,'3 guests · opened '+at(CHECK.openedAt));assert.equal(p.$('bill-sub').hidden,false);
  server.checks[CHECK.id]=Object.assign({},CHECK,{partySize:1});await p.tick();p.run('paintTableLabels()');
- assert.equal(p.$('bill-sub').textContent,'1 guest');
+ assert.equal(p.$('bill-sub').textContent,'1 guest · opened '+at(CHECK.openedAt));
+ // no party size on the check: only what it knows
  const q=guestBoot({search:LINK,server:guestServer()});await flush();
+ assert.equal(q.$('bill-sub').textContent,'opened '+at(CHECK.openedAt));assert.equal(q.$('bill-sub').hidden,false);
+ q.run('CHECK=Object.assign({},CHECK,{openedAt:null});paintTableLabels()');
  assert.equal(q.$('bill-sub').textContent,'');assert.equal(q.$('bill-sub').hidden,true);   // unknown: nothing
- // the demo: no key, the illustrative line is left as written
+ // the demo: the sample check's own opening time, no invented party size
  const d=guestBoot({search:'',server:guestServer()});await flush();
  assert.equal(d.window.Aalayna.demoMode(),true);
- d.$('bill-sub').textContent='4 guests · opened 8:42 pm';d.run('paintTableLabels()');
- assert.equal(d.$('bill-sub').textContent,'4 guests · opened 8:42 pm');assert.equal(d.$('bill-sub').hidden,false);
+ d.run('paintTableLabels()');
+ assert.equal(d.$('bill-sub').textContent,'opened '+at(d.run('CHECK.openedAt')));assert.equal(d.$('bill-sub').hidden,false);
  assert.equal(d.run('BILL_ENDED'),false);assert.ok(d.run('BILL.length')>0);
 });
 

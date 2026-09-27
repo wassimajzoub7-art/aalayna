@@ -118,3 +118,10 @@ test('reviewURL is the venue\'s own Google review link, or null when none is set
  const a=store();a.setVenue({name:'Mayda',place:'Lebanese Grill',gplace:'ChIJN1t_tDeuEmsRUsoyG83frY4'});
  assert.match(a.reviewURL(),/placeid=ChIJN1t_tDeuEmsRUsoyG83frY4$/);
 });
+
+test('every option group and choice on the Mayda menu reads in French and Arabic',()=>{
+ const m=JSON.parse(fs.readFileSync(path.join(root,'venues','mayda.json'),'utf8'));
+ for(const x of m.items)for(const g of x.opts||[]){
+  for(const o of [g,...g.choices])for(const l of ['fr','ar'])assert.ok(o.tr&&o.tr[l]&&o.tr[l].n,x.name+': '+(o.name||o.n)+' '+l);
+ }
+});
