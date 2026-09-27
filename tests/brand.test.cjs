@@ -171,7 +171,9 @@ test('the reel closes on the logo: reel.html plays the Block reveal, and its sou
   const DUR = Number(s.match(/const DUR = ([\d.]+)/)[1]);
   assert.ok(Number(join[1]) + cues.snap < DUR - 0.8, 'the logo holds for the last 0.8 s at least');
   assert.ok(Number(join[1]) + cues.tag + 0.2 + 0.55 <= DUR, 'the third word of the tagline has settled by the last frame');
-  assert.ok(!/Amiri|aalay<b>na/.test(s), 'the old wordmark is gone');
+  // The old wordmark is gone; the app's own screens inside the phone keep the app's faces (Amiri for the venue's words).
+  assert.ok(!/aalay<b>na|id="mark"|id="ar"/.test(s), 'the old wordmark is gone');
+  assert.ok(!/Amiri/.test(s.replace(/\.(?:h-crest b|h-greet|pd-h)\{[^}]*\}/g, '').replace(/<link href="https:\/\/fonts[^>]*>/, '')), 'Amiri only on the app screens');
   assert.match(read('tools/reel-audio.js'), /const LOGO_AT = Number\(join\[1\]\), cue = global\.AalaynaMotion\.block/);
 });
 

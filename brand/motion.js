@@ -5,7 +5,8 @@
    fly into the capitals; the red finder eyes become the red 3 (or the full stop). The modules fuse and it is done.
    Kufi (5.6 s): a red module is the pen. It writes علينا right to left along the baseline, each letter
    rising as it passes, climbs the alif, then hops three times to set the dots. The Latin name follows, letter by letter.
-   Both take { word } (a spelling from AalaynaLogo.SPELLINGS; 3LAYNA by default) and { colors, tagline }; the
+   Both take { word } (a spelling from AalaynaLogo.SPELLINGS; 3LAYNA by default), { colors, tagline } and { words } (the
+   tagline in another language, three words with their punctuation); the
    Block also takes { tagAt }, when the tagline starts (3 s), so the reel can close on it.
 
    Every piece: { duration, cues, render(g, t, W, H) }, g already scaled to W x H logical pixels. */
@@ -183,7 +184,7 @@
       }
 
       g.restore();
-      if (withTag) tagline(g, t, TAG, W / 2, by + 11 * m + 2.5 * m, Math.round(Math.max(m * 0.78, Math.min(W, H) * 0.04)), col);
+      if (withTag) tagline(g, t, TAG, W / 2, by + 11 * m + 2.5 * m, Math.round(Math.max(m * 0.78, Math.min(W, H) * 0.04)), col, opt && opt.words);
     }
     // Cue times for the soundtrack (tools/brand-audio.js).
     const eye = (top, right) => Math.min(...src.filter(x => x.red && (x.r >= 7) === top && (x.c >= 7) === right).map(x => x.bloom));
@@ -319,7 +320,7 @@
 
       if (withTag) {
         const bottom = H / 2 + ((F.wide ? 12 : 15.6) - F.end.cy) * F.end.m;
-        tagline(g, t, TAG, W / 2, bottom + F.end.m * (F.wide ? 3.3 : 2.8), Math.round(Math.min(W, H) * 0.045), col);
+        tagline(g, t, TAG, W / 2, bottom + F.end.m * (F.wide ? 3.3 : 2.8), Math.round(Math.min(W, H) * 0.045), col, opt && opt.words);
       }
     }
     return { duration: DUR, render, cues: { drop: DROP[0], land: DROP[1], bounce: BOUNCE, run: RUN[0], rises: rises.map(r => r.at), climb: CLIMB[0], hops: HOPS.map(h => h.t), latin: LAT, letters: parts.length, tag: TAG } };

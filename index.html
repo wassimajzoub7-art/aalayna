@@ -55,9 +55,10 @@
       </div>
       <p class="fine">Two months free from go-live. Continue only if it works for your restaurant.</p>
     </div>
-    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="images/reel-poster.jpg" aria-label="A 15-second film: a guest scans the table QR, the $152.50 bill splits four ways at $38.13 each, one guest adds a 10% tip and pays $41.94 with Whish Money, about LL 3,753,630."><source src="images/reel-web.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-mute="Mute">Sound on</button></figure>
+    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="images/film-en.jpg" data-poster-portrait="images/film-en-portrait.jpg" aria-label="A 96-second film. It opens on close-ups of a table at the end of dinner: every night, every table, the same wait. Then four friends sit down, scan the table QR and read the menu in their language and currency, filtered for their diet. After dinner comes the wait for the bill. With Aalayna, they split the $152.50 bill four ways, tip the waiter, pay $41.94 with Whish Money and rate the night, while the restaurant sees payments live, confirms cash and publishes a price change to every table in seconds. It closes on the 3LAYNA logo: the table QR flies into its letters."><source src="images/film-en.mp4" type="video/mp4" media="(min-width: 768px)"><source src="images/film-en-portrait.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-mute="Mute">Sound on</button></figure>
 <script>
 (function(){var v=document.getElementById('reel'),b=document.getElementById('reel-sound');if(!v||!b)return;
+if(window.matchMedia&&window.matchMedia('(max-width: 767px)').matches)v.poster=v.getAttribute('data-poster-portrait');
 var mq=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)'),sd=navigator.connection&&navigator.connection.saveData;
 if((mq&&mq.matches)||sd){v.removeAttribute('autoplay');v.pause();v.controls=true;b.hidden=true;return;}
 var onLabel=b.textContent,offLabel=b.getAttribute('data-mute');
