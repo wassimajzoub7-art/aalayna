@@ -17,8 +17,12 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="website.css?v=5">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="preload" href="brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="website.css?v=6">
+<link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
+<link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <script src="aalayna-config.js"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
@@ -30,14 +34,14 @@
   .back{margin-left:auto;padding:.6875rem .5rem;font-size:var(--fs-small);color:var(--sub);text-decoration:none;white-space:nowrap}
   .back:hover{color:var(--ink)}
   .book{padding-block:56px 72px}
-  h1{font-size:var(--fs-heading);font-weight:700;letter-spacing:-.03em;line-height:1.15;max-width:22ch}
+  h1{font-size:var(--fs-heading);line-height:1.15;max-width:22ch}
   @media(min-width:768px){h1{font-size:var(--fs-display)}}
   .book .lead{font-size:var(--fs-body);line-height:1.7;margin-top:14px;max-width:560px}
   /* Two columns only when the calendar column is at least 640 px wide, where Google uses its wide layout. */
   .grid{display:grid;grid-template-columns:1fr;gap:32px;margin-top:40px;align-items:start}
   @media(min-width:1060px){.grid{grid-template-columns:340px 1fr}}
   .what{background:var(--petrol);color:#fff;border-radius:16px;padding:28px 26px}
-  .what h2{font-size:var(--fs-body);font-weight:600;color:var(--peach);letter-spacing:0}
+  .what h2{font-size:var(--fs-lead);line-height:1.2;color:var(--peach)}
   .what ul{list-style:none;margin:14px 0 0;padding:0}
   .what li{line-height:1.6;padding:6px 0;display:flex;gap:10px;color:#D9E2E0}
   .what li::before{content:'';flex-shrink:0;width:10px;height:2px;margin-top:.8em;background:var(--peach)}
@@ -57,7 +61,7 @@
 <body>
 <header class="site-nav">
   <nav class="wrap nav-in" aria-label="Main navigation">
-    <a class="logo" href="index.html" aria-label="Aalayna home">aalay<b>na</b></a>
+    <a class="logo" href="index.html" aria-label="Aalayna home"><svg viewBox="0 0 170 110" aria-hidden="true" focusable="false"><path class="logo-ink" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM0 60L10 60L10 80.4L40 80.4L40 60L50 60L50 89.6L30 89.6L30 110L20 110L20 89.6L0 89.6ZM60 60L70 60L70 110L60 110ZM100 60L110 60L110 110L100 110ZM60 60L72.5 60L110 110L97.5 110ZM120 60L170 60L170 110L160 110L160 89.6L130 89.6L130 110L120 110ZM130 69.2L130 80.4L160 80.4L160 69.2Z"/><path class="logo-red" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></svg></a>
     <a class="back" href="index.html">Back to site</a>
   </nav>
 </header>

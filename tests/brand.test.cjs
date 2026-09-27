@@ -9,8 +9,9 @@ const vm = require('node:vm');
 
 const ROOT = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
+const zlib = require('node:zlib');
 const Logo = require('../brand/logo.js');
-const { svgContents } = require('../tools/brand.js');
+const { svgContents, sitePages, SITE_PAGES } = require('../tools/brand.js');
 
 test('brand/svg is what brand/logo.js draws (run node tools/brand.js svg after changing the logo)', () => {
   const want = svgContents();
@@ -68,6 +69,78 @@ test('the Block: 3LAYNA fills 2 x 3 with the 3 in red; AALAYNA takes 2 x 4 with 
   b = Logo.block('AALAYNA');
   assert.equal(b.w / Logo.U, 23); assert.equal(b.h / Logo.U, 11);
   assert.equal(Logo.line('AALAYNA').w / Logo.U, 43, 'a one-module full stop after the name');
+});
+
+test('the site carries the logo brand/logo.js draws: the Block in every header, the Kufi lockup in every footer (node tools/brand.js site)', () => {
+  const want = sitePages();
+  const header = '<svg viewBox="0 0 ' + Logo.block().w + ' ' + Logo.block().h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="';
+  const footer = '<svg viewBox="0 0 ' + Logo.lockup().w + ' ' + Logo.lockup().h + '" aria-hidden="true" focusable="false"><path class="logo-ink" d="';
+  for (const f of SITE_PAGES) {
+    const s = read(f);
+    assert.equal(s, want[f], f + ' holds the logo as brand/logo.js draws it today');
+    assert.ok(!/aalay<b>na<\/b>|Amiri/.test(s), f + ': the old wordmark is gone');
+    const links = [...s.matchAll(/<a class="logo" href="index\.html" aria-label="[^"]+">(<svg [^>]*>)/g)].map(m => m[1]);
+    assert.equal(links.length, f === 'book.html' ? 1 : 2, f + ': every logo is a named link around an inline SVG');
+    assert.ok(s.match(/<header[\s\S]*?<\/header>/)[0].includes(header), f + ': the Block in the header');
+    if (links.length > 1) assert.ok(s.match(/<footer[\s\S]*?<\/footer>/)[0].includes(footer), f + ': the lockup in the footer');
+  }
+});
+
+// The characters a WOFF 1.0 font maps, read from its cmap (format 4) table.
+function woffChars(buf) {
+  assert.equal(buf.toString('latin1', 0, 4), 'wOFF');
+  const n = buf.readUInt16BE(12);
+  let cmap;
+  for (let i = 0; i < n; i++) {
+    const e = 44 + i * 20, off = buf.readUInt32BE(e + 4), comp = buf.readUInt32BE(e + 8), orig = buf.readUInt32BE(e + 12);
+    if (buf.toString('latin1', e, e + 4) === 'cmap') cmap = comp < orig ? zlib.inflateSync(buf.subarray(off, off + comp)) : buf.subarray(off, off + orig);
+  }
+  const chars = new Set();
+  for (let i = 0; i < cmap.readUInt16BE(2); i++) {
+    const t = cmap.readUInt32BE(4 + i * 8 + 4);
+    if (cmap.readUInt16BE(t) !== 4) continue;
+    const seg = cmap.readUInt16BE(t + 6) / 2, ends = t + 14, starts = ends + seg * 2 + 2, deltas = starts + seg * 2, ranges = deltas + seg * 2;
+    for (let s = 0; s < seg; s++) {
+      const end = cmap.readUInt16BE(ends + s * 2), start = cmap.readUInt16BE(starts + s * 2), delta = cmap.readInt16BE(deltas + s * 2), ro = cmap.readUInt16BE(ranges + s * 2);
+      for (let c = start; c <= end && c !== 0xFFFF; c++) {
+        const gid = ro ? cmap.readUInt16BE(ranges + s * 2 + ro + (c - start) * 2) : (c + delta) & 0xFFFF;
+        if (gid) chars.add(String.fromCodePoint(c));
+      }
+    }
+  }
+  return chars;
+}
+
+test('Aalayna Block, the site font, is built from the typeface in brand/logo.js (node tools/brand-font.js)', () => {
+  const chars = woffChars(fs.readFileSync(path.join(ROOT, 'brand/fonts/aalayna-block.woff')));
+  for (const ch of Object.keys(Logo.TYPE)) {
+    assert.ok(chars.has(ch), JSON.stringify(ch) + ' is in the font');
+    if (ch.toLowerCase() !== ch) assert.ok(chars.has(ch.toLowerCase()), JSON.stringify(ch.toLowerCase()) + ' maps onto its capital');
+  }
+  assert.ok(chars.has(' ') && chars.has(' '), 'spaces');
+  assert.equal(chars.size, 2 * Object.keys(Logo.TYPE).filter(ch => ch.toLowerCase() !== ch).length + Object.keys(Logo.TYPE).filter(ch => ch.toLowerCase() === ch).length + 3, 'nothing else');
+  // The logo is the font: its letters are the typeface's own glyphs.
+  for (const ch of new Set(Logo.NAME)) assert.equal(Logo.glyph(ch, 0, 0, Logo.U), Logo.typeGlyph(ch, 0, 0, Logo.U), ch);
+});
+
+test('the site sets its headlines and big figures in Aalayna Block, and every character they use is in it', () => {
+  const css = read('website.css');
+  assert.match(css, /@font-face\{font-family:'Aalayna Block';src:url\(brand\/fonts\/aalayna-block\.woff\) format\('woff'\)/);
+  assert.match(css, /--font-display:'Aalayna Block',/);
+  assert.match(css, /\nh1,h2\{font-family:var\(--font-display\);font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0/);
+  ['.benefits-band .outcome-figure', '.price'].forEach(sel => assert.match(css, new RegExp(sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-display\\)'), sel));
+  const covered = t => [...t.toUpperCase()].filter(ch => !/\s/.test(ch) && !Logo.TYPE[ch]);
+  for (const f of SITE_PAGES) {
+    const s = read(f), p = f.startsWith('fr/') ? '../' : '';
+    assert.ok(s.includes('<link rel="preload" href="' + p + 'brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>'), f + ' preloads the font');
+    for (const m of s.matchAll(/<(h1|h2)\b[^>]*>([\s\S]*?)<\/\1>|<p class="(?:outcome-figure|price)">([^<]*)/g)) {
+      const text = (m[2] || m[3]).replace(/<span class="sr-only">[^<]*<\/span>/g, '').replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;|&#8239;/g, ' ');
+      assert.deepEqual(covered(text), [], f + ': "' + text.trim() + '"');
+    }
+  }
+  // numbers.html builds its figures and titles from digits, $ , . + − and % (and a * after the figure).
+  assert.deepEqual(covered('0123456789$,.+−%*'), []);
+  for (const m of read('numbers.html').matchAll(/el\('h[12]', '[^']*', '([^']*)'\)|title: '([^']*)'/g)) assert.deepEqual(covered(m[1] || m[2]), [], m[0]);
 });
 
 test('brand pages: every local src and href resolves to a file', () => {

@@ -103,22 +103,112 @@
 
   /* ---------- The letters ---------- */
 
-  // Latin capitals, 5 x 5. N is two stems here plus one diagonal drawn separately (nDiagonal).
-  // The 3 is the ع: Lebanese Arabizi writes the letter with the digit it looks like, so it is drawn in red.
-  const LATIN = {
-    '3': ['#####', '....#', '..###', '....#', '#####'],
-    A: ['#####', '#...#', '#####', '#...#', '#...#'],
-    L: ['#....', '#....', '#....', '#....', '#####'],
-    Y: ['#...#', '#...#', '#####', '..#..', '..#..'],
-    N: ['#...#', '#...#', '#...#', '#...#', '#...#'],
+  const LATIN_ROWS = [THIN, (5 - 3 * THIN) / 2, THIN, (5 - 3 * THIN) / 2, THIN];
+  const RB = LATIN_ROWS.reduce((a, h) => a.concat(a[a.length - 1] + h), [0]);   // row boundaries: 0 ... 5
+  // A diagonal is 1.25 modules across, which makes the N's exactly one module thick at its angle.
+  const DIAG = 1.25;
+
+  /* ---------- The typeface: the logo's capitals, extended to a full alphabet ---------- */
+  // Each glyph is rows of 5 x 5 modules ('#' is ink; a glyph can be narrower) standing on the baseline (y = 5),
+  // plus optional extra shapes in module coordinates for the few strokes that leave the grid: diagonals,
+  // accents above the capitals and tails below the baseline. Horizontals sit on rows 0, 2 and 4, so the 8%
+  // optical thinning reaches every one of them. Lowercase maps onto the same capitals.
+  // A parallelogram with horizontal ends: top edge [xt, xt + w] at yt, bottom edge [xb, xb + w] at yb.
+  const slant = (xt, yt, xb, yb, w = DIAG) => [[xt, yt], [xt + w, yt], [xb + w, yb], [xb, yb]];
+  const box = (x1, y1, x2, y2) => [[x1, y1], [x2, y1], [x2, y2], [x1, y2]];
+  const ACCENT = {                               // centred on c, the glyph's middle
+    acute: c => [slant(c + 0.1, -1.7, c - 0.6, -0.8, 1.2)],
+    grave: c => [slant(c - 1.3, -1.7, c - 0.6, -0.8, 1.2)],
+    circ: c => [box(c - 1.5, -1.25, c - 0.5, -0.8), box(c - 0.5, -1.7, c + 0.5, -1.25), box(c + 0.5, -1.25, c + 1.5, -0.8)],
+    uml: c => [box(c - 1.5, -1.7, c - 0.5, -0.8), box(c + 0.5, -1.7, c + 1.5, -0.8)],
   };
+  const O5 = ['#####', '#...#', '#...#', '#...#', '#####'];
+  const TYPE = {
+    A: { bits: ['#####', '#...#', '#####', '#...#', '#...#'] },
+    B: { bits: ['####.', '#...#', '#####', '#...#', '####.'] },
+    C: { bits: ['#####', '#....', '#....', '#....', '#####'] },
+    D: { bits: ['####.', '#...#', '#...#', '#...#', '####.'] },
+    E: { bits: ['#####', '#....', '####.', '#....', '#####'] },
+    F: { bits: ['#####', '#....', '####.', '#....', '#....'] },
+    G: { bits: ['#####', '#....', '#.###', '#...#', '#####'] },
+    H: { bits: ['#...#', '#...#', '#####', '#...#', '#...#'] },
+    I: { bits: ['#', '#', '#', '#', '#'] },
+    J: { bits: ['....#', '....#', '....#', '#...#', '#####'] },
+    K: { bits: ['#....', '#....', '#....', '#....', '#....'], extra: [slant(3.75, 0, 1, 2.6), slant(1.9, 2.1, 3.75, 5)] },
+    L: { bits: ['#....', '#....', '#....', '#....', '#####'] },
+    M: { bits: ['#...#', '#...#', '#...#', '#...#', '#...#'], extra: [slant(0.4, 0, 1.875, 3.4), slant(3.35, 0, 1.875, 3.4)] },
+    N: { bits: ['#...#', '#...#', '#...#', '#...#', '#...#'], extra: [slant(0, 0, 5 - DIAG, 5)] },
+    O: { bits: O5 },
+    P: { bits: ['#####', '#...#', '#####', '#....', '#....'] },
+    Q: { bits: ['#####', '#...#', '#...#', '#..##', '#####'], extra: [box(4, 5, 5, 5.9)] },
+    R: { bits: ['#####', '#...#', '#####', '#....', '#....'], extra: [slant(2.2, RB[3] - 0.3, 3.75, 5)] },
+    S: { bits: ['#####', '#....', '#####', '....#', '#####'] },
+    T: { bits: ['#####', '..#..', '..#..', '..#..', '..#..'] },
+    U: { bits: ['#...#', '#...#', '#...#', '#...#', '#####'] },
+    V: { bits: ['.....', '.....', '.....', '.....', '.....'], extra: [slant(0, 0, 1.875, 5, 1.2), slant(3.8, 0, 1.925, 5, 1.2)] },
+    W: { bits: ['#...#', '#...#', '#...#', '#...#', '#...#'], extra: [slant(1.875, 1.6, 0.4, 5), slant(1.875, 1.6, 3.35, 5)] },
+    X: { bits: ['.....', '.....', '.....', '.....', '.....'], extra: [slant(0, 0, 5 - DIAG, 5), slant(5 - DIAG, 0, 0, 5)] },
+    Y: { bits: ['#...#', '#...#', '#####', '..#..', '..#..'] },
+    Z: { bits: ['#####', '.....', '.....', '.....', '#####'], extra: [slant(5 - DIAG, 0, 0, 5)] },
+    0: { bits: O5 },
+    1: { bits: ['##.', '.#.', '.#.', '.#.', '###'] },
+    2: { bits: ['#####', '....#', '#####', '#....', '#####'] },
+    3: { bits: ['#####', '....#', '..###', '....#', '#####'] },
+    4: { bits: ['#...#', '#...#', '#####', '....#', '....#'] },
+    5: { bits: ['#####', '#....', '####.', '....#', '####.'] },
+    6: { bits: ['#####', '#....', '#####', '#...#', '#####'] },
+    7: { bits: ['#####', '....#', '....#', '....#', '....#'] },
+    8: { bits: ['#####', '#...#', '#####', '#...#', '#####'] },
+    9: { bits: ['#####', '#...#', '#####', '....#', '#####'] },
+    '.': { bits: ['.', '.', '.', '.', '#'] },
+    ',': { bits: ['.', '.', '.', '.', '#'], extra: [box(0, 5, 1, 5.9)] },
+    ':': { bits: ['.', '#', '.', '.', '#'] },
+    ';': { bits: ['.', '#', '.', '.', '#'], extra: [box(0, 5, 1, 5.9)] },
+    '!': { bits: ['#', '#', '#', '.', '#'] },
+    '?': { bits: ['#####', '....#', '..###', '.....', '..#..'] },
+    "'": { bits: ['#', '#', '.', '.', '.'] },
+    '"': { bits: ['#.#', '#.#', '...', '...', '...'] },
+    '-': { bits: ['...', '...', '###', '...', '...'] },
+    '–': { bits: ['.....', '.....', '#####', '.....', '.....'] },
+    '·': { bits: ['.', '.', '#', '.', '.'] },
+    '*': { bits: ['#.#.#', '.###.', '#.#.#', '.....', '.....'] },
+    '+': { bits: ['...', '.#.', '###', '.#.', '...'] },
+    '×': { bits: ['...', '#.#', '.#.', '#.#', '...'] },
+    '(': { bits: ['##', '#.', '#.', '#.', '##'] },
+    ')': { bits: ['##', '.#', '.#', '.#', '##'] },
+    '/': { bits: ['....', '....', '....', '....', '....'], extra: [slant(4 - DIAG, 0, 0, 5)] },
+    '%': { bits: ['#....', '.....', '.....', '.....', '....#'], extra: [slant(5 - DIAG, 0, 0, 5)] },
+    '$': { bits: ['#####', '#....', '#####', '....#', '#####'], extra: [box(2, -0.9, 3, 0), box(2, 5, 3, 5.9)] },
+    '&': { bits: ['###..', '#.#..', '###..', '#....', '####.'], extra: [slant(1.5, RB[2], 3.75, 5), box(3.2, RB[2], 5, RB[3])] },
+  };
+  // Typographic twins and French capitals.
+  Object.assign(TYPE, { '’': TYPE["'"], '‘': TYPE["'"], '“': TYPE['"'], '”': TYPE['"'], '—': TYPE['–'], '−': TYPE['-'] });
+  [['À', 'A', 'grave'], ['Â', 'A', 'circ'], ['Ä', 'A', 'uml'], ['É', 'E', 'acute'], ['È', 'E', 'grave'], ['Ê', 'E', 'circ'], ['Ë', 'E', 'uml'],
+    ['Î', 'I', 'circ'], ['Ï', 'I', 'uml'], ['Ô', 'O', 'circ'], ['Ö', 'O', 'uml'], ['Ù', 'U', 'grave'], ['Û', 'U', 'circ'], ['Ü', 'U', 'uml']]
+    .forEach(([ch, base, acc]) => { const g = TYPE[base], c = g.bits[0].length / 2; TYPE[ch] = { bits: g.bits, extra: (g.extra || []).concat(ACCENT[acc](c)) }; });
+  TYPE['Ç'] = { bits: TYPE.C.bits, extra: [box(2, 5, 3, 5.9)] };
+  const SPACE = 2;                               // word space in modules; every glyph also carries a one-module gap
+
+  // One glyph as path data, top-left of its cap height at (x, y). Extra shapes are wound like the outlines.
+  function typeGlyph(ch, x = 0, y = 0, u = U) {
+    const g = TYPE[ch];
+    if (!g) return '';
+    let d = outline(g.bits, { u, ox: x, oy: y, rowH: LATIN_ROWS });
+    for (const poly of g.extra || []) {
+      const area = poly.reduce((a, p, i) => { const q = poly[(i + 1) % poly.length]; return a + p[0] * q[1] - q[0] * p[1]; }, 0);
+      const pts = area < 0 ? poly.slice().reverse() : poly;
+      d += pts.map((p, i) => (i ? 'L' : 'M') + num(x + p[0] * u) + ' ' + num(y + p[1] * u)).join('') + 'Z';
+    }
+    return d;
+  }
+  const typeWidth = ch => (ch === ' ' ? SPACE : TYPE[ch] ? TYPE[ch].bits[0].length + 1 : 0);   // advance, in modules
+
+  // The logo's own capitals are the typeface's: the Block and the font can never drift apart.
+  const LATIN = { '3': TYPE[3].bits, A: TYPE.A.bits, L: TYPE.L.bits, Y: TYPE.Y.bits, N: TYPE.N.bits };
   const RED = '3';                           // letters drawn in red
   const SPELLINGS = ['3LAYNA', 'AALAYNA'];
   const NAME = SPELLINGS[0];                 // the spelling every builder draws unless told otherwise
   const TILE = ['#####', '#####', '#####', '#####', '#####'];
-  const LATIN_ROWS = [THIN, (5 - 3 * THIN) / 2, THIN, (5 - 3 * THIN) / 2, THIN];
-  // The diagonal is 1.25 modules across, which makes it exactly one module thick at its angle.
-  const DIAG = 1.25;
 
   // علينا, right to left: ع (a square hook, open to the right), ل (tall), ي (tooth, two dots below),
   // ن (tooth, one dot above), ا (tall). Row 9 is the baseline. 'o' marks a dot.
@@ -244,7 +334,7 @@
       body + (p ? '<g transform="translate(' + num(p) + ' ' + num(p) + ')">' + inner + '</g>' : inner) + '</svg>';
   }
 
-  const api = { COLORS, CORNERS, THIN, U, LATIN, RED, SPELLINGS, NAME, KUFI, LATIN_ROWS, KUFI_ROWS, TOOTH, trace, outline, glyph, grid, block, line, kufi, lockup, lockupLatin, iconBlock, iconBlockColors, iconKufi, blockCells, nDiagonal, svg };
+  const api = { COLORS, CORNERS, THIN, U, LATIN, RED, SPELLINGS, NAME, KUFI, LATIN_ROWS, KUFI_ROWS, TOOTH, TYPE, SPACE, trace, outline, glyph, typeGlyph, typeWidth, grid, block, line, kufi, lockup, lockupLatin, iconBlock, iconBlockColors, iconKufi, blockCells, nDiagonal, svg };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.AalaynaLogo = api;
 })(typeof self !== 'undefined' ? self : this);

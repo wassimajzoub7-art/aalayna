@@ -2,11 +2,13 @@
 // Builds the logo files from brand/logo.js and renders the logo motion from brand/motion.html.
 //
 //   node tools/brand.js svg                      rewrites brand/svg: the Kufi files, and 3layna/ and aalayna/
+//   node tools/brand.js site                     redraws the logo inside <a class="logo"> on the site's pages
+//   node tools/brand.js images [--fonts dir]     renders the share image (images/og-image.*) and the favicons
 //   node tools/brand.js video [--piece block|kufi] [--word AALAYNA] [--size 1920x1080] [--ground cream|ink|petrol]
 //                             [--fps 60] [--out file.mp4] [--audio file.wav] [--ffmpeg path] [--fonts dir]
 //   node tools/brand.js stills --piece kufi --at 0.5,1,2 [--word AALAYNA] [--size 960x540] [--out dir]
 //
-// video and stills need Playwright (Chromium) and, for video, an ffmpeg with libx264. Like render-reel.js,
+// images, video and stills need Playwright (Chromium) and, for video, an ffmpeg with libx264. Like render-reel.js,
 // every frame calls the page's __render(t), so the output is exact at any frame rate. --fonts serves the
 // Google Fonts request from a folder holding local.css and the font files it names.
 'use strict';
@@ -58,17 +60,45 @@ function svgFiles() {
   console.log('wrote ' + Object.keys(files).length + ' files to brand/svg');
 }
 
-async function browserPage(w, h) {
+// The logo in the site's pages: the Block in the header, the Kufi lockup in the footer. Inline, so they cost no
+// request and take the page's colours (.logo-ink follows the text colour); the link around each names it.
+const SITE_PAGES = ['index.html', 'fr/index.html', 'book.html', 'numbers.html'];
+function siteLogo(mark) {
+  const p = (cls, d) => (d ? '<path class="' + cls + '" d="' + d + '"/>' : '');
+  return '<svg viewBox="0 0 ' + mark.w + ' ' + mark.h + '" aria-hidden="true" focusable="false">' + p('logo-ink', mark.ink) + p('logo-red', mark.red) + '</svg>';
+}
+// Every site page as it should read, as { file: html }: only what sits inside <a class="logo"> changes.
+function sitePages() {
+  const header = siteLogo(Logo.block()), footer = siteLogo(Logo.lockup()), out = {};
+  for (const f of SITE_PAGES) {
+    out[f] = fs.readFileSync(path.join(root, f), 'utf8')
+      .replace(/(<header[\s\S]*?<a class="logo"[^>]*>)[\s\S]*?(<\/a>)/, (_, a, b) => a + header + b)
+      .replace(/(<footer[^>]*>\s*<a class="logo"[^>]*>)[\s\S]*?(<\/a>)/, (_, a, b) => a + footer + b);
+  }
+  return out;
+}
+function siteFiles() {
+  for (const [f, html] of Object.entries(sitePages())) fs.writeFileSync(path.join(root, f), html);
+  console.log('wrote the logo into ' + SITE_PAGES.join(', '));
+}
+
+async function launch() {
   let chromium;
   try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require(path.join(process.execPath, '../../lib/node_modules/playwright'))); }
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: w, height: h } });
+  return chromium.launch();
+}
+async function routeFonts(page) {
   const fonts = opt('fonts');
-  if (fonts) {
-    const dir = path.resolve(fonts);
-    await page.route(/fonts\.googleapis\.com/, r => r.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(dir, 'local.css'), 'utf8').replace(/url\(([^)]+)\)/g, (_, f) => `url(https://fonts.gstatic.com/local/${f})`) }));
-    await page.route(/fonts\.gstatic\.com\/local\//, r => r.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(path.join(dir, path.basename(new URL(r.request().url()).pathname))) }));
-  }
+  if (!fonts) return;
+  const dir = path.resolve(fonts);
+  await page.route(/fonts\.googleapis\.com/, r => r.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(dir, 'local.css'), 'utf8').replace(/url\(([^)]+)\)/g, (_, f) => `url(https://fonts.gstatic.com/local/${f})`) }));
+  await page.route(/fonts\.gstatic\.com\/local\//, r => r.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(path.join(dir, path.basename(new URL(r.request().url()).pathname))) }));
+}
+
+async function browserPage(w, h) {
+  const browser = await launch();
+  const page = await browser.newPage({ viewport: { width: w, height: h } });
+  await routeFonts(page);
   const piece = opt('piece', 'block'), ground = opt('ground', 'cream'), word = opt('word');
   await page.goto('file://' + path.join(root, 'brand/motion.html') + `?capture&piece=${piece}&w=${w}&h=${h}&ground=${ground}` + (word ? '&word=' + word : '') + (args.includes('--notag') ? '&notag' : ''));
   await page.evaluate(async () => { await document.fonts.load("500 20px 'IBM Plex Sans'"); await document.fonts.ready; });
@@ -113,9 +143,81 @@ async function stills() {
   await browser.close();
 }
 
-module.exports = { svgContents };
+// The site's raster images: the share image (images/og-image.png and .webp, 1200 x 630) and the favicons
+// (brand/icons/icon-32.png, and icon-180.png for iOS). The share image is the hero in small: the eyebrow over
+// THE BILL. THE SPLIT. 3LAYNA., drawn by the glyph engine itself, beside the payment screen on a phone.
+function typeLine(text, u, x, y) {
+  let ink = '', red = '';
+  for (const ch of text.toUpperCase()) {
+    const d = Logo.typeGlyph(ch, x, y, u);
+    if (Logo.RED.includes(ch)) red += d; else ink += d;
+    x += Logo.typeWidth(ch) * u;
+  }
+  return { ink, red };
+}
+function shareHtml() {
+  const C = Logo.COLORS, u = 12, pitch = 8 * u, lines = ['The bill.', 'The split.', Logo.NAME + '.'];
+  let ink = '', red = '';
+  lines.forEach((t, i) => { const l = typeLine(t, u, 0, i * pitch); ink += l.ink; red += l.red; });
+  const h = 2 * pitch + 5 * u, file = f => 'file://' + path.join(root, f);
+  return `<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=block" rel="stylesheet">
+<style>
+html,body{margin:0}
+body{position:relative;width:1200px;height:630px;overflow:hidden;background:${C.cream}}
+.copy{position:absolute;left:90px;top:50%;transform:translateY(-50%)}
+.eyebrow{margin:0 0 34px;font:500 22px/1 'IBM Plex Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:#B3363F}
+.copy svg{display:block}
+.phone{position:absolute;left:818px;top:38px;width:250px;height:552px;padding:10px;border-radius:42px;background:${C.ink};box-shadow:0 34px 110px -10px rgba(140,60,50,.22)}
+.phone img{display:block;width:100%;height:100%;border-radius:32px;object-fit:cover;object-position:50% 0}
+</style></head><body>
+<div class="copy"><p class="eyebrow">For restaurants in Lebanon</p>
+<svg width="${num(typeWidthOf(lines[1]) * u)}" height="${num(h)}" viewBox="0 0 ${num(typeWidthOf(lines[1]) * u)} ${num(h)}"><path fill="${C.ink}" d="${ink}"/><path fill="${C.red}" d="${red}"/></svg></div>
+<div class="phone"><img src="${file('images/guest-pay.png')}" alt=""></div>
+</body></html>`;
+}
+const num = v => String(Math.round(v * 100) / 100);
+const typeWidthOf = t => [...t.toUpperCase()].reduce((a, ch) => a + Logo.typeWidth(ch), 0) - 1;
+
+async function images() {
+  const browser = await launch(), tmp = path.join(require('os').tmpdir(), 'aalayna-share.html');
+  fs.writeFileSync(tmp, shareHtml());
+  let page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
+  await routeFonts(page);
+  await page.goto('file://' + tmp);
+  await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode())); });
+  const png = await page.screenshot({ type: 'png' });
+  fs.writeFileSync(path.join(root, 'images/og-image.png'), png);
+  // WebP from the same pixels, encoded by the browser.
+  const webp = await page.evaluate(async b64 => {
+    const img = new Image(); img.src = 'data:image/png;base64,' + b64; await img.decode();
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    c.getContext('2d').drawImage(img, 0, 0);
+    return c.toDataURL('image/webp', 0.9).split(',')[1];
+  }, png.toString('base64'));
+  fs.writeFileSync(path.join(root, 'images/og-image.webp'), Buffer.from(webp, 'base64'));
+  await page.close();
+  fs.mkdirSync(path.join(root, 'brand/icons'), { recursive: true });
+  // 180 px is the icon SVG (18 px modules). At 32 px its 3.2 px modules blur, so the tab icon is drawn on whole
+  // pixels instead: 4 px modules, square rows, 6 px of tile around the letter.
+  const col = Logo.iconBlockColors(), ch = Logo.NAME[0], bits = Logo.TYPE[ch].bits;
+  const pixel = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges"><path fill="' + col.tile + '" d="M0 0H32V32H0Z"/><path fill="' + (Logo.RED.includes(ch) ? col.red : col.ink) + '" d="' +
+    bits.map((r, y) => [...r].map((c, x) => (c === '#' ? 'M' + (6 + 4 * x) + ' ' + (6 + 4 * y) + 'h4v4h-4z' : '')).join('')).join('') + '"/></svg>';
+  const icons = { 32: pixel, 180: fs.readFileSync(path.join(root, 'brand/svg', Logo.NAME.toLowerCase(), 'icon.svg'), 'utf8') };
+  for (const s of [32, 180]) {
+    page = await browser.newPage({ viewport: { width: s, height: s } });
+    await page.setContent('<style>html,body{margin:0}svg{display:block;width:' + s + 'px;height:' + s + 'px}</style>' + icons[s]);
+    fs.writeFileSync(path.join(root, `brand/icons/icon-${s}.png`), await page.screenshot({ type: 'png', omitBackground: true }));
+    await page.close();
+  }
+  await browser.close();
+  fs.rmSync(tmp, { force: true });
+  console.log('wrote images/og-image.png, images/og-image.webp, brand/icons/icon-32.png and icon-180.png');
+}
+
+module.exports = { svgContents, sitePages, SITE_PAGES };
 if (require.main === module) {
-  const run = { svg: svgFiles, video, stills }[cmd];
-  if (!run) { console.error('usage: node tools/brand.js svg | video | stills  (see the header of this file)'); process.exit(1); }
+  const run = { svg: svgFiles, site: siteFiles, images, video, stills }[cmd];
+  if (!run) { console.error('usage: node tools/brand.js svg | site | images | video | stills  (see the header of this file)'); process.exit(1); }
   Promise.resolve(run()).catch(e => { console.error(e); process.exit(1); });
 }
