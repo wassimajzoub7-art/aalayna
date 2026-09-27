@@ -2,9 +2,9 @@
    live on the brand page and render frame-exact to video through tools/brand.js.
 
    Block (5.2 s): the table QR (a real one, it opens aalayna.com) blooms, is scanned, and its modules
-   fly into the capitals; the red finder eyes become the red 3 (or the full stop), which lands last like a stamp.
+   fly into the capitals; the red finder eyes become the red 3 (or the full stop). The modules fuse and it is done.
    Kufi (5.6 s): a red module is the pen. It writes علينا right to left along the baseline, each letter
-   rising as it passes, climbs the alif, then hops three times to set the dots. The Latin name follows.
+   rising as it passes, climbs the alif, then hops three times to set the dots. The Latin name follows, letter by letter.
    Both take { word } (a spelling from AalaynaLogo.SPELLINGS; 3LAYNA by default) and { colors, tagline }.
 
    Every piece: { duration, cues, render(g, t, W, H) }, g already scaled to W x H logical pixels. */
@@ -61,7 +61,7 @@
     const withTag = !(opt && opt.tagline === false);
     const word = (opt && opt.word) || Logo.NAME;
     const DUR = 5.2;
-    const { cols, stop } = Logo.grid(word), BW = cols * 6 - 1;    // block width in modules
+    const { cols } = Logo.grid(word), BW = cols * 6 - 1;          // block width in modules
     const cellOf = i => [(i % cols) * 6, Math.floor(i / cols) * 6];
     const isRed = ch => Logo.RED.includes(ch);
     // The ink without N's diagonal, which slices in on its own when the modules snap to the letterforms.
@@ -69,11 +69,8 @@
     const P = {
       ink: new Path2D([...word].map((ch, i) => { if (isRed(ch)) return ''; const [x, y] = cellOf(i).map(v => v * U); return ch === 'N' ? Logo.outline(Logo.LATIN.N, { u: U, ox: x, oy: y, rowH: Logo.LATIN_ROWS }) : Logo.glyph(ch, x, y, U); }).join('')),
       diag: n >= 0 ? new Path2D(Logo.nDiagonal(cellOf(n)[0] * U, cellOf(n)[1] * U, U)) : null,
-      red: new Path2D([...word].map((ch, i) => (isRed(ch) ? Logo.glyph(ch, cellOf(i)[0] * U, cellOf(i)[1] * U, U) : '')).join('')),
+      red: new Path2D(Logo.block(word).red),                     // the 3, or the full stop in the spare cell
     };
-    // The red element lands last: the 3, or the full stop in the spare cell.
-    const redCell = stop ? [(cols - 1) * 6, 6] : cellOf([...word].findIndex(isRed));
-    const RC = [redCell[0] + 2.5, redCell[1] + 2.5];              // its centre, in modules
     const rand = rng(21);
 
     // Sources: every dark QR module. Targets: every module of the Block.
@@ -88,11 +85,10 @@
       s.spin = (rand() - 0.5) * 120;
     });
     const tgt = Logo.blockCells(word);
-    // Flight order: the ink letters in reading order, then the red element. Whatever the spelling, the last
-    // one leaves at the same moment, so the snap and the stamp keep their cue times (and the soundtrack fits).
-    const letters = [...new Set(tgt.map(T => T.letter))];
-    const rank = new Map(letters.filter(l => !tgt.find(T => T.letter === l).red).concat(letters.filter(l => tgt.find(T => T.letter === l).red)).map((l, k) => [l, k]));
-    const step = 0.525 / (letters.length - 1);
+    // Flight order is reading order: the red 3 first, then the ink letters (a full stop, when there is one,
+    // comes last because it is last). Whatever the spelling, the last letter leaves at the same moment, so the
+    // snap keeps its cue time and one soundtrack fits both.
+    const count = new Set(tgt.map(T => T.letter)).size, step = 0.525 / (count - 1);
     // Match each target to the nearest free source of its colour, in normalised space, in a seeded shuffle
     // (Fisher-Yates, so every browser and the renderer build the same flight plan).
     const order = tgt.map((_, i) => i);
@@ -106,11 +102,11 @@
         if (d < bd) { bd = d; best = s; }
       }
       best.used = true; T.src = best;
-      T.start = 1.32 + rank.get(T.letter) * step + rand() * 0.07;
+      T.start = 1.32 + T.letter * step + rand() * 0.07;
       T.bend = (rand() - 0.5) * 0.36;
       T.turn = rand() < 0.5 ? 90 : -90;
     }
-    const FUSE = [2.42, 2.58], SNAP = 2.6, SLASH = [2.6, 2.72], LIFT = [2.74, 2.88], HIT = 2.88;
+    const FUSE = [2.42, 2.58], SNAP = 2.6, SLASH = [2.6, 2.72];
 
     function layout(W, H) {
       const m = Math.min((W * (W / H < 1.2 ? 0.8 : 0.62)) / BW, (H * (withTag ? 0.44 : 0.52)) / 11);
@@ -124,10 +120,9 @@
       g.save();
       g.fillStyle = col.bg; g.fillRect(0, 0, W, H);
 
-      // Camera: a slow push, and a shake when the stamp lands.
+      // Camera: a slow push.
       const push = lerp(1, 1.035, E.outCubic(seg(t, 0, DUR)));
-      const sh = m * 0.16 * wobble(t - HIT, 11, 9), sv = m * 0.12 * wobble(t - HIT - 0.02, 14, 9);
-      g.translate(W / 2 + sh, H / 2 + sv); g.scale(push, push); g.translate(-W / 2, -H / 2);
+      g.translate(W / 2, H / 2); g.scale(push, push); g.translate(-W / 2, -H / 2);
 
       // QR modules that are not needed evaporate outwards.
       for (const s of src) {
@@ -175,29 +170,14 @@
           g.restore();
         }
       } else {
-        // Snap: the modules become the letterforms in one frame, N's diagonal slices through,
-        // and the red element lifts and lands like a stamp.
+        // Snap: the modules become the letterforms in one frame and N's diagonal slices through. Done.
         g.save();
         g.translate(bx, by); g.scale(m / U, m / U);
         g.fillStyle = col.ink; g.fill(P.ink);
         const sl = E.outCubic(seg(t, SLASH[0], SLASH[1]));
         if (P.diag && sl > 0) { const [nx, ny] = cellOf(n); g.save(); g.beginPath(); g.rect(nx * U - 1, ny * U - 1, 5 * U + 2, 5 * U * sl + 1); g.clip(); g.fill(P.diag); g.restore(); }
-        const lift = E.outCubic(seg(t, LIFT[0], LIFT[1])), land = t >= HIT;
-        let s = lerp(1, 1.14, lift), sx = 1, sy = 1;
-        if (land) { s = lerp(1.14, 1, E.outExpo(seg(t, HIT, HIT + 0.08))); const w = wobble(t - HIT, 3.2, 8); sx = 1 + 0.07 * w; sy = 1 - 0.07 * w; }
-        g.translate(RC[0] * U, RC[1] * U); g.scale(s * sx, s * sy); g.translate(-RC[0] * U, -RC[1] * U);
-        if (lift > 0 && !land) { g.shadowColor = 'rgba(33,27,22,' + (0.28 * lift).toFixed(3) + ')'; g.shadowBlur = m * 0.9 * lift; g.shadowOffsetY = m * 0.35 * lift; }
-        g.fillStyle = col.red;
-        if (stop) { g.beginPath(); g.roundRect(redCell[0] * U, redCell[1] * U, 5 * U, 5 * U, lerp(0.08, 1.5, E.outCubic(seg(t, SNAP, LIFT[1]))) * U); g.fill(); }
-        else g.fill(P.red);
+        g.fillStyle = col.red; g.fill(P.red);
         g.restore();
-        // Shockwave from the stamp.
-        const rk = seg(t, HIT, HIT + 0.5);
-        if (rk > 0 && rk < 1) {
-          const cxr = bx + RC[0] * m, cyr = by + RC[1] * m, half = lerp(2.5, 5.2, E.outCubic(rk)) * m;
-          g.save(); g.globalAlpha = 1 - rk; g.strokeStyle = col.red; g.lineWidth = m * 0.22 * (1 - rk * 0.6);
-          g.beginPath(); g.roundRect(cxr - half, cyr - half, half * 2, half * 2, m * 1.5); g.stroke(); g.restore();
-        }
       }
 
       g.restore();
@@ -207,7 +187,7 @@
     const eye = (top, right) => Math.min(...src.filter(x => x.red && (x.r >= 7) === top && (x.c >= 7) === right).map(x => x.bloom));
     const cues = {
       bloom: src.filter(x => !x.red).map(x => x.bloom), finders: [eye(false, false), eye(false, true), eye(true, false)],
-      scan: [0.92, 1.3], fly: 1.32, lands: tgt.map(T => T.start + 0.62), snap: SNAP, lift: LIFT[0], hit: HIT, tag: 3.0,
+      scan: [0.92, 1.3], fly: 1.32, lands: tgt.map(T => T.start + 0.62), snap: SNAP, tag: 3.0,
     };
     return { duration: DUR, render, cues };
   }
@@ -220,11 +200,10 @@
     const DUR = 5.6;
     const RY = [0]; Logo.KUFI_ROWS.forEach(h => RY.push(RY[RY.length - 1] + h));
     const P = new Path2D(Logo.kufi().ink);
-    // The Latin name: its ink letters pop in one by one, then its red element (the 3, or the full stop) drops in.
+    // The Latin name pops in letter by letter, the red 3 in its place (or the full stop after the last A).
     const LN = Logo.line(word), LW = LN.w / U;
-    const inkLetters = [...word].map((ch, i) => ({ ch, i })).filter(l => !Logo.RED.includes(l.ch)).map(l => ({ i: l.i, p: new Path2D(Logo.glyph(l.ch, l.i * 6 * U, 0, U)) }));
-    const redMark = new Path2D(LN.red), ri = [...word].findIndex(ch => Logo.RED.includes(ch));
-    const redX = ri >= 0 ? ri * 6 + 2.5 : word.length * 6 + 0.5;    // the red element's centre line, in modules
+    const parts = [...word].map((ch, i) => ({ p: new Path2D(Logo.glyph(ch, i * 6 * U, 0, U)), red: Logo.RED.includes(ch), cx: i * 6 + 2.5 }));
+    if (!parts.some(q => q.red)) parts.push({ p: new Path2D(LN.red), red: true, cx: word.length * 6 + 0.5 });
     const BASE = [RY[9], RY[10]];              // the baseline band, in modules
     const DROP = [0.08, 0.4], BOUNCE = 0.56;   // the pen falls onto the end of the baseline and bounces once
     const RUN = [0.62, 1.45];                  // then runs the baseline, right to left
@@ -243,7 +222,6 @@
       { from: [3, RY[11]], to: [2, RY[3]], t: [2.62, 3.0], h: 4 },
     ];
     const INKED = 2.45, CAM = [3.1, 4.05], LAT = 3.35, TAG = 4.1;
-    const RED_AT = LAT + inkLetters.length * 0.06 + 0.12;   // the Latin red element starts to drop
     const squash = (s, amp) => amp * wobble(s, 3.4, 9);
 
     // Where the pen is: top-left corner and height in modules, turn, and squash (anchored at its base).
@@ -325,23 +303,16 @@
       const s = pen(t);
       if (s) drawSquare(g, m, s.x, s.y, s.h, s.rot, s.sx, s.sy);
 
-      // The Latin name, letter by letter; its red element drops in last.
+      // The Latin name, letter by letter, each growing from the baseline.
       const ls = F.wide ? 1 : 12 / LW, lx = F.wide ? 15 : 0, ly = F.wide ? RY[5] : 14.2;
-      inkLetters.forEach(({ i, p }, k0) => {
+      parts.forEach(({ p, red, cx }, k0) => {
         const k = seg(t, LAT + k0 * 0.06, LAT + k0 * 0.06 + 0.42);
         if (k <= 0) return;
         const sc = lerp(0.55, 1, E.outBack(k, 1.6)) * ls * Z;
         g.save(); g.globalAlpha = clamp(k * 3);
-        g.translate((lx + (i * 6 + 2.5) * ls) * m, (ly + 5 * ls) * m); g.scale(sc, sc); g.translate(-(i * 6 + 2.5) * U, -5 * U);
-        g.fillStyle = col.ink; g.fill(p); g.restore();
+        g.translate((lx + cx * ls) * m, (ly + 5 * ls) * m); g.scale(sc, sc); g.translate(-cx * U, -5 * U);
+        g.fillStyle = red ? col.red : col.ink; g.fill(p); g.restore();
       });
-      const d0 = RED_AT, dk = seg(t, d0, d0 + 0.24);
-      if (dk > 0) {
-        const q = squash(t - d0 - 0.24, 0.3), fall = 1 - E.outCubic(dk);
-        g.save(); g.translate(lx * m, (ly - 3 * ls * fall * fall) * m); g.scale(ls * Z, ls * Z);
-        g.translate(redX * U, 5 * U); g.scale(1 + q, 1 - q); g.translate(-redX * U, -5 * U);
-        g.fillStyle = col.red; g.fill(redMark); g.restore();
-      }
       g.restore();
 
       if (withTag) {
@@ -349,7 +320,7 @@
         tagline(g, t, TAG, W / 2, bottom + F.end.m * (F.wide ? 3.3 : 2.8), Math.round(Math.min(W, H) * 0.045), col);
       }
     }
-    return { duration: DUR, render, cues: { drop: DROP[0], land: DROP[1], bounce: BOUNCE, run: RUN[0], rises: rises.map(r => r.at), climb: CLIMB[0], hops: HOPS.map(h => h.t), latin: LAT, red: RED_AT + 0.24, tag: TAG } };
+    return { duration: DUR, render, cues: { drop: DROP[0], land: DROP[1], bounce: BOUNCE, run: RUN[0], rises: rises.map(r => r.at), climb: CLIMB[0], hops: HOPS.map(h => h.t), latin: LAT, letters: parts.length, tag: TAG } };
   }
 
   /* ---------- Player: plays a piece on a canvas, sized to its box, at the device's pixel ratio ---------- */

@@ -50,7 +50,6 @@ const click = (t, g = 0.2, pan = 0, f = 3200) => voice(t, 0.03, s => (Math.sin(T
 const pop = (t, f = 500, g = 0.3, pan = 0) => { let ph = 0; voice(t, 0.12, s => { ph += (TAU * f * (1 + 1.4 * Math.min(1, s / 0.03))) / SR; return Math.sin(ph) * Math.exp(-s * 38); }, { gain: g, pan, send: 0.2 }); };
 const tok = (t, f = 900, g = 0.3, pan = 0) => voice(t, 0.09, s => (Math.sin(TAU * f * s) + 0.5 * Math.sin(TAU * f * 2.3 * s)) * Math.exp(-s * 55) * Math.min(1, s * 2000), { gain: g, pan, send: 0.18 });
 const thud = (t, f = 70, g = 0.8) => { let ph = 0; voice(t, 0.4, s => { ph += (TAU * f * (1 + 1.5 * Math.exp(-s * 40))) / SR; return Math.tanh(1.6 * Math.sin(ph)) * Math.exp(-s * 12); }, { gain: g, send: 0.15 }); };
-const stamp = (t, g = 0.35) => { const bp = bandpass(); voice(t, 0.2, s => bp(noise(), 1500, 0.8) * Math.exp(-s * 34) * 2.4, { gain: g, send: 0.3 }); };
 const beep = (t, f = 1760, len = 0.09, g = 0.12) => voice(t, len, s => Math.sin(TAU * f * s) * Math.min(1, s * 600, (len - s) * 600), { gain: g, send: 0.2 });
 const bell = (t, m, g = 0.2, pan = 0, len = 2.2) => { const f = hz(m); voice(t, len, s => (Math.sin(TAU * f * s) + 0.45 * Math.sin(TAU * f * 2.76 * s) * Math.exp(-s * 5) + 0.2 * Math.sin(TAU * f * 5.4 * s) * Math.exp(-s * 9)) * Math.exp(-s * 2.6) * Math.min(1, s * 400), { gain: g, pan, send: 0.45 }); };
 function whoosh(t, len, g = 0.4, f0 = 300, f1 = 3500, pan0 = 0, pan1 = 0) {
@@ -87,9 +86,7 @@ if (which === 'block') {
   cue.lands.forEach(t => click(t, 0.035 + rnd() * 0.03, rnd() * 0.8 - 0.4, 1600 + rnd() * 1800));
   click(cue.snap, 0.3, 0, 2400); tok(cue.snap, 1300, 0.18);
   whoosh(cue.snap, 0.14, 0.12, 3000, 7000, -0.3, 0.3);
-  whoosh(cue.lift, cue.hit - cue.lift, 0.12, 400, 1600);
-  thud(cue.hit, 58, 0.85); stamp(cue.hit, 0.4); pop(cue.hit, 180, 0.35);
-  signature(cue.hit + 0.02);
+  signature(cue.snap + 0.1, 0.8);
   [0, 1, 2].forEach(i => click(cue.tag + i * 0.1, 0.07, -0.2 + i * 0.2, 2000));
 } else {
   whoosh(cue.drop, cue.land - cue.drop, 0.08, 3000, 700, 0.5, 0.5);
@@ -105,8 +102,7 @@ if (which === 'block') {
   [69, 74].forEach((m, i) => pluck(cue.climb + 0.05 + i * 0.09, m, 0.3 - i * 0.06, -0.6));
   cue.hops.forEach(([a, b], i) => { whoosh(a, b - a, 0.07, 800, 2400, -0.3 + i * 0.3, -0.1 + i * 0.3); tok(b, [760, 900, 1180][i], 0.34, [0.1, -0.1, -0.3][i]); });
   signature(cue.hops[2][1] + 0.02);
-  for (let i = 0; i < 7; i++) click(cue.latin + i * 0.06 + 0.05, 0.06, -0.4 + i * 0.13, 2200 + i * 90);
-  tok(cue.red, 1400, 0.22, 0.6);
+  for (let i = 0; i < cue.letters; i++) click(cue.latin + i * 0.06 + 0.05, 0.06, -0.4 + i * 0.13, 2200 + i * 90);
   [0, 1, 2].forEach(i => click(cue.tag + i * 0.1, 0.06, -0.2 + i * 0.2, 2000));
 }
 
