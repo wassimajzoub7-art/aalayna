@@ -54,18 +54,18 @@
       </div>
       <p class="fine">Deux mois gratuits à partir de la mise en service. Vous continuez seulement si cela fonctionne pour votre restaurant.</p>
     </div>
-    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="../images/film-fr.jpg" aria-label="Un film de 96 secondes. Il s’ouvre sur des gros plans d’une table en fin de dîner : chaque soir, chaque table, la même attente. Puis quatre amis s’installent, scannent le QR de la table et lisent le menu dans leur langue et leur devise, filtré selon leur régime. Après le dîner vient l’attente de l’addition. Avec Aalayna, ils partagent l’addition de $152.50 en quatre, laissent un pourboire, paient $41.94 avec Whish Money et notent la soirée, pendant que le restaurant voit les paiements en direct, confirme les espèces et publie un nouveau prix sur chaque table en quelques secondes. Il se termine sur le logo 3LAYNA : le QR de la table s’envole pour en former les lettres."><source src="../images/film-fr.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-watch="Regarder avec le son" data-mute="Couper le son">Activer le son</button></figure>
+    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="../images/film-fr.jpg" aria-label="Un film de 96 secondes. Il s’ouvre sur des gros plans d’une table en fin de dîner : chaque soir, chaque table, la même attente. Puis quatre amis s’installent, scannent le QR de la table et lisent le menu dans leur langue et leur devise, filtré selon leur régime. Après le dîner vient l’attente de l’addition. Avec Aalayna, ils partagent l’addition de $152.50 en quatre, laissent un pourboire, paient $41.94 avec Whish Money et notent la soirée, pendant que le restaurant voit les paiements en direct, confirme les espèces et publie un nouveau prix sur chaque table en quelques secondes. Il se termine sur le logo 3LAYNA : le QR de la table s’envole pour en former les lettres."><source src="../images/film-fr.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" aria-label="Activer le son" data-watch="Regarder avec le son" data-mute="Couper le son"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path class="spk" d="M3 9h4l5-4v14l-5-4H3z"/><path class="off" d="M16 9l6 6M22 9l-6 6"/><path class="on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg></button></figure>
 <script>
 (function(){var v=document.getElementById('reel'),b=document.getElementById('reel-sound');if(!v||!b)return;
 var mq=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)'),sd=navigator.connection&&navigator.connection.saveData;
 if((mq&&mq.matches)||sd){v.removeAttribute('autoplay');v.pause();v.controls=true;b.hidden=true;return;}
-var onLabel=b.textContent,offLabel=b.getAttribute('data-mute');
+var onLabel=b.getAttribute('aria-label'),offLabel=b.getAttribute('data-mute');
 // On a phone the film is small, so the button opens it full screen, from the start, with sound; leaving full screen mutes it again.
 var phone=window.matchMedia&&window.matchMedia('(max-width: 767px)').matches;
-if(phone){b.textContent=b.getAttribute('data-watch');b.removeAttribute('aria-pressed');
+if(phone){b.setAttribute('aria-label',b.getAttribute('data-watch'));b.removeAttribute('aria-pressed');
 b.addEventListener('click',function(){v.muted=false;v.currentTime=0;v.play();if(v.webkitEnterFullscreen)v.webkitEnterFullscreen();else if(v.requestFullscreen)v.requestFullscreen();});
 var back=function(){if(!document.fullscreenElement){v.muted=true;v.play();}};v.addEventListener('webkitendfullscreen',back);document.addEventListener('fullscreenchange',back);return;}
-b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;v.play();b.textContent=offLabel;b.setAttribute('aria-pressed','true');}else{v.muted=true;b.textContent=onLabel;b.setAttribute('aria-pressed','false');}});})();
+b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;v.play();b.setAttribute('aria-label',offLabel);b.setAttribute('aria-pressed','true');}else{v.muted=true;b.setAttribute('aria-label',onLabel);b.setAttribute('aria-pressed','false');}});})();
 </script>
   </section>
 

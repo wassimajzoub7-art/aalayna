@@ -94,12 +94,15 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
    Phones get the 9:16 cut, everything else the 16:9 one (the sources choose by width). */
 .hero-reel{position:relative}
 .hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
-.reel-sound{position:absolute;right:0;bottom:0;min-height:44px;padding:.5rem 1rem;border:0;background:var(--ink);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
+.reel-sound{position:absolute;right:0;bottom:0;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:var(--ink);color:#fff;cursor:pointer}
+/* A speaker: crossed out while muted, sound waves once playing with sound. */
+.reel-sound svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}.reel-sound .spk{fill:currentColor}
+.reel-sound .on,.reel-sound[aria-pressed="true"] .off{display:none}.reel-sound[aria-pressed="true"] .on{display:inline}
 .reel-sound:hover{background:var(--brand)}
 /* Phones: the film is the hero. The 16:9 cut comes first, edge to edge (about a third of the screen), with the headline
    and buttons in view below it; "Watch with sound" opens it full screen. The markup keeps the headline first, so a
    screen reader still hears it first. */
-@media(max-width:767px){.hero-reel{order:-1;margin-inline:-1rem}}
+@media(max-width:767px){.hero-reel{order:-1;margin:-1px -1rem 0}}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
