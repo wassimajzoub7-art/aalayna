@@ -254,7 +254,8 @@ test('homepage structure: four sections that each end on Book a demo, six questi
   const numbers = [...s.matchAll(/<span class="number">([^<]*)<\/span>/g)].map(m => m[1]);
   assert.equal(numbers.length, 7, 'three steps, and the pilot timeline: three steps and go-live');
   assert.match(s, /<li class="go-live"><span class="number">[^<]+<\/span> [^<]+<\/li><li><span class="number">03 · /, 'go-live sits before the review');
-  assert.ok(!/commission/i.test(s), 'no commission line');
+  assert.ok(!/commission/i.test(s.match(/<div class="price-card">[\s\S]*?<\/div>/)[0]), 'no commission line on the price card');
+  assert.match(s, /<summary>What is included in the price\?<\/summary><p>[^<]*No commission on your sales/, 'it lives in the price answer');
   numbers.filter(n => n !== 'Go-live').forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
   const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> <span class="source-text">[^<]+<\/span><\/p>/g)].map(m => m[1]);
