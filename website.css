@@ -243,11 +243,13 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media (min-width:2200px){html{zoom:1.4}}
 @media (min-width:3000px){html{zoom:1.8}}
 
-/* Phones: the three steps swipe sideways, one card centred with the next peeking in; the card in view is lit. */
+/* Phones: the three steps swipe sideways, one card centred with its neighbours peeking in; the card in view is lit.
+   The row runs edge to edge and each card is the screen less 2rem a side, with 2rem of padding at both ends, so the
+   first and last cards centre too. */
 @media(max-width:767px){
-  .steps{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;margin-inline:-1rem;padding:0 1rem .25rem;scroll-padding-inline:1rem;scrollbar-width:none}
+  .steps{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;margin-inline:-1rem;padding:0 2rem .25rem;scroll-padding-inline:2rem;scrollbar-width:none}
   .steps::-webkit-scrollbar{display:none}
-  .steps article{flex:0 0 84%;scroll-snap-align:center}
+  .steps article{flex:0 0 calc(100vw - 4rem);scroll-snap-align:center}
   .steps article>*{transition:opacity .35s ease}
   .steps.is-live article:not(.is-active)>*{opacity:.4}
   .steps-nav:not([hidden]){display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1.25rem}
