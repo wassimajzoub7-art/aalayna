@@ -565,6 +565,10 @@ test('the three steps: a carousel on phones (arrows, three dots), a grid on comp
   assert.match(css, /@media\(max-width:767px\)\{\n  \.steps\{display:flex;[^}]*overflow-x:auto;scroll-snap-type:x mandatory/, 'phones swipe the steps, with or without JavaScript');
   assert.match(css, /\n\.steps\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, 'computers keep the three columns');
   assert.match(css, /\n\.steps-nav\{display:none\}/, 'the arrows and dots only show on phones');
+  // Every card centres, the first and last too: the padding at each end equals the card's inset from the screen edge.
+  const phoneSteps = css.match(/@media\(max-width:767px\)\{\n  \.steps\{([^}]*)\}[\s\S]*?\.steps article\{([^}]*)\}/);
+  assert.match(phoneSteps[1], /padding:0 2rem \.25rem;scroll-padding-inline:2rem/);
+  assert.match(phoneSteps[2], /flex:0 0 calc\(100vw - 4rem\);scroll-snap-align:center/);
   assert.match(css, /\.steps-arrow\{[^}]*width:44px;height:44px/);
   assert.match(css, /\.steps-dots button\{[^}]*height:44px/);
   assert.match(css, /@media \(prefers-reduced-motion:reduce\)\{\.js-reveal\{opacity:1;transform:none;transition:none\}\}/);
