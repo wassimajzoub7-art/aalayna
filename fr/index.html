@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="preload" href="../brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="../website.css?v=15">
+<link rel="stylesheet" href="../website.css?v=16">
 <link rel="icon" href="../brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="../brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../brand/icons/icon-180.png">
@@ -64,7 +64,7 @@
 var mq=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)'),sd=navigator.connection&&navigator.connection.saveData;
 if((mq&&mq.matches)||sd){v.removeAttribute('autoplay');v.pause();v.controls=true;b.hidden=true;p.hidden=true;return;}
 var onLabel=b.getAttribute('aria-label'),offLabel=b.getAttribute('data-mute');
-var f=v.parentNode,pauseLabel=p.getAttribute('aria-label'),playLabel=p.getAttribute('data-play');var sync=function(){f.classList.toggle('is-paused',v.paused);p.setAttribute('aria-label',v.paused?playLabel:pauseLabel);};var go=function(){var r=v.play();if(r&&r.catch)r.catch(sync);};var flash;var toggle=function(){if(v.paused){go();}else{v.pause();}f.classList.add('show');clearTimeout(flash);flash=setTimeout(function(){f.classList.remove('show');},1200);};v.addEventListener('canplay',function(){setTimeout(sync,800);},{once:true});v.addEventListener('play',sync);v.addEventListener('pause',sync);v.addEventListener('click',toggle);p.addEventListener('click',toggle);b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;go();b.setAttribute('aria-label',offLabel);b.setAttribute('aria-pressed','true');}else{v.muted=true;b.setAttribute('aria-label',onLabel);b.setAttribute('aria-pressed','false');}});})();
+var f=v.parentNode,pauseLabel=p.getAttribute('aria-label'),playLabel=p.getAttribute('data-play');var sync=function(){f.classList.toggle('is-paused',v.paused);p.setAttribute('aria-label',v.paused?playLabel:pauseLabel);};var go=function(){var r=v.play();if(r&&r.catch)r.catch(sync);};var toggle=function(){if(v.paused){go();}else{v.pause();}};v.addEventListener('canplay',function(){setTimeout(sync,800);},{once:true});v.addEventListener('play',sync);v.addEventListener('pause',sync);v.addEventListener('click',toggle);p.addEventListener('click',toggle);b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;go();b.setAttribute('aria-label',offLabel);b.setAttribute('aria-pressed','true');}else{v.muted=true;b.setAttribute('aria-label',onLabel);b.setAttribute('aria-pressed','false');}});})();
 </script>
   </section>
 
