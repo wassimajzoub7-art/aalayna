@@ -6,8 +6,9 @@
    Kufi (5.6 s): a red module is the pen. It writes علينا right to left along the baseline, each letter
    rising as it passes, climbs the alif, then hops three times to set the dots. The Latin name follows, letter by letter.
    Both take { word } (a spelling from AalaynaLogo.SPELLINGS; 3LAYNA by default), { colors, tagline } and { words } (the
-   tagline in another language, three words with their punctuation); the
-   Block also takes { tagAt }, when the tagline starts (3 s), so the reel can close on it.
+   tagline in another language, three words with their punctuation, with { font } and { rtl } for a script the Block
+   does not draw, such as Arabic), and { tagAt }, when the tagline starts (3 s for the Block, 4.1 s for the Kufi),
+   so the film can close on either.
 
    Every piece: { duration, cues, render(g, t, W, H) }, g already scaled to W x H logical pixels. */
 (function (root) {
@@ -42,15 +43,20 @@
   // The tagline is set in the logo's own capitals (the page loads Aalayna Block), a size under the logo.
   const FONT = "'Aalayna Block', monospace";
 
-  function tagline(g, t, t0, x, y, size, col, words = ['scan,', 'split,', 'settle.']) {
+  // With { font } it is set in that face instead (Arabic has no Block letters), and with { rtl } the words run right to
+  // left, still arriving in reading order.
+  function tagline(g, t, t0, x, y, size, col, words = ['scan,', 'split,', 'settle.'], o = {}) {
     g.save();
     size = Math.round(size * 0.72);
-    g.font = '400 ' + size + 'px ' + FONT;
+    g.font = (o.font ? '600 ' : '400 ') + size + 'px ' + (o.font || FONT);
     g.textBaseline = 'alphabetic';
-    const gap = size * 0.42, ws = words.map(w => g.measureText(w).width - size * 0.14);   // word gaps as in set text (three modules); drop each word's trailing module
+    if (o.rtl) { g.direction = 'rtl'; g.textAlign = 'left'; words = words.slice().reverse(); }
+    const trim = o.font ? 0 : size * 0.14;
+    const gap = size * 0.42, ws = words.map(w => g.measureText(w).width - trim);   // word gaps as in set text (three modules); drop each word's trailing module
     let cx = x - (ws.reduce((a, b) => a + b, 0) + gap * (words.length - 1)) / 2;
     words.forEach((w, i) => {
-      const k = E.outExpo(seg(t, t0 + i * 0.1, t0 + i * 0.1 + 0.55));
+      const n = o.rtl ? words.length - 1 - i : i;
+      const k = E.outExpo(seg(t, t0 + n * 0.1, t0 + n * 0.1 + 0.55));
       g.globalAlpha = k;
       g.fillStyle = col.sub; g.fillText(w, cx, y + (1 - k) * size * 0.6);   // no red: red belongs to the logo
       cx += ws[i] + gap;
@@ -184,7 +190,7 @@
       }
 
       g.restore();
-      if (withTag) tagline(g, t, TAG, W / 2, by + 11 * m + 2.5 * m, Math.round(Math.max(m * 0.78, Math.min(W, H) * 0.04)), col, opt && opt.words);
+      if (withTag) tagline(g, t, TAG, W / 2, by + 11 * m + 2.5 * m, Math.round(Math.max(m * 0.78, Math.min(W, H) * 0.04)), col, opt && opt.words, opt || {});
     }
     // Cue times for the soundtrack (tools/brand-audio.js).
     const eye = (top, right) => Math.min(...src.filter(x => x.red && (x.r >= 7) === top && (x.c >= 7) === right).map(x => x.bloom));
@@ -224,7 +230,7 @@
       { from: [5, RY[11]], to: [3, RY[11]], t: [2.32, 2.54], h: 1.3 },
       { from: [3, RY[11]], to: [2, RY[3]], t: [2.62, 3.0], h: 4 },
     ];
-    const INKED = 2.45, CAM = [3.1, 4.05], LAT = 3.35, TAG = 4.1;
+    const INKED = 2.45, CAM = [3.1, 4.05], LAT = 3.35, TAG = (opt && opt.tagAt) || 4.1;
     const squash = (s, amp) => amp * wobble(s, 3.4, 9);
 
     // Where the pen is: top-left corner and height in modules, turn, and squash (anchored at its base).
@@ -320,7 +326,7 @@
 
       if (withTag) {
         const bottom = H / 2 + ((F.wide ? 12 : 15.6) - F.end.cy) * F.end.m;
-        tagline(g, t, TAG, W / 2, bottom + F.end.m * (F.wide ? 3.3 : 2.8), Math.round(Math.min(W, H) * 0.045), col, opt && opt.words);
+        tagline(g, t, TAG, W / 2, bottom + F.end.m * (F.wide ? 3.3 : 2.8), Math.round(Math.min(W, H) * 0.045), col, opt && opt.words, opt || {});
       }
     }
     return { duration: DUR, render, cues: { drop: DROP[0], land: DROP[1], bounce: BOUNCE, run: RUN[0], rises: rises.map(r => r.at), climb: CLIMB[0], hops: HOPS.map(h => h.t), latin: LAT, letters: parts.length, tag: TAG } };

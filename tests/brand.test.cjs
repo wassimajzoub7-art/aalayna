@@ -172,6 +172,12 @@ test('the reel closes on the logo: reel.html plays the Block reveal, and its sou
   assert.ok(!/aalay<b>na|id="mark"|id="ar"/.test(s), 'the old wordmark is gone');
   assert.ok(!/Amiri/.test(s.replace(/\.(?:h-crest b|h-greet|pd-h)\{[^}]*\}/g, '').replace(/<link href="https:\/\/fonts[^>]*>/, '')), 'Amiri only on the app screens');
   assert.match(read('tools/reel-audio.js'), /const LOGO_AT = Number\(join\[1\]\), cue = global\.AalaynaMotion\.block/);
+  // The Arabic cut closes on the Kufi reveal: joined at LOGO_AR, with its tagline settled and 3LAYNA in before the last frame.
+  const ar = s.match(/const LOGO_AR = \{ at: ([\d.]+), piece: AalaynaMotion\.kufi\(\{ tagAt: ([\d.]+)/);
+  assert.ok(ar, 'the Kufi reveal is joined at LOGO_AR, in the form tools/reel-audio.js reads');
+  const kc = global.AalaynaMotion.kufi({ tagAt: Number(ar[2]) }).cues;
+  assert.ok(Number(ar[1]) + kc.tag + 0.2 + 0.55 <= DUR - 0.8, 'the Arabic tagline has settled well before the last frame');
+  assert.match(read('tools/reel-audio.js'), /const joinAr = [^\n]*LOGO_AR/);
 });
 
 test('brand pages: every local src and href resolves to a file', () => {
