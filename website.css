@@ -1,5 +1,11 @@
 /* Aalayna marketing site: index.html, numbers.html, book.html. */
 
+/* Two faces, both on a grid. Aalayna Block, the logo's own capitals as a font (tools/brand-font.js builds it
+   from brand/logo.js), sets every heading and big figure. Kode Mono, square and monospaced (every letter in a
+   box of the same width), sets everything you read or press. Corners are square everywhere, like the logo;
+   only the phones keep theirs, because phones have them. */
+@font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-weight:100 900;font-style:normal;font-display:swap}
+
 /* Tokens. Six type sizes only (14 / 16 / 19 / 30 / 54 / 67 px). Red has two jobs:
    --brand fills buttons under white text, --brand-text is any red text (5.5:1 on the cream, 5.2:1 on the pink pills). */
 :root{
@@ -8,18 +14,22 @@
   --petrol:#173E43;--peach:#F6C39F;--on-petrol:#D7E3E2;--on-petrol-sub:#B9C7C4;
   --fs-small:.875rem;--fs-body:1rem;--fs-lead:1.1875rem;--fs-heading:1.875rem;--fs-display:3.375rem;--fs-hero:4.1875rem;
   --header-h:4rem;
+  --font-display:'Aalayna Block','Kode Mono',ui-monospace,monospace;
+  --font-text:'Kode Mono','Noto Kufi Arabic',ui-monospace,monospace;
 }
 
 /* Base */
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.65;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-text);font-size:var(--fs-body);line-height:1.65;-webkit-font-smoothing:antialiased}
 button,a,input{touch-action:manipulation}button,input{font:inherit}a{color:inherit}
 button,a,summary{-webkit-tap-highlight-color:transparent}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
 h1,h2,h3,p,figure{margin:0}
-h2{font-size:var(--fs-heading);line-height:1.2;letter-spacing:-.03em}
-h3{font-size:var(--fs-lead);line-height:1.35}
+/* Headings in the logo's capitals: one weight, square, no tracking and no faux bold. */
+h1,h2,h3{font-family:var(--font-display);font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0;text-wrap:balance}
+h2{font-size:var(--fs-heading);line-height:1.15}
+h3{font-size:var(--fs-lead);line-height:1.3}
 p{color:var(--sub)}
 img{max-width:100%}
 .wrap{width:min(1120px,calc(100% - 3rem));margin-inline:auto}
@@ -28,19 +38,25 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .eyebrow{color:var(--brand-text);font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
 .number{font-size:var(--fs-small);font-weight:600;color:var(--brand-text)}
 .skip{position:absolute;top:-6rem;left:1rem;background:var(--surface);padding:.7rem;z-index:100}.skip:focus{top:.5rem}
+/* Read out, not shown: the hero spells the name 3LAYNA on screen and Aalayna to a screen reader. */
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* Header: 64 px, sticky, one line. Under 768 px only the wordmark and one action. */
 .site-nav{position:sticky;top:0;z-index:20;background:rgba(250,246,241,.97);border-bottom:1px solid var(--line)}
 .nav-in{display:flex;flex-wrap:nowrap;align-items:center;gap:1.5rem;height:calc(var(--header-h) - 1px)}
-.logo{display:inline-block;padding-block:.25rem;font-family:'Amiri',serif;font-size:var(--fs-heading);font-weight:700;line-height:1.2;text-decoration:none;color:var(--ink);white-space:nowrap}
-.logo b{color:var(--brand-text)}
+/* The logo: 3LA / YNA in the header, the Arabic and Latin lockup in the footer. Both are inline SVG drawn by
+   brand/logo.js (node tools/brand.js site writes them into the pages). */
+.logo{display:inline-flex;align-items:center;min-height:44px;flex-shrink:0;text-decoration:none;color:var(--ink)}
+.logo svg{display:block;height:2.375rem;width:auto}
+.logo .logo-ink{fill:currentColor}.logo .logo-red{fill:var(--brand)}
+.footer .logo svg{height:2.25rem}
 .nav-links{display:flex;align-items:center;gap:.5rem;margin-left:auto}
 .nav-links a,.nav-links button{display:inline-block;padding:.6875rem .5rem;font-size:var(--fs-small);text-decoration:none;white-space:nowrap}
 .nav-links a:hover,.nav-links button:hover{color:var(--brand-text)}
 .nav-in>.btn{white-space:nowrap}
 
 /* Buttons */
-.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.8rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:.65rem;text-decoration:none;font-size:var(--fs-body);font-weight:600;text-align:center;cursor:pointer;line-height:1.4}
+.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.8rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;text-decoration:none;font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;cursor:pointer;line-height:1.4}
 .btn:hover{background:var(--brand-hover)}
 .btn.outline{background:var(--surface);border-color:var(--line);color:var(--ink)}.btn.outline:hover{border-color:var(--brand)}
 .btn.light{background:var(--peach);color:var(--petrol)}.btn.light:hover{background:#fff}
@@ -51,7 +67,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 
 /* Product screens. Phone shots are 390 x 844 at 2x; the top 28 px is a demo strip live venues never show,
    so the frame is 390 x 816 and the image is anchored to the bottom. */
-.phone{width:100%;max-width:18rem;padding:.5rem;border-radius:2.5rem;background:var(--ink);box-shadow:0 1.5rem 3rem rgba(33,27,22,.16)}
+.phone{width:100%;max-width:18rem;padding:.5rem;border-radius:2.5rem;background:var(--ink)}
 .phone picture{display:block;overflow:hidden;border-radius:2rem;background:var(--surface)}
 .phone img{display:block;width:100%;height:auto;aspect-ratio:390/816;object-fit:cover;object-position:50% 100%}
 .phone.small{max-width:13.5rem;padding:.375rem;border-radius:1.9rem}.phone.small picture{border-radius:1.55rem}
@@ -59,21 +75,22 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .shot figcaption{max-width:22rem;margin-top:.9rem;font-size:var(--fs-small);line-height:1.5;color:var(--sub);text-align:center}
 .shot figcaption strong{display:block;color:var(--ink);font-weight:600}
 /* The editor, cropped to the menu card: the demo header above it and the demo controls below it are cut. */
-.panel{width:100%;overflow:hidden;border:1px solid var(--line);border-radius:1rem;background:#F5F5F2;box-shadow:0 1.5rem 3rem rgba(33,27,22,.08)}
+.panel{width:100%;overflow:hidden;border:1px solid var(--line);background:#F5F5F2}
 .panel picture{display:block}
 .panel img{display:block;width:100%;height:auto;aspect-ratio:960/1300;object-fit:cover;object-position:50% 63.4%}
 
 /* Hero */
-.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);align-items:center;gap:3rem;padding-block:4.5rem 5rem}
-.hero h1{font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);align-items:center;gap:3rem;padding-block:4.5rem 5rem}
+/* Sized so the longest line ("LE PARTAGE." in French) fits the column. */
+.hero h1{font-size:var(--fs-display);line-height:1.08}
 .hero h1 em{font-style:normal;color:var(--brand-text)}
 .lead{font-size:var(--fs-lead);line-height:1.6;margin-top:1.7rem;max-width:30rem}
 .supporting{font-size:var(--fs-small);line-height:1.9;margin-top:1rem;color:var(--ink)}
-/* The reel: muted loop with its last frame (the wordmark) as poster; sound only on request. */
+/* The reel: muted loop with its last frame (the logo) as poster; sound only on request. A hairline frames it on the cream. */
 .hero-reel{position:relative}
-.hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:1rem;background:var(--bg);box-shadow:0 1.5rem 3rem rgba(33,27,22,.16)}
-.reel-sound{position:absolute;right:.75rem;bottom:.75rem;min-height:44px;padding:.5rem 1rem;border:0;border-radius:999px;background:rgba(33,27,22,.8);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
-.reel-sound:hover{background:var(--ink)}
+.hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
+.reel-sound{position:absolute;right:0;bottom:0;min-height:44px;padding:.5rem 1rem;border:0;background:var(--ink);color:#fff;font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.reel-sound:hover{background:var(--brand)}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
@@ -88,9 +105,9 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .outcomes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:2rem;row-gap:0;margin-top:2.5rem}
 .outcomes article{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;align-content:start;padding-bottom:2rem}
 .outcomes h3{margin-top:1.1rem;color:var(--peach)}.outcomes p{margin-top:.75rem}
-.benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-display);font-weight:700;line-height:1;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.benefits-band .outcome-figure{margin:0;color:#fff;font-family:var(--font-display);font-size:var(--fs-heading);font-weight:400;font-synthesis:none;text-transform:uppercase;line-height:1}
 .benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
-.source-tag{display:inline-block;margin-right:.35rem;padding:0 .45rem;border-radius:.3rem;background:var(--peach);color:var(--petrol);font-weight:600}
+.source-tag{display:inline-block;margin-right:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .calc-link{display:inline-block;margin-top:.5rem;padding-block:.5625rem;color:var(--peach);font-weight:600;text-underline-offset:.25rem}
 .calc-link::after{content:' \2192'}
 
@@ -103,17 +120,17 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 /* Pilot and pricing */
 .section-intro{max-width:44rem;margin-top:1.2rem}
 .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2.5rem}
-.pilot{padding:2rem;border:1px solid var(--line);border-radius:1rem;background:var(--surface)}
-.pill{display:inline-block;margin-bottom:1.25rem;padding:.25rem .65rem;border-radius:.4rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small)}
+.pilot{padding:2rem;border:1px solid var(--line);background:var(--surface)}
+.pill{display:inline-block;margin-bottom:1.25rem;padding:.25rem .65rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small);font-weight:600}
 .pilot-steps{list-style:none;margin:1.5rem 0;padding:0}
 .pilot-steps li{margin-bottom:1rem;color:var(--sub)}
 .pilot-steps .number{display:block;margin-bottom:.15rem}
-.price-card{padding:2rem;border-radius:1rem;background:var(--petrol);color:#fff}
+.price-card{padding:2rem;background:var(--petrol);color:#fff}
 .price-card .eyebrow{color:var(--peach)}
-.price{color:#fff;font-size:var(--fs-display);font-weight:600;line-height:1.2;letter-spacing:-.04em}
-.price span{display:block;margin-top:.3rem;font-size:var(--fs-body);font-weight:400;letter-spacing:0;color:var(--on-petrol)}
+.price{color:#fff;font-family:var(--font-display);font-size:var(--fs-display);font-weight:400;font-synthesis:none;line-height:1.1}
+.price span{display:block;margin-top:.5rem;font-family:var(--font-text);font-size:var(--fs-body);font-weight:400;color:var(--on-petrol)}
 .founder{padding-block:1.25rem;border-bottom:1px solid #ffffff30;color:var(--peach);font-size:var(--fs-body)}
-.price-card ul{padding-left:1.2rem;color:var(--on-petrol)}.price-card li{margin-bottom:.5rem}
+.price-card ul{padding-left:1.2rem;list-style:square;color:var(--on-petrol)}.price-card li{margin-bottom:.5rem}
 .price-note{margin-block:1.2rem;font-size:var(--fs-small);color:var(--on-petrol)}
 
 /* Coming next: return visits */
@@ -123,9 +140,9 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .retention-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2.5rem;margin-top:2.75rem}
 .retention-steps article{border-top:2px solid var(--line);padding-top:1.25rem}
 .retention-steps h3{margin-top:.75rem}.retention-steps p{margin-top:.8rem}
-.retention-status{display:flex;align-items:flex-start;gap:1.2rem;margin-top:2.5rem;padding:1.25rem 1.5rem;border:1px solid var(--line);border-radius:.75rem;background:var(--surface)}
+.retention-status{display:flex;align-items:flex-start;gap:1.2rem;margin-top:2.5rem;padding:1.25rem 1.5rem;border:1px solid var(--line);background:var(--surface)}
 .retention-status strong{color:var(--ink);font-weight:600}
-.retention-badge{flex-shrink:0;display:inline-block;padding:.3rem .65rem;border-radius:.4rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small);font-weight:600;line-height:1.5}
+.retention-badge{flex-shrink:0;display:inline-block;padding:.3rem .65rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small);font-weight:600;line-height:1.5}
 
 /* FAQ: custom chevron, rows at least 48 px */
 .faq-section{display:grid;grid-template-columns:1fr 1.65fr;gap:3rem}
@@ -167,8 +184,10 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.faq summary::after{transition:none}}
 
 /* very narrow phones: the header button gives up padding before the page scrolls sideways */
-/* 320 to 359 px: tighter header; a long CTA (the French one) wraps to two lines inside the 64 px bar. */
-@media (max-width:359px){.nav-in{gap:.5rem}.nav-in .btn.compact{padding-inline:.6rem;letter-spacing:0;white-space:normal;line-height:1.2}}
+/* 320 to 399 px: tighter header; a long CTA (the French one) wraps to two lines inside the 64 px bar when it must. */
+@media (max-width:399px){.nav-in{gap:.5rem}.nav-in .btn.compact{padding-inline:.6rem;letter-spacing:0;white-space:normal;line-height:1.2}}
+/* Below 480 px the widest hero line ("LE PARTAGE.") no longer fits at the display size. */
+@media (max-width:479px){.hero h1{font-size:var(--fs-heading);line-height:1.12}}
 /* Large monitors: scale the whole page so the 1120 px column doesn't sit small in the middle. The type scale keeps its ratios. */
 @media (min-width:1680px){html{zoom:1.15}}
 @media (min-width:2200px){html{zoom:1.4}}

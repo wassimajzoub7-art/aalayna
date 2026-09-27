@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aalayna logo motion</title>
+<meta name="robots" content="noindex">
+<style>@font-face{font-family:'Aalayna Block';src:url(fonts/aalayna-block.woff) format('woff');font-display:block}</style>
+<style>
+/* One logo reveal, full window. ?piece=block|kufi, &word=AALAYNA for the other spelling (3LAYNA by default),
+   &w=&h= for a fixed stage (the renderer uses 1920 x 1080, 1080 x 1080 and 1080 x 1920), &ground=ink|petrol
+   for a dark ground, &notag to leave out the tagline. Click or press Space to replay. */
+html,body{margin:0;height:100%;background:#FAF6F1;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;transform-origin:50% 50%;display:block}
+body.capture #stage{left:0;top:0;transform:none}
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="Aalayna logo animation"></canvas>
+<script src="logo.js"></script>
+<script src="motion.js"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), C = AalaynaLogo.COLORS;
+  var grounds = { cream: {}, ink: { bg: C.ink, ink: C.cream, red: C.red, sub: '#B8ADA3' }, petrol: { bg: C.petrol, ink: C.cream, red: C.peach, sub: '#B9C7C4' } };
+  var colors = grounds[q.get('ground')] || {};
+  var piece = AalaynaMotion[q.get('piece') === 'kufi' ? 'kufi' : 'block']({ colors: colors, tagline: !q.has('notag'), word: q.get('word') || undefined });
+  var W = +q.get('w') || 1920, H = +q.get('h') || 1080, cv = document.getElementById('stage'), g = cv.getContext('2d');
+  var capture = q.has('capture'), d = capture ? 1 : Math.min(2, devicePixelRatio || 1);
+  if (colors.bg) document.documentElement.style.background = document.body.style.background = colors.bg;
+  cv.width = W * d; cv.height = H * d; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  g.setTransform(d, 0, 0, d, 0, 0);
+  window.__duration = piece.duration;
+  window.__cues = piece.cues;
+  window.__render = function (t) { piece.render(g, t, W, H); };
+  if (capture) { document.body.classList.add('capture'); return; }
+  function fit() { var s = Math.min(innerWidth / W, innerHeight / H); cv.style.transform = 'translate(-50%,-50%) scale(' + s + ')'; }
+  addEventListener('resize', fit); fit();
+  var t0 = null, raf = 0;
+  function tick(now) { if (t0 === null) t0 = now; var t = Math.min(piece.duration, (now - t0) / 1000); piece.render(g, t, W, H); if (t < piece.duration) raf = requestAnimationFrame(tick); }
+  function play() { cancelAnimationFrame(raf); t0 = null; raf = requestAnimationFrame(tick); }
+  document.fonts.load("40px 'Aalayna Block'").then(play, play);
+  addEventListener('click', play);
+  addEventListener('keydown', function (e) { if (e.code === 'Space') { e.preventDefault(); play(); } });
+})();
+</script>
+</body>
+</html>
