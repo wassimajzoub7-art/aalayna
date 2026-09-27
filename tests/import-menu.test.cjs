@@ -1,18 +1,18 @@
 /* Menu importer (T9): tools/import-menu.js turns a menu PDF or photos into a pack in
    venues/<slug>.json. Nothing here calls the Anthropic API. The saved answer in
-   tests/fixtures/kababji-response.json is two batches (pages one and two, then page
-   three with one dish repeated from the overlap) built from venues/kababji.json, so
+   tests/fixtures/mayda-response.json is two batches (pages one and two, then page
+   three with one dish repeated from the overlap) built from venues/mayda.json, so
    the pack it produces is checked field by field against the hand-typed pack. The
    request side (headers, content blocks, tool_choice fallback, retries, the SSE
    stream) runs against a stubbed fetch; admin.html's manifest loader runs its real
    script against a minimal DOM. */
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
-const root=path.join(__dirname,'..'),TOOL=path.join(root,'tools','import-menu.js'),FIXTURE=path.join(__dirname,'fixtures','kababji-response.json');
+const root=path.join(__dirname,'..'),TOOL=path.join(root,'tools','import-menu.js'),FIXTURE=path.join(__dirname,'fixtures','mayda-response.json');
 const im=require(TOOL),I=im._internal;
-const kababji=JSON.parse(fs.readFileSync(path.join(root,'venues','kababji.json'),'utf8'));
+const mayda=JSON.parse(fs.readFileSync(path.join(root,'venues','mayda.json'),'utf8'));
 const fixture=()=>JSON.parse(fs.readFileSync(FIXTURE,'utf8'));
 const answers=msgs=>msgs.map((m,i)=>I.toolInput(m,'batch '+(i+1)));
-const build=(msgs,o={})=>im.buildPack(answers(msgs),{name:'Kababji',currency:'USD',...o});
+const build=(msgs,o={})=>im.buildPack(answers(msgs),{name:'Mayda',currency:'USD',...o});
 const tmp=()=>fs.mkdtempSync(path.join(os.tmpdir(),'aal-import-'));
 const input=(msgs,b)=>msgs[b].content.find(c=>c.type==='tool_use').input;
 const itemNamed=(msgs,name)=>{for(const m of msgs){const x=m.content.find(c=>c.type==='tool_use').input.items.find(i=>i.name===name);if(x)return x;}throw new Error(name);};
@@ -28,19 +28,19 @@ test('the allergen vocabulary is the store vocabulary, in the tool schema and in
  assert.equal('strict' in I.toolDefinition(),false);   // strict is opt-in (--strict)
 });
 
-test('the fixture becomes a pack that matches venues/kababji.json dish by dish',()=>{
+test('the fixture becomes a pack that matches venues/mayda.json dish by dish',()=>{
  const {pack}=build(fixture());
  assert.deepEqual(im.validatePack(pack),[]);
- assert.equal(pack.name,'Kababji');
- assert.deepEqual(Object.keys(pack),Object.keys(kababji));
+ assert.equal(pack.name,'Mayda');
+ assert.deepEqual(Object.keys(pack),Object.keys(mayda));
  assert.deepEqual(pack.items.map(x=>x.id),Array.from({length:26},(_,i)=>'i'+String(i+1).padStart(2,'0')));
  const ids=pack.sections.map(s=>s.id);
  assert.ok(ids.every(id=>/^[a-z]{3}$/.test(id)));assert.equal(new Set(ids).size,ids.length);
  /* same section names and windows as the hand-typed pack; All Day Breakfast is not the breakfast window */
- for(const s of pack.sections){const k=kababji.sections.find(x=>x.name===s.name);assert.ok(k,s.name);assert.equal(s.win,k.win);}
- const secName=Object.fromEntries(pack.sections.map(s=>[s.id,s.name])),kSec=Object.fromEntries(kababji.sections.map(s=>[s.id,s.name]));
+ for(const s of pack.sections){const k=mayda.sections.find(x=>x.name===s.name);assert.ok(k,s.name);assert.equal(s.win,k.win);}
+ const secName=Object.fromEntries(pack.sections.map(s=>[s.id,s.name])),kSec=Object.fromEntries(mayda.sections.map(s=>[s.id,s.name]));
  for(const x of pack.items){
-  const k=kababji.items.find(y=>y.name===x.name);assert.ok(k,x.name);
+  const k=mayda.items.find(y=>y.name===x.name);assert.ok(k,x.name);
   assert.deepEqual(Object.keys(x),Object.keys(k),'key order');
   assert.equal(secName[x.sec],kSec[k.sec],x.name);
   for(const f of ['desc','price','ing','al','tr','opts'])assert.deepEqual(x[f],k[f],x.name+' '+f);
@@ -86,7 +86,7 @@ test('missing and non-positive prices become null and are listed in the report',
  itemNamed(msgs,'Tabbouleh').price=null;itemNamed(msgs,'Tabbouleh').options=[];
  itemNamed(msgs,'Raheb Salad').price=0;
  const dir=tmp(),file=path.join(dir,'fx.json');fs.writeFileSync(file,JSON.stringify(msgs));
- const r=await im.importMenu({fixture:file,name:'Kababji',slug:'kababji',currency:'USD',dryRun:true,cwd:dir});
+ const r=await im.importMenu({fixture:file,name:'Mayda',slug:'mayda',currency:'USD',dryRun:true,cwd:dir});
  assert.equal(r.path,null);
  assert.equal(r.pack.items.find(x=>x.name==='Tabbouleh').price,null);
  assert.equal(r.pack.items.find(x=>x.name==='Raheb Salad').price,null);
@@ -113,35 +113,35 @@ test('an answer that does not fit the schema throws and writes nothing',async()=
  ];
  for(const [i,mutate] of cases.entries()){
   const msgs=fixture();mutate(msgs);const file=path.join(dir,'bad'+i+'.json');fs.writeFileSync(file,JSON.stringify(msgs));
-  await assert.rejects(im.importMenu({fixture:file,name:'Kababji',slug:'bad',currency:'USD',cwd:dir}),e=>e.code==='SCHEMA','case '+i);
+  await assert.rejects(im.importMenu({fixture:file,name:'Mayda',slug:'bad',currency:'USD',cwd:dir}),e=>e.code==='SCHEMA','case '+i);
  }
  assert.equal(fs.existsSync(path.join(dir,'venues')),false);
  const msgs=fixture();input(msgs,0).items[0].price='4.75';const file=path.join(dir,'bad.json');fs.writeFileSync(file,JSON.stringify(msgs));
- const run=spawnSync(process.execPath,[TOOL,'--name','Kababji','--slug','bad','--currency','USD','--fixture',file],{cwd:dir,encoding:'utf8'});
+ const run=spawnSync(process.execPath,[TOOL,'--name','Mayda','--slug','bad','--currency','USD','--fixture',file],{cwd:dir,encoding:'utf8'});
  assert.equal(run.status,1);assert.match(run.stderr,/does not fit the schema/);assert.match(run.stderr,/batch 1\.items\[0\]\.price/);
 });
 
 test('writing refuses to overwrite without --force and keeps venues/index.json to one entry per pack',async()=>{
  const dir=tmp(),venues=path.join(dir,'venues');fs.mkdirSync(venues);
  fs.copyFileSync(path.join(root,'venues','index.json'),path.join(venues,'index.json'));
- const o={fixture:FIXTURE,name:'Em Sherif',slug:'em-sherif',currency:'USD',cwd:dir};
+ const o={fixture:FIXTURE,name:'Test Bistro',slug:'test-bistro',currency:'USD',cwd:dir};
  const r=await im.importMenu(o);
- assert.equal(r.path,path.join(venues,'em-sherif.json'));
+ assert.equal(r.path,path.join(venues,'test-bistro.json'));
  assert.deepEqual(JSON.parse(fs.readFileSync(r.path,'utf8')),r.pack);
  const today=new Date().toISOString().slice(0,10);
  let idx=JSON.parse(fs.readFileSync(path.join(venues,'index.json'),'utf8'));
- assert.deepEqual(idx,[{slug:'em-sherif',name:'Em Sherif',items:26,updated:today},{slug:'kababji',name:'Kababji',items:75,updated:'2026-09-01'}]);
+ assert.deepEqual(idx,[{slug:'mayda',name:'Mayda',items:75,updated:'2026-09-27'},{slug:'test-bistro',name:'Test Bistro',items:26,updated:today}]);
  await assert.rejects(im.importMenu(o),e=>e.code==='EXISTS');
  /* refused before any API call: a stub fetch that fails the test if reached */
  const img=path.join(dir,'p1.jpg');fs.writeFileSync(img,Buffer.from([0xff,0xd8,0xff,0xd9]));
  const was=I.deps.fetch;I.deps.fetch=()=>{throw new Error('the API was called');};
- try{await assert.rejects(im.importMenu({files:[img],name:'Em Sherif',slug:'em-sherif',currency:'USD',apiKey:'test-key',cwd:dir}),e=>e.code==='EXISTS');}
+ try{await assert.rejects(im.importMenu({files:[img],name:'Test Bistro',slug:'test-bistro',currency:'USD',apiKey:'test-key',cwd:dir}),e=>e.code==='EXISTS');}
  finally{I.deps.fetch=was;}
- const again=await im.importMenu({...o,name:'Em Sherif Beirut',force:true});
+ const again=await im.importMenu({...o,name:'Test Bistro Beirut',force:true});
  idx=JSON.parse(fs.readFileSync(path.join(venues,'index.json'),'utf8'));
- assert.equal(idx.filter(e=>e.slug==='em-sherif').length,1);
- assert.equal(idx.find(e=>e.slug==='em-sherif').name,'Em Sherif Beirut');
- assert.equal(JSON.parse(fs.readFileSync(again.path,'utf8')).name,'Em Sherif Beirut');
+ assert.equal(idx.filter(e=>e.slug==='test-bistro').length,1);
+ assert.equal(idx.find(e=>e.slug==='test-bistro').name,'Test Bistro Beirut');
+ assert.equal(JSON.parse(fs.readFileSync(again.path,'utf8')).name,'Test Bistro Beirut');
  /* a broken manifest stops the run before anything is written */
  fs.writeFileSync(path.join(venues,'index.json'),'{not json');
  await assert.rejects(im.importMenu({...o,slug:'third'}),/not a JSON list/);
@@ -151,15 +151,15 @@ test('writing refuses to overwrite without --force and keeps venues/index.json t
 test('slugs follow the admin rule and index is reserved; the other options are checked',()=>{
  const base={name:'X',currency:'USD',fixture:'f.json'};
  for(const slug of ['index','Bad Slug','-x','x-','a/b',''])assert.throws(()=>I.checkOptions({...base,slug}),e=>e.code==='USAGE',slug);
- assert.equal(I.checkOptions({...base,slug:'em-sherif'}).slug,'em-sherif');
+ assert.equal(I.checkOptions({...base,slug:'test-bistro'}).slug,'test-bistro');
  assert.throws(()=>I.checkOptions({...base,slug:'x',currency:'EUR'}),/USD or LBP/);
  assert.throws(()=>I.checkOptions({...base,slug:'x',rate:90000}),/only applies/);
  assert.throws(()=>I.checkOptions({...base,slug:'x',currency:'LBP',rate:5}),/between/);
  assert.equal(I.checkOptions({...base,slug:'x',currency:'lbp'}).rate,89500);
  assert.equal(I.checkOptions({...base,slug:'x'}).model,'claude-opus-5-5');
  assert.throws(()=>I.checkOptions({name:'X',slug:'x',currency:'USD',files:[]}),/at least one menu file/);
- assert.deepEqual(I.parseArgs(['--name','Em Sherif','--slug','em-sherif','--currency','LBP','--rate','90000','--force','a.jpg','b.jpg']),
-  {files:['a.jpg','b.jpg'],name:'Em Sherif',slug:'em-sherif',currency:'LBP',rate:90000,force:true});
+ assert.deepEqual(I.parseArgs(['--name','Test Bistro','--slug','test-bistro','--currency','LBP','--rate','90000','--force','a.jpg','b.jpg']),
+  {files:['a.jpg','b.jpg'],name:'Test Bistro',slug:'test-bistro',currency:'LBP',rate:90000,force:true});
  assert.throws(()=>I.parseArgs(['--nme','x']),/Unknown option/);
 });
 
@@ -168,7 +168,7 @@ test('LBP prices are converted to USD at the rate before option differences are 
   ingredients:['chickpea','tahini'],allergens:['sesame'],translations:{fr:{name:'',description:''},ar:{name:'حمص',description:''}},
   options:[{name:'Portion',type:'one',prices_are:'full_dish_price',choices:[{name:'Small',price:450000},{name:'Large',price:720000}]},
            {name:'Extras',type:'many',prices_are:'amount_added',choices:[{name:'Pine nuts',price:90000},{name:'Bread',price:null}]}]}]};
- const {pack,flags}=im.buildPack([ans],{name:'Em Sherif',currency:'LBP',rate:89500});
+ const {pack,flags}=im.buildPack([ans],{name:'Test Bistro',currency:'LBP',rate:89500});
  const x=pack.items[0];
  assert.equal(x.price,5.03);
  assert.deepEqual(x.opts[0].choices,[{n:'Small',p:0},{n:'Large',p:3.01}]);
@@ -256,7 +256,7 @@ test('requests by default: forced tool for every model, no strict, no output_con
  try{
   /* the real defaults, through importMenu: model claude-opus-5-5, forced tool_choice */
   api.replies.push(api.err(400,'invalid_request_error','tool_choice: type "tool" and "any" are not supported for this model.'),api.err(529,'overloaded_error','Overloaded'),api.ok,api.ok);
-  const r=await im.importMenu({files:[pdf,img],name:'Kababji',slug:'kababji',currency:'USD',apiKey:'sk-test-secret',dryRun:true,cwd:dir,log:api.log});
+  const r=await im.importMenu({files:[pdf,img],name:'Mayda',slug:'mayda',currency:'USD',apiKey:'sk-test-secret',dryRun:true,cwd:dir,log:api.log});
   assert.equal(r.path,null);
   assert.equal(api.calls.length,4);
   const [first,second,third,fourth]=api.calls;
@@ -304,7 +304,7 @@ test('--strict and --effort are opt-in, and a 400 naming either drops that field
  try{
   api.replies.push(api.err(400,'invalid_request_error','tools.0.strict: Extra inputs are not permitted'),
                    api.err(400,'invalid_request_error','output_config.effort: not supported for this model'),api.ok,api.ok);
-  const r=await im.importMenu({files:[img,pdf],name:'Kababji',slug:'kababji',currency:'USD',apiKey:'k',strict:true,effort:'high',dryRun:true,cwd:dir,log:api.log});
+  const r=await im.importMenu({files:[img,pdf],name:'Mayda',slug:'mayda',currency:'USD',apiKey:'k',strict:true,effort:'high',dryRun:true,cwd:dir,log:api.log});
   assert.equal(r.pack.items.length,18);   // two batches, both answered with the same page
   const [a,b,c,d]=api.calls;
   assert.equal(a.body.tools[0].strict,true);assert.deepEqual(a.body.output_config,{effort:'high'});
@@ -322,13 +322,13 @@ test('--strict and --effort are opt-in, and a 400 naming either drops that field
 });
 
 test('the CLI replays the fixture in --dry-run and prints the review report without touching venues/',()=>{
- const pack=path.join(root,'venues','kababji.json'),index=path.join(root,'venues','index.json'),before=[sha(pack),sha(index)];
+ const pack=path.join(root,'venues','mayda.json'),index=path.join(root,'venues','index.json'),before=[sha(pack),sha(index)];
  const env={...process.env};delete env.ANTHROPIC_API_KEY;
- const run=spawnSync(process.execPath,[TOOL,'--name','Kababji','--slug','kababji','--currency','USD','--fixture',FIXTURE,'--dry-run'],{cwd:root,env,encoding:'utf8'});
+ const run=spawnSync(process.execPath,[TOOL,'--name','Mayda','--slug','mayda','--currency','USD','--fixture',FIXTURE,'--dry-run'],{cwd:root,env,encoding:'utf8'});
  assert.equal(run.status,0,run.stderr);
  const out=run.stdout;
- assert.match(out,/^Menu import: Kababji \(kababji\)$/m);
- assert.match(out,/^Model: claude-opus-5-5, replayed from .*kababji-response\.json \(no API call\)$/m);
+ assert.match(out,/^Menu import: Mayda \(mayda\)$/m);
+ assert.match(out,/^Model: claude-opus-5-5, replayed from .*mayda-response\.json \(no API call\)$/m);
  assert.match(out,/^Batches: 2\. Tokens: 10,711 input, 9,198 output, 0 cache read, 0 cache write\.$/m);
  assert.match(out,/^Sections \(4, 26 items\):$/m);
  assert.match(out,/^  app  Appetizers +11 items  all day$/m);
@@ -347,7 +347,7 @@ test('the CLI replays the fixture in --dry-run and prints the review report with
 
 test('venues/index.json lists every pack with its real name and item count',()=>{
  const idx=JSON.parse(fs.readFileSync(path.join(root,'venues','index.json'),'utf8'));
- assert.ok(idx.some(e=>e.slug==='kababji'));
+ assert.ok(idx.some(e=>e.slug==='mayda'));
  for(const e of idx){
   const p=JSON.parse(fs.readFileSync(path.join(root,'venues',e.slug+'.json'),'utf8'));
   assert.equal(e.name,p.name);assert.equal(e.items,p.items.length);assert.match(e.updated,/^\d{4}-\d{2}-\d{2}$/);
@@ -375,32 +375,32 @@ function adminPage(fetchImpl){
  vm.runInContext(src,ctx);
  return {ctx,document,api:ctx.AalaynaAdminVenues};
 }
-const profile=menu=>({name:'Em Sherif',place:'Achrafieh',slug:'',gplace:'',brand:'',bg:'',font:'',menu});
+const profile=menu=>({name:'Test Bistro',place:'Achrafieh',slug:'',gplace:'',brand:'',bg:'',font:'',menu});
 
 test('admin.html builds the menu pack list from venues/index.json and validates against it',async()=>{
  const asked=[];
  const {document,api}=adminPage((url,init)=>{asked.push([url,init]);return Promise.resolve({ok:true,json:()=>Promise.resolve([
-  {slug:'em-sherif',name:'Em Sherif',items:40,updated:'2026-09-24'},{slug:'kababji',name:'Kababji',items:75,updated:'2026-09-01'},{slug:'../x',name:'Bad'}])});});
+  {slug:'test-bistro',name:'Test Bistro',items:40,updated:'2026-09-24'},{slug:'mayda',name:'Mayda',items:75,updated:'2026-09-27'},{slug:'../x',name:'Bad'}])});});
  const sel=document.getElementById('reg-menu');
- assert.deepEqual(sel.children.map(o=>o.value),['','kababji'],'fallback until the manifest arrives');
- assert.equal(api.validateProfile(profile('em-sherif'),null).ok,false);
- sel.value='kababji';
+ assert.deepEqual(sel.children.map(o=>o.value),['','mayda'],'fallback until the manifest arrives');
+ assert.equal(api.validateProfile(profile('test-bistro'),null).ok,false);
+ sel.value='mayda';
  for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
  assert.equal(JSON.stringify(asked),JSON.stringify([['venues/index.json',{cache:'no-store'}]]));   // objects from the vm realm
- assert.deepEqual(sel.children.map(o=>[o.value,o.textContent]),[['','None'],['em-sherif','Em Sherif (venues/em-sherif.json)'],['kababji','Kababji (venues/kababji.json)']]);
- assert.equal(sel.value,'kababji','the choice survives the refill');
- assert.equal(api.validateProfile(profile('em-sherif'),null).ok,true);
+ assert.deepEqual(sel.children.map(o=>[o.value,o.textContent]),[['','None'],['test-bistro','Test Bistro (venues/test-bistro.json)'],['mayda','Mayda (venues/mayda.json)']]);
+ assert.equal(sel.value,'mayda','the choice survives the refill');
+ assert.equal(api.validateProfile(profile('test-bistro'),null).ok,true);
  assert.equal(api.validateProfile(profile('../x'),null).ok,false);
  assert.equal(api.validateProfile(profile(''),null).ok,true);
 });
 
-test('admin.html keeps the hard-coded Kababji entry when the manifest cannot be read',async()=>{
+test('admin.html keeps the hard-coded Mayda entry when the manifest cannot be read',async()=>{
  for(const f of [()=>Promise.reject(new Error('offline')),()=>Promise.resolve({ok:false,status:404,json:()=>Promise.resolve(null)}),
                  ()=>Promise.resolve({ok:true,json:()=>Promise.resolve({not:'a list'})})]){
   const {document,api}=adminPage(f);
   for(let i=0;i<5;i++)await new Promise(r=>setImmediate(r));
-  assert.deepEqual(document.getElementById('reg-menu').children.map(o=>o.value),['','kababji']);
-  assert.equal(api.validateProfile(profile('kababji'),null).ok,true);
-  assert.equal(api.validateProfile(profile('em-sherif'),null).ok,false);
+  assert.deepEqual(document.getElementById('reg-menu').children.map(o=>o.value),['','mayda']);
+  assert.equal(api.validateProfile(profile('mayda'),null).ok,true);
+  assert.equal(api.validateProfile(profile('test-bistro'),null).ok,false);
  }
 });

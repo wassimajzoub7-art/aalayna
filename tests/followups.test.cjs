@@ -23,7 +23,7 @@
      PGLITE_MODULE set, behaves as stated against a real PostgreSQL. */
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.join(__dirname,'..'),flush=async(n=14)=>{for(let i=0;i<n;i++)await new Promise(r=>setImmediate(r));};
-const RID=JSON.stringify(['kababji','hamra']),SEARCH='?venue=Kababji&place=Hamra',USER='0b7c6f7e-1d2a-4c3b-9e8f-112233445566';
+const RID=JSON.stringify(['mayda','hamra']),SEARCH='?venue=Mayda&place=Hamra',USER='0b7c6f7e-1d2a-4c3b-9e8f-112233445566';
 const OWNER_KEY='own_'+'ab'.repeat(18);
 const CLOSED='This bill is closed. Scan the table code again for a new bill.';
 const outboxKey=scope=>'aal.scope:'+JSON.stringify(scope)+':aal.outbox';
@@ -160,7 +160,7 @@ test('an owner link to a signed-in session: unsent changes move to the new crede
  server.down=true;floorEdit(link.a,7,'Jad');await flush();
  assert.ok(JSON.parse(local.get(outboxKey(OWNER_SCOPE)))['doc:aal.floor']);
  // the owner signs in on this device; the next load is a session
- server.down=false;local.set('aal.session',sessionFor('rami@kababji.com'));
+ server.down=false;local.set('aal.session',sessionFor('rami@mayda.com'));
  const before=server.docWrites().length;
  const signed=staffBoot({server,local});await signed.a.sync.ready;await flush();
  assert.equal(signed.a.sync.signedIn,true);
@@ -172,7 +172,7 @@ test('an owner link to a signed-in session: unsent changes move to the new crede
 });
 
 test('a signed-in session to an owner link: the session\'s unsent changes are carried and sent with the key',async()=>{
- const server=staffServer(),local=new Map([['aal.session',sessionFor('rami@kababji.com')]]);
+ const server=staffServer(),local=new Map([['aal.session',sessionFor('rami@mayda.com')]]);
  const signed=staffBoot({server,local});await signed.a.sync.ready;await flush();
  server.down=true;floorEdit(signed.a,3,'Sara');await flush();
  assert.ok(JSON.parse(local.get(outboxKey(USER_SCOPE)))['doc:aal.floor']);
@@ -193,7 +193,7 @@ test('a waiter takes over only what a waiter may send; another person\'s session
   'op:confirm_cash:pay-1':job('op',{op:'confirm_cash',body:{id:'pay-1'},token:'',waiter:'gone'})};
  const other=[RID,'staff','user:someone-else'];
  const local=new Map([[outboxKey(OWNER_SCOPE),JSON.stringify(owned)],[outboxKey(other),JSON.stringify({'doc:aal.floor':owned['doc:aal.floor']})],
-  ['aal.session',sessionFor('sara@kababji.com')]]);
+  ['aal.session',sessionFor('sara@mayda.com')]]);
  const server=staffServer({sessionRole:'waiter'});
  const p=staffBoot({server,local});await p.a.sync.ready;await flush();
  assert.equal(p.a.sync.state().role,'waiter');
@@ -205,7 +205,7 @@ test('a waiter takes over only what a waiter may send; another person\'s session
 });
 
 test('a signed-in waiter\'s floor plan edit reaches kv_docs; other documents are not sent',async()=>{
- const server=staffServer({sessionRole:'waiter'}),p=staffBoot({server,local:new Map([['aal.session',sessionFor('sara@kababji.com')]])});
+ const server=staffServer({sessionRole:'waiter'}),p=staffBoot({server,local:new Map([['aal.session',sessionFor('sara@mayda.com')]])});
  await p.a.sync.ready;await flush();
  assert.equal(p.a.sync.state().role,'waiter');
  floorEdit(p.a,5,'Sara');await flush();
@@ -220,11 +220,11 @@ test('a signed-in waiter\'s floor plan edit reaches kv_docs; other documents are
 const html=fs.readFileSync(path.join(root,'guest.html'),'utf8');
 const inline=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 const TQ=inline.find(s=>s.indexOf('var AalaynaTableQR')>=0),PAGE=inline.find(s=>s.indexOf('function loadMenu')>=0);
-const KEY='chk_'+'ab'.repeat(24),KEY2='chk_'+'cd'.repeat(24),LINK=SEARCH+'&k='+KEY,SLUG='kababji-hamra',TOKEN='tbl_'+'ef'.repeat(24);
+const KEY='chk_'+'ab'.repeat(24),KEY2='chk_'+'cd'.repeat(24),LINK=SEARCH+'&k='+KEY,SLUG='mayda-hamra',TOKEN='tbl_'+'ef'.repeat(24);
 const MENU={version:7,sections:[{id:'grl',name:'Grill',win:'all'}],items:[{id:'k1',sec:'grl',name:'Shish taouk',desc:'',price:9,status:'incomplete',available:true}],at:'2026-09-24T09:00:00.000Z'};
 const CHECK={id:'bill-7',venueId:RID,table:7,source:'staff',openedAt:'2026-09-24T10:00:00.000Z',lines:[{id:'k1',q:2,p:18,name:'Shish taouk'}],totalCents:1800,amountUsd:18,revision:1};
 const CHECK2={id:'bill-8',venueId:RID,table:7,source:'staff',openedAt:'2026-09-24T12:00:00.000Z',lines:[{id:'k1',q:1,p:9,name:'Shish taouk'}],totalCents:900,amountUsd:9,revision:1};
-const VENUE={name:'Kababji',place:'Hamra',gplace:null,brand:'#EA312B',bg:null,font:null,menu_pack:'kababji'};
+const VENUE={name:'Mayda',place:'Hamra',gplace:null,brand:'#2F6B4F',bg:null,font:null,menu_pack:'mayda'};
 function guestDom(){
  const byId=new Map();
  function el(id){
@@ -461,15 +461,15 @@ test('followups SQL: keys work 24 hours past the close for reads, receipt and ca
   await db.exec('rollback');
   for(const f of ['migration.sql','site-events.sql','hardening-2026-09-15.sql','hardening-2026-09-24.sql','admin.sql','sessions-2026-09-24.sql','auth-2026-09-24.sql','followups-2026-09-24.sql','followups-2026-09-24.sql'])await db.exec(sql(f));
   const WAITER='22222222-2222-4222-8222-222222222222';
-  await db.query(`insert into auth.users values($1,'sara@kababji.com',now(),null)`,[WAITER]);
+  await db.query(`insert into auth.users values($1,'sara@mayda.com',now(),null)`,[WAITER]);
   await db.query("insert into admin_keys(admin_key,label) values('adm_test','test')");
   const as=async(role,headers,claims)=>{await db.exec('reset role');await db.query("select set_config('request.headers',$1,false),set_config('request.jwt.claims',$2,false)",[JSON.stringify(headers||{}),JSON.stringify(claims||{role})]);await db.exec('set role '+role);};
   const one=async(q,args)=>(await db.query(q,args)).rows[0].value;
   await as('anon',{'x-aalayna-admin':'adm_test'});
-  const v=await one("select aal_admin_register_venue('Kababji','Hamra','kababji-hamra','{}'::jsonb) as value");
+  const v=await one("select aal_admin_register_venue('Mayda','Hamra','mayda-hamra','{}'::jsonb) as value");
   const rid=v.restaurant_id;
   const mutate=(op,body,token='')=>one('select aal_mutate($1,$2,$3::jsonb,$4) as value',[rid,op,JSON.stringify(body),token]);
-  const session=(table,code)=>one('select aal_table_session($1,$2,$3) as value',['kababji-hamra',table,code]);
+  const session=(table,code)=>one('select aal_table_session($1,$2,$3) as value',['mayda-hamra',table,code]);
   const keysFor=async id=>{await db.exec('reset role');return (await db.query('select count(*)::int as n from check_keys where check_id=$1',[id])).rows[0].n;};
   await as('anon',{'x-aalayna-key':v.owner_key});
   const code=(await one('select aal_table_tokens($1,$2::jsonb) as value',[rid,JSON.stringify({op:'issue',table:7})])).tokens[0].token;
@@ -508,8 +508,8 @@ test('followups SQL: keys work 24 hours past the close for reads, receipt and ca
   assert.equal(await keysFor('bill-7'),0);                                           // the next real scan clears them
   // the floor: a signed-in waiter writes it and nothing else
   await as('anon',{'x-aalayna-key':v.owner_key});
-  await one("select aal_staff($1,$2::jsonb) as value",[rid,JSON.stringify({op:'invite',email:'sara@kababji.com',role:'waiter'})]);
-  await as('authenticated',{},{role:'authenticated',sub:WAITER,email:'sara@kababji.com'});
+  await one("select aal_staff($1,$2::jsonb) as value",[rid,JSON.stringify({op:'invite',email:'sara@mayda.com',role:'waiter'})]);
+  await as('authenticated',{},{role:'authenticated',sub:WAITER,email:'sara@mayda.com'});
   await db.query("insert into kv_docs(restaurant_id,key,body) values($1,'aal.floor',$2::jsonb) on conflict (restaurant_id,key) do update set body=excluded.body",[rid,JSON.stringify({servers:['Sara'],tables:{'7':'Sara'},pooled:false})]);
   await db.query("insert into kv_docs(restaurant_id,key,body) values($1,'aal.floor',$2::jsonb) on conflict (restaurant_id,key) do update set body=excluded.body",[rid,JSON.stringify({servers:['Sara','Jad'],tables:{},pooled:false})]);
   await assert.rejects(db.query("insert into kv_docs(restaurant_id,key,body) values($1,'aal.draft','{}'::jsonb)",[rid]),/row-level security/);

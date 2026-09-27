@@ -132,13 +132,13 @@ save the floor plan (`aal.floor`) and nothing else among the venue documents. Se
 ## Importing a menu
 
 `tools/import-menu.js` turns a restaurant's menu, as a PDF or as photos, into a menu
-pack in `venues/<slug>.json` (the format of `venues/kababji.json`) and adds it to
+pack in `venues/<slug>.json` (the format of `venues/mayda.json`) and adds it to
 `venues/index.json`, which fills the **Menu pack** list in `admin.html`. It needs Node
 18 or later and an Anthropic API key in `ANTHROPIC_API_KEY` (never written to disk):
 
 ```sh
-node tools/import-menu.js --name "Kababji" --slug kababji --currency USD menu.pdf
-node tools/import-menu.js --name "Em Sherif" --slug em-sherif --currency LBP page1.jpg page2.jpg
+node tools/import-menu.js --name "Mayda" --slug mayda --currency USD menu.pdf
+node tools/import-menu.js --name "Test Bistro" --slug test-bistro --currency LBP page1.jpg page2.jpg
 ```
 
 The model only transcribes; ids, service windows, allergen filtering and price
@@ -146,8 +146,9 @@ arithmetic are done by the script. LBP prices are converted to USD at `--rate`
 (default 89,500): set the venue rate to the same value. It refuses to replace an
 existing pack without `--force`; `--dry-run` prints the report and writes nothing;
 `--fixture <file>` replays a saved response (`--save-response <file>` saves one) with
-no API call. The first real run should be Kababji's PDF with `--save-response` and
-`--dry-run`, and its report compared with `venues/kababji.json` (75 items, 9 sections).
+no API call. To check a new setup, replay `tests/fixtures/mayda-response.json` with
+`--fixture` and `--dry-run`: its 26 dishes should match `venues/mayda.json`, the pack
+of Mayda, the fictional restaurant the demo runs on (75 items, 9 sections).
 `--strict` and `--effort <level>` are opt-in; a model that refuses one of them, or a
 forced tool choice, is retried once without it. Before loading the pack, read the report and fix: items with no price
 (the app stores them as 0, and loading a pack publishes it), names that appear twice
@@ -182,9 +183,9 @@ session key: another page in the browser cannot drive the tool. See
 ```sh
 export AALAYNA_ADMIN_KEY=...      # the adm_ key from admin.sql (steps register, theme)
 export ANTHROPIC_API_KEY=...      # steps theme, menu, welcome
-node tools/onboard.js --name "Em Sherif" --place "Beirut" --slug em-sherif --currency USD \
-  --tables 24 --owner owner@emsherif.com \
-  --staff "sara@emsherif.com:manager,ali@emsherif.com:waiter" menu.pdf
+node tools/onboard.js --name "Test Bistro" --place "Beirut" --slug test-bistro --currency USD \
+  --tables 24 --owner owner@testbistro.com \
+  --staff "sara@testbistro.com:manager,ali@testbistro.com:waiter" menu.pdf
 ```
 
 The Supabase URL and anon key come from `aalayna-config.js`. The seven steps, one
@@ -197,7 +198,7 @@ module each in `tools/steps/`, run in order and print one line each:
    `--no-theme` skips it.
 3. **menu**: `tools/import-menu.js` writes `venues/<slug>.json` and its report is
    printed. **The run stops here.** Read and fix the file, then run
-   `node tools/onboard.js --slug em-sherif --approve-menu`: the file is published to
+   `node tools/onboard.js --slug test-bistro --approve-menu`: the file is published to
    the venue (draft and live menu, exactly as the editor's Publish makes them) and read
    back from the server. A pack with an item without a price is refused.
 4. **tables**: a code for tables 1 to N and `onboarding/<slug>-table-cards.html`, the

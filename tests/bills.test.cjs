@@ -88,7 +88,7 @@ test('check(table) returns the open check, and the sample only for a venue witho
  // lines resolve current menu names; checks are scoped to their venue
  const d=a.draft();d.items.find(x=>x.id==='i06').name='Hummus';a.saveDraft(d);a.publish();
  assert.equal(a.check(5)[1].name,'Hummus');
- switchVenue('Tripoli');assert.equal(a.check(5).length,12);
+ switchVenue('Jounieh');assert.equal(a.check(5).length,12);
 });
 
 test('opening and every update append an order_placed event with the full line list',()=>{

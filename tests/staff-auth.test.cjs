@@ -11,7 +11,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.join(__dirname,'..'),flush=async(n=8)=>{for(let i=0;i<n;i++)await new Promise(r=>setImmediate(r));};
 const gateScript=page=>{const html=fs.readFileSync(path.join(root,page),'utf8');const s=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(x=>x.indexOf('AalaynaAuth.gate(')>=0);assert.ok(s,page+' has a sign-in script');return s;};
-const RID=JSON.stringify(['kababji','hamra']),SEARCH='?venue=Kababji&place=Hamra',USER='0b7c6f7e-1d2a-4c3b-9e8f-112233445566';
+const RID=JSON.stringify(['mayda','hamra']),SEARCH='?venue=Mayda&place=Hamra',USER='0b7c6f7e-1d2a-4c3b-9e8f-112233445566';
 const OWNER_KEY='own_'+'ab'.repeat(18);
 const sessionFor=(email,{token='at-1',refresh='rt-1',expiresIn=3600}={})=>JSON.stringify({access_token:token,refresh_token:refresh,expires_at:Math.floor(Date.now()/1000)+expiresIn,email,user_id:USER});
 
@@ -36,7 +36,7 @@ function store(m){return {getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set
 
 /* the mocked Supabase: Auth endpoints, aal_staff, aal_snapshot, aal_mutate */
 function makeServer(o={}){
- const server={calls:[],role:o.role||'owner',mine:o.mine||[{restaurant_id:RID,role:o.role||'owner',name:'Kababji',place:'Hamra',slug:'kababji-hamra'}],tokens:0,rows:[]};
+ const server={calls:[],role:o.role||'owner',mine:o.mine||[{restaurant_id:RID,role:o.role||'owner',name:'Mayda',place:'Hamra',slug:'mayda-hamra'}],tokens:0,rows:[]};
  server.fetch=async(url,options)=>{
   const body=options&&options.body?JSON.parse(options.body):null;server.calls.push({url,body,headers:Object.assign({},options.headers)});
   const reply=(status,obj)=>({ok:status<300,status,text:async()=>obj==null?'':JSON.stringify(obj)});
@@ -44,7 +44,7 @@ function makeServer(o={}){
   if(u==='/auth/v1/otp')return reply(200,{});
   if(u==='/auth/v1/verify')return body.token==='123456'?reply(200,{access_token:'at-1',token_type:'bearer',expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,refresh_token:'rt-1',user:{id:USER,email:body.email}})
     :reply(403,{code:403,error_code:'otp_expired',msg:'Token has expired or is invalid'});
-  if(u==='/auth/v1/token?grant_type=refresh_token'){server.tokens++;return reply(200,{access_token:'at-'+(server.tokens+1),expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,refresh_token:'rt-'+(server.tokens+1),user:{id:USER,email:'rami@kababji.com'}});}
+  if(u==='/auth/v1/token?grant_type=refresh_token'){server.tokens++;return reply(200,{access_token:'at-'+(server.tokens+1),expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,refresh_token:'rt-'+(server.tokens+1),user:{id:USER,email:'rami@mayda.com'}});}
   if(u==='/auth/v1/logout?scope=local')return reply(204,null);
   if(u==='/rest/v1/rpc/aal_staff')return reply(200,server.mine);
   if(u==='/rest/v1/rpc/aal_snapshot')return reply(200,{version:2,role:server.role,checkId:null,rows:server.rows,docs:[]});
@@ -100,14 +100,14 @@ test('with no session the sign-in panel covers the dashboard and the editor; the
 
 test('sign-in sends the code through /auth/v1/otp, then /auth/v1/verify, and keeps the session in aal.session',async()=>{
  const p=boot();
- p.$('staff-email').value='  Rami@Kababji.com ';
+ p.$('staff-email').value='  Rami@Mayda.com ';
  await p.$('staff-email-form').onsubmit({preventDefault(){}});
  const otp=p.server.calls[0];
  assert.equal(otp.url,'https://mock.invalid/auth/v1/otp');
- assert.deepEqual(otp.body,{email:'rami@kababji.com',create_user:true});
+ assert.deepEqual(otp.body,{email:'rami@mayda.com',create_user:true});
  assert.equal(otp.headers.apikey,'public-anon');assert.equal(otp.headers['x-aalayna-key'],undefined);
  assert.equal(p.$('staff-code-form').hidden,false);assert.equal(p.$('staff-send').textContent,'Send a new code');
- assert.match(p.$('staff-msg').textContent,/six-digit code to rami@kababji\.com/);
+ assert.match(p.$('staff-msg').textContent,/six-digit code to rami@mayda\.com/);
  // a malformed code is refused here; a wrong one by the server
  p.$('staff-code').value='12a45';await p.$('staff-code-form').onsubmit({preventDefault(){}});
  assert.equal(p.server.calls.length,1);assert.match(p.$('staff-msg').textContent,/six-digit code/);
@@ -116,10 +116,10 @@ test('sign-in sends the code through /auth/v1/otp, then /auth/v1/verify, and kee
  p.$('staff-code').value='123 456';await p.$('staff-code-form').onsubmit({preventDefault(){}});
  const verify=p.server.calls[p.server.calls.length-1];
  assert.equal(verify.url,'https://mock.invalid/auth/v1/verify');
- assert.deepEqual(verify.body,{type:'email',email:'rami@kababji.com',token:'123456'});
+ assert.deepEqual(verify.body,{type:'email',email:'rami@mayda.com',token:'123456'});
  assert.equal(verify.headers.apikey,'public-anon');
  const s=JSON.parse(p.local.get('aal.session'));
- assert.equal(s.access_token,'at-1');assert.equal(s.refresh_token,'rt-1');assert.equal(s.email,'rami@kababji.com');assert.equal(s.user_id,USER);
+ assert.equal(s.access_token,'at-1');assert.equal(s.refresh_token,'rt-1');assert.equal(s.email,'rami@mayda.com');assert.equal(s.user_id,USER);
  assert.ok(s.expires_at>Date.now()/1000);
  assert.equal(p.reloads.length,1);                                              // the page restarts signed in
  assert.equal(p.server.calls.filter(c=>c.url.indexOf('/rest/v1/')>=0).length,0);
@@ -127,7 +127,7 @@ test('sign-in sends the code through /auth/v1/otp, then /auth/v1/verify, and kee
 
 test('a signed-in page sends Authorization: Bearer <access token>, keeps apikey, and never sends x-aalayna-key',async()=>{
  // an owner key stored for this venue earlier must not be sent once a session exists
- const local=new Map([['aal.session',sessionFor('rami@kababji.com')],['aal.access:'+RID+':owner',OWNER_KEY]]);
+ const local=new Map([['aal.session',sessionFor('rami@mayda.com')],['aal.access:'+RID+':owner',OWNER_KEY]]);
  const p=boot({local});await p.a.sync.ready;await p.gate.ready;await flush();
  assert.equal(p.a.sync.enabled,true);assert.equal(p.a.sync.signedIn,true);assert.equal(p.a.demoMode(),false);
  await p.a.openServiceCheck({table:4,total:12,lines:[]});
@@ -142,12 +142,12 @@ test('a signed-in page sends Authorization: Bearer <access token>, keeps apikey,
  assert.equal(calls.find(c=>c.url.endsWith('/rpc/aal_mutate')).body.p_op,'open_check');
  // a member of this venue: the panel steps aside and the header names the person
  assert.equal(p.$('staff-gate').hidden,true);
- assert.equal(p.$('staff-bar-who').textContent,'Signed in as rami@kababji.com · Owner');assert.equal(p.$('staff-bar-action').textContent,'Sign out');
+ assert.equal(p.$('staff-bar-who').textContent,'Signed in as rami@mayda.com · Owner');assert.equal(p.$('staff-bar-action').textContent,'Sign out');
  assert.equal(p.document.documentElement.getAttribute('data-staff-role'),'owner');
 });
 
 test('the access token is refreshed through /auth/v1/token before it expires, and the new one is sent',async()=>{
- const local=new Map([['aal.session',sessionFor('rami@kababji.com',{expiresIn:30})]]);   // 30 s left
+ const local=new Map([['aal.session',sessionFor('rami@mayda.com',{expiresIn:30})]]);   // 30 s left
  const p=boot({local});await p.a.sync.ready;await p.gate.ready;await flush();
  const refresh=p.server.calls.filter(c=>c.url.endsWith('/auth/v1/token?grant_type=refresh_token'));
  assert.equal(refresh.length,1);                                                // one refresh, shared by every caller
@@ -160,28 +160,28 @@ test('the access token is refreshed through /auth/v1/token before it expires, an
 });
 
 test("a venue that is not in the user's memberships shows the refusal instead of the app",async()=>{
- const server=makeServer({mine:[{restaurant_id:JSON.stringify(['roadster','dbayeh']),role:'manager',name:"Roadster's",place:'Dbayeh',slug:'roadster'},
-                                {restaurant_id:JSON.stringify(['tawlet','']),role:'waiter',name:null,place:null,slug:null}]});
- const p=boot({server,local:new Map([['aal.session',sessionFor('rami@kababji.com')]])});
+ const server=makeServer({mine:[{restaurant_id:JSON.stringify(['nour','dbayeh']),role:'manager',name:"Nour's",place:'Dbayeh',slug:'nour'},
+                                {restaurant_id:JSON.stringify(['tabla','']),role:'waiter',name:null,place:null,slug:null}]});
+ const p=boot({server,local:new Map([['aal.session',sessionFor('rami@mayda.com')]])});
  assert.equal(p.$('staff-wait').hidden,false);                                  // checking before anything shows
  await p.gate.ready;
  assert.equal(p.$('staff-gate').hidden,false);assert.equal(p.$('staff-refusal').hidden,false);assert.equal(p.$('staff-signin').hidden,true);
  assert.equal(p.$('staff-refusal-title').textContent,"You are not on this restaurant's staff list");
- assert.match(p.$('staff-refusal-text').textContent,/^Signed in as rami@kababji\.com\. Ask the owner to invite this email address\./);
+ assert.match(p.$('staff-refusal-text').textContent,/^Signed in as rami@mayda\.com\. Ask the owner to invite this email address\./);
  const links=p.$('staff-venues').children.map(li=>li.children[0]);
- assert.deepEqual(links.map(a=>a.href),["dashboard.html?venue=Roadster's&place=Dbayeh",'dashboard.html?venue=tawlet']);
- assert.deepEqual(links.map(a=>a.textContent),["Roadster's · Dbayeh (Manager)",'tawlet (Waiter)']);
+ assert.deepEqual(links.map(a=>a.href),["dashboard.html?venue=Nour's&place=Dbayeh",'dashboard.html?venue=tabla']);
+ assert.deepEqual(links.map(a=>a.textContent),["Nour's · Dbayeh (Manager)",'tabla (Waiter)']);
  assert.equal(p.$('staff-venues').hidden,false);assert.equal(p.$('staff-retry').hidden,true);
  assert.equal(p.document.documentElement.getAttribute('data-staff-role'),null);
  // a store that lacks the SQL says so
  const missing=makeServer();missing.fetch=(f=>async(url,o)=>url.endsWith('/rpc/aal_staff')?{ok:false,status:404,text:async()=>JSON.stringify({code:'PGRST202',message:'Could not find the function'})}:f(url,o))(missing.fetch);
- const q=boot({server:missing,local:new Map([['aal.session',sessionFor('rami@kababji.com')]])});await q.gate.ready;
+ const q=boot({server:missing,local:new Map([['aal.session',sessionFor('rami@mayda.com')]])});await q.gate.ready;
  assert.equal(q.$('staff-refusal-title').textContent,'Could not check your staff access');
  assert.match(q.$('staff-refusal-text').textContent,/Run supabase\/auth-2026-09-24\.sql/);assert.equal(q.$('staff-retry').hidden,false);
 });
 
 test('a waiter is admitted to the dashboard, can open a bill, and is refused by the menu editor',async()=>{
- const local=new Map([['aal.session',sessionFor('sara@kababji.com')]]);
+ const local=new Map([['aal.session',sessionFor('sara@mayda.com')]]);
  const p=boot({server:makeServer({role:'waiter'}),local});
  assert.equal(p.a.sync.state().role,'staff');                                   // no role until the server names it
  p.a.recordHealth();                                                            // the dashboard writes a health report at boot
@@ -190,19 +190,19 @@ test('a waiter is admitted to the dashboard, can open a bill, and is refused by 
  assert.equal(rest(p.server).filter(x=>x.url.indexOf('/rest/v1/kv_')>=0).length,0);
  assert.equal(p.$('staff-gate').hidden,true);
  assert.equal(p.document.documentElement.getAttribute('data-staff-role'),'waiter');   // hides data-owner-only controls
- assert.equal(p.$('staff-bar-who').textContent,'Signed in as sara@kababji.com · Waiter');
+ assert.equal(p.$('staff-bar-who').textContent,'Signed in as sara@mayda.com · Waiter');
  assert.equal(p.a.sync.state().role,'waiter');
  const c=await p.a.openServiceCheck({table:3,total:20,lines:[]});
  assert.equal(c.table,3);assert.equal(rest(p.server).filter(x=>x.url.endsWith('/rpc/aal_mutate')).length,1);
- const e=boot({page:'editor.html',server:makeServer({role:'waiter'}),local:new Map([['aal.session',sessionFor('sara@kababji.com')]])});await e.gate.ready;
+ const e=boot({page:'editor.html',server:makeServer({role:'waiter'}),local:new Map([['aal.session',sessionFor('sara@mayda.com')]])});await e.gate.ready;
  assert.equal(e.$('staff-gate').hidden,false);assert.equal(e.$('staff-refusal').hidden,false);
  assert.equal(e.$('staff-refusal-title').textContent,'The menu editor is for owners and managers');
- const m=boot({page:'editor.html',server:makeServer({role:'manager'}),local:new Map([['aal.session',sessionFor('lina@kababji.com')]])});await m.gate.ready;
- assert.equal(m.$('staff-gate').hidden,true);assert.equal(m.$('staff-bar-who').textContent,'Signed in as lina@kababji.com · Manager');
+ const m=boot({page:'editor.html',server:makeServer({role:'manager'}),local:new Map([['aal.session',sessionFor('lina@mayda.com')]])});await m.gate.ready;
+ assert.equal(m.$('staff-gate').hidden,true);assert.equal(m.$('staff-bar-who').textContent,'Signed in as lina@mayda.com · Manager');
 });
 
 test('sign-out clears the session and this user\'s cached venue data, tells Supabase, and reloads to the panel',async()=>{
- const local=new Map([['aal.session',sessionFor('rami@kababji.com')]]);
+ const local=new Map([['aal.session',sessionFor('rami@mayda.com')]]);
  const p=boot({local});await p.a.sync.ready;await p.gate.ready;await flush();
  const cached=[...p.local.keys()].filter(k=>k.indexOf('aal.scope:')===0);
  assert.ok(cached.length>0&&cached.every(k=>k.indexOf('"user:'+USER+'"')>0),'the signed-in cache is scoped to the user');
@@ -228,7 +228,7 @@ test('without a session an owner link still works, behind "Continue with the own
 });
 
 test('the guest path ignores a staff session: a chk_ page still sends its bill key with the anon bearer',async()=>{
- const KEY='chk_'+'cd'.repeat(24),local=new Map([['aal.session',sessionFor('rami@kababji.com')]]);
+ const KEY='chk_'+'cd'.repeat(24),local=new Map([['aal.session',sessionFor('rami@mayda.com')]]);
  const p=boot({page:'guest.html',search:SEARCH+'&k='+KEY,local,gate:false});await p.a.sync.ready;await flush();
  assert.equal(p.a.sync.signedIn,false);
  const calls=rest(p.server);assert.ok(calls.length>0);
@@ -239,7 +239,7 @@ test('the guest path ignores a staff session: a chk_ page still sends its bill k
 /* restaurant-ops.js paintCheckBalances, the real function, with the page helpers it expects */
 function buttons(node,out=[]){(node.children||[]).forEach(c=>{if(c.tagName==='BUTTON')out.push(c.textContent);buttons(c,out);});return out;}
 async function floorAs(role,{signedIn=true}={}){
- const local=new Map(signedIn?[['aal.session',sessionFor(role+'@kababji.com')]]:[]);
+ const local=new Map(signedIn?[['aal.session',sessionFor(role+'@mayda.com')]]:[]);
  const p=boot({server:makeServer({role}),local,search:signedIn?SEARCH:'',gate:false});
  const before=p.a.sync.state().role;
  await p.a.sync.ready;await flush();
@@ -264,7 +264,7 @@ test('Live floor controls follow the role: staff open bills and bill links, only
   assert.equal(count(labels,'Close settled bill'),role==='owner'?1:0,role);     // aal_mutate refuses close_check for a waiter
  }
  // before the first read names the role: no shared-mode controls at all
- const early=boot({server:makeServer({role:'owner'}),local:new Map([['aal.session',sessionFor('rami@kababji.com')]]),gate:false});
+ const early=boot({server:makeServer({role:'owner'}),local:new Map([['aal.session',sessionFor('rami@mayda.com')]]),gate:false});
  early.window.$=id=>early.document.getElementById(id);early.window.money=v=>'$'+Number(v).toFixed(2);early.window.toast=()=>{};early.$('report-period').value='7';early.ctx=vm.createContext(early.window);
  assert.equal(early.a.sync.state().role,'staff');
  assert.deepEqual(paint(early).filter(l=>['Open a bill from a POS total','Guest bill link','Close settled bill'].indexOf(l)>=0),[]);
@@ -283,7 +283,7 @@ test("the dashboard's health report waits for the first read: an owner's is queu
  assert.match(snippet,/onReady/);
  const health=p=>rest(p.server).filter(c=>c.url.indexOf('/rest/v1/kv_rows')>=0&&c.body.some(r=>r.collection==='aal.health_reports'));
  for(const role of ['owner','waiter']){
-  const p=boot({server:makeServer({role}),local:new Map([['aal.session',sessionFor(role+'@kababji.com')]]),gate:false});
+  const p=boot({server:makeServer({role}),local:new Map([['aal.session',sessionFor(role+'@mayda.com')]]),gate:false});
   let paints=0;p.window.paintTonight=()=>paints++;p.window.paintTips=()=>{};
   vm.runInContext(snippet,p.ctx=vm.createContext(p.window));                    // the page's own boot lines
   assert.equal(paints,1);assert.deepEqual(JSON.parse(p.local.get(p.a.util.storageKey('aal.health_reports'))||'[]'),[]);   // nothing before the read
@@ -313,35 +313,35 @@ test('auth SQL: staff list, roles in aal_role, waiter limits in aal_mutate and a
   await db.exec(`create schema auth;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,banned_until timestamptz);`);
   for(const f of ['migration.sql','site-events.sql','hardening-2026-09-15.sql','hardening-2026-09-24.sql','admin.sql','sessions-2026-09-24.sql','auth-2026-09-24.sql','auth-2026-09-24.sql'])await db.exec(sql(f));
   const OWNER='11111111-1111-4111-8111-111111111111',WAITER='22222222-2222-4222-8222-222222222222',STRANGER='33333333-3333-4333-8333-333333333333';
-  await db.query(`insert into auth.users values($1,'rami@kababji.com',now(),null),($2,'sara@kababji.com',now(),null),($3,'x@y.com',null,null)`,[OWNER,WAITER,STRANGER]);
+  await db.query(`insert into auth.users values($1,'rami@mayda.com',now(),null),($2,'sara@mayda.com',now(),null),($3,'x@y.com',null,null)`,[OWNER,WAITER,STRANGER]);
   await db.query("insert into admin_keys(admin_key,label) values('adm_test','test')");
   const as=async(role,headers,claims)=>{await db.exec('reset role');await db.query("select set_config('request.headers',$1,false),set_config('request.jwt.claims',$2,false)",[JSON.stringify(headers||{}),JSON.stringify(claims||{role})]);await db.exec('set role '+role);};
   const one=async(q,args)=>(await db.query(q,args)).rows[0].value;
   await as('anon',{'x-aalayna-admin':'adm_test'});
-  const v=await one("select aal_admin_register_venue('Kababji','Hamra','kababji-hamra','{}'::jsonb) as value");
+  const v=await one("select aal_admin_register_venue('Mayda','Hamra','mayda-hamra','{}'::jsonb) as value");
   const rid=v.restaurant_id,staff=body=>one('select aal_staff($1,$2::jsonb) as value',[rid,JSON.stringify(body)]);
   const mutate=(op,body,token='')=>one('select aal_mutate($1,$2,$3::jsonb,$4) as value',[rid,op,JSON.stringify(body),token]);
   const snapshot=()=>one('select aal_snapshot($1) as value',[rid]);
   const role=()=>one('select aal_role($1) as value',[rid]);
-  const owner={role:'authenticated',sub:OWNER,email:'rami@kababji.com'},waiter={role:'authenticated',sub:WAITER,email:'sara@kababji.com'};
+  const owner={role:'authenticated',sub:OWNER,email:'rami@mayda.com'},waiter={role:'authenticated',sub:WAITER,email:'sara@mayda.com'};
   // the owner key manages the list; the table itself is closed
   await as('anon',{'x-aalayna-key':v.owner_key});
   await assert.rejects(db.query('select * from staff_members'),/permission denied/);
-  let list=await staff({op:'invite',email:' Rami@Kababji.com ',role:'owner'});
-  assert.deepEqual(list.staff.map(s=>[s.email,s.role,s.invited_by]),[['rami@kababji.com','owner','owner key']]);
-  await staff({op:'invite',email:'sara@kababji.com',role:'waiter'});
-  await assert.rejects(staff({op:'invite',email:'sara@kababji.com',role:'manager'}),/already on the staff list/);
+  let list=await staff({op:'invite',email:' Rami@Mayda.com ',role:'owner'});
+  assert.deepEqual(list.staff.map(s=>[s.email,s.role,s.invited_by]),[['rami@mayda.com','owner','owner key']]);
+  await staff({op:'invite',email:'sara@mayda.com',role:'waiter'});
+  await assert.rejects(staff({op:'invite',email:'sara@mayda.com',role:'manager'}),/already on the staff list/);
   await assert.rejects(staff({op:'invite',email:'nope',role:'waiter'}),/valid email/);
   await assert.rejects(staff({op:'invite',email:'a@b.co',role:'chef'}),/owner, manager or waiter/);
   await as('anon',{'x-aalayna-key':v.guest_key});
   await assert.rejects(staff({op:'list'}),/Only the restaurant owner/);
   // roles from the session
   await as('authenticated',{},owner);assert.equal(await role(),'owner');
-  assert.deepEqual((await one("select aal_staff(null,'{\"op\":\"mine\"}'::jsonb) as value")).map(m=>[m.restaurant_id,m.role,m.slug]),[[rid,'owner','kababji-hamra']]);
-  await assert.rejects(staff({op:'revoke',email:'rami@kababji.com'}),/cannot revoke your own/);
+  assert.deepEqual((await one("select aal_staff(null,'{\"op\":\"mine\"}'::jsonb) as value")).map(m=>[m.restaurant_id,m.role,m.slug]),[[rid,'owner','mayda-hamra']]);
+  await assert.rejects(staff({op:'revoke',email:'rami@mayda.com'}),/cannot revoke your own/);
   await as('authenticated',{},{role:'authenticated',sub:STRANGER,email:'x@y.com'});assert.equal(await role(),null);   // unconfirmed, not listed
   await assert.rejects(one("select aal_staff(null,'{\"op\":\"mine\"}'::jsonb) as value"),/Sign in/);
-  await as('authenticated',{},{role:'authenticated',sub:WAITER,email:'rami@kababji.com'});assert.equal(await role(),null);   // email must match the user
+  await as('authenticated',{},{role:'authenticated',sub:WAITER,email:'rami@mayda.com'});assert.equal(await role(),null);   // email must match the user
   await as('authenticated',{},waiter);assert.equal(await role(),'waiter');
   await assert.rejects(staff({op:'list'}),/Only the restaurant owner/);
   // a waiter works the floor
@@ -375,9 +375,9 @@ test('auth SQL: staff list, roles in aal_role, waiter limits in aal_mutate and a
   // the owner sees the guest list; revoking the waiter ends access at once
   await as('authenticated',{},owner);
   assert.ok((await snapshot()).rows.some(r=>r.collection==='aal.guests'));
-  list=await staff({op:'change_role',email:'sara@kababji.com',role:'manager'});
-  assert.equal(list.staff.find(s=>s.email==='sara@kababji.com').role,'manager');
-  await staff({op:'revoke',email:'sara@kababji.com'});
+  list=await staff({op:'change_role',email:'sara@mayda.com',role:'manager'});
+  assert.equal(list.staff.find(s=>s.email==='sara@mayda.com').role,'manager');
+  await staff({op:'revoke',email:'sara@mayda.com'});
   await as('authenticated',{},waiter);assert.equal(await role(),null);
   await assert.rejects(snapshot(),/Open a current bill link/);
   // a banned user loses access even with a live row

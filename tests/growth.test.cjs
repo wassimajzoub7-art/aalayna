@@ -62,7 +62,7 @@ test('customers, settlements, checks and campaign mutations remain branch scoped
  const e=setup(),x=visit(e,'guest@example.com');
  const campaign=e.a.prepareCampaign({name:'Invite',message:'Come back. Reply STOP to opt out.',audience:'all',channel:'email'});
  const c=e.a.openServiceCheck({table:12,total:20}),pending=e.a.settle({table:12,checkId:c.id,rail:'cash',amount:20});
- e.switchVenue('Tripoli');assert.equal(e.a.customerProfiles().length,0);assert.equal(e.a.settlements().length,0);assert.equal(e.a.serviceChecks().length,0);
+ e.switchVenue('Jounieh');assert.equal(e.a.customerProfiles().length,0);assert.equal(e.a.settlements().length,0);assert.equal(e.a.serviceChecks().length,0);
  assert.throws(()=>e.a.approveCampaign(campaign.id),/not found/);assert.equal(e.a.confirmCash(pending.id),false);e.a.refund(x.payment.id);
  e.switchVenue('Beirut');assert.equal(e.a.customerProfiles()[0].visits,1);assert.equal(e.a.pendingCash().length,1);
 });

@@ -25,11 +25,13 @@
             editLog: 'aal.edit_log', webhooks: 'aal.webhook_log', admin: 'aal.admin_notifications' };
 
   /* ---------- venue identity -------------------------------------------
-     The walk-in trick: open any app with ?venue=Roadster's&place=Dbayeh and
+     The walk-in trick: open any app with ?venue=Nour's&place=Dbayeh and
      the whole system rebrands to that restaurant on this device. The QR card
      generator writes these params so an owner scans straight into "their" demo. */
-  var DEFAULT_VENUE = { name: 'Hallab 1881', place: 'Kasr El Helou',
-                        est: 'EST. 1881 · TRIPOLI', heritage: 1, gplace: '',
+  /* Mayda is fictional: the demo never shows a real restaurant's name, menu or
+     prices. Its menu pack is venues/mayda.json (?menu=mayda). */
+  var DEFAULT_VENUE = { name: 'Mayda', place: 'Lebanese Grill',
+                        est: '', heritage: 0, gplace: '',
                         brand: '', bg: '', font: '' };
   function venueFromURL() {
     try {
@@ -43,7 +45,7 @@
       var font = (q.get('font') || '').trim().slice(0, 40);
       if (!/^[A-Za-z0-9 +]*$/.test(font)) font = '';
       return { name: n.slice(0, 40), place: (q.get('place') || '').trim().slice(0, 40),
-               est: '', heritage: 0, gplace: (q.get('gplace') || '').trim().slice(0, 60),
+               est: '', heritage: 0, gplace: (q.get('gplace') || '').trim().slice(0, 200),
                brand: hex(q.get('brand')), bg: hex(q.get('bg')), font: font };
     } catch (e) { return null; }
   }
@@ -52,10 +54,10 @@
      One item shape for all three apps. The editor uses a subset, the diner app
      uses the lot. Sections carry the service window; items never do.          */
   var SEED_SECTIONS = [
-    { id: 'brk', name: 'Breakfast',       win: 'brkf' },
-    { id: 'mez', name: 'Mezze & Grill',   win: 'all'  },
-    { id: 'swt', name: 'Knefeh & Sweets', win: 'all'  },
-    { id: 'drk', name: 'Drinks',          win: 'all'  }
+    { id: 'brk', name: 'Breakfast',     win: 'brkf', tr: { fr: { n: 'Petit-déjeuner' },     ar: { n: 'ترويقة' } } },
+    { id: 'mez', name: 'Mezze & Grill', win: 'all',  tr: { fr: { n: 'Mezzés et grillades' }, ar: { n: 'مازة ومشاوي' } } },
+    { id: 'swt', name: 'Sweets',        win: 'all',  tr: { fr: { n: 'Douceurs' },            ar: { n: 'حلويات' } } },
+    { id: 'drk', name: 'Drinks',        win: 'all',  tr: { fr: { n: 'Boissons' },            ar: { n: 'مشروبات' } } }
   ];
 
   function it(id, sec, name, desc, price, ing, al, kcal, pr, ft, cb, extra) {
@@ -88,15 +90,15 @@
     it('i08','mez',"Arayes","Grilled pita, spiced minced lamb, onion, parsley",7.50,
        ['pita bread','minced lamb','onion','parsley','spices'],['gluten'],640,31,34,52,{fr:0,ar:0}),
 
-    it('i09','swt',"Knefeh b'Jebne + kaakeh","Akkawi cheese, semolina, ghee, sugar syrup, sesame kaakeh",4.50,
-       ['akkawi cheese','semolina','ghee','sugar syrup','sesame kaakeh'],['dairy','gluten','sesame'],720,21,33,88,
+    it('i09','swt',"Atayef bi Ashta · 3 pieces","Folded pancakes, ashta cream, orange blossom syrup, pistachio",4.50,
+       ['flour','semolina','ashta','sugar syrup','orange blossom water','pistachio'],['dairy','gluten','nuts'],540,11,19,82,
        { opts:[{name:'Extras',type:'many',choices:[
-           {n:'Extra ashta',p:1.5,ing:['ashta'],al:['dairy']},{n:'Double kaakeh',p:1},
-           {n:'Hold the syrup',p:0},{n:'Pistachio crust',p:1.25}]}] }),
+           {n:'Extra ashta',p:1.5,ing:['ashta'],al:['dairy']},{n:'Extra piece',p:1},
+           {n:'Hold the syrup',p:0},{n:'Crushed pistachio',p:1.25}]}] }),
     it('i10','swt',"Halawet el Jeben","Sweet cheese dough, ashta cream, rose syrup, pistachio",4.00,
        ['sweet cheese dough','ashta cream','rose syrup','pistachio'],['dairy','gluten','nuts'],480,11,19,66),
-    it('i11','swt',"Baklava assortment · 250g","Filo pastry, pistachio, cashew, ghee, sugar syrup",8.00,
-       ['filo pastry','pistachio','cashew','ghee','sugar syrup'],['nuts','gluten','dairy'],1030,14,58,118),
+    it('i11','swt',"Maamoul assortment · 250g","Semolina shortbread filled with dates, pistachio and walnuts",8.00,
+       ['semolina','ghee','dates','pistachio','walnuts','orange blossom water'],['nuts','gluten','dairy'],1010,14,48,128),
     it('i12','swt',"Ashta ice cream","Milk, cream, mastic, sugar, pistachio crust",3.50,
        ['milk','cream','mastic','sugar','pistachio'],['dairy','nuts'],390,7,22,41),
 
@@ -133,9 +135,9 @@
     i06:{fr:{n:"Houmous beyrouthin",d:"Pois chiches, tahini, ail, citron, piment"},ar:{n:"حمص بيروتي",d:"حمص، طحينة، ثوم، حامض، فليفلة حارة"}},
     i07:{fr:{n:"Assiette de grillades",d:"Kebab, chiche taouk, côtelettes d'agneau, frites"},ar:{n:"مشاوي مشكلة",d:"كباب، شيش طاووق، ريش غنم، بطاطا"}},
     i08:{fr:{n:"Arayes",d:"Pain pita grillé, agneau haché épicé, oignon, persil"},ar:{n:"عرايس",d:"خبز مشوي، لحمة مفرومة، بصل، بقدونس"}},
-    i09:{fr:{n:"Knefeh au fromage + kaake",d:"Fromage akkawi, semoule, ghee, sirop, kaake au sésame"},ar:{n:"كنافة بالجبنة + كعكة",d:"جبنة عكاوي، سميد، سمنة، قطر، كعكة بالسمسم"}},
+    i09:{fr:{n:"Atayef à l’ashta · 3 pièces",d:"Crêpes pliées, crème ashta, sirop à la fleur d’oranger, pistache"},ar:{n:"قطايف بالقشطة · ٣ قطع",d:"قطايف، قشطة، قطر بماء الزهر، فستق حلبي"}},
     i10:{fr:{n:"Halawet el jeben",d:"Pâte de fromage sucrée, crème ashta, sirop de rose, pistache"},ar:{n:"حلاوة الجبن",d:"عجينة جبن حلوة، قشطة، ماء ورد، فستق"}},
-    i11:{fr:{n:"Assortiment de baklava · 250g",d:"Pâte filo, pistache, noix de cajou, ghee, sirop"},ar:{n:"بقلاوة مشكلة · ٢٥٠ غ",d:"عجين رقيق، فستق، كاجو، سمنة، قطر"}},
+    i11:{fr:{n:"Assortiment de maamoul · 250 g",d:"Sablés à la semoule fourrés aux dattes, à la pistache et aux noix"},ar:{n:"معمول مشكّل · ٢٥٠ غ",d:"معمول بالسميد محشي تمر وفستق حلبي وجوز"}},
     i12:{fr:{n:"Glace ashta",d:"Lait, crème, mastic, sucre, croûte de pistache"},ar:{n:"بوظة قشطة",d:"حليب، قشطة، مستكة، سكر، فستق"}},
     i13:{fr:{n:"Espresso",d:"Origine unique, préparé à la commande"},ar:{n:"إسبريسو",d:"بن مختار، يُحضّر عند الطلب"}},
     i14:{fr:{n:"Café libanais",d:"Rakweh pour deux, eau de fleur d'oranger"},ar:{n:"قهوة عربية",d:"ركوة لشخصين، ماء زهر"}},
@@ -144,13 +146,29 @@
     i17:{fr:{n:"Latte",d:"Espresso, lait vapeur"},ar:{n:"لاتيه",d:"إسبريسو مع حليب مبخّر"}}
   };
 
-  /* the open check the diner sees — in production this comes from the POS */
+  /* the open check the diner sees — in production this comes from the POS.
+     Only dish ids and quantities: each line is priced from the published menu
+     (sampleLines), so the sample bill can never contradict the menu. Both the
+     seed menu above and venues/mayda.json price these twelve lines at $152.50,
+     the bill the film and the site split four ways ($38.13 each). */
   var SEED_CHECK = [
-    { id:'i07', q:2, p:32.00 }, { id:'i03', q:3, p:18.00 }, { id:'i08', q:2, p:15.00 },
-    { id:'i05', q:2, p:12.00 }, { id:'i06', q:2, p:10.00 }, { id:'i04', q:1, p:6.50 },
-    { id:'i09', q:4, p:18.00 }, { id:'i10', q:2, p:8.00 },  { id:'i11', q:1, p:8.00 },
-    { id:'i14', q:4, p:10.00 }, { id:'i15', q:3, p:9.00 },  { id:'i16', q:2, p:6.00 }
+    { id:'i07', q:2 }, { id:'i03', q:3 }, { id:'i08', q:2 },
+    { id:'i05', q:2 }, { id:'i06', q:2 }, { id:'i04', q:1 },
+    { id:'i09', q:4 }, { id:'i10', q:2 }, { id:'i11', q:1 },
+    { id:'i14', q:4 }, { id:'i15', q:3 }, { id:'i16', q:2 }
   ];
+  /* The sample lines priced from menu m. An archived dish keeps its line (its row
+     still resolves, like any bill history); a dish the menu does not have, or has
+     no price for, drops off rather than showing a price the menu never had. */
+  function sampleLines(m) {
+    var byId = {};
+    ((m && m.items) || []).forEach(function (x) { byId[x.id] = x; });
+    return SEED_CHECK.map(function (l) {
+      var x = byId[l.id];
+      if (!x || !(typeof x.price === 'number' && x.price > 0)) return null;
+      return { id: l.id, q: l.q, p: Math.round(x.price * 100) * l.q / 100 };
+    }).filter(Boolean);
+  }
 
   /* ---------- plumbing ---------------------------------------------------- */
   var activeScope = null, activeVenue = null;
@@ -603,7 +621,7 @@
       var m = A.published(), scope = A.venueId(), sample = A.sampleAllowed();
       var open = table == null ? null : read('aal.checks', []).filter(function (c) { return c.venueId === scope && c.table === Number(table) && !c.closedAt; })[0];
       if (open && !sample && (open.source || 'prototype') === 'prototype') open = null;
-      var lines = open ? (open.lines || []) : (sample ? SEED_CHECK : []);
+      var lines = open ? (open.lines || []) : (sample ? sampleLines(m) : []);
       return lines.map(function (l) {
         var item = m.items.filter(function (x) { return x.id === l.id; })[0];
         return { id: l.id, q: l.q, p: l.p, name: item ? item.name : (l.name || '(removed)') };
@@ -824,15 +842,19 @@
       return { rate: A.rate(), updatedAt: meta.updatedAt || null, updatedBy: meta.updatedBy || null,
                ageDays: age == null ? null : Math.floor(age), stale: age == null ? true : age >= 14 };
     },
-    /* The one integration that needs no partner: with a Place ID this opens the
-       venue's actual Google review box; without one it opens their real Maps
-       listing (review is one tap from there). Works for any walk-in demo venue. */
+    /* The one integration that needs no partner: the venue's own Google review
+       box, set per venue as `gplace` (admin.html, the QR card, ?gplace=). It is a
+       Google Place ID (ChIJ…), which opens the write-a-review dialog, or a review
+       link the owner copied from their Business Profile (g.page/r/…/review or a
+       search.google.com / maps.app.goo.gl link), used as is. With nothing set, or
+       anything else, it returns null and the guest app offers no review step: a
+       search for a demo or fictional name would land on somebody else's listing. */
     reviewURL: function () {
-      var v = A.venue();
-      if (v.gplace) return 'https://search.google.com/local/writereview?placeid=' +
-        encodeURIComponent(v.gplace);
-      return 'https://www.google.com/maps/search/?api=1&query=' +
-        encodeURIComponent(v.name + (v.place ? ' ' + v.place : '') + ' Lebanon');
+      var g = String(A.venue().gplace || '').trim();
+      if (!g) return null;
+      if (/^https:\/\/(g\.page|search\.google\.com|maps\.app\.goo\.gl|www\.google\.com\/maps)\/[^\s<>"']+$/i.test(g)) return g;
+      if (/^[A-Za-z0-9_-]{10,}$/.test(g)) return 'https://search.google.com/local/writereview?placeid=' + encodeURIComponent(g);
+      return null;
     },
     resetVenue: function () { try { localStorage.removeItem(K.venue); } catch (e) {} fire(K.venue); },
 
