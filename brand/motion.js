@@ -37,7 +37,6 @@
   const finder = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= QN - 7) || (r >= QN - 7 && c < 7);
 
   const colorsOf = o => Object.assign({ bg: C.cream, ink: C.ink, red: C.red, sub: '#6E635B' }, o && o.colors);
-  const rrect = (g, x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2))); g.fill(); };
   const FONT = "'IBM Plex Sans', system-ui, sans-serif";
 
   function tagline(g, t, t0, x, y, size, col, words = ['scan,', 'split,', 'settle.']) {
@@ -136,7 +135,7 @@
         g.translate(x + (dx / dl) * qm * 1.6 * out, y + (dy / dl) * qm * 1.6 * out);
         g.rotate((s.spin * out * Math.PI) / 180);
         g.fillStyle = s.red ? col.red : col.ink;
-        rrect(g, -sz / 2, -sz / 2, sz, sz, sz * 0.2);
+        g.fillRect(-sz / 2, -sz / 2, sz, sz);
         g.restore();
       }
 
@@ -148,7 +147,7 @@
         const grd = g.createLinearGradient(0, y - qm * 5, 0, y);
         grd.addColorStop(0, 'rgba(201,65,75,0)'); grd.addColorStop(1, 'rgba(201,65,75,' + (0.2 * a).toFixed(3) + ')');
         g.fillStyle = grd; g.fillRect(x0, y - qm * 5, w, qm * 5);
-        g.globalAlpha = a; g.fillStyle = col.red; rrect(g, x0, y - qm * 0.18, w, qm * 0.36, qm * 0.18); g.globalAlpha = 1;
+        g.globalAlpha = a; g.fillStyle = col.red; g.fillRect(x0, y - qm * 0.18, w, qm * 0.36); g.globalAlpha = 1;
       }
 
       const fuse = E.inOutCubic(seg(t, FUSE[0], FUSE[1]));
@@ -166,7 +165,7 @@
           g.save();
           g.translate(x, y); g.rotate((T.turn * k * Math.PI) / 180);
           g.fillStyle = T.red ? col.red : col.ink;
-          rrect(g, -sz / 2, -sz / 2, sz, sz, sz * lerp(0.2, 0.04, fuse));
+          g.fillRect(-sz / 2, -sz / 2, sz, sz);
           g.restore();
         }
       } else {

@@ -116,6 +116,7 @@ button{font:inherit}
 .homescreen{display:flex;gap:clamp(14px,3vw,28px);flex-wrap:wrap;justify-content:center}
 .app{display:grid;gap:8px;justify-items:center;font-size:.75rem;color:var(--on-petrol)}
 .app .ic{width:clamp(56px,12vw,72px);filter:drop-shadow(0 8px 14px rgba(0,0,0,.28))}
+.app .ic svg{border-radius:22%}  /* the phone rounds the square icon, as iOS and Android do */
 .tab{margin-top:26px;width:min(100%,420px);background:#2A5157;border-radius:10px 10px 0 0;padding:8px 10px 0;display:flex;gap:6px}
 .tab div{display:flex;align-items:center;gap:8px;background:var(--cream);color:var(--ink);border-radius:8px 8px 0 0;padding:8px 12px;font-size:.78rem;min-width:0;flex:1}
 .tab div span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -220,7 +221,7 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
       <figure class="fit" id="grid-block" aria-label="The Block on its module grid"></figure>
       <dl class="specs">
         <div><dt>Grid</dt><dd>Every letter is 5 × 5 modules; one module is the stroke. Letters and lines are one module apart.</dd></div>
-        <div><dt>Corners</dt><dd>Outer corners turn on 1.5 modules, inner on 0.5, so each bend is one even stroke. Stroke ends are cut square.</dd></div>
+        <div><dt>Corners</dt><dd>Every corner is square. The letters are whole modules: the same squares the table QR is made of.</dd></div>
         <div><dt>Optics</dt><dd>Horizontals are 8% lighter than verticals. Drawn equal, they would look heavier.</dd></div>
         <div><dt>The N</dt><dd>The only line off the grid. An arched N reads as a lowercase n; the diagonal keeps the name legible.</dd></div>
         <div><dt>The 3</dt><dd>Its middle bar starts two modules in, so it reads as a 3 and not a reversed E. It is the only red letter.</dd></div>

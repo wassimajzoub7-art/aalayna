@@ -2,9 +2,9 @@
    - the Block: the Latin name in square capitals on 5 x 5 modules, stacked in two rows. 3LAYNA fills
      two rows of three (3LA / YNA); a seven-letter spelling (AALA / YNA) gets a red full stop in the spare cell;
    - the Kufi: علينا in square Kufic, the Arabic script that has always been drawn on a square grid.
-   One module is the stroke width. Outer corners turn on a 1.5-module radius, inner corners on 0.5
-   (so every bend is one concentric stroke), stroke ends are cut square, and horizontals are drawn 8%
-   thinner than verticals so they look the same weight. Red marks what is Arabic: the 3, which is how
+   One module is the stroke width and every corner is square: the letters are whole modules, the same
+   squares the table QR is made of. Horizontals are drawn 8% thinner than verticals so they look the
+   same weight. Red marks what is Arabic: the 3, which is how
    Lebanon types ع in Latin letters, and the dots of the Arabic letters. A spelling without a 3 ends on
    a red full stop instead.
    Runs in the browser (window.AalaynaLogo) and in Node (require), so the SVG files, the brand page
@@ -13,7 +13,8 @@
   'use strict';
 
   const COLORS = { ink: '#211B16', cream: '#FAF6F1', red: '#C9414B', petrol: '#173E43', peach: '#F6C39F', white: '#FFFFFF' };
-  const CORNERS = { R: 1.5, r: 0.5, Rt: 0 };
+  // Corner radii in modules: outer (R), inner (r), stroke ends (Rt). All square; the engine can round them.
+  const CORNERS = { R: 0, r: 0, Rt: 0 };
   const THIN = 0.92;           // horizontal stroke weight, relative to a vertical one
   const U = 10;                // path units per module in the exported geometry
 
@@ -195,18 +196,21 @@
     return { ink: l.ink + k.ink, red: l.red + k.red, w: l.w + 15 * u, h: 12 * u };
   }
 
-  // App and favicon marks on a rounded tile. The Block's is 10 x 10 modules around the first letter:
-  // a red 3 on ink, or the initial A cut out of the red full stop.
+  // App and favicon marks on a square tile (phones round it themselves). The Block's is 10 x 10 modules
+  // around the first letter: a red 3 on ink, or the initial A cut out of the red full stop.
   function iconBlock(word = NAME, u = U) {
     const ch = word[0], d = glyph(ch, 2.5 * u, 2.5 * u, u);
-    return { tile: roundTile(10 * u, 2.25 * u), ink: isRed(ch) ? '' : d, red: isRed(ch) ? d : '', w: 10 * u, h: 10 * u };
+    return { tile: roundTile(10 * u, 0), ink: isRed(ch) ? '' : d, red: isRed(ch) ? d : '', w: 10 * u, h: 10 * u };
   }
   const iconBlockColors = (word = NAME) => (isRed(word[0]) ? { tile: COLORS.ink, red: COLORS.red } : { tile: COLORS.red, ink: COLORS.cream });
   function iconKufi(u = U) {         // the Kufi mark centred on its own square: 16 x 16 modules
     const k = kufi(u, 2 * u, 2 * u);
-    return { tile: roundTile(16 * u, 3.5 * u), ink: k.ink, red: k.red, w: 16 * u, h: 16 * u };
+    return { tile: roundTile(16 * u, 0), ink: k.ink, red: k.red, w: 16 * u, h: 16 * u };
   }
-  function roundTile(s, r) { return 'M' + r + ' 0H' + (s - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + s + ' ' + r + 'V' + (s - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (s - r) + ' ' + s + 'H' + r + 'A' + r + ' ' + r + ' 0 0 1 0 ' + (s - r) + 'V' + r + 'A' + r + ' ' + r + ' 0 0 1 ' + r + ' 0Z'; }
+  function roundTile(s, r) {
+    if (!r) return 'M0 0H' + s + 'V' + s + 'H0Z';
+    return 'M' + r + ' 0H' + (s - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + s + ' ' + r + 'V' + (s - r) + 'A' + r + ' ' + r + ' 0 0 1 ' + (s - r) + ' ' + s + 'H' + r + 'A' + r + ' ' + r + ' 0 0 1 0 ' + (s - r) + 'V' + r + 'A' + r + ' ' + r + ' 0 0 1 ' + r + ' 0Z';
+  }
 
   /* ---------- Modules for motion: every cell of a mark as a unit square, in module coordinates ---------- */
 
