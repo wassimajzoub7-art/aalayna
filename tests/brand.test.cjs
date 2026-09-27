@@ -123,14 +123,14 @@ test('Aalayna Block, the site font, is built from the typeface in brand/logo.js 
   for (const ch of new Set(Logo.NAME)) assert.equal(Logo.glyph(ch, 0, 0, Logo.U), Logo.typeGlyph(ch, 0, 0, Logo.U), ch);
 });
 
-test('type: Plex for reading, Kode Mono for labels, Aalayna Block for the name only, and every character the name uses is in it', () => {
+test('type: Saira for reading, Kode Mono for labels, Aalayna Block for the name only, and every character the name uses is in it', () => {
   const css = read('website.css');
   assert.match(css, /@font-face\{font-family:'Aalayna Block';src:url\(brand\/fonts\/aalayna-block\.woff\) format\('woff'\)/);
-  assert.match(css, /--font-text:'IBM Plex Sans','IBM Plex Sans Arabic',/);
+  assert.match(css, /--font-text:'Saira','Noto Kufi Arabic',/);
   assert.match(css, /--font-label:'Kode Mono',/);
   assert.match(css, /--font-name:'Aalayna Block',/);
   assert.match(css, /\nbody\{[^}]*font-family:var\(--font-text\)/);
-  assert.match(css, /\nh1,h2,h3\{font-family:var\(--font-text\);font-weight:700/);
+  assert.match(css, /\nh1,h2,h3\{font-family:var\(--font-text\);font-weight:600/);
   assert.match(css, /\n\.name\{font-family:var\(--font-name\)/);
   // The logo face is for the name, not for reading: nothing else points at it.
   assert.equal((css.match(/var\(--font-name\)/g) || []).length, 1, 'only .name uses Aalayna Block');
@@ -139,7 +139,8 @@ test('type: Plex for reading, Kode Mono for labels, Aalayna Block for the name o
   for (const f of SITE_PAGES) {
     const s = read(f), p = f.startsWith('fr/') ? '../' : '';
     const fonts = s.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1];
-    assert.ok(fonts.includes('family=IBM+Plex+Sans:'), f + ' loads IBM Plex Sans');
+    assert.ok(fonts.includes('family=Saira:'), f + ' loads Saira');
+    assert.ok(!/IBM\+Plex/.test(fonts), f + ': no IBM Plex on the site (it is the app\'s face)');
     assert.ok(fonts.includes('family=Kode+Mono:'), f + ' loads Kode Mono');
     assert.ok(s.includes('<link rel="preload" href="' + p + 'brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>'), f + ' preloads the name font');
     for (const m of s.matchAll(/<span class="name"[^>]*>([\s\S]*?)<\/span>/g)) assert.deepEqual(covered(m[1].replace(/<[^>]*>/g, '')), [], f + ': "' + m[1] + '"');

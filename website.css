@@ -1,7 +1,8 @@
 /* Aalayna marketing site: index.html, numbers.html, book.html. */
 
-/* Three faces, each with one job. IBM Plex Sans (the guest app's own face, with its Arabic) sets everything you
-   read: headings, text and figures, so the site reads easily and matches the product. Kode Mono, square and
+/* Three faces, each with one job, all on the logo's square geometry. Saira (square bowls, horizontal and vertical
+   strokes, like the logo's modules) sets everything you read: headings, text, buttons and figures; Noto Kufi Arabic,
+   geometric like the Kufi mark, sets the Arabic words. Kode Mono, square and
    monospaced, sets the small labels you scan (eyebrows, step numbers, tags): the grid texture of the brand.
    Aalayna Block, the logo's own capitals (tools/brand-font.js builds it from brand/logo.js), sets only the name
    itself. Corners are square everywhere, like the logo; only the phones keep theirs, because phones have them. */
@@ -15,7 +16,7 @@
   --petrol:#173E43;--peach:#F6C39F;--on-petrol:#D7E3E2;--on-petrol-sub:#B9C7C4;
   --fs-small:.875rem;--fs-body:1rem;--fs-lead:1.1875rem;--fs-heading:1.875rem;--fs-display:3.375rem;--fs-hero:4.1875rem;
   --header-h:4rem;
-  --font-text:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
   --font-label:'Kode Mono',ui-monospace,monospace;
   --font-name:'Aalayna Block','Kode Mono',ui-monospace,monospace;
 }
@@ -28,8 +29,8 @@ button,a,input{touch-action:manipulation}button,input{font:inherit}a{color:inher
 button,a,summary{-webkit-tap-highlight-color:transparent}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
 h1,h2,h3,p,figure{margin:0}
-/* Headings in Plex, bold and a little tight; the name inside a heading keeps the logo's capitals. */
-h1,h2,h3{font-family:var(--font-text);font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+/* Headings in Saira, bold and a little tight; the name inside a heading keeps the logo's capitals. */
+h1,h2,h3{font-family:var(--font-text);font-weight:600;letter-spacing:-.01em;text-wrap:balance}
 .name{font-family:var(--font-name);font-weight:400;font-synthesis:none;letter-spacing:0}
 h2{font-size:var(--fs-heading);line-height:1.15}
 h3{font-size:var(--fs-lead);line-height:1.3}
