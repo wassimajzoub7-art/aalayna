@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="preload" href="../brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="../website.css?v=13">
+<link rel="stylesheet" href="../website.css?v=14">
 <link rel="icon" href="../brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="../brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../brand/icons/icon-180.png">
@@ -58,13 +58,13 @@
       </div>
       <p class="fine">شهران مجاناً من يوم التشغيل. لا تكمل إلا إذا نجح الأمر في مطعمك.</p>
     </div>
-    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="../images/film-ar.jpg" aria-label="فيلم مدّته 96 ثانية. يبدأ بلقطات قريبة لطاولة في نهاية العشاء: كل ليلة، كل طاولة، الانتظار نفسه. ثم يجلس أربعة أصدقاء، ويمسحون رمز QR على الطاولة، ويقرؤون القائمة بلغتهم وعملتهم، مفلترة بحسب نظامهم الغذائي. بعد العشاء يأتي انتظار الفاتورة. مع Aalayna، يقسّمون فاتورة $152.50 على أربعة، ويتركون إكرامية للنادل، ويدفعون $41.94 عبر Whish Money ويقيّمون السهرة، بينما يرى المطعم المدفوعات مباشرة، ويؤكّد النقد، وينشر تغيير سعر على كل الطاولات في ثوانٍ. ويُختتم بشعار علينا بالخط الكوفي: يخطّه مربّع أحمر حرفاً حرفاً، ثم يضع نقاطه، ويليه اسم 3LAYNA."><source src="../images/film-ar.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" aria-label="تشغيل الصوت" data-mute="كتم الصوت"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path class="spk" d="M3 9h4l5-4v14l-5-4H3z"/><path class="off" d="M16 9l6 6M22 9l-6 6"/><path class="on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg></button></figure>
+    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="../images/film-ar.jpg" aria-label="فيلم مدّته 96 ثانية. يبدأ بلقطات قريبة لطاولة في نهاية العشاء: كل ليلة، كل طاولة، الانتظار نفسه. ثم يجلس أربعة أصدقاء، ويمسحون رمز QR على الطاولة، ويقرؤون القائمة بلغتهم وعملتهم، مفلترة بحسب نظامهم الغذائي. بعد العشاء يأتي انتظار الفاتورة. مع Aalayna، يقسّمون فاتورة $152.50 على أربعة، ويتركون إكرامية للنادل، ويدفعون $41.94 عبر Whish Money ويقيّمون السهرة، بينما يرى المطعم المدفوعات مباشرة، ويؤكّد النقد، وينشر تغيير سعر على كل الطاولات في ثوانٍ. ويُختتم بشعار علينا بالخط الكوفي: يخطّه مربّع أحمر حرفاً حرفاً، ثم يضع نقاطه، ويليه اسم 3LAYNA."><source src="../images/film-ar.mp4" type="video/mp4"></video><button class="reel-play" id="reel-play" type="button" aria-label="إيقاف مؤقت" data-play="تشغيل"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path class="pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="play" d="M7 4.5v15l12-7.5z"/></svg></button><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" aria-label="تشغيل الصوت" data-mute="كتم الصوت"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path class="spk" d="M3 9h4l5-4v14l-5-4H3z"/><path class="off" d="M16 9l6 6M22 9l-6 6"/><path class="on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg></button></figure>
 <script>
-(function(){var v=document.getElementById('reel'),b=document.getElementById('reel-sound');if(!v||!b)return;
+(function(){var v=document.getElementById('reel'),b=document.getElementById('reel-sound'),p=document.getElementById('reel-play');if(!v||!b||!p)return;
 var mq=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)'),sd=navigator.connection&&navigator.connection.saveData;
-if((mq&&mq.matches)||sd){v.removeAttribute('autoplay');v.pause();v.controls=true;b.hidden=true;return;}
+if((mq&&mq.matches)||sd){v.removeAttribute('autoplay');v.pause();v.controls=true;b.hidden=true;p.hidden=true;return;}
 var onLabel=b.getAttribute('aria-label'),offLabel=b.getAttribute('data-mute');
-b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;v.play();b.setAttribute('aria-label',offLabel);b.setAttribute('aria-pressed','true');}else{v.muted=true;b.setAttribute('aria-label',onLabel);b.setAttribute('aria-pressed','false');}});})();
+var f=v.parentNode,pauseLabel=p.getAttribute('aria-label'),playLabel=p.getAttribute('data-play');var sync=function(){f.classList.toggle('is-paused',v.paused);p.setAttribute('aria-label',v.paused?playLabel:pauseLabel);};var go=function(){var r=v.play();if(r&&r.catch)r.catch(sync);};var toggle=function(){if(v.paused){go();}else{v.pause();}};v.addEventListener('canplay',function(){setTimeout(sync,800);},{once:true});v.addEventListener('play',sync);v.addEventListener('pause',sync);v.addEventListener('click',toggle);p.addEventListener('click',toggle);b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;go();b.setAttribute('aria-label',offLabel);b.setAttribute('aria-pressed','true');}else{v.muted=true;b.setAttribute('aria-label',onLabel);b.setAttribute('aria-pressed','false');}});})();
 </script>
   </section>
 
