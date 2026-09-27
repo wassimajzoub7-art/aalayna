@@ -36,6 +36,11 @@ button{font:inherit}
 .top{padding-block:clamp(28px,6vw,64px) clamp(20px,3vw,32px)}
 .top h1{font-size:clamp(2.25rem,6vw,var(--fs-d));line-height:1.05;margin-top:14px}
 .top .lead{font-size:var(--fs-l);margin-top:16px;color:var(--ink)}
+.spell{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:22px}
+.spell .mono{color:var(--sub);margin-right:6px}
+.seg{min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:500 var(--fs-s)/1 'IBM Plex Mono',monospace;letter-spacing:.06em;cursor:pointer}
+.seg[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--cream)}
+.seg:hover{border-color:var(--ink)}
 
 /* The two stages */
 .stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(16px,2.4vw,28px);padding-bottom:clamp(40px,6vw,72px)}
@@ -169,21 +174,22 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
 <body>
 
 <header class="wrap top">
-  <p class="eyebrow">Aalayna · logo proposal · September 2026</p>
+  <p class="eyebrow">Logo proposal · September 2026</p>
   <h1>Two logos, one grid.</h1>
-  <p class="lead">01 follows your brief: square capitals, all the same size, stacked. 02 is my read of the brand: the name in Arabic, drawn in square Kufic. Both sit on the same module, so whichever wins, the other can join it.</p>
+  <p class="lead">01 is your brief: square capitals, all the same size, two rows of three. 02 is my read of the brand: the name in Arabic, drawn in square Kufic. Both sit on the same module, so whichever wins, the other can join it.</p>
+  <div class="spell" role="group" aria-label="Spelling of the name"><span class="mono">Spelling</span><button class="seg" type="button" data-word="3LAYNA" aria-pressed="true">3LAYNA</button><button class="seg" type="button" data-word="AALAYNA" aria-pressed="false">AALAYNA</button></div>
 </header>
 
 <main>
 <section class="wrap stages" aria-label="The two logos in motion">
   <article class="stage">
-    <div class="screen"><canvas id="cv-block" aria-label="Animation: the table QR code is scanned, its modules fly into the letters AALA YNA, and a red square lands last like a stamp."></canvas></div>
+    <div class="screen"><canvas id="cv-block" aria-label="Animation: the table QR code is scanned, its modules fly into the letters of the name, and the red mark lands last like a stamp."></canvas></div>
     <div class="stage-head"><h2><span>01</span>Block</h2>
       <div class="controls"><button class="btn" type="button" data-play="block">Replay</button><button class="btn sound" type="button" data-play="block" data-sound="video/block.mp3">Replay with sound</button></div></div>
-    <p>The table QR (a real one: it opens aalayna.com) is scanned and its modules fly into the letters. The red finder eyes become the full stop, which lands last, like a stamp on a paid bill.</p>
+    <p>The table QR (a real one: it opens aalayna.com) is scanned and its modules fly into the letters. The red finder eyes become <span data-when="3LAYNA">the 3</span><span data-when="AALAYNA" hidden>the full stop</span>, which lands last, like a stamp on a paid bill.</p>
   </article>
   <article class="stage">
-    <div class="screen"><canvas id="cv-kufi" aria-label="Animation: a red square pen writes the Arabic word علينا right to left, each letter rising as it passes, then hops three times to set the dots. AALAYNA follows."></canvas></div>
+    <div class="screen"><canvas id="cv-kufi" aria-label="Animation: a red square pen writes the Arabic word علينا right to left, each letter rising as it passes, then hops three times to set the dots. The Latin name follows."></canvas></div>
     <div class="stage-head"><h2><span>02</span>Kufi</h2>
       <div class="controls"><button class="btn" type="button" data-play="kufi">Replay</button><button class="btn sound" type="button" data-play="kufi" data-sound="video/kufi.mp3">Replay with sound</button></div></div>
     <p>A red module is the pen. It writes علينا right to left, the way Arabic is written; each letter stands up as the pen passes, then the pen hops three times to set the dots. The Latin name follows.</p>
@@ -198,10 +204,10 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
 
     <div class="brief">
       <div class="pair">
-        <figure><div class="cell logo" id="brief-23"></div><figcaption><span class="no">2 × 3 does not fit.</span> Seven letters, six cells: one A has to go, and that A is the ع of the name.</figcaption></figure>
-        <figure><div class="cell logo" id="brief-24"></div><figcaption><strong>2 × 4 does.</strong> The eighth cell goes to the full stop.</figcaption></figure>
+        <figure><div class="cell logo" id="brief-3"></div><figcaption><strong>3LAYNA fills 2 × 3.</strong> Six characters, six cells, nothing left over.</figcaption></figure>
+        <figure><div class="cell logo" id="brief-a"></div><figcaption><span class="no">AALAYNA needs 2 × 4.</span> Seven letters; the spare cell goes to a red full stop.</figcaption></figure>
       </div>
-      <p>You asked for two lines of three letters. Aalayna has seven, so I went to two lines of four and gave the spare cell to the full stop: the same one that ends every headline on your site (“The bill. The split. Aalayna.”). It turns the leftover space into the brand’s one piece of colour.</p>
+      <p>You asked for two rows of three. 3layna fits that exactly, and its 3 is the ع itself: it is how every Lebanese phone already writes the word, so it gets the red. Spelled Aalayna, the grid needs a fourth column and the red moves to a full stop in the spare cell.</p>
     </div>
 
     <div class="grounds">
@@ -217,13 +223,14 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
         <div><dt>Corners</dt><dd>Outer corners turn on 1.5 modules, inner on 0.5, so each bend is one even stroke. Stroke ends are cut square.</dd></div>
         <div><dt>Optics</dt><dd>Horizontals are 8% lighter than verticals. Drawn equal, they would look heavier.</dd></div>
         <div><dt>The N</dt><dd>The only line off the grid. An arched N reads as a lowercase n; the diagonal keeps the name legible.</dd></div>
-        <div><dt>Full stop</dt><dd>Red, and the only red. It fills its cell in the block and shrinks to one module after the name on one line.</dd></div>
+        <div><dt>The 3</dt><dd>Its middle bar starts two modules in, so it reads as a 3 and not a reversed E. It is the only red letter.</dd></div>
+        <div><dt>Red</dt><dd>Marks what is Arabic: the 3 here, the dots in the Kufi. Spelled AALAYNA there is no 3, so the red becomes a full stop.</dd></div>
       </dl>
     </div>
 
     <div class="lockups">
       <figure class="lock g-cream span-7"><div class="logo" data-mark="line"></div><figcaption>One line · headers, receipts, email</figcaption></figure>
-      <figure class="lock g-cream span-5"><div class="icons"><div class="i64 logo" data-mark="iconBlock"></div><div class="i40 logo" data-mark="iconBlock"></div><div class="i24 logo" data-mark="iconBlock"></div><div class="i16 logo" data-mark="iconBlock"></div></div><figcaption>Icon · the full stop, with the A cut out</figcaption></figure>
+      <figure class="lock g-cream span-5"><div class="icons"><div class="i64 logo" data-mark="iconBlock"></div><div class="i40 logo" data-mark="iconBlock"></div><div class="i24 logo" data-mark="iconBlock"></div><div class="i16 logo" data-mark="iconBlock"></div></div><figcaption>Icon · <span data-when="3LAYNA">the red 3 on ink</span><span data-when="AALAYNA" hidden>the full stop, with the A cut out</span></figcaption></figure>
     </div>
   </div>
 </section>
@@ -232,7 +239,7 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
   <div class="wrap">
     <p class="eyebrow">02 · My read</p>
     <h2 id="kufi-title">Kufi</h2>
-    <p>Aalayna is an Arabic phrase before it is a brand: <span lang="ar">علينا</span>, “it’s on us”, the line every table in Lebanon argues over when the bill comes. Square Kufic has built Arabic out of square modules for centuries, in brick and tile, long before QR codes. So the name gets drawn in its own script, and the grid you wanted is already in it.</p>
+    <p>The name is an Arabic phrase before it is a brand: <span lang="ar">علينا</span>, “it’s on us”, the line every table in Lebanon argues over when the bill comes. Square Kufic has built Arabic out of square modules for centuries, in brick and tile, long before QR codes. So the name gets drawn in its own script, and the grid you wanted is already in it.</p>
 
     <div class="grounds">
       <div class="ground g-paper"><div class="logo" data-mark="kufi" style="width:min(100%,260px)"></div></div>
@@ -275,19 +282,19 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
       </div>
       <div class="site">
         <div class="nav"><div class="brand logo" data-mark="line" data-fit="height"></div><div class="links"><span>How it works</span><span>Pilot &amp; pricing</span><span>Questions</span></div><span class="cta">Book a 15-min call</span></div>
-        <div class="hero-mock"><span class="eyebrow">For restaurants in Lebanon</span><b>The bill. The split. <em>Aalayna.</em></b></div>
+        <div class="hero-mock"><span class="eyebrow">For restaurants in Lebanon</span><b>The bill. The split. <em><span data-name>3layna</span>.</em></b></div>
       </div>
       <div class="site">
         <div class="nav"><div class="brand tall logo" data-mark="lockup" data-fit="height"></div><div class="links"><span>How it works</span><span>Pilot &amp; pricing</span><span>Questions</span></div><span class="cta">Book a 15-min call</span></div>
-        <div class="hero-mock"><span class="eyebrow">For restaurants in Lebanon</span><b>The bill. The split. <em>Aalayna.</em></b></div>
+        <div class="hero-mock"><span class="eyebrow">For restaurants in Lebanon</span><b>The bill. The split. <em><span data-name>3layna</span>.</em></b></div>
       </div>
       <div class="scene g-petrol" style="grid-column:1/-1">
         <div class="homescreen">
-          <div class="app"><div class="ic logo" data-mark="iconBlock"></div>Aalayna</div>
-          <div class="app"><div class="ic logo" data-mark="iconKufi"></div>Aalayna</div>
-          <div class="app"><div class="ic logo" data-mark="iconKufiCream"></div>Aalayna</div>
+          <div class="app"><div class="ic logo" data-mark="iconBlock"></div><span data-name>3layna</span></div>
+          <div class="app"><div class="ic logo" data-mark="iconKufi"></div><span data-name>3layna</span></div>
+          <div class="app"><div class="ic logo" data-mark="iconKufiCream"></div><span data-name>3layna</span></div>
         </div>
-        <div class="tab"><div><span class="logo" data-mark="iconBlock" style="width:16px"></span><span>Aalayna: scan, split, settle.</span></div><div><span class="logo" data-mark="iconKufi" style="width:16px"></span><span>Aalayna: scan, split, settle.</span></div></div>
+        <div class="tab"><div><span class="logo" data-mark="iconBlock" style="width:16px"></span><span><span data-name>3layna</span>: scan, split, settle.</span></div><div><span class="logo" data-mark="iconKufi" style="width:16px"></span><span><span data-name>3layna</span>: scan, split, settle.</span></div></div>
       </div>
     </div>
   </div>
@@ -302,12 +309,12 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
     <div class="chips">
       <div class="chip" style="background:var(--cream);color:var(--ink)"><b>Cream</b><span class="mono">#FAF6F1</span><span>Ground</span></div>
       <div class="chip" style="background:#2E2621;color:var(--cream);box-shadow:inset 0 0 0 1px rgba(250,246,241,.18)"><b>Ink</b><span class="mono">#211B16</span><span>Letters</span></div>
-      <div class="chip" style="background:var(--red);color:#fff"><b>Red</b><span class="mono">#C9414B</span><span>Punctuation only</span></div>
+      <div class="chip" style="background:var(--red);color:#fff"><b>Red</b><span class="mono">#C9414B</span><span>The Arabic marks only</span></div>
       <div class="chip" style="background:var(--petrol);color:var(--cream);box-shadow:inset 0 0 0 1px rgba(250,246,241,.18)"><b>Petrol</b><span class="mono">#173E43</span><span>Dark ground</span></div>
       <div class="chip" style="background:var(--peach);color:var(--petrol)"><b>Peach</b><span class="mono">#F6C39F</span><span>Red’s stand-in on petrol</span></div>
     </div>
     <div class="rules">
-      <div><h3>Red is punctuation</h3><p>The full stop and the three dots, never a letter. On a red ground the dots turn ink.</p></div>
+      <div><h3>Red marks the Arabic</h3><p>The 3 and the three dots, never another letter. On a red ground they turn ink.</p></div>
       <div><h3>Keep the grid</h3><p>Don’t stretch, outline or respace. Clear space is two modules on every side.</p></div>
       <div><h3>Smallest sizes</h3><p>Block: 16 px as the icon, 64 px wide on one line. Kufi: 24 px as the icon; under 32 px, set the Latin name beside it.</p></div>
     </div>
@@ -317,22 +324,24 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
 <section class="band" id="pick" aria-labelledby="pick-title">
   <div class="wrap">
     <p class="eyebrow">My pick</p>
-    <h2 id="pick-title">Lead with the Kufi. Write the name in the Block.</h2>
+    <h2 id="pick-title">3LAYNA, if you can own the name.</h2>
     <div class="pick">
-      <div class="fit logo" data-mark="lockup"></div>
+      <div class="fit logo" data-mark="block" data-word="3LAYNA"></div>
       <div>
-        <p style="color:var(--ink)">The Kufi is the part that is yours alone: an Arabic name, in an Arabic script, that is also a square icon for the table card, the app and WhatsApp. The Block is the most legible Latin you have, so it carries the name beside it. Keep the stacked Block for loud moments: the reel’s end card, the door sticker, merch.</p>
+        <p style="color:var(--ink)">With 3layna the Block becomes the stronger logo: it is your brief with nothing forced, and the red 3 tells a Lebanese guest the brand is theirs before they have read it. The Kufi becomes its Arabic signature, for Arabic menus, the door sticker, and anywhere the name reads right to left.</p>
+        <p style="color:var(--ink);margin-top:12px"><strong>The catch:</strong> 3layna.com is already registered, and it isn’t yours. People type what they see. If you can’t get it, stay with Aalayna: the switch at the top shows the same system still works.</p>
         <ol>
-          <li>Tell me which way you’re going.</li>
+          <li>Find out who owns 3layna.com, and what they want for it.</li>
+          <li>Tell me the spelling and the direction.</li>
           <li>I swap it into the site header, favicon, share image, table cards and the reel’s end card.</li>
           <li>Print one table card and look at it on a real table before anything else.</li>
         </ol>
       </div>
     </div>
     <div class="files">
-      <div><code>brand/svg/</code><p>Every lockup as SVG: ink, cream and petrol versions, and both icons.</p></div>
-      <div><code>brand/video/</code><p>Both reveals with sound, at 1920 × 1080, 1080 × 1080 and 1080 × 1920.</p></div>
-      <div><code>node tools/brand.js</code><p>Rebuilds the SVGs and the videos from <code style="display:inline">brand/logo.js</code>, the one file that draws both logos.</p></div>
+      <div><code>brand/svg/3layna/ · aalayna/</code><p>Each spelling’s Block, one-line name, lockups and icon, in ink, cream and petrol. The Kufi files sit beside them.</p></div>
+      <div><code>brand/video/</code><p>Both reveals with sound, spelled 3LAYNA, at 1920 × 1080, 1080 × 1080 and 1080 × 1920.</p></div>
+      <div><code>node tools/brand.js</code><p>Rebuilds the SVGs and the videos from <code style="display:inline">brand/logo.js</code>; <code style="display:inline">--word AALAYNA</code> renders the other spelling.</p></div>
     </div>
   </div>
 </section>
@@ -351,30 +360,24 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
     petrol: { ink: C.cream, red: C.peach },
     red: { ink: C.cream, red: C.ink }
   };
+  // The spelling on show: 3LAYNA unless this viewer picked the other one before.
+  var word = L.NAME;
+  try { var saved = localStorage.getItem('aal.spelling'); if (L.SPELLINGS.indexOf(saved) >= 0) word = saved; } catch (e) {}
   var marks = {
-    block: function () { return L.block(); }, line: function () { return L.line(); }, kufi: function () { return L.kufi(); },
-    lockup: function () { return L.lockup(); }, lockupLatin: function () { return L.lockupLatin(); },
-    iconBlock: function () { return L.iconBlock(); }, iconKufi: function () { return L.iconKufi(); }, iconKufiCream: function () { return L.iconKufi(); }
+    block: function (w) { return L.block(w); }, line: function (w) { return L.line(w); }, kufi: function () { return L.kufi(); },
+    lockup: function (w) { return L.lockup(w); }, lockupLatin: function (w) { return L.lockupLatin(w); },
+    iconBlock: function (w) { return L.iconBlock(w); }, iconKufi: function () { return L.iconKufi(); }, iconKufiCream: function () { return L.iconKufi(); }
   };
-  var iconColors = { iconBlock: { tile: C.red, ink: C.cream }, iconKufi: { tile: C.ink, ink: C.cream, red: C.red }, iconKufiCream: { tile: C.cream, ink: C.ink, red: C.red } };
-  function markSVG(name, ground) {
-    var colors = iconColors[name] || grounds[ground || 'cream'];
-    return L.svg(marks[name](), colors, 0, L.U, /^(kufi|iconKufi)/.test(name) ? 'علينا' : 'Aalayna');
+  function colorsFor(name, ground, w) {
+    if (name === 'iconBlock') return L.iconBlockColors(w);
+    if (name === 'iconKufi') return { tile: C.ink, ink: C.cream, red: C.red };
+    if (name === 'iconKufiCream') return { tile: C.cream, ink: C.ink, red: C.red };
+    return grounds[ground || 'cream'];
   }
-  document.querySelectorAll('[data-mark]').forEach(function (el) {
-    el.innerHTML = markSVG(el.getAttribute('data-mark'), el.getAttribute('data-ground'));
-    if (el.getAttribute('data-fit') === 'height') { var s = el.querySelector('svg'); s.style.height = '100%'; s.style.width = 'auto'; }
-  });
-
-  // The 2 x 3 that doesn't fit and the 2 x 4 that does.
-  (function () {
-    var u = L.U, ink = '', red = '', word = 'ALAYNA';
-    for (var i = 0; i < 6; i++) ink += L.glyph(word[i], (i % 3) * 6 * u, Math.floor(i / 3) * 6 * u, u);
-    var x = 'M' + (-1.5 * u) + ' ' + (5.5 * u) + 'L' + (18.5 * u) + ' ' + (5.5 * u);
-    document.getElementById('brief-23').innerHTML = L.svg({ ink: ink, red: '', w: 17 * u, h: 11 * u }, grounds.cream, 0, u, 'ALA YNA: one A missing');
-    document.getElementById('brief-24').innerHTML = markSVG('block');
-  })();
-
+  var display = function (w) { return w[0] + w.slice(1).toLowerCase(); };   // 3layna, Aalayna
+  function markSVG(name, ground, w) {
+    return L.svg(marks[name](w), colorsFor(name, ground, w), 0, L.U, /^(kufi|iconKufi)/.test(name) ? 'علينا' : display(w));
+  }
   // Construction: the mark over its module grid.
   function gridSVG(mark, cols, rows, extra, dark) {
     var u = L.U, s = L.svg(mark, dark ? grounds.ink : grounds.cream, 1, u), g = '';
@@ -383,14 +386,27 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
     for (var y = 0; y <= rows; y++) g += '<line x1="' + u + '" y1="' + (y + 1) * u + '" x2="' + (cols + 1) * u + '" y2="' + (y + 1) * u + '" stroke="' + line + '" stroke-width=".5"/>';
     return s.replace('<g transform', g + (extra || '') + '<g transform');
   }
-  document.getElementById('grid-block').innerHTML = gridSVG(L.block(), 23, 11);
+
+  // Everything that depends on the spelling.
+  function paint() {
+    document.querySelectorAll('[data-mark]').forEach(function (el) {
+      el.innerHTML = markSVG(el.getAttribute('data-mark'), el.getAttribute('data-ground'), el.getAttribute('data-word') || word);
+      if (el.getAttribute('data-fit') === 'height') { var s = el.querySelector('svg'); s.style.height = '100%'; s.style.width = 'auto'; }
+    });
+    document.getElementById('grid-block').innerHTML = gridSVG(L.block(word), L.grid(word).cols * 6 - 1, 11);
+    // Guides: the tooth line and the baseline run through both scripts.
+    var u = L.U, lk = L.lockup(word), w = lk.w + 2 * u, dash = 'stroke="#F6C39F" stroke-width=".8" stroke-dasharray="3 3"';
+    var extra = '<line x1="0" y1="' + 6 * u + '" x2="' + w + '" y2="' + 6 * u + '" ' + dash + '/><line x1="0" y1="' + 11 * u + '" x2="' + w + '" y2="' + 11 * u + '" ' + dash + '/>';
+    document.getElementById('guides').innerHTML = L.svg(lk, grounds.ink, 1, u, 'علينا ' + display(word)).replace('<g transform', extra + '<g transform');
+    document.querySelectorAll('[data-when]').forEach(function (el) { el.hidden = el.getAttribute('data-when') !== word; });
+    document.querySelectorAll('[data-name]').forEach(function (el) { el.textContent = display(word); });
+    document.querySelectorAll('[data-word][aria-pressed]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-word') === word)); });
+  }
+  paint();
   document.getElementById('grid-kufi').innerHTML = gridSVG(L.kufi(), 12, 12);
-  // Guides: the tooth line and the baseline run through both scripts.
-  (function () {
-    var u = L.U, top = 6 * u, base = 11 * u, w = 60 * u, dash = 'stroke="#F6C39F" stroke-width=".8" stroke-dasharray="3 3"';
-    var extra = '<line x1="0" y1="' + top + '" x2="' + w + '" y2="' + top + '" ' + dash + '/><line x1="0" y1="' + base + '" x2="' + w + '" y2="' + base + '" ' + dash + '/>';
-    document.getElementById('guides').innerHTML = L.svg(L.lockup(), grounds.ink, 1, u, 'علينا Aalayna').replace('<g transform', extra + '<g transform');
-  })();
+  // Your 2 x 3 with 3layna, and the 2 x 4 that Aalayna needs.
+  document.getElementById('brief-3').innerHTML = markSVG('block', 'cream', '3LAYNA');
+  document.getElementById('brief-a').innerHTML = markSVG('block', 'cream', 'AALAYNA');
 
   // The real table QR: https://aalayna.com, red finder eyes like the reel.
   (function () {
@@ -405,17 +421,18 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
   var players = {}, audio = {};
   [['block', 'cv-block'], ['kufi', 'cv-kufi']].forEach(function (p) {
     var cv = document.getElementById(p[1]);
-    players[p[0]] = M.player(cv, M[p[0]](), { autoplay: false });
+    players[p[0]] = M.player(cv, M[p[0]]({ word: word }), { autoplay: false });
     if ('IntersectionObserver' in window) {
       var seen = false, io = new IntersectionObserver(function (es) { if (!seen && es[0].isIntersecting) { seen = true; players[p[0]].play(); io.disconnect(); } }, { threshold: 0.4 });
       io.observe(cv);
     } else players[p[0]].play();
   });
-  document.fonts && document.fonts.ready.then(function () { Object.keys(players).forEach(function (k) { players[k].redraw(); }); });
+  if (document.fonts) document.fonts.ready.then(function () { Object.keys(players).forEach(function (k) { players[k].redraw(); }); });
+  function stopSound() { Object.keys(audio).forEach(function (a) { audio[a].pause(); }); }
   document.querySelectorAll('[data-play]').forEach(function (b) {
     b.addEventListener('click', function () {
       var k = b.getAttribute('data-play'), src = b.getAttribute('data-sound');
-      Object.keys(audio).forEach(function (a) { audio[a].pause(); });
+      stopSound();
       if (src) {
         var a = audio[k] || (audio[k] = new Audio(src));
         try { a.currentTime = 0; } catch (e) {}
@@ -423,6 +440,20 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
         if (go && go.catch) go.catch(function () {});
       }
       players[k].play();
+    });
+  });
+
+  // The spelling switch redraws every mark and replays both reveals.
+  document.querySelectorAll('.seg[data-word]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var w = b.getAttribute('data-word');
+      if (w === word) return;
+      word = w;
+      try { localStorage.setItem('aal.spelling', word); } catch (e) {}
+      stopSound();
+      paint();
+      players.block.use(M.block({ word: word })); players.kufi.use(M.kufi({ word: word }));
+      players.block.play(); players.kufi.play();
     });
   });
 })();

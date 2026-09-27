@@ -68,5 +68,7 @@ onboarding/
 !brand/*
 !brand/svg/
 !brand/svg/*
+!brand/svg/3layna/*
+!brand/svg/aalayna/*
 !brand/video/
 !brand/video/*

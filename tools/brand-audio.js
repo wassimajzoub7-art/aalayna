@@ -2,8 +2,8 @@
 // Synthesises the sound for the two logo reveals, on the cue times brand/motion.js reports, so picture and
 // sound never drift apart. Everything is generated here: no samples, nothing to license.
 //
-//   node tools/brand-audio.js block out.wav
-//   node tools/brand-audio.js kufi out.wav
+//   node tools/brand-audio.js block out.wav [SPELLING]
+//   node tools/brand-audio.js kufi out.wav [SPELLING]      (3LAYNA unless given, e.g. AALAYNA)
 //
 // Both end on the same three-note bell, the sound of the logo. The Kufi letters rise on a Hijaz scale
 // (D, E flat, F sharp, G, A) played on a plucked string, the way an oud would.
@@ -17,7 +17,7 @@ global.Path2D = class {};
 require('../brand/motion.js');
 
 const which = process.argv[2] === 'kufi' ? 'kufi' : 'block';
-const piece = global.AalaynaMotion[which]();
+const piece = global.AalaynaMotion[which]({ word: process.argv[4] });
 const cue = piece.cues;
 const SR = 48000, DUR = piece.duration + 0.6, N = Math.round(SR * DUR);
 const L = new Float32Array(N), R = new Float32Array(N), vL = new Float32Array(N), vR = new Float32Array(N);
@@ -106,7 +106,7 @@ if (which === 'block') {
   cue.hops.forEach(([a, b], i) => { whoosh(a, b - a, 0.07, 800, 2400, -0.3 + i * 0.3, -0.1 + i * 0.3); tok(b, [760, 900, 1180][i], 0.34, [0.1, -0.1, -0.3][i]); });
   signature(cue.hops[2][1] + 0.02);
   for (let i = 0; i < 7; i++) click(cue.latin + i * 0.06 + 0.05, 0.06, -0.4 + i * 0.13, 2200 + i * 90);
-  tok(cue.stop, 1400, 0.22, 0.6);
+  tok(cue.red, 1400, 0.22, 0.6);
   [0, 1, 2].forEach(i => click(cue.tag + i * 0.1, 0.06, -0.2 + i * 0.2, 2000));
 }
 

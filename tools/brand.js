@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Builds the logo files from brand/logo.js and renders the logo motion from brand/motion.html.
 //
-//   node tools/brand.js svg                      writes brand/svg/*.svg
-//   node tools/brand.js video [--piece block|kufi] [--size 1920x1080] [--ground cream|ink|petrol]
+//   node tools/brand.js svg                      rewrites brand/svg: the Kufi files, and 3layna/ and aalayna/
+//   node tools/brand.js video [--piece block|kufi] [--word AALAYNA] [--size 1920x1080] [--ground cream|ink|petrol]
 //                             [--fps 60] [--out file.mp4] [--audio file.wav] [--ffmpeg path] [--fonts dir]
-//   node tools/brand.js stills --piece kufi --at 0.5,1,2 [--size 960x540] [--out dir]
+//   node tools/brand.js stills --piece kufi --at 0.5,1,2 [--word AALAYNA] [--size 960x540] [--out dir]
 //
 // video and stills need Playwright (Chromium) and, for video, an ffmpeg with libx264. Like render-reel.js,
 // every frame calls the page's __render(t), so the output is exact at any frame rate. --fonts serves the
@@ -20,35 +20,41 @@ const cmd = args[0];
 const opt = (name, dflt) => { const i = args.indexOf('--' + name); return i >= 0 ? args[i + 1] : dflt; };
 const Logo = require(path.join(root, 'brand/logo.js'));
 
-// Every logo file, as { 'name.svg': contents }.
+// Every logo file, as { 'path/name.svg': contents }: the Kufi files (the same for every spelling) at the
+// top, and each spelling's Block, one-line name, lockups and icon in a folder of its own.
 function svgContents() {
   const C = Logo.COLORS;
   const dark = { ink: C.cream, red: C.red }, petrol = { ink: C.cream, red: C.peach }, mono = c => ({ ink: c, red: c });
   const files = {
-    'block.svg': [Logo.block(), {}],
-    'block-cream.svg': [Logo.block(), dark],
-    'block-petrol.svg': [Logo.block(), petrol],
-    'block-ink.svg': [Logo.block(), mono(C.ink)],
-    'block-line.svg': [Logo.line(), {}],
-    'block-line-cream.svg': [Logo.line(), dark],
     'kufi.svg': [Logo.kufi(), {}, 'علينا'],
     'kufi-cream.svg': [Logo.kufi(), dark, 'علينا'],
     'kufi-petrol.svg': [Logo.kufi(), petrol, 'علينا'],
     'kufi-ink.svg': [Logo.kufi(), mono(C.ink), 'علينا'],
-    'lockup.svg': [Logo.lockup(), {}, 'علينا Aalayna'],
-    'lockup-cream.svg': [Logo.lockup(), dark, 'علينا Aalayna'],
-    'lockup-latin.svg': [Logo.lockupLatin(), {}, 'Aalayna علينا'],
-    'icon-block.svg': [Logo.iconBlock(), { tile: C.red, ink: C.cream }],
     'icon-kufi.svg': [Logo.iconKufi(), { tile: C.ink, ink: C.cream, red: C.red }, 'علينا'],
   };
+  for (const word of Logo.SPELLINGS) {
+    const dir = word.toLowerCase() + '/', name = word[0] + word.slice(1).toLowerCase();
+    Object.assign(files, {
+      [dir + 'block.svg']: [Logo.block(word), {}, name],
+      [dir + 'block-cream.svg']: [Logo.block(word), dark, name],
+      [dir + 'block-petrol.svg']: [Logo.block(word), petrol, name],
+      [dir + 'block-ink.svg']: [Logo.block(word), mono(C.ink), name],
+      [dir + 'line.svg']: [Logo.line(word), {}, name],
+      [dir + 'line-cream.svg']: [Logo.line(word), dark, name],
+      [dir + 'lockup.svg']: [Logo.lockup(word), {}, 'علينا ' + name],
+      [dir + 'lockup-cream.svg']: [Logo.lockup(word), dark, 'علينا ' + name],
+      [dir + 'lockup-latin.svg']: [Logo.lockupLatin(word), {}, name + ' علينا'],
+      [dir + 'icon.svg']: [Logo.iconBlock(word), Logo.iconBlockColors(word), name],
+    });
+  }
   const out = {};
-  for (const [name, [mark, colors, title]] of Object.entries(files)) out[name] = Logo.svg(mark, colors, 0, Logo.U, title || 'Aalayna') + '\n';
+  for (const [file, [mark, colors, title]] of Object.entries(files)) out[file] = Logo.svg(mark, colors, 0, Logo.U, title) + '\n';
   return out;
 }
 function svgFiles() {
   const out = path.join(root, 'brand/svg'), files = svgContents();
-  fs.mkdirSync(out, { recursive: true });
-  for (const [name, text] of Object.entries(files)) fs.writeFileSync(path.join(out, name), text);
+  fs.rmSync(out, { recursive: true, force: true });   // generated: nothing else lives here
+  for (const [file, text] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(out, file)), { recursive: true }); fs.writeFileSync(path.join(out, file), text); }
   console.log('wrote ' + Object.keys(files).length + ' files to brand/svg');
 }
 
@@ -63,16 +69,17 @@ async function browserPage(w, h) {
     await page.route(/fonts\.googleapis\.com/, r => r.fulfill({ contentType: 'text/css', body: fs.readFileSync(path.join(dir, 'local.css'), 'utf8').replace(/url\(([^)]+)\)/g, (_, f) => `url(https://fonts.gstatic.com/local/${f})`) }));
     await page.route(/fonts\.gstatic\.com\/local\//, r => r.fulfill({ contentType: 'font/woff2', body: fs.readFileSync(path.join(dir, path.basename(new URL(r.request().url()).pathname))) }));
   }
-  const piece = opt('piece', 'block'), ground = opt('ground', 'cream');
-  await page.goto('file://' + path.join(root, 'brand/motion.html') + `?capture&piece=${piece}&w=${w}&h=${h}&ground=${ground}` + (args.includes('--notag') ? '&notag' : ''));
+  const piece = opt('piece', 'block'), ground = opt('ground', 'cream'), word = opt('word');
+  await page.goto('file://' + path.join(root, 'brand/motion.html') + `?capture&piece=${piece}&w=${w}&h=${h}&ground=${ground}` + (word ? '&word=' + word : '') + (args.includes('--notag') ? '&notag' : ''));
   await page.evaluate(async () => { await document.fonts.load("500 20px 'IBM Plex Sans'"); await document.fonts.ready; });
   return { browser, page };
 }
 
 async function video() {
   const [w, h] = opt('size', '1920x1080').split('x').map(Number);
-  const fps = Number(opt('fps', 60)), piece = opt('piece', 'block'), ground = opt('ground', 'cream');
-  const out = path.resolve(opt('out', path.join(root, `brand/video/${piece}-${w}x${h}${ground === 'cream' ? '' : '-' + ground}.mp4`)));
+  const fps = Number(opt('fps', 60)), piece = opt('piece', 'block'), ground = opt('ground', 'cream'), word = opt('word', Logo.NAME);
+  const tag = (word === Logo.NAME ? '' : '-' + word.toLowerCase()) + (ground === 'cream' ? '' : '-' + ground);
+  const out = path.resolve(opt('out', path.join(root, `brand/video/${piece}-${w}x${h}${tag}.mp4`)));
   const audio = opt('audio');
   const { browser, page } = await browserPage(w, h);
   const dur = await page.evaluate(() => window.__duration);

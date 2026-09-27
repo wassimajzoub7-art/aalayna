@@ -249,12 +249,12 @@ To re-render after changing the page: `node tools/reel-audio.js reel.wav`, then 
 
 ## Logo
 
-`brand/index.html` presents two logo directions on one module grid, with both reveals playing live (Replay with sound plays the soundtrack): **Block**, AALA / YNA in square capitals with a red full stop in the eighth cell, and **Kufi**, علينا in square Kufic with red dots. The page is `noindex`; merging it publishes it at `/brand/`. `brand/logo.js` draws every mark (the SVG files, the page and the motion all come from it) and `brand/motion.js` holds the two reveals, each a pure function of time like the reel.
+`brand/index.html` presents two logo directions on one module grid, with both reveals playing live (Replay with sound plays the soundtrack): **Block**, the name in square capitals, 3LA / YNA with the 3 in red (the ع, as Lebanese Arabizi writes it), and **Kufi**, علينا in square Kufic with red dots. A switch at the top of the page redraws everything spelled AALAYNA (AALA / YNA with a red full stop in the eighth cell) for comparison. The page is `noindex`; merging it publishes it at `/brand/`. `brand/logo.js` draws every mark (the SVG files, the page and the motion all come from it) and `brand/motion.js` holds the two reveals, each a pure function of time like the reel.
 
-- `brand/svg/`: the Block (stacked and one line), the Kufi, both bilingual lockups and both icons, in ink, cream and petrol versions.
-- `brand/video/`: both reveals with sound at 1920 x 1080, 1080 x 1080 and 1080 x 1920, 60 fps; `block.mp3` and `kufi.mp3` are the soundtracks the page plays.
+- `brand/svg/`: the Kufi mark and its icon; `3layna/` and `aalayna/` hold each spelling's Block, one-line name, lockups and icon, in ink, cream and petrol versions.
+- `brand/video/`: both reveals spelled 3LAYNA, with sound, at 1920 x 1080, 1080 x 1080 and 1080 x 1920, 60 fps; `block.mp3` and `kufi.mp3` are the soundtracks the page plays.
 
-To rebuild after changing `brand/logo.js` or `brand/motion.js`: `node tools/brand.js svg`, then `node tools/brand-audio.js block block.wav` and `node tools/brand.js video --piece block --size 1920x1080 --audio block.wav`, and `ffmpeg -i block.wav -b:a 160k brand/video/block.mp3` for the page (same for `kufi`; `--ground ink|petrol` for a dark ground, `--notag` without the tagline, `--fonts <dir>` as for the reel, `node tools/brand.js stills --piece kufi --at 1,2.5` for review PNGs). `brand/motion.html?piece=kufi` plays one reveal full window.
+To rebuild after changing `brand/logo.js` or `brand/motion.js`: `node tools/brand.js svg`, then `node tools/brand-audio.js block block.wav` and `node tools/brand.js video --piece block --size 1920x1080 --audio block.wav`, and `ffmpeg -i block.wav -b:a 160k brand/video/block.mp3` for the page (same for `kufi`; `--word AALAYNA` for the other spelling, `--ground ink|petrol` for a dark ground, `--notag` without the tagline, `--fonts <dir>` as for the reel, `node tools/brand.js stills --piece kufi --at 1,2.5` for review PNGs). `brand/motion.html?piece=kufi&word=AALAYNA` plays one reveal full window.
 
 ## Validation
 

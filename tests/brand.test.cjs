@@ -1,6 +1,6 @@
 // The logo (brand/): the SVG files are what brand/logo.js draws today, the QR in the motion is the one
-// qr-lib.js makes for https://aalayna.com, the Kufi mark still spells علينا with its three dots, and every
-// local file the brand pages load exists.
+// qr-lib.js makes for https://aalayna.com, the Kufi mark still spells علينا with its three dots, both
+// spellings of the Block keep their grids, and every local file the brand pages load exists.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -14,7 +14,8 @@ const { svgContents } = require('../tools/brand.js');
 
 test('brand/svg is what brand/logo.js draws (run node tools/brand.js svg after changing the logo)', () => {
   const want = svgContents();
-  const have = fs.readdirSync(path.join(ROOT, 'brand/svg')).filter(f => f.endsWith('.svg')).sort();
+  const walk = d => fs.readdirSync(path.join(ROOT, d), { withFileTypes: true }).flatMap(e => (e.isDirectory() ? walk(d + '/' + e.name) : [d + '/' + e.name]));
+  const have = walk('brand/svg').map(f => f.slice('brand/svg/'.length)).sort();
   assert.deepEqual(have, Object.keys(want).sort());
   for (const [name, text] of Object.entries(want)) {
     assert.equal(read('brand/svg/' + name), text, name);
@@ -50,13 +51,23 @@ test('the Kufi mark spells علينا: ع hook, tall ل, ي tooth with two dots 
   assert.deepEqual(dots, [[2, 3], [3, 11], [5, 11]], 'ن dot above its tooth, ي dots either side of its tooth, below the line');
 });
 
-test('the Block: seven letters in a 2 x 4 grid and the full stop in the eighth cell, the only red', () => {
-  const cells = Logo.blockCells();
-  assert.equal(new Set(cells.map(c => c.letter)).size, 8);
-  assert.ok(cells.filter(c => c.red).every(c => c.letter === 7 && c.x >= 18 && c.y >= 6), 'red only in the last cell');
-  assert.equal(cells.filter(c => c.red).length, 25, 'the full stop fills its 5 x 5 cell');
-  const b = Logo.block();
+test('the Block: 3LAYNA fills 2 x 3 with the 3 in red; AALAYNA takes 2 x 4 with a red full stop', () => {
+  assert.equal(Logo.NAME, '3LAYNA');
+  const three = Logo.blockCells('3LAYNA');
+  assert.deepEqual(Logo.grid('3LAYNA'), { cols: 3, stop: false });
+  assert.equal(new Set(three.map(c => c.letter)).size, 6);
+  assert.ok(three.filter(c => c.red).every(c => c.letter === 0 && c.x < 5 && c.y < 5), 'red only in the 3, top left');
+  let b = Logo.block('3LAYNA');
+  assert.equal(b.w / Logo.U, 17); assert.equal(b.h / Logo.U, 11);
+  assert.equal(Logo.line('3LAYNA').w / Logo.U, 35, 'no full stop after a red 3');
+
+  const aa = Logo.blockCells('AALAYNA');
+  assert.equal(new Set(aa.map(c => c.letter)).size, 8);
+  assert.ok(aa.filter(c => c.red).every(c => c.letter === 7 && c.x >= 18 && c.y >= 6), 'red only in the last cell');
+  assert.equal(aa.filter(c => c.red).length, 25, 'the full stop fills its 5 x 5 cell');
+  b = Logo.block('AALAYNA');
   assert.equal(b.w / Logo.U, 23); assert.equal(b.h / Logo.U, 11);
+  assert.equal(Logo.line('AALAYNA').w / Logo.U, 43, 'a one-module full stop after the name');
 });
 
 test('brand pages: every local src and href resolves to a file', () => {
