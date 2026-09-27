@@ -94,6 +94,9 @@
   .m-head .vn{font-family:'Amiri',serif;font-size:19px;font-weight:700}
   .m-head .vs{font-size:11px;color:var(--sub);margin-top:2px}
   .sels{position:absolute;top:16px;inset-inline-end:14px;z-index:30;display:flex;gap:5px}
+  #v-land{position:relative}
+  /* the landing pickers get their own strip above the crest */
+  #v-land .hero{box-sizing:content-box;padding-top:56px}#v-land .crest{top:calc(50% + 28px)}.crest .est:empty{display:none}
   .sel{position:relative;flex:0 0 auto}
   .sel select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--surface);
     border-radius:8px;padding:6px 18px 6px 9px;font-size:10.5px;font-weight:600;color:var(--ink);
@@ -607,6 +610,14 @@
   <div class="net-banner" id="net-banner" role="status" aria-live="polite" hidden></div>
   <!-- ================= 1. LANDING ================= -->
   <div class="view on" id="v-land">
+    <div class="sels sels-land">
+      <div class="sel"><select id="langsel-land" onchange="setLang(this.value)" data-i18n-aria="langLabel" aria-label="Language">
+        <option value="en" lang="en">EN</option><option value="fr" lang="fr">FR</option><option value="ar" lang="ar">AR</option>
+      </select></div>
+      <div class="sel"><select id="ccysel-land" onchange="setCcy(this.value)" data-i18n-aria="ccyLabel" aria-label="Currency">
+        <option value="usd" data-i18n="ccyUsd">USD $</option><option value="lbp" data-i18n="ccyLbp">LBP&nbsp;LL</option>
+      </select></div>
+    </div>
     <div class="hero">
       <div class="pat"></div>
       <div class="crest">
@@ -1219,6 +1230,12 @@ var STR = {
     rvNoteLabel: 'Your note', rvNotePh: 'What should they know?', rvSend: 'Send privately',
     rvSent: 'Sent to {venue}. Only the restaurant sees it.',
     rvToPrivate: 'Rather tell the restaurant privately', rvToGoogle: 'Rather post a public review on Google',
+    errPay: 'Enter a valid payment and tip.', errCash: 'Choose enough cash to cover your share and tip.',
+    errChanged: 'The bill changed while you were paying. Check your share and try again.',
+    errTaken: 'Someone at the table already paid for one of these items.',
+    errExpired: 'This payment took too long. Please start again.', errClosed: 'This bill is closed. Ask your waiter.',
+    errLinked: 'This payment is already linked to another contact.', errNet: 'The restaurant could not be reached. Try again in a moment.',
+    errGeneric: 'Something went wrong. Try again, or ask your waiter.',
     offline: 'No connection. Your bill is as of {time}; we will send your payment when you are back online.'
   },
   fr: {
@@ -1299,6 +1316,12 @@ var STR = {
     rvNoteLabel: 'Votre message', rvNotePh: 'Que doivent-ils savoir ?', rvSend: 'Envoyer en privé',
     rvSent: 'Envoyé à {venue}. Seul le restaurant le voit.',
     rvToPrivate: 'Plutôt écrire au restaurant en privé', rvToGoogle: 'Plutôt publier un avis public sur Google',
+    errPay: 'Saisissez un paiement et un pourboire valides.', errCash: 'Choisissez assez d’espèces pour couvrir votre part et le pourboire.',
+    errChanged: 'L’addition a changé pendant votre paiement. Vérifiez votre part et réessayez.',
+    errTaken: 'Quelqu’un à la table a déjà payé l’un de ces plats.',
+    errExpired: 'Ce paiement a pris trop de temps. Veuillez recommencer.', errClosed: 'Cette addition est close. Demandez au serveur.',
+    errLinked: 'Ce paiement est déjà lié à un autre contact.', errNet: 'Impossible de joindre le restaurant. Réessayez dans un instant.',
+    errGeneric: 'Un problème est survenu. Réessayez ou demandez au serveur.',
     offline: 'Pas de connexion. Votre addition date de {time} ; nous enverrons votre paiement dès votre retour en ligne.'
   },
   ar: {
@@ -1379,10 +1402,39 @@ var STR = {
     rvNoteLabel: 'ملاحظتك', rvNotePh: 'ما الذي يجب أن يعرفوه؟', rvSend: 'أرسل بشكل خاص',
     rvSent: 'أُرسلت إلى {venue}. المطعم وحده يراها.',
     rvToPrivate: 'أفضّل أن أكتب للمطعم بشكل خاص', rvToGoogle: 'أفضّل نشر مراجعة علنية على Google',
+    errPay: 'أدخل مبلغاً وإكرامية صحيحين.', errCash: 'اختر نقداً يكفي لحصتك والإكرامية.',
+    errChanged: 'تغيّرت الفاتورة أثناء الدفع. راجع حصتك وحاول مجدداً.',
+    errTaken: 'أحدٌ على الطاولة دفع مسبقاً ثمن أحد هذه الأطباق.',
+    errExpired: 'استغرق هذا الدفع وقتاً طويلاً. ابدأ من جديد.', errClosed: 'هذه الفاتورة مغلقة. اسأل النادل.',
+    errLinked: 'هذا الدفع مرتبط مسبقاً بجهة اتصال أخرى.', errNet: 'تعذّر الوصول إلى المطعم. حاول بعد قليل.',
+    errGeneric: 'حدث خطأ ما. حاول مجدداً أو اسأل النادل.',
     offline: 'لا اتصال. فاتورتك كما كانت عند {time}؛ سنرسل دفعتك حين تعود إلى الاتصال.'
   }
 };
 /* i18n:end */
+/* the venue's place line in the guest's language, when the link carries one */
+function venuePlace(v){ return (LANG !== 'en' && v.placeTr && v.placeTr[LANG]) || v.place || ''; }
+/* a store or network refusal, in the guest's language; English keeps the store's own wording */
+var ERR_KEYS = [
+  ['Enter a valid payment and tip.', 'errPay'],
+  ['Choose enough cash to cover your share and tip.', 'errCash'],
+  ['The bill changed.', 'errChanged'],
+  ['The selected items do not match the payment amount.', 'errChanged'],
+  ['One of these items is already covered by another payment.', 'errTaken'],
+  ['This payment reservation expired.', 'errExpired'],
+  ['This bill is closed', 'errClosed'],
+  ['This bill is not available', 'errClosed'],
+  ['Use an email or a phone number', 'mailInvalid'],
+  ['This payment is already linked to another contact.', 'errLinked'],
+  ['Link contact details to a confirmed payment first.', 'errLinked'],
+  ['The restaurant could not be reached', 'errNet']
+];
+function errText(e){
+  var m = String(e && e.message || '');
+  if (LANG === 'en' && m) return m;
+  for (var i = 0; i < ERR_KEYS.length; i++) if (m.indexOf(ERR_KEYS[i][0]) === 0) return t(ERR_KEYS[i][1]);
+  return t('errGeneric');
+}
 function t(k, vars){
   var s = (STR[LANG] || STR.en)[k];
   if (s == null) s = STR.en[k];
@@ -1542,7 +1594,7 @@ function paintTableLabels(){
   if (TABLE == null || !document.getElementById('land-tbl')) return;
   var v = Aalayna.venue(), label = tableLabel();
   var sample = !!CHECK && CHECK.source !== 'staff' && Aalayna.sampleAllowed();
-  var place = v.place || v.name;
+  var place = venuePlace(v) || v.name;
   $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + t('sampleBill') : ''));
   $('m-sub').textContent = label + ' \u00b7 ' + place;
   $('bill-title').textContent = label;
@@ -1657,8 +1709,8 @@ function repaintAll(){
   if (NET.off) paintNet();
 }
 function renderMenu(){
-  $('langsel').value = LANG;
-  $('ccysel').value = CCY;
+  $('langsel').value = $('langsel-land').value = LANG;
+  $('ccysel').value = $('ccysel-land').value = CCY;
   paintTableLabels();
   $('pill-tot').textContent = price(remaining());
   $('land-tot').textContent = price(remaining());
@@ -2269,7 +2321,7 @@ function paymentFailed(error, fields){
   paymentBusy = false;
   releasePayment();
   buildBill(); buildPick(); calcShare();
-  alert(error.message);
+  alert(errText(error));
 }
 /* Digital rails are two-step (spec section 6): the request is created when the
    guest hands over to the provider, and only the provider's confirmation settles it.
@@ -2443,7 +2495,7 @@ function submitReview(){
   if (google) window.open(link, '_blank', 'noopener');
   try { Aalayna.submitReview({ settlementId: lastSettlementId, rating: rating,
                                comment: google ? '' : $('review-text').value, destination: google ? 'google' : 'private' }); }
-  catch(error) { $('review-status').textContent = error.message; return; }
+  catch(error) { $('review-status').textContent = errText(error); return; }
   ratingLogged = true; reviewDone = true; reviewDoneMsg = google ? 'rvOpened' : 'rvSent';
   paintReview();
 }
@@ -2459,7 +2511,7 @@ async function sendReceipt(){
   var mkt = $('c-mkt').checked;
   /* The button requests a receipt; restaurant offers remain a separate, optional choice. */
   try { await Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:true, marketing:mkt }); }
-  catch(error) { alert(error.message); return; }
+  catch(error) { alert(errText(error)); return; }
   $('consents').classList.add('done');
   var btn = document.querySelector('.mailbtn');
   btn.textContent = t('saved');
@@ -2557,8 +2609,8 @@ function paintVenue(){
   set('v-name-receipt', v.name.toUpperCase());
   set('offers-line', t('offersFrom', {venue: v.name}));
   set('rate-q', t('rateQ', {venue: short}));
-  set('v-place', v.place || '');
-  set('v-est', v.est || (v.place ? v.place.toUpperCase() : t('crestFallback')));
+  set('v-place', venuePlace(v));
+  set('v-est', v.est || (venuePlace(v) ? '' : t('crestFallback')));
   set('v-est2', v.name);
   var mb = document.querySelector('.mailbtn');
   if (mb) mb.textContent = mb.classList.contains('sent') ? t('saved') : t('sendReceipt');

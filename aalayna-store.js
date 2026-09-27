@@ -30,7 +30,7 @@
      generator writes these params so an owner scans straight into "their" demo. */
   /* Mayda is fictional: the demo never shows a real restaurant's name, menu or
      prices. Its menu pack is venues/mayda.json (?menu=mayda). */
-  var DEFAULT_VENUE = { name: 'Mayda', place: 'Lebanese Grill',
+  var DEFAULT_VENUE = { name: 'Mayda', place: 'Lebanese Grill', placeTr: { fr: 'Grillades libanaises', ar: 'مشاوي لبنانية' },
                         est: '', heritage: 0, gplace: '',
                         brand: '', bg: '', font: '' };
   function venueFromURL() {
@@ -44,7 +44,10 @@
       };
       var font = (q.get('font') || '').trim().slice(0, 40);
       if (!/^[A-Za-z0-9 +]*$/.test(font)) font = '';
-      return { name: n.slice(0, 40), place: (q.get('place') || '').trim().slice(0, 40),
+      /* the place line in French and Arabic, when the link gives them (?place_fr=, ?place_ar=) */
+      var placeTr = {};
+      ['fr', 'ar'].forEach(function (l) { var t = (q.get('place_' + l) || '').trim().slice(0, 40); if (t) placeTr[l] = t; });
+      return { name: n.slice(0, 40), place: (q.get('place') || '').trim().slice(0, 40), placeTr: placeTr,
                est: '', heritage: 0, gplace: (q.get('gplace') || '').trim().slice(0, 200),
                brand: hex(q.get('brand')), bg: hex(q.get('bg')), font: font };
     } catch (e) { return null; }

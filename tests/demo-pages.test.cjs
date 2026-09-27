@@ -35,7 +35,7 @@ test('system.html: the Mayda demo with demo=1, no admin link, honest pitch copy'
  const html=read('system.html');
  assert.match(html,/Demo · Mayda/);
  const links=[...html.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replace(/&amp;/g,'&'));
- const Q='menu=mayda&venue=Mayda&place=Lebanese%20Grill&brand=%232F6B4F&bg=%23F5F1EA&font=Montserrat';
+ const Q='menu=mayda&venue=Mayda&place=Lebanese%20Grill&place_fr=Grillades%20libanaises&place_ar=%D9%85%D8%B4%D8%A7%D9%88%D9%8A%20%D9%84%D8%A8%D9%86%D8%A7%D9%86%D9%8A%D8%A9&brand=%232F6B4F&bg=%23F5F1EA&font=Montserrat';
  for(const page of ['guest.html','dashboard.html','editor.html']){
   const l=links.find(x=>x.startsWith(page+'?'));
   assert.ok(l,'links '+page);

@@ -587,5 +587,6 @@ test('tapping the hero film, or its play button, pauses and plays it on every ho
     assert.match(s, /b\.hidden=true;p\.hidden=true;return;/, f + ': reduced motion hands over to native controls');
   }
   const css = fs.readFileSync(path.join(ROOT, 'website.css'), 'utf8');
-  assert.match(css, /\.hero-reel\.is-paused::after\{opacity/);
+  assert.match(css, /\.reel-play\{position:absolute;left:50%;top:50%;[^}]*width:80px;height:80px/, "one large button in the middle");
+  assert.match(css, /\.is-paused \.reel-play,\.hero-reel\.show \.reel-play/);
 });
