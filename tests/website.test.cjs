@@ -237,7 +237,9 @@ test('funnel: tracked placements keep their names and every event is one analyti
 
 test('homepage structure: four sections that each end on Book a demo, six questions, nothing that is not shipped', () => {
   const s = read('index.html');
-  assert.ok(s.includes('<p class="lead">Guests view, split and pay from the table: one QR, their language, USD or LBP.</p>'));
+  // Under the headline: what the product is, in a sentence and four chips.
+  assert.ok(s.includes('<p class="lead">A QR code on every table. Guests open your menu, split the bill and pay from their phone. No app to download.</p>'));
+  assert.deepEqual(all(s, /<ul class="what">([\s\S]*?)<\/ul>/g).map(u => all(u, /<\/svg>([^<]+)<\/li>/g))[0], ['Web app, nothing to download', 'Live dashboard for your team', 'EN · FR · عربي, USD or LBP', 'Whish, card or cash']);
   assert.deepEqual(all(s, /<section[^>]*\bid="([^"]+)"/g), ['how', 'outcomes', 'pricing', 'faq', 'contact'], 'the sections, in order');
   assert.ok(!/id="experience"|id="return-visits"|Coming next|Bring guests back/.test(s), 'no both-sides or coming-next section');
   assert.equal(s.match(/<div class="nav-links">([\s\S]*?)<\/div>/)[1], '<a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">Questions</a>');
@@ -253,7 +255,7 @@ test('homepage structure: four sections that each end on Book a demo, six questi
   assert.equal(numbers.length, 6, 'three steps and three pilot steps');
   numbers.forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
-  const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> [^<]+<\/p>/g)].map(m => m[1]);
+  const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> <span class="source-text">[^<]+<\/span><\/p>/g)].map(m => m[1]);
   assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'Your list']);
   assert.equal(all(s, /<ul>([\s\S]*?)<\/ul>/g).map(u => (u.match(/<li>/g) || []).length)[0], 5, 'the price card lists what ships today');
 });
@@ -458,7 +460,7 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   const en = read('index.html'), fr = read(FR);
   assert.ok(!/—|&mdash;|&#8212;|\\2014/.test(fr), 'em dash');
   // Every English phrase of two words or more, cut at punctuation, is gone from the French page; names and the greeting stay.
-  const keep = ['English · Français · العربية', 'Whish Money', 'Ahla w sahla'];
+  const keep = ['English · Français · العربية', 'Whish Money', 'Ahla w sahla', 'EN · FR · عربي'];
   const frText = visible(fr).join('\n');
   const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()]/))).map(t => t.trim()).filter(t => (t.match(/\p{L}{2,}/gu) || []).length >= 2 && !keep.includes(t));
   assert.ok(phrases.length > 150, phrases.length + ' English phrases checked');
