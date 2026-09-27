@@ -536,3 +536,11 @@ test('ar copy: nothing left in English, the same prices and percentages, the nam
   assert.match(read('website.css'), /\[lang="ar"\] :is\(h1,h2,h3,\.eyebrow,\.number,\.source-tag,\.btn,\.name\)\{letter-spacing:0;text-transform:none\}/, 'Arabic is never tracked or capitalised');
   assert.ok(!/margin-(?:left|right)|padding-(?:left|right)/.test(read('website.css')), 'spacing is logical, so it mirrors in Arabic');
 });
+
+test('every page asks for the same stylesheet version (bump ?v= on all of them whenever website.css changes, or phones keep the old one)', () => {
+  const pages = ['index.html', 'fr/index.html', 'ar/index.html', 'book.html', 'numbers.html'];
+  const versions = pages.map(f => (read(f).match(/website\.css\?v=(\d+)"/) || [])[1]);
+  versions.forEach((v, i) => assert.ok(v, pages[i] + ' links website.css with a version'));
+  assert.equal(new Set(versions).size, 1, 'one version across pages: ' + versions.join(', '));
+  assert.ok(Number(versions[0]) >= 7, 'the version that carries the phone hero and the Arabic page');
+});
