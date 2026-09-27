@@ -1,9 +1,10 @@
 /* Aalayna marketing site: index.html, numbers.html, book.html. */
 
-/* Two faces, both on a grid. Aalayna Block, the logo's own capitals as a font (tools/brand-font.js builds it
-   from brand/logo.js), sets every heading and big figure. Kode Mono, square and monospaced (every letter in a
-   box of the same width), sets everything you read or press. Corners are square everywhere, like the logo;
-   only the phones keep theirs, because phones have them. */
+/* Three faces, each with one job. IBM Plex Sans (the guest app's own face, with its Arabic) sets everything you
+   read: headings, text and figures, so the site reads easily and matches the product. Kode Mono, square and
+   monospaced, sets the small labels you scan (eyebrows, step numbers, tags): the grid texture of the brand.
+   Aalayna Block, the logo's own capitals (tools/brand-font.js builds it from brand/logo.js), sets only the name
+   itself. Corners are square everywhere, like the logo; only the phones keep theirs, because phones have them. */
 @font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-weight:100 900;font-style:normal;font-display:swap}
 
 /* Tokens. Six type sizes only (14 / 16 / 19 / 30 / 54 / 67 px). Red has two jobs:
@@ -14,8 +15,9 @@
   --petrol:#173E43;--peach:#F6C39F;--on-petrol:#D7E3E2;--on-petrol-sub:#B9C7C4;
   --fs-small:.875rem;--fs-body:1rem;--fs-lead:1.1875rem;--fs-heading:1.875rem;--fs-display:3.375rem;--fs-hero:4.1875rem;
   --header-h:4rem;
-  --font-display:'Aalayna Block','Kode Mono',ui-monospace,monospace;
-  --font-text:'Kode Mono','Noto Kufi Arabic',ui-monospace,monospace;
+  --font-text:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --font-label:'Kode Mono',ui-monospace,monospace;
+  --font-name:'Aalayna Block','Kode Mono',ui-monospace,monospace;
 }
 
 /* Base */
@@ -26,8 +28,9 @@ button,a,input{touch-action:manipulation}button,input{font:inherit}a{color:inher
 button,a,summary{-webkit-tap-highlight-color:transparent}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
 h1,h2,h3,p,figure{margin:0}
-/* Headings in the logo's capitals: one weight, square, no tracking and no faux bold. */
-h1,h2,h3{font-family:var(--font-display);font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0;text-wrap:balance}
+/* Headings in Plex, bold and a little tight; the name inside a heading keeps the logo's capitals. */
+h1,h2,h3{font-family:var(--font-text);font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+.name{font-family:var(--font-name);font-weight:400;font-synthesis:none;letter-spacing:0}
 h2{font-size:var(--fs-heading);line-height:1.15}
 h3{font-size:var(--fs-lead);line-height:1.3}
 p{color:var(--sub)}
@@ -35,8 +38,8 @@ img{max-width:100%}
 .wrap{width:min(1120px,calc(100% - 3rem));margin-inline:auto}
 .section{padding-block:5rem}
 section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
-.eyebrow{color:var(--brand-text);font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
-.number{font-size:var(--fs-small);font-weight:600;color:var(--brand-text)}
+.eyebrow{color:var(--brand-text);font-family:var(--font-label);font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.number{font-family:var(--font-label);font-size:var(--fs-small);font-weight:600;color:var(--brand-text)}
 .skip{position:absolute;top:-6rem;left:1rem;background:var(--surface);padding:.7rem;z-index:100}.skip:focus{top:.5rem}
 /* Read out, not shown: the hero spells the name 3LAYNA on screen and Aalayna to a screen reader. */
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -56,7 +59,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .nav-in>.btn{white-space:nowrap}
 
 /* Buttons */
-.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.8rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;text-decoration:none;font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;text-align:center;cursor:pointer;line-height:1.4}
+.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.8rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;text-decoration:none;font-size:var(--fs-body);font-weight:600;text-align:center;cursor:pointer;line-height:1.4}
 .btn:hover{background:var(--brand-hover)}
 .btn.outline{background:var(--surface);border-color:var(--line);color:var(--ink)}.btn.outline:hover{border-color:var(--brand)}
 .btn.light{background:var(--peach);color:var(--petrol)}.btn.light:hover{background:#fff}
@@ -90,7 +93,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
    Phones get the 9:16 cut, everything else the 16:9 one (the sources choose by width). */
 .hero-reel{position:relative}
 .hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
-.reel-sound{position:absolute;right:0;bottom:0;min-height:44px;padding:.5rem 1rem;border:0;background:var(--ink);color:#fff;font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.reel-sound{position:absolute;right:0;bottom:0;min-height:44px;padding:.5rem 1rem;border:0;background:var(--ink);color:#fff;font-size:var(--fs-small);font-weight:600;cursor:pointer}
 .reel-sound:hover{background:var(--brand)}
 @media(max-width:767px){.hero-reel{justify-self:center;width:100%;max-width:22rem}.hero-reel video{aspect-ratio:9/16}}
 
@@ -107,9 +110,9 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .outcomes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:2rem;row-gap:0;margin-top:2.5rem}
 .outcomes article{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;align-content:start;padding-bottom:2rem}
 .outcomes h3{margin-top:1.1rem;color:var(--peach)}.outcomes p{margin-top:.75rem}
-.benefits-band .outcome-figure{margin:0;color:#fff;font-family:var(--font-display);font-size:var(--fs-heading);font-weight:400;font-synthesis:none;text-transform:uppercase;line-height:1}
+.benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-heading);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
 .benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
-.source-tag{display:inline-block;margin-right:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.source-tag{display:inline-block;margin-right:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .calc-link{display:inline-block;margin-top:.5rem;padding-block:.5625rem;color:var(--peach);font-weight:600;text-underline-offset:.25rem}
 .calc-link::after{content:' \2192'}
 
@@ -123,14 +126,14 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .section-intro{max-width:44rem;margin-top:1.2rem}
 .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2.5rem}
 .pilot{padding:2rem;border:1px solid var(--line);background:var(--surface)}
-.pill{display:inline-block;margin-bottom:1.25rem;padding:.25rem .65rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small);font-weight:600}
+.pill{display:inline-block;margin-bottom:1.25rem;padding:.25rem .65rem;background:var(--brand-bg);color:var(--brand-text);font-family:var(--font-label);font-size:var(--fs-small);font-weight:600}
 .pilot-steps{list-style:none;margin:1.5rem 0;padding:0}
 .pilot-steps li{margin-bottom:1rem;color:var(--sub)}
 .pilot-steps .number{display:block;margin-bottom:.15rem}
 .price-card{padding:2rem;background:var(--petrol);color:#fff}
 .price-card .eyebrow{color:var(--peach)}
-.price{color:#fff;font-family:var(--font-display);font-size:var(--fs-display);font-weight:400;font-synthesis:none;line-height:1.1}
-.price span{display:block;margin-top:.5rem;font-family:var(--font-text);font-size:var(--fs-body);font-weight:400;color:var(--on-petrol)}
+.price{color:#fff;font-size:var(--fs-display);font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.price span{display:block;margin-top:.5rem;font-size:var(--fs-body);font-weight:400;letter-spacing:0;color:var(--on-petrol)}
 .founder{padding-block:1.25rem;border-bottom:1px solid #ffffff30;color:var(--peach);font-size:var(--fs-body)}
 .price-card ul{padding-left:1.2rem;list-style:square;color:var(--on-petrol)}.price-card li{margin-bottom:.5rem}
 .price-note{margin-block:1.2rem;font-size:var(--fs-small);color:var(--on-petrol)}

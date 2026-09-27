@@ -14,13 +14,13 @@
    The table, the room and the waiter are a vector world under a camera that dives into the guest's phone and rises
    over the floor. Every frame is a pure function of t (render(t)), so the page plays live, scrubs, and renders
    frame-exact to video through tools/render-reel.js. The phone and panels are vector rebuilds of the real screens.
-   As on the site: big words in Aalayna Block (the logo's capitals), everything else in Kode Mono, every corner square and
-   every shadow hard. The screens inside the phone and the panels are the product, so they keep the app's own faces. */
+   As on the site: IBM Plex Sans for everything read (the app's own face), Kode Mono for small labels, Aalayna Block (the
+   logo's capitals) for the name only; every corner square and every shadow hard. The phone screens and panels are the product. */
 @font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-display:block}
 :root{--bg:#FAF6F1;--ink:#211B16;--sub:#6E635B;--line:#EAE2D8;--red:#C9414B;--petrol:#173E43;--peach:#F6C39F;--green:#3E8E6A;--amber:#E0A33A;
   --a-line:#E7E5E0;--a-soft:#F0EEE9;--a-ink:#171D1A;--a-sub:#68716B;--a-faint:#9AA29C;--a-green:#0F4B3A;--a-gbg:#EDF3EF;--a-gline:#D5E3DA;
   --a-amber:#8A6A1F;--a-abg:#F8F1DF;--a-aline:#EBDDB4;--a-red:#B4423A;
-  --display:'Aalayna Block',monospace;--text:'Kode Mono','Noto Kufi Arabic',monospace;--app:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif}
+  --display:'Aalayna Block',monospace;--label:'Kode Mono',monospace;--text:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;--app:var(--text)}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;background:var(--bg);overflow:hidden}
 body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased}
@@ -40,36 +40,36 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 #tsT,#tsB{left:0;width:100%;-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}
 #tsT{top:0;-webkit-mask-image:linear-gradient(#000 20%,transparent);mask-image:linear-gradient(#000 20%,transparent)}
 #tsB{bottom:0;top:auto;-webkit-mask-image:linear-gradient(transparent,#000 80%);mask-image:linear-gradient(transparent,#000 80%)}
-#coldT{z-index:6;font-family:var(--display);font-weight:400;color:#FAF6F1;text-align:center;white-space:nowrap}
+#coldT{z-index:6;font-weight:700;letter-spacing:-.02em;color:#FAF6F1;text-align:center;white-space:nowrap}
 #coldDot{width:56px;height:56px;background:var(--red)}
 #lbT,#lbB{left:0;width:100%;background:#000;z-index:5}
 #iris{background:#000}
 /* Act 1: the wait */
-.cap1{font-family:var(--display);font-weight:400;line-height:1.2;color:var(--bg);text-wrap:balance}
+.cap1{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);text-wrap:balance}
 .cap1 .em{color:var(--peach)}
 .pain{display:flex;align-items:center;gap:.5em;padding:.3em .8em .3em .3em;background:rgba(14,42,45,.72);border:2px solid rgba(250,246,241,.18);color:var(--bg);font-weight:500;white-space:nowrap}
 .pain i{width:1.5em;height:1.5em;background:var(--red);display:grid;place-items:center;font-style:normal;color:#fff;font-weight:700}
 .pain svg{width:.9em;height:.9em}
-#clock{font-weight:500;letter-spacing:.08em;color:rgba(250,246,241,.8);font-variant-numeric:tabular-nums;white-space:nowrap}
+#clock{font-family:var(--label);font-weight:500;letter-spacing:.08em;color:rgba(250,246,241,.8);font-variant-numeric:tabular-nums;white-space:nowrap}
 #clock b{color:var(--peach);font-weight:700}
 
 /* Act 2: the turn */
 #red .fill{position:absolute;inset:0;background:var(--red)}
-.kl{position:absolute;overflow:hidden;padding:0 40px 24px 0;font-family:var(--display);font-weight:400;line-height:1.1;color:var(--bg);white-space:nowrap}
+.kl{position:absolute;overflow:hidden;padding:0 40px 24px 0;font-weight:700;letter-spacing:-.055em;line-height:1.1;color:var(--bg);white-space:nowrap}
 .kl em{font-style:normal;color:var(--bg)}
 .kl span{display:inline-block;transform-origin:0 100%}
-#k3{color:var(--ink)}
+#k3{color:var(--ink);font-family:var(--display);font-weight:400;letter-spacing:0}
 #thesis{font-weight:500;color:var(--bg);line-height:1.3;text-wrap:balance}
 
 /* Captions and the journey rail, over the room */
 .cap{display:flex;flex-direction:column;align-items:flex-start}
-.cap .lab{font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--peach);white-space:nowrap}
-.cap .hd{font-family:var(--display);font-weight:400;line-height:1.2;color:var(--bg);margin-top:.3em;text-wrap:balance}
+.cap .lab{font-family:var(--label);font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--peach);white-space:nowrap}
+.cap .hd{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);margin-top:.3em;text-wrap:balance}
 .cap .hd .em{color:var(--peach)}
 .cap .sb{color:#C9D6D3;line-height:1.34;margin-top:.75em;text-wrap:balance}
 .rline{position:absolute;height:2px;background:rgba(250,246,241,.14);transform-origin:0 50%}
 .node{width:12px;height:12px;border:2px solid rgba(250,246,241,.28);background:#10302F}
-.rlab{font-weight:500;letter-spacing:.02em;color:rgba(250,246,241,.5);white-space:nowrap}
+.rlab{font-family:var(--label);font-weight:500;letter-spacing:.02em;color:rgba(250,246,241,.5);white-space:nowrap}
 #rdot{width:18px;height:18px;background:var(--red);box-shadow:0 0 0 6px rgba(201,65,75,.18)}
 
 /* The guest's phone: a 390 px wide app viewport, scaled into the screen */
@@ -237,7 +237,7 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 #rsheet .cta{top:196px}
 #tapDot,.tapd{width:46px;height:46px;border-radius:50%;background:rgba(23,29,26,.2);border:2.5px solid rgba(255,255,255,.95);box-shadow:0 3px 10px rgba(0,0,0,.25)}
 #tapRing,.tapr{width:46px;height:46px;border:3px solid rgba(201,65,75,.85)}
-#stamp{width:170px;height:170px;background:var(--red);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-size:56px;font-weight:400;box-shadow:14px 14px 0 rgba(0,0,0,.2)}
+#stamp{width:170px;height:170px;background:var(--red);color:var(--bg);display:grid;place-items:center;font-size:64px;font-weight:700;letter-spacing:-.04em;box-shadow:14px 14px 0 rgba(0,0,0,.2)}
 #stampRing{width:170px;height:170px;border:6px solid var(--red)}
 #conf{position:absolute;left:0;top:0}
 
@@ -278,13 +278,13 @@ body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased
 #close .fill{position:absolute;inset:0;background:var(--bg)}
 #cdot{background:var(--red)}
 #logo{position:absolute;left:0;top:0}
-#cta{padding:.55em 1em;background:var(--petrol);color:var(--peach);font-weight:500;white-space:nowrap}
-#url{font-weight:500;letter-spacing:.18em;color:var(--sub);text-transform:uppercase;white-space:nowrap}
+#cta{padding:.55em 1em;background:var(--petrol);color:var(--peach);font-weight:600;white-space:nowrap}
+#url{font-family:var(--label);font-weight:500;letter-spacing:.18em;color:var(--sub);text-transform:uppercase;white-space:nowrap}
 
 /* Controls: hidden while capturing */
 #ui{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 16px;opacity:0;transition:opacity .25s}
 body:hover #ui,#ui:focus-within,body.ended #ui,body.paused #ui{opacity:1}
-#ui button{min-width:44px;min-height:44px;border:0;background:rgba(33,27,22,.82);color:#fff;font:600 14px/1 'Kode Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:0 16px;cursor:pointer}
+#ui button{min-width:44px;min-height:44px;border:0;background:rgba(33,27,22,.82);color:#fff;font:600 14px/1 'IBM Plex Sans',sans-serif;padding:0 16px;cursor:pointer}
 #ui button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
 #bar{flex:1;height:4px;background:rgba(33,27,22,.15);overflow:hidden}
 #bar i{display:block;height:100%;width:0;background:var(--red)}
@@ -872,7 +872,7 @@ const unproj = (sx, sy) => { const [dx, dy] = rot((sx - cam.fx) / cam.z, (sy - c
 
 /* ---------- Layout constants ---------- */
 const L1 = lay({ cap: [120, 236, 600, 96], pain: [120, 560, 102, 42], clock: [1800, 96] }, { cap: [80, 170, 920, 104], pain: [80, 470, 104, 46], clock: [1000, 96] });
-const L2 = lay({ x: 170, tops: [180, 362, 544], fs: 176, th: [176, 800, 1500, 50] }, { x: 86, tops: [520, 660, 800], fs: 120, th: [90, 1010, 900, 52] });
+const L2 = lay({ x: 170, tops: [180, 362, 544], fs: 176, th: [176, 800, 1500, 50] }, { x: 86, tops: [490, 650, 810], fs: 140, th: [90, 1040, 900, 54] });
 const LA = lay({ x: 1110, y: 250, w: 700, fl: 28, fh: 84, fs: 40 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
 const LB = lay({ x: 110, y: 170, w: 470, fl: 28, fh: 78, fs: 36 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
 const LR = lay({ x0: 1116, step: 134, y: 910, fs: 19 }, { x0: 140, step: 160, y: 86, fs: 21 });
@@ -1023,7 +1023,7 @@ function coldOpen(TT) {
   $('tsB').style.top = (H * .66) + 'px';
   // One line per shot, low in the frame; then the dot falls and lands.
   $('coldBlack').style.display = dark ? '' : 'none';
-  const tx = $('coldT'); tx.style.fontSize = lay(72, 58) + 'px';
+  const tx = $('coldT'); tx.style.fontSize = lay(72, 70) + 'px';
   const lines = [[1.1, 2.8], [3.35, 5.05], [5.6, 7.3], [9.95, 11.2]];
   let li = -1; lines.forEach(([a, b], k) => { if (TT >= a && TT < b + .3) li = k; });
   if (li >= 0) { const [a, b] = lines[li], k = E.outCubic(p(TT, a, a + .5)) * (1 - p(TT, b, b + .3)); tx.textContent = COLDTX[li]; T0(tx, CX, li === 3 ? CY + 120 : H - LBH / 2, k, 10 * (1 - k)); }
