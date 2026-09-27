@@ -22,8 +22,12 @@
 <link rel="alternate" hreflang="x-default" href="https://aalayna.com/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="website.css?v=5">
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="website.css?v=6">
+<link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
+<link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <script src="aalayna-config.js"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
@@ -32,7 +36,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-nav">
   <nav class="wrap nav-in" aria-label="Main navigation">
-    <a class="logo" href="index.html" aria-label="Aalayna home">aalay<b>na</b></a>
+    <a class="logo" href="index.html" aria-label="Aalayna home"><svg viewBox="0 0 170 110" aria-hidden="true" focusable="false"><path class="logo-ink" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM0 60L10 60L10 80.4L40 80.4L40 60L50 60L50 89.6L30 89.6L30 110L20 110L20 89.6L0 89.6ZM60 60L70 60L70 110L60 110ZM100 60L110 60L110 110L100 110ZM60 60L72.5 60L110 110L97.5 110ZM120 60L170 60L170 110L160 110L160 89.6L130 89.6L130 110L120 110ZM130 69.2L130 80.4L160 80.4L160 69.2Z"/><path class="logo-red" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></svg></a>
     <div class="nav-links"><a href="#how">How it works</a><a href="#pricing">Pilot &amp; pricing</a><a href="#faq">Questions</a></div>
     <a class="btn compact" data-track="booking_click" data-placement="navigation" href="book.html">Book a 15-min call</a>
     <a href="fr/" hreflang="fr" lang="fr" aria-label="FR, version française" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;text-decoration:none">FR</a>
@@ -42,7 +46,7 @@
   <section class="hero wrap" aria-labelledby="hero-title">
     <div class="hero-copy">
       <p class="eyebrow">For restaurants in Lebanon</p>
-      <h1 id="hero-title">The bill.<br>The split.<br><em>Aalayna.</em></h1>
+      <h1 id="hero-title">The bill.<br>The split.<br><span class="sr-only">Aalayna.</span><span aria-hidden="true"><em>3</em>layna.</span></h1>
       <p class="lead">Guests view, split and pay from the table: one QR, their language, USD or LBP.</p>
       <p class="supporting">English · Français · العربية<br>Designed for Whish, card and cash</p>
       <div class="actions">
@@ -51,7 +55,7 @@
       </div>
       <p class="fine">Two months free from go-live. Continue only if it works for your restaurant.</p>
     </div>
-    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="images/film-en.jpg" data-poster-portrait="images/film-en-portrait.jpg" aria-label="A 93-second film. It opens on close-ups of a table at the end of dinner: every night, every table, the same wait. Then four friends sit down, scan the table QR and read the menu in their language and currency, filtered for their diet. After dinner comes the wait for the bill. With Aalayna, they split the $152.50 bill four ways, tip the waiter, pay $41.94 with Whish Money and rate the night, while the restaurant sees payments live, confirms cash and publishes a price change to every table in seconds."><source src="images/film-en.mp4" type="video/mp4" media="(min-width: 768px)"><source src="images/film-en-portrait.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-mute="Mute">Sound on</button></figure>
+    <figure class="hero-reel"><video id="reel" autoplay muted loop playsinline preload="auto" width="1280" height="720" poster="images/film-en.jpg" data-poster-portrait="images/film-en-portrait.jpg" aria-label="A 96-second film. It opens on close-ups of a table at the end of dinner: every night, every table, the same wait. Then four friends sit down, scan the table QR and read the menu in their language and currency, filtered for their diet. After dinner comes the wait for the bill. With Aalayna, they split the $152.50 bill four ways, tip the waiter, pay $41.94 with Whish Money and rate the night, while the restaurant sees payments live, confirms cash and publishes a price change to every table in seconds. It closes on the 3LAYNA logo: the table QR flies into its letters."><source src="images/film-en.mp4" type="video/mp4" media="(min-width: 768px)"><source src="images/film-en-portrait.mp4" type="video/mp4"></video><button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" data-mute="Mute">Sound on</button></figure>
 <script>
 (function(){var v=document.getElementById('reel'),b=document.getElementById('reel-sound');if(!v||!b)return;
 if(window.matchMedia&&window.matchMedia('(max-width: 767px)').matches)v.poster=v.getAttribute('data-poster-portrait');
@@ -152,6 +156,6 @@ b.addEventListener('click',function(){if(v.muted){v.muted=false;v.currentTime=0;
   </section>
   <section class="contact" id="contact"><div class="wrap"><p class="eyebrow">Ahla w sahla</p><h2>Tell us about your restaurant.</h2><p>Share what your team needs. We’ll help you plan the next step.</p><div class="actions"><a class="btn" data-track="whatsapp_click" data-placement="footer" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20Aalayna%20for%20my%20restaurant">WhatsApp us</a><a class="btn outline" data-track="booking_click" data-placement="footer" href="book.html">Book a 15-min call</a></div></div></section>
 </main>
-<footer class="wrap footer"><a class="logo" href="index.html">aalay<b>na</b></a><p>© 2026 Aalayna · For restaurants in Lebanon</p><a data-track="whatsapp_click" data-placement="footer_contact" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20Aalayna">WhatsApp us</a></footer>
+<footer class="wrap footer"><a class="logo" href="index.html" aria-label="Aalayna home"><svg viewBox="0 0 500 120" aria-hidden="true" focusable="false"><path class="logo-ink" d="M0 0L10 0L10 90.8L20 90.8L20 50L30 50L30 90.8L40 90.8L40 50L50 50L50 90.8L60 90.8L60 0L70 0L70 90.8L80 90.8L80 50L120 50L120 59.2L90 59.2L90 90.8L120 90.8L120 100L0 100ZM210 50L220 50L220 90.8L260 90.8L260 100L210 100ZM270 50L320 50L320 100L310 100L310 79.6L280 79.6L280 100L270 100ZM280 59.2L280 70.4L310 70.4L310 59.2ZM330 50L340 50L340 70.4L370 70.4L370 50L380 50L380 79.6L360 79.6L360 100L350 100L350 79.6L330 79.6ZM390 50L400 50L400 100L390 100ZM430 50L440 50L440 100L430 100ZM390 50L402.5 50L440 100L427.5 100ZM450 50L500 50L500 100L490 100L490 79.6L460 79.6L460 100L450 100ZM460 59.2L460 70.4L490 70.4L490 59.2Z"/><path class="logo-red" d="M20 30L30 30L30 40L20 40ZM30 110L40 110L40 120L30 120ZM50 110L60 110L60 120L50 120ZM150 50L200 50L200 100L150 100L150 90.8L190 90.8L190 79.6L170 79.6L170 70.4L190 70.4L190 59.2L150 59.2Z"/></svg></a><p>© 2026 Aalayna · For restaurants in Lebanon</p><a data-track="whatsapp_click" data-placement="footer_contact" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20learn%20more%20about%20Aalayna">WhatsApp us</a></footer>
 </body>
 </html>

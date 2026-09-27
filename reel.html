@@ -4,22 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aalayna Film</title>
-<meta name="description" content="Aalayna in 93 seconds, all at one table: four friends sit down, scan and read the menu, eat, wait for the bill, then split, tip, pay and rate, and the restaurant's live floor.">
+<meta name="description" content="Aalayna in 96 seconds, all at one table: four friends sit down, scan and read the menu, eat, wait for the bill, then split, tip, pay and rate, and the restaurant's live floor, closing on the 3LAYNA logo.">
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@700&display=block" rel="stylesheet">
 <style>
 /* Aalayna film: one 45 s timeline in two formats (?format=portrait) and two languages (?lang=fr), set at one table.
    The table, the room and the waiter are a vector world under a camera that dives into the guest's phone and rises
    over the floor. Every frame is a pure function of t (render(t)), so the page plays live, scrubs, and renders
-   frame-exact to video through tools/render-reel.js. The phone and panels are vector rebuilds of the real screens. */
+   frame-exact to video through tools/render-reel.js. The phone and panels are vector rebuilds of the real screens.
+   As on the site: big words in Aalayna Block (the logo's capitals), everything else in Kode Mono, every corner square and
+   every shadow hard. The screens inside the phone and the panels are the product, so they keep the app's own faces. */
+@font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-display:block}
 :root{--bg:#FAF6F1;--ink:#211B16;--sub:#6E635B;--line:#EAE2D8;--red:#C9414B;--petrol:#173E43;--peach:#F6C39F;--green:#3E8E6A;--amber:#E0A33A;
   --a-line:#E7E5E0;--a-soft:#F0EEE9;--a-ink:#171D1A;--a-sub:#68716B;--a-faint:#9AA29C;--a-green:#0F4B3A;--a-gbg:#EDF3EF;--a-gline:#D5E3DA;
-  --a-amber:#8A6A1F;--a-abg:#F8F1DF;--a-aline:#EBDDB4;--a-red:#B4423A}
+  --a-amber:#8A6A1F;--a-abg:#F8F1DF;--a-aline:#EBDDB4;--a-red:#B4423A;
+  --display:'Aalayna Block',monospace;--text:'Kode Mono','Noto Kufi Arabic',monospace;--app:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif}
 *{box-sizing:border-box;margin:0}
 html,body{height:100%;background:var(--bg);overflow:hidden}
-body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+body{font-family:var(--text);color:var(--ink);-webkit-font-smoothing:antialiased}
 #view{position:fixed;inset:0}
 #stage{position:absolute;left:0;top:0;overflow:hidden;background:#0E2A2D;transform-origin:0 0}
 .layer{position:absolute;inset:0}
@@ -36,36 +40,37 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #tsT,#tsB{left:0;width:100%;-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}
 #tsT{top:0;-webkit-mask-image:linear-gradient(#000 20%,transparent);mask-image:linear-gradient(#000 20%,transparent)}
 #tsB{bottom:0;top:auto;-webkit-mask-image:linear-gradient(transparent,#000 80%);mask-image:linear-gradient(transparent,#000 80%)}
-#coldT{z-index:6;font-weight:700;letter-spacing:-.02em;color:#FAF6F1;text-align:center;white-space:nowrap;text-shadow:0 2px 24px rgba(0,0,0,.6)}
-#coldDot{width:56px;height:56px;border-radius:50%;background:var(--red);box-shadow:0 0 60px rgba(201,65,75,.5)}
+#coldT{z-index:6;font-family:var(--display);font-weight:400;color:#FAF6F1;text-align:center;white-space:nowrap}
+#coldDot{width:56px;height:56px;background:var(--red)}
 #lbT,#lbB{left:0;width:100%;background:#000;z-index:5}
 #iris{background:#000}
 /* Act 1: the wait */
-.cap1{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);text-wrap:balance}
+.cap1{font-family:var(--display);font-weight:400;line-height:1.2;color:var(--bg);text-wrap:balance}
 .cap1 .em{color:var(--peach)}
-.pain{display:flex;align-items:center;gap:.5em;padding:.3em .8em .3em .3em;border-radius:999px;background:rgba(14,42,45,.72);border:2px solid rgba(250,246,241,.18);color:var(--bg);font-weight:600;white-space:nowrap}
-.pain i{width:1.5em;height:1.5em;border-radius:50%;background:var(--red);display:grid;place-items:center;font-style:normal;color:#fff;font-weight:700}
+.pain{display:flex;align-items:center;gap:.5em;padding:.3em .8em .3em .3em;background:rgba(14,42,45,.72);border:2px solid rgba(250,246,241,.18);color:var(--bg);font-weight:500;white-space:nowrap}
+.pain i{width:1.5em;height:1.5em;background:var(--red);display:grid;place-items:center;font-style:normal;color:#fff;font-weight:700}
 .pain svg{width:.9em;height:.9em}
-#clock{font-weight:600;letter-spacing:.08em;color:rgba(250,246,241,.8);font-variant-numeric:tabular-nums;white-space:nowrap}
+#clock{font-weight:500;letter-spacing:.08em;color:rgba(250,246,241,.8);font-variant-numeric:tabular-nums;white-space:nowrap}
 #clock b{color:var(--peach);font-weight:700}
 
 /* Act 2: the turn */
 #red .fill{position:absolute;inset:0;background:var(--red)}
-.kl{position:absolute;overflow:hidden;padding:0 40px 24px 0;font-weight:700;line-height:1;letter-spacing:-.055em;color:var(--bg);white-space:nowrap}
+.kl{position:absolute;overflow:hidden;padding:0 40px 24px 0;font-family:var(--display);font-weight:400;line-height:1.1;color:var(--bg);white-space:nowrap}
+.kl em{font-style:normal;color:var(--bg)}
 .kl span{display:inline-block;transform-origin:0 100%}
 #k3{color:var(--ink)}
 #thesis{font-weight:500;color:var(--bg);line-height:1.3;text-wrap:balance}
 
 /* Captions and the journey rail, over the room */
 .cap{display:flex;flex-direction:column;align-items:flex-start}
-.cap .lab{font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--peach);white-space:nowrap}
-.cap .hd{font-weight:700;letter-spacing:-.045em;line-height:1.04;color:var(--bg);margin-top:.3em;text-wrap:balance}
+.cap .lab{font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--peach);white-space:nowrap}
+.cap .hd{font-family:var(--display);font-weight:400;line-height:1.2;color:var(--bg);margin-top:.3em;text-wrap:balance}
 .cap .hd .em{color:var(--peach)}
 .cap .sb{color:#C9D6D3;line-height:1.34;margin-top:.75em;text-wrap:balance}
-.rline{position:absolute;height:2px;border-radius:1px;background:rgba(250,246,241,.14);transform-origin:0 50%}
-.node{width:12px;height:12px;border-radius:50%;border:2px solid rgba(250,246,241,.28);background:#10302F}
+.rline{position:absolute;height:2px;background:rgba(250,246,241,.14);transform-origin:0 50%}
+.node{width:12px;height:12px;border:2px solid rgba(250,246,241,.28);background:#10302F}
 .rlab{font-weight:500;letter-spacing:.02em;color:rgba(250,246,241,.5);white-space:nowrap}
-#rdot{width:18px;height:18px;border-radius:50%;background:var(--red);box-shadow:0 0 0 6px rgba(201,65,75,.18)}
+#rdot{width:18px;height:18px;background:var(--red);box-shadow:0 0 0 6px rgba(201,65,75,.18)}
 
 /* The guest's phone: a 390 px wide app viewport, scaled into the screen */
 #phoneLayer{perspective:2600px;pointer-events:none}
@@ -73,11 +78,11 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #screen{position:relative;width:410px;height:858px;border-radius:53px;overflow:hidden;background:#fff}
 #island{position:absolute;left:149px;top:11px;width:112px;height:32px;border-radius:16px;background:#0b0908;z-index:14}
 #off{position:absolute;inset:0;background:#0a0908;z-index:12}
-#sbar{position:absolute;left:0;top:0;width:410px;height:46px;z-index:11;display:flex;align-items:center;justify-content:space-between;padding:6px 36px 0 44px;font-size:16px;font-weight:600;color:var(--a-ink)}
+#sbar{position:absolute;left:0;top:0;width:410px;height:46px;z-index:11;font-family:var(--app);display:flex;align-items:center;justify-content:space-between;padding:6px 36px 0 44px;font-size:16px;font-weight:600;color:var(--a-ink)}
 #sbar.light{color:#fff}
 #sbar svg{height:13px}
 #glare{position:absolute;inset:0;border-radius:53px;z-index:13;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,0) 32%,rgba(255,255,255,.13) 44%,rgba(255,255,255,0) 58%);background-size:220% 100%}
-#app{position:absolute;left:0;top:46px;width:390px;height:772px;transform-origin:0 0;overflow:hidden;color:var(--a-ink);font-size:15px}
+#app{position:absolute;left:0;top:46px;width:390px;height:772px;transform-origin:0 0;overflow:hidden;color:var(--a-ink);font-family:var(--app);font-size:15px}
 .scr{position:absolute;left:0;top:0;width:390px;height:772px;background:#fff;overflow:hidden}
 .dim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
 .back{position:absolute;left:16px;top:8px;width:42px;height:42px;border:1.5px solid var(--a-line);border-radius:12px;display:grid;place-items:center;font-size:19px;background:#fff}
@@ -231,16 +236,15 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 #rsheet .cm{position:absolute;left:20px;right:20px;top:128px;height:54px;border:1.5px solid var(--a-line);border-radius:12px;padding:0 14px;display:flex;align-items:center;font-size:14px;color:var(--a-faint)}
 #rsheet .cta{top:196px}
 #tapDot,.tapd{width:46px;height:46px;border-radius:50%;background:rgba(23,29,26,.2);border:2.5px solid rgba(255,255,255,.95);box-shadow:0 3px 10px rgba(0,0,0,.25)}
-#tapRing,.tapr{width:46px;height:46px;border-radius:50%;border:3px solid rgba(201,65,75,.85)}
-#stamp{width:170px;height:170px;border-radius:50%;background:var(--red);color:var(--bg);display:grid;place-items:center;font-size:68px;font-weight:700;letter-spacing:-.04em;box-shadow:0 18px 40px rgba(201,65,75,.35)}
-#stampRing{width:170px;height:170px;border-radius:50%;border:6px solid var(--red)}
+#tapRing,.tapr{width:46px;height:46px;border:3px solid rgba(201,65,75,.85)}
+#stamp{width:170px;height:170px;background:var(--red);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-size:56px;font-weight:400;box-shadow:14px 14px 0 rgba(0,0,0,.2)}
+#stampRing{width:170px;height:170px;border:6px solid var(--red)}
 #conf{position:absolute;left:0;top:0}
 
 /* The restaurant's side: compact panels over the floor */
-.pnl{width:640px;border-radius:22px;background:#F6F6F4;overflow:hidden;box-shadow:0 50px 100px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);color:var(--a-ink);font-size:15px;transform-origin:50% 50%}
+.pnl{width:640px;background:#F6F6F4;overflow:hidden;box-shadow:24px 24px 0 rgba(0,0,0,.28);color:var(--a-ink);font-family:var(--app);font-size:15px;transform-origin:50% 50%}
 .pn-h{height:60px;display:flex;align-items:center;gap:14px;padding:0 22px;background:var(--a-green);color:#fff}
-.pn-logo{font-family:'Amiri',serif;font-size:26px;font-weight:700;line-height:1}
-.pn-logo b{color:#F2B8A8}
+.pn-logo{display:block;height:34px;width:auto}
 .pn-t{font-size:14.5px;color:rgba(255,255,255,.85)}
 .pn-live{margin-left:auto;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12.5px;font-weight:600;letter-spacing:.04em}
 .pn-att{position:relative;margin:18px;height:196px;border-radius:16px;background:#FFFBF2;border:1px solid var(--a-aline);padding:18px 20px}
@@ -272,22 +276,17 @@ body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;col
 
 /* Act 5: the close */
 #close .fill{position:absolute;inset:0;background:var(--bg)}
-#mark{font-family:'Amiri',serif;font-weight:700;line-height:1.35;overflow:hidden;padding:0 20px;white-space:nowrap;display:flex}
-#mark span{display:inline-block}
-#mark .na{color:var(--red)}
-#ar{font-family:'Amiri',serif;font-weight:700;color:var(--red);direction:rtl;white-space:nowrap;line-height:1.6}
-#uline{background:var(--red)}
-.tg{font-weight:500;color:var(--ink);white-space:nowrap}
-.tg b{color:var(--red);font-weight:600}
-#cta{padding:.45em .9em;border-radius:999px;background:var(--petrol);color:var(--peach);font-weight:600;white-space:nowrap}
-#url{font-weight:600;letter-spacing:.18em;color:var(--sub);text-transform:uppercase;white-space:nowrap}
+#cdot{background:var(--red)}
+#logo{position:absolute;left:0;top:0}
+#cta{padding:.55em 1em;background:var(--petrol);color:var(--peach);font-weight:500;white-space:nowrap}
+#url{font-weight:500;letter-spacing:.18em;color:var(--sub);text-transform:uppercase;white-space:nowrap}
 
 /* Controls: hidden while capturing */
 #ui{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 16px;opacity:0;transition:opacity .25s}
 body:hover #ui,#ui:focus-within,body.ended #ui,body.paused #ui{opacity:1}
-#ui button{min-width:44px;min-height:44px;border:0;border-radius:22px;background:rgba(33,27,22,.82);color:#fff;font:600 14px/1 'IBM Plex Sans',sans-serif;padding:0 16px;cursor:pointer}
+#ui button{min-width:44px;min-height:44px;border:0;background:rgba(33,27,22,.82);color:#fff;font:600 14px/1 'Kode Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:0 16px;cursor:pointer}
 #ui button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
-#bar{flex:1;height:4px;border-radius:2px;background:rgba(33,27,22,.15);overflow:hidden}
+#bar{flex:1;height:4px;background:rgba(33,27,22,.15);overflow:hidden}
 #bar i{display:block;height:100%;width:0;background:var(--red)}
 body.capture #ui{display:none}
 </style>
@@ -304,13 +303,16 @@ body.capture #ui{display:none}
   <linearGradient id="bodyShade" x1="0" y1="0" x2="0" y2="1"><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
   <linearGradient id="phGlare" x1="0" y1="0" x2="1" y2="1"><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".1"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>
 </defs></svg>
+<script src="brand/logo.js"></script>
+<script src="brand/motion.js"></script>
 <script>
 (() => {
 const q = new URLSearchParams(location.search);
 const capture = q.has('capture');
 const LANG = q.get('lang') === 'fr' ? 'fr' : 'en';
 const P = q.has('format') ? q.get('format') === 'portrait' : !capture && innerHeight > innerWidth * 1.1;
-const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2, DUR = 93;
+const W = P ? 1080 : 1920, H = P ? 1920 : 1080, CX = W / 2, CY = H / 2;
+const DUR = 96;
 const lay = (l, p) => P ? p : l;
 const $ = id => document.getElementById(id);
 document.documentElement.lang = LANG;
@@ -323,7 +325,7 @@ const COPY = {
     dinner: 'Dinner was *great.*', bill: 'Then comes *the bill.*',
     pains: ['Waiting for the waiter', 'Doing the maths', 'Waiting for change'],
     clock: m => `10:${String(m).padStart(2, '0')} <b>PM</b>`,
-    kinetic: ['The bill.', 'The split.', 'Aalayna.'],
+    kinetic: ['The bill.', 'The split.', '<em>3</em>layna.'],
     thesis: 'Guests view, split and pay from the table.',
     ch: [
       ['01 · Scan', 'Scan the *QR* on the table.', 'No app to download. No account.'],
@@ -340,14 +342,14 @@ const COPY = {
     ],
     rail: ['Scan', 'Menu', 'Split', 'Tip', 'Pay', 'Rate'],
     pending: 'Cash pending', settled: 'Settled',
-    tag: ['scan', 'split', 'settle'], cta: 'Two months free from go-live.', url: 'aalayna.com', time: '10:41',
+    tagw: ['scan,', 'split,', 'settle.'], cta: 'Two months free from go-live.', url: 'aalayna.com', time: '10:41',
   },
   fr: {
     aria: 'Film Aalayna, à une seule table. Le dîner se termine par l’attente de l’addition. Avec Aalayna, un client scanne le QR de la table, lit le menu dans sa langue et sa devise et le filtre selon son régime, partage l’addition de $152.50 en quatre, laisse un pourboire, paie $41.94 avec Whish Money et note la soirée, pendant que le reste de la table paie par carte, Whish et espèces. Le restaurant voit chaque table en direct, confirme les espèces et publie un nouveau prix sur toutes les tables d’un coup. Deux mois gratuits dès la mise en service. aalayna.com',
     dinner: 'Le dîner était *parfait.*', bill: 'Puis vient *l’addition.*',
     pains: ['On attend le serveur', 'On fait les calculs', 'On attend la monnaie'],
     clock: m => `22 h ${String(m).padStart(2, '0')}`,
-    kinetic: ['L’addition.', 'Le partage.', 'Aalayna.'],
+    kinetic: ['L’addition.', 'Le partage.', '<em>3</em>layna.'],
     thesis: 'Vos clients consultent, partagent et règlent l’addition depuis la table.',
     ch: [
       ['01 · Scanner', 'Un scan du *QR* sur la table.', 'Aucune appli à télécharger. Aucun compte.'],
@@ -364,10 +366,12 @@ const COPY = {
     ],
     rail: ['Scanner', 'Menu', 'Partager', 'Pourboire', 'Payer', 'Noter'],
     pending: 'Espèces en attente', settled: 'Réglée',
-    tag: ['scanner', 'partager', 'régler'], cta: 'Deux mois gratuits dès la mise en service.', url: 'aalayna.com', time: '22:41',
+    tagw: ['scanner,', 'partager,', 'régler.'], cta: 'Deux mois gratuits dès la mise en service.', url: 'aalayna.com', time: '22:41',
   },
 };
 const C = COPY[LANG];
+// The dashboard header carries the one-line logo, cream with a peach 3 on the app's green.
+const PNLOGO = (() => { const l = AalaynaLogo.line(); return `<svg class="pn-logo" viewBox="0 0 ${l.w} ${l.h}" style="height:17px" aria-hidden="true"><path fill="#fff" d="${l.ink}"/><path fill="#F2B8A8" d="${l.red}"/></svg>`; })();
 
 /* ---------- Math ---------- */
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -761,7 +765,7 @@ stage.innerHTML = `
    <div class="a" id="scrimB"></div>
    <div class="a cap" id="capB"><div class="lab"></div><div class="hd"></div><div class="sb"></div></div>
    <div class="a pnl" id="pDash">
-     <div class="pn-h"><span class="pn-logo">aalay<b>na</b></span><span class="pn-t">Service · Live floor</span><span class="pn-live">● Live</span></div>
+     <div class="pn-h">${PNLOGO}<span class="pn-t">Service · Live floor</span><span class="pn-live">● Live</span></div>
      <div class="pn-att">
        <div class="pn-att-h">Needs attention<span class="d-badge" id="dBadge">1 waiting</span></div>
        <div class="pn-att-s">Confirm cash only after it reaches your hands.</div>
@@ -771,7 +775,7 @@ stage.innerHTML = `
      <div class="a tapd" id="dTap"></div><div class="a tapr" id="dRing"></div>
    </div>
    <div class="a pnl" id="pEd">
-     <div class="pn-h"><span class="pn-logo">aalay<b>na</b></span><span class="pn-t">Menu · Salads</span><span class="pn-live" id="eLive">● LIVE</span></div>
+     <div class="pn-h">${PNLOGO}<span class="pn-t">Menu · Salads</span><span class="pn-live" id="eLive">● LIVE</span></div>
      <div class="e-sec">SALADS · ALL DAY</div>
      <div class="e-row" id="eRowF"><div><b>Fattoush<em id="eDraft">Draft</em></b><small>Rocca</small></div><span class="e-pr" id="ePrice">$4.75</span><span class="e-input" id="eInput">$<span id="eTyped">4.75</span><s id="eCaret"></s></span></div>
      <div class="e-row"><div><b>Tabbouleh</b><small>Fresh parsley</small></div><span class="e-pr">$5.00</span></div>
@@ -787,11 +791,9 @@ stage.innerHTML = `
  <div id="cold" class="layer"><div class="layer" id="coldBlack" style="background:#000"></div><div class="a" id="tsT"></div><div class="a" id="tsB"></div><div class="a" id="coldT"></div><div class="a" id="coldDot"></div></div>
  <div id="iris" class="layer"></div>
  <div id="lbT" class="a"></div><div id="lbB" class="a"></div>
- <div id="close" class="layer"><div class="fill"></div>
-   <div class="a" id="ar">علينا</div>
-   <div class="a" id="mark">${'aalayna'.split('').map((c, i) => `<span${i >= 5 ? ' class="na"' : ''}>${c}</span>`).join('')}</div>
-   <div class="a" id="uline"></div>
-   ${C.tag.map((w, i) => `<div class="a tg" id="tg${i}"><b>${w}</b>${i < 2 ? ',' : '.'}</div>`).join('')}
+ <div id="close" class="layer">
+   <div class="a" id="cdot"></div>
+   <div class="layer" id="cin"><div class="fill"></div><canvas id="logo" width="${W}" height="${H}"></canvas></div>
    <div class="a" id="cta">${C.cta}</div>
    <div class="a" id="url">${C.url}</div>
  </div>
@@ -870,7 +872,7 @@ const unproj = (sx, sy) => { const [dx, dy] = rot((sx - cam.fx) / cam.z, (sy - c
 
 /* ---------- Layout constants ---------- */
 const L1 = lay({ cap: [120, 236, 600, 96], pain: [120, 560, 102, 42], clock: [1800, 96] }, { cap: [80, 170, 920, 104], pain: [80, 470, 104, 46], clock: [1000, 96] });
-const L2 = lay({ x: 170, tops: [180, 362, 544], fs: 176, th: [176, 800, 1500, 50] }, { x: 86, tops: [470, 634, 798], fs: 150, th: [90, 1060, 900, 58] });
+const L2 = lay({ x: 170, tops: [180, 362, 544], fs: 176, th: [176, 800, 1500, 50] }, { x: 86, tops: [520, 660, 800], fs: 120, th: [90, 1010, 900, 52] });
 const LA = lay({ x: 1110, y: 250, w: 700, fl: 28, fh: 84, fs: 40 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
 const LB = lay({ x: 110, y: 170, w: 470, fl: 28, fh: 78, fs: 36 }, { x: 80, y: 176, w: 920, fl: 30, fh: 90, fs: 42 });
 const LR = lay({ x0: 1116, step: 134, y: 910, fs: 19 }, { x0: 140, step: 160, y: 86, fs: 21 });
@@ -931,7 +933,7 @@ const SEG = [
   [55.137, 58.65, 13.75, 13.75, 'home2'],
   [58.65, 80.81, 19.65, 34.375, 'bill'],
   [80.81, 88.5, 34.375, 41.25, 'room'],
-  [88.5, 93, 41.25, 45, 'close'],
+  [88.5, 96, 41.25, 41.25 + 7.5 / 1.2, 'close'],
 ];
 let OV = { id: '', T: 0, l: 0 };
 const SHOTS = [
@@ -1021,7 +1023,7 @@ function coldOpen(TT) {
   $('tsB').style.top = (H * .66) + 'px';
   // One line per shot, low in the frame; then the dot falls and lands.
   $('coldBlack').style.display = dark ? '' : 'none';
-  const tx = $('coldT'); tx.style.fontSize = lay(72, 78) + 'px';
+  const tx = $('coldT'); tx.style.fontSize = lay(72, 58) + 'px';
   const lines = [[1.1, 2.8], [3.35, 5.05], [5.6, 7.3], [9.95, 11.2]];
   let li = -1; lines.forEach(([a, b], k) => { if (TT >= a && TT < b + .3) li = k; });
   if (li >= 0) { const [a, b] = lines[li], k = E.outCubic(p(TT, a, a + .5)) * (1 - p(TT, b, b + .3)); tx.textContent = COLDTX[li]; T0(tx, CX, li === 3 ? CY + 120 : H - LBH / 2, k, 10 * (1 - k)); }
@@ -1485,31 +1487,27 @@ function tapAt(dot, ring, at, x, y, t) {
 }
 
 /* ---------- Act 5: the close ---------- */
+// The room folds into a red square, which opens cream from the table: the table QR blooms there and its modules
+// fly into 3LAYNA (the logo's own reveal, brand/motion.js), then the tagline, the offer and the address.
+// The reveal runs on the film's clock from LOGO_AT, so tools/reel-audio.js scores it from the same cues.
+const LOGO_AT = 89.65, logo = AalaynaMotion.block({ tagAt: 2.9, words: C.tagw, colors: { bg: 'rgba(0,0,0,0)' } });
+document.fonts.load("40px 'Aalayna Block'"); document.fonts.load("500 40px 'Kode Mono'");
 function closing(t) {
-  const c0 = proj(0, 0), pop = spring(t - 41.86, 2.2, 7), dotR = 28 * clamp(pop, 0, 1.3);
-  $('close').style.clipPath = `circle(${Math.max(dotR - 1.5, lerp(0, Math.hypot(W, H) * .6, E.inOutQuart(p(t, 41.92, 42.36)))).toFixed(1)}px at ${c0.x.toFixed(1)}px ${c0.y.toFixed(1)}px)`;
-  const Lc = lay({ mark: [CX, 450, 270], ar: [CX, 206, 112], ul: 628, tag: [690, 54], cta: [818, 40], url: [980, 30] },
-                 { mark: [CX, 870, 250], ar: [CX, 632, 124], ul: 1036, tag: [1134, 60], cta: [1300, 38], url: [1500, 32] });
-  const push = lerp(1.035, 1, E.outCubic(p(t, 42, 45)));
-  const ul = $('uline'), st = E.inOutExpo(p(t, 42.3, 42.65)), home = E.inOutCubic(p(t, 42.25, 42.6));
-  const w = lerp(56, lay(640, 600), st), h = lerp(56, 10, st);
-  ul.style.width = w + 'px'; ul.style.height = h + 'px'; ul.style.borderRadius = h / 2 + 'px';
-  T(ul, { x: lerp(c0.x, CX, home), y: lerp(c0.y, Lc.ul, home), s: clamp(pop, 0, 1.3) * push, o: t > 41.86 ? 1 : 0 });
-  const mk = $('mark'); mk.style.fontSize = Lc.mark[2] + 'px';
-  [...mk.children].forEach((l, i) => { const k = E.outExpo(p(t, 42.5 + i * .055, 43.25 + i * .055)); l.style.transform = `translateY(${lerp(110, 0, k)}%) rotate(${lerp(10, 0, k)}deg)`; });
-  T(mk, { x: Lc.mark[0], y: Lc.mark[1], s: push });
-  const a = $('ar'), ak = E.inOutCubic(p(t, 42.75, 43.3));
-  a.style.fontSize = Lc.ar[2] + 'px'; a.style.clipPath = `inset(0 0 0 ${100 - ak * 100}%)`;
-  T(a, { x: Lc.ar[0], y: Lc.ar[1] + lerp(18, 0, ak), s: push });
-  const tgs = [0, 1, 2].map(i => $('tg' + i));
-  tgs.forEach(el => { el.style.fontSize = Lc.tag[1] + 'px'; });
-  const ws = tgs.map(el => el._w || (el._w = el.offsetWidth)), gap = Lc.tag[1] * .4, tot = ws.reduce((m, v) => m + v) + gap * 2;
-  let x = CX - tot / 2;
-  tgs.forEach((el, i) => { const k = E.outExpo(p(t, 43.0 + i * .13, 43.5 + i * .13)); T(el, { x: x + ws[i] / 2, y: Lc.tag[0] + lerp(30, 0, k), o: k, s: push }); x += ws[i] + gap; });
+  const TT = OV.T, c0 = proj(0, 0), pop = clamp(spring(t - 41.86, 2.2, 7), 0, 1.3);
+  const open = E.inOutQuart(p(t, 41.92, 42.36)), far = Math.max(c0.x, W - c0.x, c0.y, H - c0.y) + 40;
+  const r = open > 0 ? lerp(28, far, open) : 0;
+  // The red square leads the cream out, a module ahead of it.
+  const d = $('cdot'), ds = open > 0 ? 2 * (r + 16) : 56 * pop;
+  d.style.width = d.style.height = ds + 'px'; T(d, { x: c0.x, y: c0.y, o: t > 41.86 && open < 1 ? 1 : 0 });
+  const cin = $('cin');
+  cin.style.clipPath = open >= 1 ? 'none' : `inset(${(c0.y - r).toFixed(1)}px ${(W - c0.x - r).toFixed(1)}px ${(H - c0.y - r).toFixed(1)}px ${(c0.x - r).toFixed(1)}px)`;
+  const g = $('logo').getContext('2d'), [oy, lh] = lay([-10, 1000], [0, H]);
+  g.clearRect(0, 0, W, H); g.save(); g.translate(0, oy); logo.render(g, TT - LOGO_AT, W, lh); g.restore();
+  const Lc = lay({ cta: [872, 30], url: [968, 26] }, { cta: [1450, 32], url: [1560, 28] });
   const c = $('cta'); c.style.fontSize = Lc.cta[1] + 'px';
-  const ckk = spring(t - 43.4, 1.8, 6.5);
-  T(c, { x: CX, y: Lc.cta[0], s: clamp(ckk, 0, 1.2) * push, o: t > 43.4 ? Math.min(1, (t - 43.4) * 5) : 0 });
-  const u = $('url'), uk = E.outCubic(p(t, 43.7, 44.2));
+  const ck = clamp(spring(TT - (LOGO_AT + 3.55), 1.8, 6.5), 0, 1.2);
+  T(c, { x: CX, y: Lc.cta[0], s: ck, o: Math.min(1, Math.max(0, TT - (LOGO_AT + 3.55)) * 5) });
+  const u = $('url'), uk = E.outCubic(p(TT, LOGO_AT + 3.95, LOGO_AT + 4.45));
   u.style.fontSize = Lc.url[1] + 'px';
   T(u, { x: CX, y: Lc.url[0], o: uk, s: lerp(.96, 1, uk) });
 }

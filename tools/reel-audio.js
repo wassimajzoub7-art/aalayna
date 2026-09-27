@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Synthesises the film's soundtrack: a warm 96 bpm score (FM electric piano, additive pads, plucked strings, sub bass,
+// Synthesises the film's soundtrack: a warm 80 bpm score (FM electric piano, additive pads, plucked strings, sub bass,
 // soft drums) and a small set of interface sounds tuned to the chords, all on reel.html's cue times. The mix has
 // per-bus EQ, a kick sidechain, a convolution reverb, a glue compressor and a limiter, and is normalised to -14 LUFS.
 // Nothing is sampled, so there is no licence to clear.
@@ -7,9 +7,20 @@
 //   node tools/reel-audio.js [out.wav]
 'use strict';
 const fs = require('fs');
+const path = require('path');
 
-const SR = 48000, DUR = 93, N = SR * DUR;
-const BEAT = .75, S16 = BEAT / 4, BAR = BEAT * 4, O16 = .15625; // 80 bpm; bar 24 (72 s) is the logo. O16: a sixteenth on the material's clock
+// The close is brand/motion.js's Block reveal, joined at LOGO_AT on the film's clock (read from reel.html, so the two
+// cannot drift): its cue times place the scan, the flight, the modules landing, the snap and the tagline.
+global.self = global;
+global.AalaynaLogo = require('../brand/logo.js');
+global.Path2D = class {};
+require('../brand/motion.js');
+const join = fs.readFileSync(path.join(__dirname, '..', 'reel.html'), 'utf8').match(/const LOGO_AT = ([\d.]+), logo = AalaynaMotion\.block\(\{ tagAt: ([\d.]+)/);
+if (!join) throw new Error('reel.html: LOGO_AT and tagAt not found');
+const LOGO_AT = Number(join[1]), cue = global.AalaynaMotion.block({ tagAt: Number(join[2]) }).cues, at = t => LOGO_AT - 12 + t;   // on the story clock
+
+const SR = 48000, DUR = 96, N = SR * DUR;
+const BEAT = .75, S16 = BEAT / 4, BAR = BEAT * 4, O16 = .15625; // 80 bpm; bar 24 (78 s on the story clock) is the logo. O16: a sixteenth on the material's clock
 const TAU = Math.PI * 2;
 const hz = m => 440 * Math.pow(2, (m - 69) / 12);
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
@@ -26,8 +37,8 @@ for (const b of BUSES) bus[b] = [new Float32Array(N), new Float32Array(N)];
 const kicks = [];
 // The film plays its material in story order (reel.html's SEG): film time T0-T1 shows material time a-b.
 const SEG = [[0, 6, 11.96, 11.96], [6, 10.37, 11.96, 14.6], [10.37, 13.37, 14.6, 14.6], [13.37, 21, 14.6, 19.2], [21, 27, 19.2, 19.2], [27, 40.32, 0, 11.1],
-  [40.32, 43.137, 11.1, 13.75], [43.137, 46.65, 13.75, 13.75], [46.65, 68.81, 19.65, 34.375], [68.81, 76.5, 34.375, 41.25], [76.5, 81, 41.25, 45]];
-const M = t => SEG.filter(([, , a, b]) => b > a && t >= a - 1e-9 && t < b + (b === 45 ? 1 : 0)).map(([T0, T1, a, b]) => T0 + (t - a) * (T1 - T0) / (b - a));
+  [40.32, 43.137, 11.1, 13.75], [43.137, 46.65, 13.75, 13.75], [46.65, 68.81, 19.65, 34.375], [68.81, 76.5, 34.375, 41.25], [76.5, 84, 41.25, 41.25 + 7.5 / 1.2]];
+const M = t => SEG.filter(([, T1, a, b]) => b > a && t >= a - 1e-9 && t < b + (T1 === 84 ? 1 : 0)).map(([T0, T1, a, b]) => T0 + (t - a) * (T1 - T0) / (b - a));
 let MAP = false, OFF = 0;                                  // OFF: where the story starts (after the cold open)                                              // while true, times given to voices are material times
 const mapped = (t0, go) => { MAP = false; M(t0).forEach(go); MAP = true; };
 // Adds fn(s) for len seconds from t0 to a bus, panned, with reverb and delay sends. trem: stereo tremolo depth.
@@ -329,10 +340,18 @@ for (let i = Math.round(9 / S16); i * S16 < 76.5 - 1e-6; i++) {
   const k = sx === 'B' ? [0, 2, 1, 3, 2, 4, 3, 1][(pos / 2) % 8] : [0, 2, 1, 3][Math.floor(pos / 4) % 4];
   pluck(t, toneAt(t, k, 1), sx === 'B' ? .05 : .04, { pan: pos % 8 < 4 ? -.4 : .4, bright: sx === 'B' ? .55 : .42, t60: 1.1 });
 }
-// The close: the logo lands on bar 24 and rings out.
-kick(78, .9); crash(78, .03, 3);
-chordEP(78, CH.Cmaj9[1], 2.8, .8, { roll: .02, gain: .11 }); ep(78, 64, 2.8, .6, { gain: .08 });
-bass(78, 36, 2.9, .2); pad(78, [60, 67, 71, 74, 76, 83], 2.9, .026, { atk: .05, rel: .3 });
+// The close: G under the logo's bloom and flight from bar 24, resolving to C when the modules snap into 3LAYNA.
+kick(78, .6); pad(78, [55, 59, 62, 67], at(cue.snap) - 78, .02, { atk: .5, rel: .15 }); bass(78, 43, at(cue.snap) - 78, .14);
+kick(at(cue.snap), .9); crash(at(cue.snap), .03, 3);
+chordEP(at(cue.snap), CH.Cmaj9[1], 3, .8, { roll: .02, gain: .11 }); ep(at(cue.snap), 64, 3, .6, { gain: .08 });
+bass(at(cue.snap), 36, 3.2, .2); pad(at(cue.snap), [60, 67, 71, 74, 76, 83], 3.2, .026, { atk: .05, rel: .3 });
+// And the reveal's own sounds, as tools/brand-audio.js scores them: the scan confirms, the modules fly and land, they snap, the bell.
+tock(at(cue.scan[1]) - .02, 96, .03); tock(at(cue.scan[1]) + .09, 101, .026);
+air(at(cue.fly), 1.1, .02, 250, 3000, .6, -.4);
+cue.lands.forEach((t, i) => { if (i % 3 === 0) key(at(t), .012); });
+woodblock(at(cue.snap), 2400, .05, 0); air(at(cue.snap), .14, .008, 3000, 7000, -.3, .3);
+[79, 84, 88].forEach((m, i) => bell(at(cue.snap) + .1 + i * .07, m, .04, { pan: -.35 + i * .35, len: 2.4 }));
+[0, 1, 2].forEach(i => tock(at(cue.tag) + i * .1, 88 + i * 3, .02, -.2 + i * .2));
 // The home screen, twice: in, then the tap on See the menu, later on Open the bill.
 air(10.37, .4, .01, 900, 2600); tock(12.27, 84, .045); air(13.37, .35, .01, 1200, 3200, .4, -.2);
 tock(46.04, 79, .05); air(46.65, .35, .01, 1200, 3200, .4, -.2);
@@ -430,12 +449,7 @@ air(41.0, .3, .008, 2400, 900);
 swell(41.875, .62, .04, 1200);                                // the room folds into the dot
 glide(41.35, .52, 67, 55, .01);
 boom(41.875, .3, 55); bell(41.875, 96, .03); pop(41.875, 84, .03);
-air(41.92, .45, .016, 400, 2200);
-glide(42.3, .35, 72, 84, .006);
-[76, 79, 84].forEach((m, i) => bell(42.5 + i * .12, m, .045, { pan: -.3 + i * .3, len: 2.4 }));
-bell(42.78, 91, .02, { pan: .4 });
-[[43.0, 79], [43.13, 81], [43.26, 84]].forEach(([x, m], i) => pluck(x, m, .03, { pan: -.3 + i * .3, t60: 1.2 }));
-pop(43.42, 76, .03);
+air(41.92, .45, .016, 400, 2200);                             // the red square opens cream
 
 MAP = false;
 

@@ -63,3 +63,16 @@ onboarding/
 # the French homepage (W4)
 !fr/
 !fr/*
+# the logo: brand page, logo.js and motion.js, SVG files and video renders; tools/brand.js builds them
+!brand/
+!brand/*
+!brand/svg/
+!brand/svg/*
+!brand/svg/3layna/*
+!brand/svg/aalayna/*
+!brand/video/
+!brand/video/*
+!brand/fonts/
+!brand/fonts/*
+!brand/icons/
+!brand/icons/*

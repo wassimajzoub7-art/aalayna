@@ -465,5 +465,5 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   assert.ok(!/data-track|href=/.test(retention), 'no CTA in the coming-next section');
   ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
   assert.ok(!/<p class="price">\$(?!150 )/.test(fr), 'standard price');
-  ['aalay<b>na</b>', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
+  ['Aalayna', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
 });
