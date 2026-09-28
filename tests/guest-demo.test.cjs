@@ -191,9 +191,8 @@ test('Balat opens a dish in place, as the tile concept does: under its row, with
  const meta=p.$('i-meta').children;
  assert.ok(meta.some(c=>c.className==='kc'&&/^\d+ kcal$/.test(c.textContent)),'its calories');
  assert.ok(meta.every(c=>c.className==='kc'||(c.className==='tg'&&c.textContent==='Vegetarian')),'its tags');
- // the allergen line is a pigment rule on the paper, not a tinted box
- assert.equal(p.$('i-alrt').style.background,'transparent');
- assert.match(p.$('i-alrt').style.borderColor,/^var\(--(tile-t|tile-s|line)\)$/);
+ // the allergen line is a pigment rule on the paper, not a tinted box (the rule itself: the next test)
+ if(p.$('i-alrt').style.display!=='none'){assert.equal(p.$('i-alrt').style.background,'transparent');assert.match(p.$('i-alrt').style.borderColor,/^var\(--(tile-t|line)\)$/);}
  // straight to the next dish: the first logs its dwell before the second takes its place
  b.onclick();
  assert.ok(!a.classList.contains('open')&&b.classList.contains('open'));assert.equal(a.getAttribute('aria-expanded'),'false');
@@ -210,6 +209,26 @@ test('Balat opens a dish in place, as the tile concept does: under its row, with
  assert.ok(ar.length&&ar.every(r=>/<div class="mn">/.test(r.innerHTML)));
  assert.ok(ar.filter(r=>arN(r._m)).length>10&&ar.filter(r=>arN(r._m)).every(r=>r.innerHTML.includes('<div class="mar"><bdi>'+esc(r._m.n)+'</bdi></div>')),'the original name under the Arabic');
  assert.ok(ar.filter(r=>!arN(r._m)).every(r=>!/class="mar"/.test(r.innerHTML)),'no second line when the Arabic is the original');
+});
+
+test('a dish says something about allergens only when there is something to say, in both looks',()=>{
+ assert.ok(!/id="i-disc"/.test(html)&&!/noAllergensHtml/.test(html),'no per-dish disclaimer, no "no common allergens" line');
+ assert.match(html,/id="f-disc"/,'the dietary filters keep the disclaimer');
+ for(const search of ['?venue=Mayda&place=Lebanese+Grill','?venue=Mayda&place=Lebanese+Grill&theme=balat']){
+  const p=boot({search}),n=p.run('MENU.length'),seen={none:0,warn:0,unk:0};
+  for(let i=0;i<n;i++){
+   p.run('openItem(MENU['+i+'])');
+   const a=p.$('i-alrt'),fil=p.run('filterable(curItem)'),al=p.run('effDiet(curItem, curSel).al.length');
+   if(!fil){seen.unk++;assert.equal(a.style.display,'flex');assert.match(a.innerHTML,/not confirmed|ask your server/i);}
+   else if(al){seen.warn++;assert.equal(a.style.display,'flex');assert.match(a.innerHTML,/Contains/);}
+   else{seen.none++;assert.equal(a.style.display,'none',p.run('curItem.n')+' says nothing');assert.equal(a.innerHTML,'');}
+   p.run("closeOv('ov-item')");
+  }
+  assert.ok(seen.none&&seen.warn,search+' '+JSON.stringify(seen));
+  // a dish whose ingredients are not confirmed: no claim either way, ask the staff
+  p.run("MENU[0].status='draft';openItem(MENU[0])");
+  assert.equal(p.$('i-alrt').style.display,'flex');assert.match(p.$('i-alrt').innerHTML,/not confirmed/);
+ }
 });
 
 test('the landing keeps its two buttons at the foot of the screen, every "powered by" is the Aalayna wordmark, and Balat runs through the bill, payment and review',()=>{
