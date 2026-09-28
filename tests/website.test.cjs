@@ -588,8 +588,9 @@ test('the four steps: a carousel at every width (arrows, four dots), one step at
   assert.match(css, /\n\.steps article\{flex:0 0 100%;scroll-snap-align:start/, 'one step fills the row');
   // Tablets and computers: the step is a spread, the screen in one column and its text beside it; nothing else in view.
   const spread = css.match(/@media\(min-width:768px\)\{\n(?:  [^\n]*\n)*?  \.steps article\{([^}]*)\}([\s\S]*?)\n\}/);
-  assert.match(spread[1], /display:grid;grid-template-columns:15rem minmax\(0,28rem\)[^}]*justify-content:center/, 'the spread sits in the middle');
-  assert.match(css, /#how>\.eyebrow,#how>h2,#how>\.section-cta\{text-align:center\}/, 'and so do the heading and the button');
+  assert.match(spread[1], /display:grid;grid-template-columns:15rem minmax\(0,28rem\)/);
+  assert.ok(!/justify-content:center/.test(spread[1]) && !/#how[^{]*\{text-align:center/.test(css), 'left-aligned, like every other section');
+  assert.match(spread[2], /\.steps-nav:not\(\[hidden\]\)\{width:15rem\}/, 'the arrows and dots under the screen');
   assert.match(spread[2], /\.steps \.shot\{grid-row:1\/-1;/);
   assert.match(spread[2], /\.steps article>:not\(\.shot\)\{grid-column:2\}/);
   assert.ok(!/3\.3\)|2\.3\)/.test(css), 'no more cards and a bit per view');
