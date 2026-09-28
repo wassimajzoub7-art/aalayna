@@ -33,19 +33,8 @@
   /* Sizes come from the tokens in website.css. */
   .back{margin-left:auto;padding:.6875rem .5rem;font-size:var(--fs-small);color:var(--sub);text-decoration:none;white-space:nowrap}
   .back:hover{color:var(--ink)}
-  .book{padding-block:56px 72px}
-  h1{font-size:var(--fs-heading);line-height:1.15;max-width:22ch}
-  @media(min-width:768px){h1{font-size:var(--fs-display)}}
-  .book .lead{font-size:var(--fs-body);line-height:1.7;margin-top:14px;max-width:560px}
-  /* Two columns only when the calendar column is at least 640 px wide, where Google uses its wide layout. */
-  .grid{display:grid;grid-template-columns:1fr;gap:32px;margin-top:40px;align-items:start}
-  @media(min-width:1060px){.grid{grid-template-columns:340px 1fr}}
-  .what{background:var(--petrol);color:#fff;padding:28px 26px}
-  .what h2{font-size:var(--fs-lead);line-height:1.2;color:var(--peach)}
-  .what ul{list-style:none;margin:14px 0 0;padding:0}
-  .what li{line-height:1.6;padding:6px 0;display:flex;gap:10px;color:#D9E2E0}
-  .what li::before{content:'';flex-shrink:0;width:10px;height:2px;margin-top:.8em;background:var(--peach)}
-  .what .dur{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.16);font-size:var(--fs-small);color:#D9E2E0}
+  /* The page is the booking calendar, nothing else. */
+  .book{padding-block:24px 56px}
   .sched{background:var(--surface);border:1px solid var(--line);overflow:hidden}
   /* The calendar is as tall as Google's page at that width (a full day of slots), so only the page scrolls.
      Measured: about 2,220 px below 600 px wide, 1,760 px at 600 px, 1,600 px from 640 px. */
@@ -66,27 +55,9 @@
   </nav>
 </header>
 <main class="wrap book" id="main">
-  <p class="eyebrow">Let’s check the fit</p>
-  <h1>Fifteen minutes to talk about your floor.</h1>
-  <p class="lead">Choose a time to discuss your restaurant’s needs, POS and payment setup. We’ll check compatibility before agreeing a live pilot.</p>
-  <div class="grid">
-    <div class="what">
-      <h2>What we cover</h2>
-      <ul>
-        <li>Your current bill settlement process and POS compatibility</li>
-        <li>Your guests’ needs around menus, splitting and payment</li>
-        <li>Cash collection, tip records and staff workflow</li>
-        <li>Two months free, starting when your restaurant goes live</li>
-        <li>After two free months: $150/month per location if you choose to continue; the first 10 founding restaurants lock in $100/month per location</li>
-      </ul>
-      <div class="dur">Menu setup and staff onboarding included. No automatic paid renewal. Payment-provider fees may apply separately; integration scope and any additional setup costs are agreed before the pilot.</div>
-      <div class="dur">15 minutes on WhatsApp or Google Meet. In English, français or عربي.</div>
-    </div>
-    <div>
-      <div class="sched"><iframe src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0NcKYhJRRyuGvsjV48HQc_7BVPT30Nr5x0XZIil-GsI7Jr2tBJ76mSKIwhDx-IPQwv7fRqAIGi?gv=true" title="Book a demo with Aalayna" loading="lazy"></iframe></div>
-      <p class="alt">Prefer WhatsApp? <a data-track="whatsapp_click" data-placement="booking_fallback" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20an%20Aalayna%20pilot.%20A%20good%20time%20for%20me%20is%3A%20">Message us</a>.</p>
-    </div>
-  </div>
+  <h1 class="sr-only">Book a demo</h1>
+  <div class="sched"><iframe src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0NcKYhJRRyuGvsjV48HQc_7BVPT30Nr5x0XZIil-GsI7Jr2tBJ76mSKIwhDx-IPQwv7fRqAIGi?gv=true" title="Book a demo with Aalayna" loading="lazy"></iframe></div>
+  <p class="alt">Prefer WhatsApp? <a data-track="whatsapp_click" data-placement="booking_fallback" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20an%20Aalayna%20pilot.%20A%20good%20time%20for%20me%20is%3A%20">Message us</a>.</p>
 </main>
 </body>
 </html>
