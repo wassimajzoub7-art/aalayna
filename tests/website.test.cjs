@@ -252,14 +252,28 @@ test('homepage structure: four sections that each end on Book a demo, six questi
   const faq = [...s.matchAll(/<summary>([^<]*)<\/summary>/g)].map(m => m[1]);
   assert.deepEqual(faq, ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?', 'Where do payments and tips go?', 'Is this ready to take real payments?', 'What is included in the price?']);
   const numbers = [...s.matchAll(/<span class="number">([^<]*)<\/span>/g)].map(m => m[1]);
-  assert.equal(numbers.length, 7, 'three steps, and the pilot timeline: three steps and go-live');
+  assert.equal(numbers.length, 8, 'four steps, and the pilot timeline: three steps and go-live');
   assert.match(s, /<li class="go-live"><span class="number">[^<]+<\/span> [^<]+<\/li><li><span class="number">03 · /, 'go-live sits before the review');
   assert.ok(!/commission/i.test(s.match(/<div class="price-card">[\s\S]*?<\/div>/)[0]), 'no commission line on the price card');
   assert.match(s, /<summary>What is included in the price\?<\/summary><p>[^<]*No commission on your sales/, 'it lives in the price answer');
   numbers.filter(n => n !== 'Go-live').forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
-  const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> <span class="source-text">[^<]+<\/span><\/p>/g)].map(m => m[1]);
-  assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'Your list']);
+  // Each figure has one plain line saying where it comes from; no internal labels (Assumption, Product) on the page.
+  const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source">([^<]+)<\/p>/g)].map(m => m[1]);
+  assert.deepEqual(figures, ['13 min', '+62%', '8×', '140']);
+  // Each figure is the calculator's default for its outcome, rounded down, and says what it measures.
+  const calc = Object.fromEntries(runNumbers('?focus=all').map(o => [o.key, o]));
+  const money = t => Number(t.replace(/[$,]/g, ''));
+  const tipsToday = money(calc.tips.unit.match(/on top of the (\$[\d,]+)/)[1]), tipsMore = money(calc.tips.figure.replace('+', ''));
+  assert.equal(figures[1], '+' + Math.floor(tipsMore / tipsToday * 100) + '%', 'tips: the calculator\'s change over today');
+  assert.ok(s.includes('More in tips: $' + tipsToday.toLocaleString('en-US') + ' to $' + (tipsToday + tipsMore).toLocaleString('en-US') + ' a month.'), 'tips, in dollars');
+  const [, revToday, revThen] = calc.reviews.unit.match(/from (\d+) today to about (\d+)/).map(Number);
+  assert.equal(figures[2], Math.floor(revThen / revToday) + '×', 'reviews: how many times as many');
+  assert.ok(s.includes('Google reviews a month: ' + revToday + ' today, ' + revThen + ' with Aalayna.'));
+  assert.equal(figures[3], calc.guests.figure, 'guests: the calculator\'s contacts after three months');
+  assert.ok(s.includes('<p class="outcome-source">Saved per table, from the last bite to the door.</p>'), 'the 13 minutes say what they are');
+  assert.ok(s.includes('<p class="outcome-note">Calculator defaults: a 30-table restaurant, 360 bills a week, $45 average bill.</p>'), 'where the figures come from');
+  assert.ok(!/source-tag|>(?:Assumption|Product|Benchmark)</.test(s), 'no source tags');
   assert.equal(all(s, /<ul>([\s\S]*?)<\/ul>/g).map(u => (u.match(/<li>/g) || []).length)[0], 5, 'the price card lists what ships today');
 });
 
@@ -477,9 +491,9 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   // Numbers stay as in English: the same dollar amounts, percentages and minutes.
   const figures = s => [...new Set(visible(s).join(' ').replace(/(\d)-min\b/g, '$1 min').match(/\$\d[\d,.]*\d|\d+%|\d+ min\b/g))].sort();
   assert.deepEqual(figures(fr), figures(en));
-  const tags = { Assumption: 'Hypothèse', Product: 'Produit', Benchmark: 'Référence' };
-  assert.deepEqual(all(fr, /<span class="source-tag">([^<]*)<\/span>/g), all(en, /<span class="source-tag">([^<]*)<\/span>/g).map(t => tags[t]));
-  assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g).slice(0, 2), ['13 min', '10%']);
+  assert.equal(all(fr, /<p class="outcome-source">([^<]+)<\/p>/g).length, 4, 'one line under each figure');
+  assert.ok(!/source-tag|>(?:Hypothèse|Produit|Référence)</.test(fr), 'no source tags');
+  assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g), ['13 min', '+62%', '8×', '140']);
   ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
   assert.ok(!/<p class="price">\$(?!150 )/.test(fr), 'standard price');
   ['Aalayna', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
@@ -547,7 +561,7 @@ test('ar copy: nothing left in English, the same prices and percentages, the nam
   assert.deepEqual(figures(ar), figures(en), 'the same dollar amounts and percentages');
   assert.match(ar, /<h1 id="hero-title">الفاتورة\.<br>التقسيم\.<br><span class="sr-only">علينا\.<\/span><span class="name" aria-hidden="true"><em>علينا\.<\/em><\/span><\/h1>/);
   assert.match(read('website.css'), /\[lang="ar"\]\{--font-text:'Noto Kufi Arabic',/);
-  assert.match(read('website.css'), /\[lang="ar"\] :is\(h1,h2,h3,\.eyebrow,\.number,\.source-tag,\.btn,\.name\)\{letter-spacing:0;text-transform:none\}/, 'Arabic is never tracked or capitalised');
+  assert.match(read('website.css'), /\[lang="ar"\] :is\(h1,h2,h3,\.eyebrow,\.number,\.btn,\.name\)\{letter-spacing:0;text-transform:none\}/, 'Arabic is never tracked or capitalised');
   assert.ok(!/margin-(?:left|right)|padding-(?:left|right)/.test(read('website.css')), 'spacing is logical, so it mirrors in Arabic');
 });
 
@@ -559,20 +573,24 @@ test('every page asks for the same stylesheet version (bump ?v= on all of them w
   assert.ok(Number(versions[0]) >= 7, 'the version that carries the phone hero and the Arabic page');
 });
 
-test('the three steps: a carousel on phones (arrows, three dots), a grid on computers, and motion only when it is wanted', () => {
+test('the four steps: a carousel at every width (arrows, four dots), three cards and the edge of the fourth on computers, and motion only when it is wanted', () => {
   const css = read('website.css'), js = read('site.js');
   const labels = { 'index.html': ['Previous step', 'Next step', 'Step'], 'fr/index.html': ['Étape précédente', 'Étape suivante', 'Étape'], 'ar/index.html': ['الخطوة السابقة', 'الخطوة التالية', 'الخطوة'] };
   for (const [f, [pv, nx, st]] of Object.entries(labels)) {
     const s = read(f), how = s.match(/<section[^>]*id="how"[\s\S]*?<\/section>/)[0];
+    assert.equal((how.match(/<article>/g) || []).length, 4, f + ': four steps');
+    assert.match(how, /<span class="number">04 · [^<]+<\/span>/, f + ': the review is step 04');
+    assert.match(how, /images\/guest-review\.png"/, f + ': with the rating screen');
     assert.match(how, new RegExp('<div class="steps-nav" hidden><button class="steps-arrow" type="button" data-step="-1" aria-label="' + pv + '">'), f + ': previous');
     assert.match(how, new RegExp('<button class="steps-arrow" type="button" data-step="1" aria-label="' + nx + '">'), f + ': next');
-    assert.deepEqual(all(how, /<span class="steps-dots">([\s\S]*?)<\/span>/g).map(d => all(d, /aria-label="([^"]+)"/g))[0], [1, 2, 3].map(i => st + ' ' + i), f + ': three dots');
+    assert.deepEqual(all(how, /<span class="steps-dots">([\s\S]*?)<\/span>/g).map(d => all(d, /aria-label="([^"]+)"/g))[0], [1, 2, 3, 4].map(i => st + ' ' + i), f + ': four dots');
     assert.ok(s.includes('<script src="' + (f.includes('/') ? '../' : '') + 'site.js" defer></script>'), f + ' loads site.js');
   }
-  assert.match(css, /@media\(max-width:767px\)\{\n  \.steps\{display:flex;[^}]*overflow-x:auto;scroll-snap-type:x mandatory/, 'phones swipe the steps, with or without JavaScript');
-  assert.match(css, /\n\.steps\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, 'computers keep the three columns');
-  assert.match(css, /\n\.steps-nav\{display:none\}/, 'the arrows and dots only show on phones');
-  // Every card centres, the first and last too: the padding at each end equals the card's inset from the screen edge.
+  assert.match(css, /\n\.steps\{display:flex;[^}]*overflow-x:auto;scroll-snap-type:x mandatory/, 'every width swipes the steps, with or without JavaScript');
+  assert.match(css, /\n\.steps article\{flex:0 0 calc\(\(100% - 3 \* 2rem\) \/ 3\.3\);scroll-snap-align:start/, 'computers: three cards and the edge of the fourth');
+  assert.match(css, /\.steps-nav:not\(\[hidden\]\)\{display:flex/, 'the arrows and dots show once the script runs');
+  assert.match(js, /nav\.hidden = false;/, 'at every width');
+  // Phones: every card centres, the first and last too: the padding at each end equals the card's inset from the screen edge.
   const phoneSteps = css.match(/@media\(max-width:767px\)\{\n  \.steps\{([^}]*)\}[\s\S]*?\.steps article\{([^}]*)\}/);
   assert.match(phoneSteps[1], /padding:0 2rem \.25rem;scroll-padding-inline:2rem/);
   assert.match(phoneSteps[2], /flex:0 0 calc\(100vw - 4rem\);scroll-snap-align:center/);
