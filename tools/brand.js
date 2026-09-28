@@ -170,7 +170,7 @@ body{position:relative;width:1200px;height:630px;overflow:hidden;background:${C.
 .copy{position:absolute;left:90px;top:50%;transform:translateY(-50%)}
 .eyebrow{margin:0 0 34px;font:600 22px/1 'Kode Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#B3363F}
 .copy svg{display:block}
-.phone{position:absolute;left:818px;top:38px;width:250px;height:552px;padding:10px;border-radius:42px;background:${C.ink};box-shadow:18px 18px 0 rgba(33,27,22,.08)}
+.phone{position:absolute;left:804px;top:38px;width:264px;height:552px;padding:10px;border-radius:42px;background:${C.ink};box-shadow:18px 18px 0 rgba(33,27,22,.08)}
 .phone img{display:block;width:100%;height:100%;border-radius:32px;object-fit:cover;object-position:50% 0}
 </style></head><body>
 <div class="copy"><p class="eyebrow">For restaurants in Lebanon</p>
