@@ -588,9 +588,14 @@ test('the four steps: a carousel at every width (arrows, four dots), one step at
   assert.match(css, /\n\.steps article\{flex:0 0 100%;scroll-snap-align:start/, 'one step fills the row');
   // Tablets and computers: the step is a spread, the screen in one column and its text beside it; nothing else in view.
   const spread = css.match(/@media\(min-width:768px\)\{\n(?:  [^\n]*\n)*?  \.steps article\{([^}]*)\}([\s\S]*?)\n\}/);
-  assert.match(spread[1], /display:grid;grid-template-columns:15rem minmax\(0,28rem\)/);
+  assert.match(spread[1], /display:grid;grid-template-columns:var\(--shot\) minmax\(0,28rem\)/);
   assert.ok(!/justify-content:center/.test(spread[1]) && !/#how[^{]*\{text-align:center/.test(css), 'left-aligned, like every other section');
-  assert.match(spread[2], /\.steps-nav:not\(\[hidden\]\)\{width:15rem\}/, 'the arrows and dots under the screen');
+  // The whole section fits in one view on a laptop: the screen's column follows the window's height, and the arrows,
+  // dots and Book a demo sit beside the screen, at the foot of the text column, instead of under it.
+  assert.match(css, /#how\{--shot:clamp\(10\.5rem,calc\(41vh - [\d.]+rem\),15rem\);display:grid;/);
+  assert.match(spread[2], /\.steps \.phone\.small\{max-width:var\(--shot\)\}/);
+  assert.match(spread[2], /#how>\.steps-nav:not\(\[hidden\]\)\{grid-column:2;grid-row:3;align-self:end;/, 'the arrows and dots beside the screen');
+  assert.match(spread[2], /#how>\.section-cta\{grid-column:2;grid-row:4;/, 'and Book a demo under them');
   assert.match(spread[2], /\.steps \.shot\{grid-row:1\/-1;/);
   assert.match(spread[2], /\.steps article>:not\(\.shot\)\{grid-column:2\}/);
   assert.ok(!/3\.3\)|2\.3\)/.test(css), 'no more cards and a bit per view');
@@ -607,6 +612,16 @@ test('the four steps: a carousel at every width (arrows, four dots), one step at
   assert.match(js, /if \(reduce \|\| !io\) return;/, 'no rise-in or count-up with reduced motion');
   assert.match(js, /el\.textContent = text;/, 'the figures end on the value in the page');
   assert.match(read('.gitignore'), /^!site\.js$/m);
+});
+
+test('every homepage section fits in one view on a laptop: padding that follows the window, a menu click lands under the header', () => {
+  const css = read('website.css');
+  assert.match(css, /\n\.section\{padding-block:clamp\(2\.5rem,7vh,5rem\)\}/, 'sections breathe with the window\'s height');
+  assert.match(css, /\nsection\[id\],main\[id\]\{scroll-margin-top:var\(--header-h\)\}/, 'a menu click puts the section right under the header');
+  assert.match(css, /\.hero\{[^}]*padding-block:clamp\(2rem,6vh,4\.5rem\) clamp\(2\.5rem,7vh,5rem\)\}/);
+  // The numbers band's two asks share a line from tablets up; the price sits on one line with its unit.
+  assert.match(css, /\.benefits-band \.section-cta\{grid-row:4;grid-column:1;[^}]*\}\n  \.benefits-band \.calc-link\{grid-row:4;grid-column:2;/);
+  assert.ok(!/\.price span\{display:block/.test(css), '$150 / month / location on one line');
 });
 
 test('tapping the hero film, or its play button, pauses and plays it on every homepage', () => {
