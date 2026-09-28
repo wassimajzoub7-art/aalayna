@@ -590,7 +590,8 @@ var WINDOWS = [
 var SECTIONS = [], ITEMS = [];
 function pull(){
   var d = Aalayna.draft();
-  SECTIONS = d.sections.map(function(x){ return {id:x.id, name:x.name, w:x.win}; });
+  // a section keeps its translations (tr: the French and Arabic names) through every edit
+  SECTIONS = d.sections.map(function(x){ return {id:x.id, name:x.name, w:x.win, tr: x.tr ? JSON.parse(JSON.stringify(x.tr)) : null}; });
   ITEMS    = d.items.map(function(x){
     return {id:x.id, s:x.sec, n:x.name, d:x.desc, p:x.price, imageUrl:x.imageUrl||'', fr:x.fr, ar:x.ar,
             archivedAt:x.archivedAt||null, available:x.available!==false, status:x.status||'incomplete',
@@ -602,7 +603,7 @@ function pull(){
 }
 function push(){
   var d = Aalayna.draft();
-  d.sections = SECTIONS.map(function(x){ return {id:x.id, name:x.name, win:x.w}; });
+  d.sections = SECTIONS.map(function(x){ var s = {id:x.id, name:x.name, win:x.w}; if (x.tr) s.tr = x.tr; return s; });
   d.items = ITEMS.map(function(x){
     var prev = (Aalayna.published().items.filter(function(o){ return o.id === x.id; })[0]) || {};
     /* status mirrors the store's rule so row tags stay right between pulls */

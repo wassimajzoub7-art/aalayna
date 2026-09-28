@@ -126,6 +126,19 @@ test('LBP: every amount on the way to paying and on the receipt is in lira; the 
  p.run("setLang('ar')");assert.match(p.$('rc-amt').textContent,/^[\d,]+ ل\.ل\.$/);
 });
 
+test('Vegetarian: no dish with meat, poultry, fish or seafood passes, whatever the ingredient is called',()=>{
+ const p=boot(),veg=ing=>p.run('isVeg('+JSON.stringify({ing})+')');
+ // every meat ingredient on the Mayda menu, and the ones other menus will bring
+ ['veal','minced meat','ground meat','lean meat','raw meat','raw lamb','kabab','lamb','beef','chicken','lamb awarma',
+  'kafta','soujouk','sausage','fish','tuna','grilled shrimp','calamari'].forEach(i=>assert.equal(veg(['onion',i]),false,i));
+ // and nothing that only looks like it
+ ['eggplant','eggs','cheese','butter','milk','yogurt','hummus','chickpeas','tahini','bread','spices','grape leaves','vegetables','bbq sauce']
+  .forEach(i=>assert.equal(veg([i]),true,i));
+ const mayda=JSON.parse(fs.readFileSync(path.join(root,'venues','mayda.json'),'utf8')).items,dish=n=>mayda.find(i=>i.name===n);
+ ['Grilled Veal Filet','Kabab Halabi','Sambusek','Hummus Meat and Almond','Fried Stuffed Kebbeh'].forEach(n=>assert.equal(veg(dish(n).ing),false,n));
+ ['Fattoush','Tabbouleh','Raheb Salad'].forEach(n=>assert.equal(veg(dish(n).ing),true,n));
+});
+
 test('reviews are routed by the rating through Aalayna.reviewURL; the old one-panel-for-all note is gone',()=>{
  const code=html.slice(html.indexOf('/* Reviews are routed by the rating'),html.indexOf('function syncReceiptViewport(){'));
  assert.match(code,/Aalayna\.reviewURL\(\)/);
