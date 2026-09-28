@@ -170,6 +170,21 @@ test('Balat (?theme=balat): the cement-tile menu, its tiles in the brand colours
  assert.match(fs.readFileSync(path.join(root,'qr.html'),'utf8'),/<option value="balat">Balat · Beirut cement tiles<\/option>[\s\S]*if \(th\) q\.push\('theme=' \+ encodeURIComponent\(th\)\);/);
 });
 
+test('Balat type: soft Fraunces for names and figures, Instrument Sans for the rest, Reem Kufi for the Arabic',()=>{
+ const store=fs.readFileSync(path.join(root,'aalayna-store.js'),'utf8');
+ const link=store.match(/bl\.href = '([^']+)'/)[1];
+ assert.match(link,/family=Fraunces:opsz,wght,SOFT,WONK@9\.\.144,400\.\.700,100,0/,'Fraunces, its soft cut only');
+ assert.match(link,/family=Instrument\+Sans:wght@400;500;600;700/);assert.match(link,/family=Reem\+Kufi:wght@400;600/);
+ assert.ok(!/Gloock/.test(store)&&!/Gloock/.test(html),'no Gloock left');
+ assert.match(html,/html\.theme-balat body\{font-family:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif\}/,'Arabic falls back to Plex Arabic');
+ const display=[...html.matchAll(/font-family:'Fraunces','Reem Kufi',Georgia,serif;font-weight:(\d+);font-variation-settings:'SOFT' 100,'WONK' 0/g)];
+ assert.equal(display.length,6,'restaurant name, greeting, menu title, sections, dishes, and the figures of the bill and payment');
+ assert.ok(display.every(m=>m[1]==='520'));
+ // every page loads the same store
+ const v=f=>(fs.readFileSync(path.join(root,f),'utf8').match(/aalayna-store\.js\?v=(\d+)/)||[])[1];
+ assert.ok(['admin.html','dashboard.html','editor.html','guest.html','system.html'].every(f=>v(f)==='23'));
+});
+
 test('Balat opens a dish in place, as the tile concept does: under its row, with its Arabic name, its description, tags and calories; a second tap closes it',()=>{
  const rows=p=>p.$('menuscroll').children.filter(c=>/^mi\b/.test(c.className||''));
  const dwell=p=>JSON.parse(JSON.stringify(p.run("Aalayna.events().filter(function(e){return e.eventType==='ui_action'&&e.payload.action==='dwell';}).map(function(e){return e.payload.value;})")));
@@ -250,7 +265,7 @@ test('the landing keeps its two buttons at the foot of the screen, every "powere
  const square=html.match(/\.theme-balat :is\(([^)]*)\)\{border-radius:0\}/);
  assert.ok(square,'square corners');
  for(const c of ['.sheet','.receipt','.pays','.tipb','.seg','.share','.pay-breakdown','.cashnote','.chg','.rcpt','.mailin','.ta','.review-close'])assert.ok(square[1].split(',').includes(c),c);
- const serif=html.match(/\.theme-balat :is\(([^)]*)\)\{font-family:'Gloock'/);
+ const serif=html.match(/\.theme-balat :is\(([^)]*)\)\{font-family:'Fraunces'/);
  for(const c of ['.b-title','.amt .big','.share .v','.shukran','.rc-amt'])assert.ok(serif&&serif[1].split(',').includes(c),c);
  // the thank-you screen gets its own row of tiles
  assert.match(html,/\[3, 1, 4, 0, 5, 2\]\.forEach\(function\(k\)\{ row\.appendChild\(tileEl\(k\)\); \}\);\s*inner\.prepend\(row\);/);

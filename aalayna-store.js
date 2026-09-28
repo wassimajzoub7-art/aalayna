@@ -962,7 +962,7 @@
         if (!global.document.getElementById('balat-font')) {
           var bl = global.document.createElement('link');
           bl.id = 'balat-font'; bl.rel = 'stylesheet';
-          bl.href = 'https://fonts.googleapis.com/css2?family=Gloock&family=Reem+Kufi:wght@400;600&display=swap';
+          bl.href = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,100,0&family=Instrument+Sans:wght@400;500;600;700&family=Reem+Kufi:wght@400;600&display=swap';
           global.document.head.appendChild(bl);
         }
       }
