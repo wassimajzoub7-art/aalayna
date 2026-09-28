@@ -137,14 +137,14 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .steps article>*{transition:opacity .35s ease}
 .steps.is-live article:not(.is-seen)>*{opacity:.4}
 /* The spread: the screen in a 15rem column and the text beside it, centred on the screen (the empty rows above and
-   below share the height the screen leaves). The title and text go a size up, since they have the room; the arrows
-   and dots sit under the screen. */
+   below share the height the screen leaves), the pair centred in the row with the arrows and dots centred under it,
+   and the section's heading and button centred with them. The title and text go a size up, since they have the room. */
 @media(min-width:768px){
-  .steps article{display:grid;grid-template-columns:15rem minmax(0,28rem);grid-template-rows:1fr auto auto auto 1fr;column-gap:4rem}
+  #how>.eyebrow,#how>h2,#how>.section-cta{text-align:center}
+  .steps article{display:grid;grid-template-columns:15rem minmax(0,28rem);grid-template-rows:1fr auto auto auto 1fr;column-gap:4rem;justify-content:center}
   .steps .shot{grid-row:1/-1;margin-bottom:0}.steps .phone.small{max-width:15rem}
   .steps article>:not(.shot){grid-column:2}
   .steps .number{grid-row:2}.steps h3{grid-row:3;font-size:var(--fs-heading)}.steps p{grid-row:4;font-size:var(--fs-lead)}
-  .steps-nav:not([hidden]){width:15rem}
 }
 /* The carousel's arrows and dots, square like everything else. */
 .steps-nav:not([hidden]){display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1.25rem}
