@@ -124,25 +124,32 @@ test('Aalayna Block, the site font, is built from the typeface in brand/logo.js 
   for (const ch of new Set(Logo.NAME)) assert.equal(Logo.glyph(ch, 0, 0, Logo.U), Logo.typeGlyph(ch, 0, 0, Logo.U), ch);
 });
 
-test('type: Saira for reading, Kode Mono for labels, Aalayna Block for the name only, and every character the name uses is in it', () => {
+test('type: Instrument Sans for reading and labels, IBM Plex Sans Arabic for Arabic, Aalayna Block for the name only, and every character the name uses is in it', () => {
   const css = read('website.css');
   assert.match(css, /@font-face\{font-family:'Aalayna Block';src:url\(brand\/fonts\/aalayna-block\.woff\) format\('woff'\)/);
-  assert.match(css, /--font-text:'Saira','Noto Kufi Arabic',/);
-  assert.match(css, /--font-label:'Kode Mono',/);
+  assert.match(css, /--font-text:'Instrument Sans','IBM Plex Sans Arabic',/);
+  assert.match(css, /--font-label:'Instrument Sans','IBM Plex Sans Arabic',/);
+  assert.ok(!/Saira|Kode Mono/.test(css), 'no Saira or Kode Mono left');
+  // Arabic: Plex Arabic for reading, the Kufi of the mark for the name, علينا, alone
+  assert.match(css, /\[lang="ar"\]\{--font-text:'IBM Plex Sans Arabic','Instrument Sans',/);
+  assert.match(css, /\[lang="ar"\] \.name\{font-family:'Noto Kufi Arabic',/);
   assert.match(css, /--font-name:'Aalayna Block',/);
   assert.match(css, /\nbody\{[^}]*font-family:var\(--font-text\)/);
   assert.match(css, /\nh1,h2,h3\{font-family:var\(--font-text\);font-weight:600/);
   assert.match(css, /\n\.name\{font-family:var\(--font-name\)/);
   // The logo face is for the name, not for reading: nothing else points at it.
   assert.equal((css.match(/var\(--font-name\)/g) || []).length, 1, 'only .name uses Aalayna Block');
-  ['.eyebrow', '.number'].forEach(sel => assert.match(css, new RegExp('\\n' + sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-label\\)'), sel + ' in Kode Mono'));
+  ['.eyebrow', '.number'].forEach(sel => assert.match(css, new RegExp('\\n' + sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-label\\)'), sel + ' in the label face'));
   const covered = t => [...t.toUpperCase()].filter(ch => !/\s/.test(ch) && !Logo.TYPE[ch]);
   for (const f of SITE_PAGES) {
     const s = read(f), p = /^(?:fr|ar)\//.test(f) ? '../' : '';
     const fonts = s.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1];
-    assert.ok(fonts.includes('family=Saira:'), f + ' loads Saira');
-    assert.ok(!/IBM\+Plex/.test(fonts), f + ': no IBM Plex on the site (it is the app\'s face)');
-    assert.ok(fonts.includes('family=Kode+Mono:'), f + ' loads Kode Mono');
+    assert.ok(fonts.includes('family=Instrument+Sans:wght@400;500;600;700'), f + ' loads Instrument Sans');
+    assert.ok(!/family=(Saira|Kode\+Mono|IBM\+Plex\+Sans:)/.test(fonts), f + ': no Saira, no Kode Mono, no Latin Plex (the app\'s own face)');
+    // Arabic only where the page has Arabic words; the Kufi only for the Arabic page's name
+    const arabic = /[\u0600-\u06FF]/.test(s.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, ''));
+    assert.equal(fonts.includes('family=IBM+Plex+Sans+Arabic:'), arabic, f + (arabic ? ' loads' : ' does not load') + ' IBM Plex Sans Arabic');
+    assert.equal(fonts.includes('family=Noto+Kufi+Arabic:wght@700'), f.startsWith('ar/'), f + ': the Kufi, for the name, on the Arabic page only');
     assert.ok(s.includes('<link rel="preload" href="' + p + 'brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>'), f + ' preloads the name font');
     // The Arabic page sets its name, علينا, in Noto Kufi Arabic (the Block has no Arabic letters).
     if (!f.startsWith('ar/')) for (const m of s.matchAll(/<span class="name"[^>]*>([\s\S]*?)<\/span>/g)) assert.deepEqual(covered(m[1].replace(/<[^>]*>/g, '')), [], f + ': "' + m[1] + '"');

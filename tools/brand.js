@@ -158,23 +158,24 @@ function typeLine(text, u, x, y) {
   return { ink, red };
 }
 function shareHtml() {
-  const C = Logo.COLORS, u = 12, pitch = 8 * u, lines = ['The bill.', 'The split.', Logo.NAME + '.'];
-  let ink = '', red = '';
-  lines.forEach((t, i) => { const l = typeLine(t, u, 0, i * pitch); ink += l.ink; red += l.red; });
-  const h = 2 * pitch + 5 * u, file = f => 'file://' + path.join(root, f);
+  // As the site's hero: the two lines in the site's face, the name alone in the logo's capitals (its cap height).
+  const C = Logo.COLORS, u = 14, name = Logo.NAME + '.', l = typeLine(name, u, 0, 0), file = f => 'file://' + path.join(root, f);
+  const w = num(typeWidthOf(name) * u), h = num(5 * u);
   return `<!doctype html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@600&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@600&display=block" rel="stylesheet">
 <style>
 html,body{margin:0}
 body{position:relative;width:1200px;height:630px;overflow:hidden;background:${C.cream}}
 .copy{position:absolute;left:90px;top:50%;transform:translateY(-50%)}
-.eyebrow{margin:0 0 34px;font:600 22px/1 'Kode Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#B3363F}
-.copy svg{display:block}
+.eyebrow{margin:0 0 30px;font:600 22px/1 'Instrument Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#B3363F}
+.head{margin:0;font:600 100px/1.04 'Instrument Sans',sans-serif;letter-spacing:-.025em;color:${C.ink}}
+.copy svg{display:block;margin-top:22px}
 .phone{position:absolute;left:804px;top:38px;width:264px;height:552px;padding:10px;border-radius:42px;background:${C.ink};box-shadow:18px 18px 0 rgba(33,27,22,.08)}
 .phone img{display:block;width:100%;height:100%;border-radius:32px;object-fit:cover;object-position:50% 0}
 </style></head><body>
 <div class="copy"><p class="eyebrow">For restaurants in Lebanon</p>
-<svg width="${num(typeWidthOf(lines[1]) * u)}" height="${num(h)}" viewBox="0 0 ${num(typeWidthOf(lines[1]) * u)} ${num(h)}"><path fill="${C.ink}" d="${ink}"/><path fill="${C.red}" d="${red}"/></svg></div>
+<p class="head">The bill.<br>The split.</p>
+<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path fill="${C.ink}" d="${l.ink}"/><path fill="${C.red}" d="${l.red}"/></svg></div>
 <div class="phone"><img src="${file('images/guest-pay.png')}" alt=""></div>
 </body></html>`;
 }
