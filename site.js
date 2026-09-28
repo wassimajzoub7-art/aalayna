@@ -75,7 +75,7 @@
     es.forEach(function (e) {
       if (!e.isIntersecting) return;
       count.unobserve(e.target);
-      var el = e.target, text = el.textContent, m = text.match(/^([+\u2212-]?)(\d+)(.*)$/);   // 13 min, +62%, 140
+      var el = e.target, text = el.textContent, m = text.match(/^([+\u2212-]?)(\d+)(.*)$/);   // 10 min, 22%, 83%, 50%
       if (!m || +m[2] < 5) return;
       var to = +m[2], t0 = null;
       el.setAttribute('aria-label', text);

@@ -163,9 +163,9 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .outcome-icon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:1rem;background:rgba(246,195,159,.12);color:var(--peach)}
 .outcome-icon svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
 .benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-heading);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
-.benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
-/* Where the four figures come from, once for all of them, above the link to the calculator itself. */
-.benefits-band .outcome-note{margin-top:.5rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
+.benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub);text-wrap:pretty}
+/* Each figure is published research, not an Aalayna result, so its source sits right under it, in the label face. */
+.benefits-band .outcome-source cite{display:block;margin-top:.3rem;font-family:var(--font-label);font-style:normal}
 .calc-link{display:inline-block;margin-top:.5rem;padding-block:.5625rem;color:var(--peach);font-weight:600;text-underline-offset:.25rem}
 .calc-link::after{content:' \2192'}
 /* Every section ends on the same ask: Book a demo. */
