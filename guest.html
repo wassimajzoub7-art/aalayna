@@ -1636,8 +1636,10 @@ var DEMO_INCOMPLETE = false;
 function filterable(m){ return !DEMO_INCOMPLETE && m.status === 'complete' && !!m.conf; }
 function anyFilterable(){ return MENU.some(filterable); }
 
-/* Dietary flags are DERIVED from the ingredient record, never hand-tagged. */
-var MEAT = ['lamb','chicken','beef','lamb awarma','minced lamb'];
+/* Dietary flags are DERIVED from the ingredient record, never hand-tagged. MEAT finds anything that was an
+   animal's flesh (meat, poultry, fish, seafood) as a whole word anywhere in an ingredient, so "minced meat",
+   "raw lamb", "veal", "kabab" and "grilled shrimp" all count, not only a few exact names. */
+var MEAT = /\b(?:meats?|lamb|mutton|beef|veal|chicken|poultry|turkey|duck|quail|pork|ham|bacon|sausages?|soujouk|sujuk|makanek|kafta|kofta|kabab|kebab|shawarma|awarma|liver|fish|salmon|tuna|sardines?|anchov(?:y|ies)|shrimps?|prawns?|calamari|squid|octopus|crab|lobster|mussels?|oysters?|clams?|seafood|gelatine?|lard)\b/i;
 /* A dish's own al/ing are its UNAVOIDABLE base. Option choices add on top:
    the default view = base + the first choice of every pick-one group. Selecting
    oat milk really does take the dairy out; the warning and filters follow. */
@@ -1657,7 +1659,7 @@ function effDiet(m, sel){
   });
   return { al: al, ing: ing, kcal: m.kcal, pr: m.pr };
 }
-function isVeg(e){ return !(e.ing||[]).some(function(i){ return MEAT.indexOf(i) > -1; }); }
+function isVeg(e){ return !(e.ing||[]).some(function(i){ return MEAT.test(i); }); }
 function hasNuts(e){ return (e.al||[]).indexOf('nuts') > -1; }
 function hasDairy(e){ return (e.al||[]).indexOf('dairy') > -1; }
 function isLight(e){ return e.kcal != null && e.kcal <= 400; }
