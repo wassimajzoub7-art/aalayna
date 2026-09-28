@@ -167,20 +167,19 @@ test('calculator: no headline is rounded up (or down) through an intermediate st
   }
 });
 
-test('homepage figures: published research, each with its source, none of them from the calculator', () => {
-  // The calculator estimates one restaurant from its own inputs; the homepage quotes what others measured, and says who.
-  const sources = { 'index.html': ['Barclaycard, 2018', 'The New York Times', 'BrightLocal, 2026', 'Toast, 2026'],
-    'fr/index.html': ['Barclaycard, 2018', 'New York Times', 'BrightLocal, 2026', 'Toast, 2026'],
-    'ar/index.html': ['Barclaycard، 2018', 'نيويورك تايمز', 'BrightLocal، 2026', 'Toast، 2026'] };
-  Object.entries(sources).forEach(([f, want]) => {
-    const s = read(f);
-    const cards = [...s.matchAll(/<p class="outcome-figure">[^<]+<\/p><p class="outcome-source">[^<]+<cite>([^<]+)<\/cite><\/p>/g)];
-    assert.deepEqual(cards.map(m => m[1]), want, f + ': one source under each figure');
-    assert.ok(!/outcome-note|illustrative|indicatif|توضيحي\)/.test(s.match(/<section[^>]*id="outcomes"[\s\S]*?<\/section>/)[0]), f + ': no calculator defaults or illustrative figures');
-  });
-  const index = read('index.html');
-  assert.ok(!/Fourteen minutes|13 min/i.test(index));
-  assert.match(read('website.css'), /\n\.benefits-band \.outcome-source cite\{display:block;[^}]*font-family:var\(--font-label\);font-style:normal\}/, 'the source, in the label face');
+test('homepage figures: what the restaurant gets, none of them from the calculator, their sources noted in the page source', () => {
+  // The calculator estimates one restaurant from its own inputs; the homepage says what the restaurant gets. Where each
+  // figure comes from is kept in a comment inside the band, for meetings and for whoever edits the page next.
+  for (const f of ['index.html', 'fr/index.html', 'ar/index.html']) {
+    const band = read(f).match(/<section[^>]*id="outcomes"[\s\S]*?<\/section>/)[0];
+    assert.deepEqual(all(band, /<p class="outcome-figure">([^<]+)<\/p><p class="outcome-source">[^<]+<\/p><h3>/g), f.startsWith('ar') ? ['10 دقائق', '22%', '83%', '50%'] : ['10 min', '22%', '83%', '50%'], f);
+    const note = band.match(/<!-- Where the figures come from \(for meetings; not shown\): ([^>]*) -->/);
+    assert.ok(note, f + ': the sources, noted');
+    ['Barclaycard', 'The New York Times', 'BrightLocal', 'Toast Regulars Report'].forEach(src => assert.ok(note[1].includes(src), f + ': ' + src));
+    assert.ok(!/<cite>|outcome-note|illustrative|indicatif|توضيحي\)/.test(band), f + ': no source lines, calculator defaults or illustrative figures on the page');
+  }
+  assert.ok(!/Fourteen minutes|13 min/i.test(read('index.html')));
+  assert.ok(!/outcome-source cite/.test(read('website.css')));
 });
 
 test('contact links: one WhatsApp number and at most one email address across every page', () => {
@@ -264,14 +263,14 @@ test('homepage structure: four sections that each end on Book a demo, six questi
   assert.match(s, /<summary>What is included in the price\?<\/summary><p>[^<]*No commission on your sales/, 'it lives in the price answer');
   numbers.filter(n => n !== 'Go-live').forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
-  // Each figure is published research: one plain line saying what it measures, then who measured it. No internal labels
-  // (Assumption, Product) on the page, and nothing presented as an Aalayna result.
-  const cards = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source">([^<]+)<cite>([^<]+)<\/cite><\/p><h3>([^<]+)<\/h3>/g)];
+  // Each figure says what the restaurant gets, in one plain line; no internal labels (Assumption, Product) on the page.
+  const cards = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source">([^<]+)<\/p><h3>([^<]+)<\/h3>/g)];
   assert.deepEqual(cards.map(m => m[1]), ['10 min', '22%', '83%', '50%']);
-  assert.deepEqual(cards.map(m => m[2]), ['The average wait just to be handed the bill.', 'Average tip in New York taxis once the screen suggested one, up from 10%.',
-    'Of people asked for a review went on to write one.', 'Of orders can come from the 7% of guests who return.']);
-  assert.deepEqual(cards.map(m => m[4]), ['Tables turn faster', 'Servers earn more tips', 'More Google reviews', 'Guests who come back'], 'the four things an owner measures');
-  assert.match(s, /<p class="eyebrow">What the research says<\/p><h2 id="benefits-title">Four things owners can measure\.<\/h2>/);
+  assert.deepEqual(cards.map(m => m[2]), ['Saved per table: nobody waits for the bill.', 'Average tip per table once it is suggested at payment, up from 10%.',
+    'Of customers asked for a review leave one. Aalayna asks every table.', 'Of orders can come from the few guests who return. Aalayna tells you who they are.']);
+  assert.deepEqual(cards.map(m => m[3]), ['Tables turn faster', 'Servers earn more tips', 'More Google reviews', 'A guest list you own'], 'time, tips, reviews, and the guest data for marketing');
+  assert.match(s, /<p class="eyebrow">What your restaurant gets<\/p><h2 id="benefits-title">Four things owners can measure\.<\/h2>/);
+  assert.ok(!/automatic renewal/i.test(s), 'no line that promises nothing');
   assert.ok(!/source-tag|>(?:Assumption|Product|Benchmark)</.test(s), 'no source tags');
   assert.equal(all(s, /<ul>([\s\S]*?)<\/ul>/g).map(u => (u.match(/<li>/g) || []).length)[0], 5, 'the price card lists what ships today');
 });
@@ -490,7 +489,7 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   // Numbers stay as in English: the same dollar amounts, percentages and minutes.
   const figures = s => [...new Set(visible(s).join(' ').replace(/(\d)-min\b/g, '$1 min').match(/\$\d[\d,.]*\d|\d+%|\d+ min\b/g))].sort();
   assert.deepEqual(figures(fr), figures(en));
-  assert.equal(all(fr, /<p class="outcome-source">([^<]+)<cite>[^<]+<\/cite><\/p>/g).length, 4, 'one line under each figure, then its source');
+  assert.equal(all(fr, /<p class="outcome-source">([^<]+)<\/p>/g).length, 4, 'one line under each figure');
   assert.ok(!/source-tag|>(?:Hypothèse|Produit|Référence)</.test(fr), 'no source tags');
   assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g), ['10 min', '22%', '83%', '50%']);
   ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
@@ -572,7 +571,7 @@ test('every page asks for the same stylesheet version (bump ?v= on all of them w
   assert.ok(Number(versions[0]) >= 7, 'the version that carries the phone hero and the Arabic page');
 });
 
-test('the four steps: a carousel at every width (arrows, four dots), three cards and the edge of the fourth on computers, and motion only when it is wanted', () => {
+test('the four steps: a carousel at every width (arrows, four dots), one step at a time on computers too, and motion only when it is wanted', () => {
   const css = read('website.css'), js = read('site.js');
   const labels = { 'index.html': ['Previous step', 'Next step', 'Step'], 'fr/index.html': ['Étape précédente', 'Étape suivante', 'Étape'], 'ar/index.html': ['الخطوة السابقة', 'الخطوة التالية', 'الخطوة'] };
   for (const [f, [pv, nx, st]] of Object.entries(labels)) {
@@ -586,7 +585,13 @@ test('the four steps: a carousel at every width (arrows, four dots), three cards
     assert.ok(s.includes('<script src="' + (f.includes('/') ? '../' : '') + 'site.js" defer></script>'), f + ' loads site.js');
   }
   assert.match(css, /\n\.steps\{display:flex;[^}]*overflow-x:auto;scroll-snap-type:x mandatory/, 'every width swipes the steps, with or without JavaScript');
-  assert.match(css, /\n\.steps article\{flex:0 0 calc\(\(100% - 3 \* 2rem\) \/ 3\.3\);scroll-snap-align:start/, 'computers: three cards and the edge of the fourth');
+  assert.match(css, /\n\.steps article\{flex:0 0 100%;scroll-snap-align:start/, 'one step fills the row');
+  // Tablets and computers: the step is a spread, the screen in one column and its text beside it; nothing else in view.
+  const spread = css.match(/@media\(min-width:768px\)\{\n  \.steps article\{([^}]*)\}([\s\S]*?)\n\}/);
+  assert.match(spread[1], /display:grid;grid-template-columns:15rem minmax\(0,28rem\)/);
+  assert.match(spread[2], /\.steps \.shot\{grid-row:1\/-1;/);
+  assert.match(spread[2], /\.steps article>:not\(\.shot\)\{grid-column:2\}/);
+  assert.ok(!/3\.3\)|2\.3\)/.test(css), 'no more cards and a bit per view');
   assert.match(css, /\.steps-nav:not\(\[hidden\]\)\{display:flex/, 'the arrows and dots show once the script runs');
   assert.match(js, /nav\.hidden = false;/, 'at every width');
   // Phones: every card centres, the first and last too: the padding at each end equals the card's inset from the screen edge.
