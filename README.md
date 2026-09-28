@@ -6,6 +6,8 @@ The public homepage and booking page contain no interactive demos or app preview
 
 `fr/index.html` is the French homepage: the same ids, classes, images and tracked placements as `index.html`, linked both ways (FR in the English header, EN in the French footer) and declared with hreflang; the calculator and booking page are English only for now.
 
+`ar/index.html` is the Arabic homepage, right to left (`dir="rtl"`), built from `index.html` with the same ids, classes, images and tracked placements. It is set in Noto Kufi Arabic (geometric, like the Kufi mark), never tracked or capitalised, and its hero ends on the name itself: الفاتورة. التقسيم. علينا. Prices keep Western digits and dollars as in the other languages. The English header links to it (عربي, next to FR), the French footer too, and its own footer links back to EN and FR; all three pages declare `hreflang` en, fr and ar. Its hero plays the Arabic cut of the film (`images/film-ar.mp4`), which closes on the Kufi mark. The Arabic copy should be read by a native speaker before launch.
+
 ## Demo limits
 
 Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider or POS is connected. Without a configured bill/owner key the pages share only local demo data. Shared mode requires the Supabase migrations below. Staff sign in to the dashboard and editor with a one-time email code and a role (owner, manager, waiter); the owner key remains a bearer fallback and guests use per-bill and table keys. Do not use the demo to collect real payments, real card details, or guest contact data.
@@ -130,13 +132,13 @@ save the floor plan (`aal.floor`) and nothing else among the venue documents. Se
 ## Importing a menu
 
 `tools/import-menu.js` turns a restaurant's menu, as a PDF or as photos, into a menu
-pack in `venues/<slug>.json` (the format of `venues/kababji.json`) and adds it to
+pack in `venues/<slug>.json` (the format of `venues/mayda.json`) and adds it to
 `venues/index.json`, which fills the **Menu pack** list in `admin.html`. It needs Node
 18 or later and an Anthropic API key in `ANTHROPIC_API_KEY` (never written to disk):
 
 ```sh
-node tools/import-menu.js --name "Kababji" --slug kababji --currency USD menu.pdf
-node tools/import-menu.js --name "Em Sherif" --slug em-sherif --currency LBP page1.jpg page2.jpg
+node tools/import-menu.js --name "Mayda" --slug mayda --currency USD menu.pdf
+node tools/import-menu.js --name "Test Bistro" --slug test-bistro --currency LBP page1.jpg page2.jpg
 ```
 
 The model only transcribes; ids, service windows, allergen filtering and price
@@ -144,8 +146,9 @@ arithmetic are done by the script. LBP prices are converted to USD at `--rate`
 (default 89,500): set the venue rate to the same value. It refuses to replace an
 existing pack without `--force`; `--dry-run` prints the report and writes nothing;
 `--fixture <file>` replays a saved response (`--save-response <file>` saves one) with
-no API call. The first real run should be Kababji's PDF with `--save-response` and
-`--dry-run`, and its report compared with `venues/kababji.json` (75 items, 9 sections).
+no API call. To check a new setup, replay `tests/fixtures/mayda-response.json` with
+`--fixture` and `--dry-run`: its 26 dishes should match `venues/mayda.json`, the pack
+of Mayda, the fictional restaurant the demo runs on (75 items, 9 sections).
 `--strict` and `--effort <level>` are opt-in; a model that refuses one of them, or a
 forced tool choice, is retried once without it. Before loading the pack, read the report and fix: items with no price
 (the app stores them as 0, and loading a pack publishes it), names that appear twice
@@ -180,9 +183,9 @@ session key: another page in the browser cannot drive the tool. See
 ```sh
 export AALAYNA_ADMIN_KEY=...      # the adm_ key from admin.sql (steps register, theme)
 export ANTHROPIC_API_KEY=...      # steps theme, menu, welcome
-node tools/onboard.js --name "Em Sherif" --place "Beirut" --slug em-sherif --currency USD \
-  --tables 24 --owner owner@emsherif.com \
-  --staff "sara@emsherif.com:manager,ali@emsherif.com:waiter" menu.pdf
+node tools/onboard.js --name "Test Bistro" --place "Beirut" --slug test-bistro --currency USD \
+  --tables 24 --owner owner@testbistro.com \
+  --staff "sara@testbistro.com:manager,ali@testbistro.com:waiter" menu.pdf
 ```
 
 The Supabase URL and anon key come from `aalayna-config.js`. The seven steps, one
@@ -195,7 +198,7 @@ module each in `tools/steps/`, run in order and print one line each:
    `--no-theme` skips it.
 3. **menu**: `tools/import-menu.js` writes `venues/<slug>.json` and its report is
    printed. **The run stops here.** Read and fix the file, then run
-   `node tools/onboard.js --slug em-sherif --approve-menu`: the file is published to
+   `node tools/onboard.js --slug test-bistro --approve-menu`: the file is published to
    the venue (draft and live menu, exactly as the editor's Publish makes them) and read
    back from the server. A pack with an item without a price is refused.
 4. **tables**: a code for tables 1 to N and `onboarding/<slug>-table-cards.html`, the
@@ -237,6 +240,31 @@ stock; add your WhatsApp number to the welcome note and send it; set the Google 
 id in `admin.html` if the venue wants Google reviews (there is no Places API key here);
 check the brand colour, background and font against their Instagram. Demo payments are
 already off.
+
+## Film
+
+`reel.html` is a 96-second film in two formats (16:9, and 9:16 with `?format=portrait`) and three languages (`?lang=fr`, `?lang=ar`), set at one table seen from above, in the order a dinner happens. It opens cold: 12 letterboxed seconds of macro shots cut on the beat (the QR card, a calculator, a hand up for the waiter, the receipt tearing) under "Every night. Every table. The same wait.", then a red dot and "Until now." opens on the story through an iris. Four friends sit down and one scans the QR: the app opens on its home screen (See the menu, Open the bill), then the menu in their language and currency, with dietary filters (Vegetarian fades the meat dishes, with the reason shown). The waiter takes the order and dinner comes and goes. Then the wait for the bill (the waiter walks straight past a raised hand); a red dot lands on the bill and floods the frame with the homepage line ("The bill. The split. Aalayna."). The guest reopens the app, taps Open the bill on the home screen, and splits the bill (the receipt tears four ways), tip, pay and rate, and the whole table pays at its own pace. The camera rises over the floor for the restaurant's side: payments and cash confirmation live on the dashboard, and a price published from the editor that reaches every table. The room folds into a red square that opens cream from the table, and the close is the logo's own reveal (the Block from `brand/motion.js`, joined at `LOGO_AT`): the table QR blooms, is scanned and flies into 3LAYNA, then "scan, split, settle." (in French in the French cut), the offer (two months free from go-live) and the address. The Arabic cut runs its captions right to left in Noto Kufi Arabic and mirrors the journey rail; its close is the Kufi mark's own reveal (`LOGO_AR`): the red square becomes the pen that writes علينا, sets its dots on the beat the Block snaps on in the other cuts, then 3LAYNA and امسح، قسّم، ادفع. follow. As on the site, the film's own words are set in Saira, its small labels in Kode Mono and the name alone in Aalayna Block, with square corners and hard shadows; the phone screens and the restaurant's panels are the product, so they keep the app's faces, and the panels carry the 3LAYNA logo in their header. The film is cut from one clock of material played in story order (`SEG` in `reel.html`), with the app steps slowed so each caption can be read. The table, the room and the people are a vector world under one camera; the phone, dashboard and editor are vector rebuilds of the real screens with the app's own copy, so every tap, total and price change animates. No restaurant is named. Every frame is a pure function of time (`__render(t)`): the page plays live at any size (click to pause, `?loop` to loop, reduced motion shows the last frame) and renders frame-exact to video.
+
+The homepage hero (English and French) plays the web cut in its language as a muted loop, 16:9 with its closing frame as poster. A speaker button restarts it with sound and mutes it again, in place; on a phone the film comes first, edge to edge above the headline. The 9:16 cuts are for social. With reduced motion or Data Saver it stays on the poster with player controls.
+
+- `images/film-en.mp4`, `images/film-fr.mp4`: 1280 x 720, 30 fps, with sound.
+- `images/film-en-portrait.mp4`, `images/film-fr-portrait.mp4`: 720 x 1280, 30 fps, with sound.
+- `images/film-*.jpg`: the posters. The 1080p 60 fps masters for social are rendered on demand, not committed.
+
+To render: `node tools/reel-audio.js film.wav` (and `node tools/reel-audio.js film-ar.wav ar` for the Arabic cut, scored on the Kufi reveal's cues), then `node tools/render-reel.js --audio film.wav --lang en --format landscape --out film-en.mp4` (and `--format portrait`, `--lang fr`). It needs Playwright's Chromium and an ffmpeg with libx264, splits the frames across `--workers` headless pages and joins the segments; `--fonts <dir>` serves Google Fonts from a local folder when the browser cannot reach them, and `--stills 1,5.2,11` writes review PNGs instead. The web cuts are the masters at 30 fps and 720 px. The soundtrack is synthesised by `tools/reel-audio.js` on the film's cue times: an 80 bpm score (FM electric piano, additive pads, Karplus-Strong plucks, sub bass, soft drums) with interface sounds tuned to its chords (the close resolves to C on the logo's snap and uses the reveal's own cues, read from `reel.html`, as `tools/brand-audio.js` does), mixed with per-bus EQ, a kick sidechain, a convolution reverb, a glue compressor and a limiter, and normalised to -14 LUFS under a -2.5 dBFS ceiling, which leaves room for AAC (the web cuts peak at -1.9 dBTP). Nothing is sampled, so there is no music licence to clear.
+
+## Logo
+
+`brand/index.html` presents two logo directions on one module grid, with both reveals playing live (Replay with sound plays the soundtrack): **Block**, the name in square capitals, 3LA / YNA with the 3 in red (the ع, as Lebanese Arabizi writes it), and **Kufi**, علينا in square Kufic with red dots. A switch at the top of the page redraws everything spelled AALAYNA (AALA / YNA with a red full stop in the eighth cell) for comparison. The page is `noindex`; merging it publishes it at `/brand/`. `brand/logo.js` draws every mark (the SVG files, the page and the motion all come from it) and `brand/motion.js` holds the two reveals, each a pure function of time like the reel.
+
+- `brand/svg/`: the Kufi mark and its icon; `3layna/` and `aalayna/` hold each spelling's Block, one-line name, lockups and icon, in ink, cream and petrol versions.
+- `brand/video/`: both reveals spelled 3LAYNA, with sound, at 1920 x 1080, 1080 x 1080 and 1080 x 1920, 60 fps; `block.mp3` and `kufi.mp3` are the soundtracks the page plays.
+- `brand/fonts/`: **Aalayna Block**, the logo's capitals as a font (A to Z, digits, punctuation and the French capitals; lowercase maps onto the capitals), built by `tools/brand-font.js` from the typeface in `brand/logo.js`, so the logo and the headlines cannot drift apart. `aalayna-block.woff` (3 KB) is for the site, `aalayna-block.otf` to install for layouts.
+- `brand/icons/`: the favicons, `icon-32.png` drawn on whole pixels and `icon-180.png` for iOS; the SVG icon is `brand/svg/3layna/icon.svg`.
+
+On the site there are three faces, each with one job, all on the logo's square geometry. Saira, whose square bowls and horizontal and vertical strokes echo the logo's modules, sets everything you read: headings, text, buttons and figures (Noto Kufi Arabic, geometric like the Kufi mark, sets the Arabic words). Kode Mono, square and monospaced, sets the small labels you scan (eyebrows, step numbers, tags), which carries the brand's grid. Aalayna Block, the logo's capitals, sets only the name (the logo and "3layna." in the hero headline); as a reading face it was too hard to decode beyond a word or two. Corners are square everywhere and shadows hard or absent; only the phone frames keep their rounding. The header carries the Block and the footer the Kufi lockup, as inline SVG. On screen the name is spelled 3LAYNA, in the logo and in the hero headline (a screen reader hears "Aalayna"); sentences, the address and search keep Aalayna.
+
+To rebuild after changing `brand/logo.js` or `brand/motion.js`: `node tools/brand.js svg`, `node tools/brand.js site` (the logos in `index.html`, `fr/index.html`, `ar/index.html`, `book.html` and `numbers.html`), `node tools/brand-font.js` (needs `opentype.js` on `NODE_PATH`) and `node tools/brand.js images` (`images/og-image.png` and `.webp`, and the favicons), then `node tools/brand-audio.js block block.wav` and `node tools/brand.js video --piece block --size 1920x1080 --audio block.wav`, and `ffmpeg -i block.wav -b:a 160k brand/video/block.mp3` for the page (same for `kufi`; `--word AALAYNA` for the other spelling, `--ground ink|petrol` for a dark ground, `--notag` without the tagline, `--fonts <dir>` as for the reel, `node tools/brand.js stills --piece kufi --at 1,2.5` for review PNGs). `brand/motion.html?piece=kufi&word=AALAYNA` plays one reveal full window.
 
 ## Validation
 

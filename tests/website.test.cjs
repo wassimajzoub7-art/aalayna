@@ -12,7 +12,7 @@ const SITE = ['index.html', 'book.html', 'numbers.html'];
 const rootFiles = ext => fs.readdirSync(ROOT).filter(f => f.endsWith(ext));
 const strip = h => h.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').trim();
 const OPS = ['×', '÷', '+', '−'];
-const CTA_LABELS = ['Book a 15-min call', 'WhatsApp us'];
+const CTA_LABELS = ['Book a demo', 'WhatsApp us'];
 
 /* ---------- numbers.html in a DOM stub ---------- */
 function makeEl(tag) {
@@ -204,7 +204,7 @@ test('CTAs: two labels site-wide, booking goes to book.html, WhatsApp goes to wa
     for (const m of s.matchAll(/<(a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)) {
       const attrs = m[2], text = strip(m[3]);
       if (/class="[^"]*\bbtn\b/.test(attrs)) assert.ok(CTA_LABELS.includes(text), f + ': button "' + text + '"');
-      if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, 'Book a 15-min call', f); assert.match(attrs, /href="book\.html"/); }
+      if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, 'Book a demo', f); assert.match(attrs, /href="book\.html"/); }
       if (/data-track="whatsapp_click"/.test(attrs)) {
         assert.match(attrs, /href="https:\/\/wa\.me\//);
         assert.ok(text === 'WhatsApp us' || (f === 'book.html' && text === 'Message us'), f + ': WhatsApp link "' + text + '"');
@@ -212,7 +212,7 @@ test('CTAs: two labels site-wide, booking goes to book.html, WhatsApp goes to wa
     }
   });
   runNumbers('?focus=all').forEach(o => o.buttons.forEach(b => {
-    assert.equal(b.text, 'Book a 15-min call'); assert.equal(b.href, 'book.html');
+    assert.equal(b.text, 'Book a demo'); assert.equal(b.href, 'book.html');
     assert.equal(b.track, 'booking_click'); assert.equal(b.placement, 'numbers_' + o.key);
   }));
   const book = read('book.html');
@@ -223,9 +223,10 @@ test('funnel: tracked placements keep their names and every event is one analyti
   const allowed = JSON.parse(read('analytics.js').match(/var allowed = (\[[^\]]*\])/)[1].replace(/'/g, '"'));
   const pairs = f => [...read(f).matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
   const index = pairs('index.html');
-  // booking_click:experience went with the mid-page booking card (W2, item 23); the editor screenshot sits there now.
-  ['booking_click:navigation', 'booking_click:hero', 'booking_click:pilot', 'booking_click:footer',
-   'whatsapp_click:hero', 'whatsapp_click:pricing', 'whatsapp_click:footer', 'whatsapp_click:footer_contact', 'numbers_click:outcomes']
+  // Every section ends on Book a demo, each with its own placement, so the funnel shows which section converts.
+  assert.deepEqual(index.filter(p => p.startsWith('booking_click')),
+    ['booking_click:navigation', 'booking_click:hero', 'booking_click:how', 'booking_click:outcomes', 'booking_click:pricing', 'booking_click:faq', 'booking_click:footer']);
+  ['whatsapp_click:hero', 'whatsapp_click:footer', 'whatsapp_click:footer_contact', 'numbers_click:outcomes']
     .forEach(p => assert.ok(index.includes(p), 'index.html lost ' + p));
   assert.deepEqual(pairs('book.html'), ['whatsapp_click:booking_fallback']);
   assert.deepEqual(pairs('numbers.html').sort(), ['booking_click:numbers_nav', 'whatsapp_click:numbers_footer']);
@@ -234,40 +235,47 @@ test('funnel: tracked placements keep their names and every event is one analyti
   assert.equal((read('index.html').match(/href="numbers\.html/g) || []).length, 1);
 });
 
-test('homepage structure: hero, WhatsApp first, nav, coming-next section, FAQ order, numbering', () => {
+test('homepage structure: four sections that each end on Book a demo, six questions, nothing that is not shipped', () => {
   const s = read('index.html');
-  assert.ok(s.includes('<p class="lead">Guests view, split and pay from the table: one QR, their language, USD or LBP.</p>'));
-  const nav = s.match(/<div class="nav-links">([\s\S]*?)<\/div>/)[1];
-  assert.ok(!/Bring guests back|return-visits/.test(nav));
+  // Under the headline: what the product is, in a sentence and four chips.
+  assert.ok(s.includes('<p class="lead">A QR code on every table. Guests open your menu, split the bill and pay from their phone. No app to download.</p>'));
+  assert.deepEqual(all(s, /<ul class="what">([\s\S]*?)<\/ul>/g).map(u => all(u, /<\/svg>([^<]+)<\/li>/g))[0], ['Web app, nothing to download', 'Live dashboard for your team', 'EN · FR · عربي, USD or LBP', 'Whish, card or cash']);
+  assert.deepEqual(all(s, /<section[^>]*\bid="([^"]+)"/g), ['how', 'outcomes', 'pricing', 'faq', 'contact'], 'the sections, in order');
+  assert.ok(!/id="experience"|id="return-visits"|Coming next|Bring guests back/.test(s), 'no both-sides or coming-next section');
+  assert.equal(s.match(/<div class="nav-links">([\s\S]*?)<\/div>/)[1], '<a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">Questions</a>');
   ['hero-copy', 'id="contact"'].forEach(anchor => {
     const block = s.slice(s.indexOf(anchor)), actions = block.match(/<div class="actions">([\s\S]*?)<\/div>/)[1].trim();
-    assert.match(actions, /^<a class="btn" data-track="whatsapp_click"[^>]*>WhatsApp us<\/a>\s*<a class="btn outline" data-track="booking_click"[^>]*>Book a 15-min call<\/a>$/, anchor);
+    assert.match(actions, /^<a class="btn" data-track="booking_click"[^>]*>Book a demo<\/a>\s*<a class="btn outline" data-track="whatsapp_click"[^>]*>WhatsApp us<\/a>$/, anchor);
   });
-  const retention = s.match(/<section[^>]*id="return-visits"[\s\S]*?<\/section>/)[0];
-  assert.ok(s.indexOf('id="return-visits"') > s.indexOf('id="pricing"'), 'Bring guests back sits below pricing');
-  assert.match(retention, /<p class="eyebrow">Coming next<\/p>/);
-  assert.ok(!/data-track|href=/.test(retention), 'no CTA in the coming-next section');
+  ['how', 'outcomes', 'faq'].forEach(id => assert.match(s.match(new RegExp('<section[^>]*id="' + id + '"[\\s\\S]*?</section>'))[0], /<div class="section-cta"><a class="btn(?: light)?" data-track="booking_click" data-placement="[a-z]+" href="book\.html">Book a demo<\/a><\/div>/, id + ' ends on Book a demo'));
+  assert.match(s, /<a class="btn light full" data-track="booking_click" data-placement="pricing" href="book\.html">Book a demo<\/a>/);
   const faq = [...s.matchAll(/<summary>([^<]*)<\/summary>/g)].map(m => m[1]);
-  assert.deepEqual(faq.slice(0, 3), ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?']);
-  assert.ok(faq.indexOf('Is this ready to take real payments?') > 2);
+  assert.deepEqual(faq, ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?', 'Where do payments and tips go?', 'Is this ready to take real payments?', 'What is included in the price?']);
   const numbers = [...s.matchAll(/<span class="number">([^<]*)<\/span>/g)].map(m => m[1]);
-  assert.ok(numbers.length >= 9);
-  numbers.forEach(n => assert.match(n, /^\d{2} · \S/));
+  assert.equal(numbers.length, 7, 'three steps, and the pilot timeline: three steps and go-live');
+  assert.match(s, /<li class="go-live"><span class="number">[^<]+<\/span> [^<]+<\/li><li><span class="number">03 · /, 'go-live sits before the review');
+  assert.ok(!/commission/i.test(s.match(/<div class="price-card">[\s\S]*?<\/div>/)[0]), 'no commission line on the price card');
+  assert.match(s, /<summary>What is included in the price\?<\/summary><p>[^<]*No commission on your sales/, 'it lives in the price answer');
+  numbers.filter(n => n !== 'Go-live').forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
-  const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> [^<]+<\/p>/g)].map(m => m[1]);
-  assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'your list']);
+  const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source"><span class="source-tag">(Assumption|Benchmark|Product)<\/span> <span class="source-text">[^<]+<\/span><\/p>/g)].map(m => m[1]);
+  assert.deepEqual(figures, ['13 min', '10%', '1 tap', 'Your list']);
+  assert.equal(all(s, /<ul>([\s\S]*?)<\/ul>/g).map(u => (u.match(/<li>/g) || []).length)[0], 5, 'the price card lists what ships today');
 });
 
 test('book.html: site colour token, one calendar that needs no script, one WhatsApp line', () => {
   const s = read('book.html');
-  assert.equal(s.match(/<title>([^<]*)<\/title>/)[1], 'Book a 15-min call · Aalayna');
+  assert.equal(s.match(/<title>([^<]*)<\/title>/)[1], 'Book a demo · Aalayna');
   assert.ok(!/#E8555B/i.test(s) && !/--brand\s*:/.test(s), 'no local brand colour');
   assert.match(s, /<link rel="stylesheet" href="website\.css/);
   assert.equal((s.match(/<iframe\b/g) || []).length, 1);
-  assert.match(s, /<iframe [^>]*title="Book a 15-min call with Aalayna"/);
+  assert.match(s, /<iframe [^>]*title="Book a demo with Aalayna"/);
   assert.equal((s.match(/wa\.me\//g) || []).length, 1);
   assert.ok(!/mailto:/.test(s));
   assert.ok(!/<script>/.test(s), 'the calendar is in the HTML, not injected');
+  const main = s.match(/<main[\s\S]*?<\/main>/)[0];
+  assert.ok(!/<h2|<ul|class="lead"|class="what"/.test(main), 'the page is the booking calendar only');
+  assert.match(main, /<h1 class="sr-only">Book a demo<\/h1>/);
   assert.match(read('website.css'), /--brand:#C9414B/);
 });
 
@@ -319,29 +327,39 @@ test('share previews: og and twitter tags on every marketing page, image at an a
   assert.ok(fs.existsSync(path.join(ROOT, 'images', 'og-image.png')));
 });
 
-test('product screens: every image exists in WebP and PNG, has its size, an alt, and is lazy except the hero', () => {
+test('product screens: every image exists in WebP and PNG, has its size, an alt, and is lazy; the hero is the film', () => {
   const s = read('index.html');
   const pics = [...s.matchAll(/<picture><source srcset="images\/([\w-]+)\.webp" type="image\/webp"><img ([^>]*)><\/picture>/g)];
   assert.equal(pics.length, (s.match(/<img\b/g) || []).length, 'every img sits in a picture with a WebP source');
-  assert.ok(pics.length >= 6, 'hero, three steps, guest menu and editor');
-  pics.forEach(([, name, attrs], i) => {
+  assert.ok(pics.length >= 3, 'the three steps');
+  pics.forEach(([, name, attrs]) => {
     assert.match(attrs, new RegExp('src="images/' + name + '\\.png"'), name);
     ['webp', 'png'].forEach(ext => assert.ok(fs.existsSync(path.join(ROOT, 'images', name + '.' + ext)), name + '.' + ext));
     assert.match(attrs, /width="\d+" height="\d+"/, name + ' size');
     assert.match(attrs, /alt="[^"]{20,}"/, name + ' alt');
-    if (i === 0) { assert.equal(name, 'guest-pay', 'the hero shows the pay screen'); assert.ok(!/loading=/.test(attrs), 'the hero is not lazy'); }
-    else assert.match(attrs, /loading="lazy"/, name + ' is lazy');
+    assert.match(attrs, /loading="lazy"/, name + ' is lazy');
   });
+  const hero = s.slice(s.indexOf('class="hero wrap"'), s.indexOf('</section>'));
+  // The 16:9 cut everywhere: on phones it sits first, edge to edge. The speaker only toggles sound, in place, on every screen.
+  // The 9:16 cuts stay in images/ for social.
+  const video = hero.match(/<video ([^>]*)><source src="images\/film-en\.mp4" type="video\/mp4"><\/video>/);
+  assert.ok(video, 'the hero plays the 16:9 film');
+  ['autoplay', 'muted', 'loop', 'playsinline', 'poster="images/film-en.jpg"', 'width="1280" height="720"'].forEach(a => assert.ok(video[1].includes(a), 'film ' + a));
+  assert.match(hero, /<button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" aria-label="Sound on" data-mute="Mute"><svg [^>]*aria-hidden="true"/);
+  assert.ok(!/Fullscreen|data-watch/.test(s), 'the speaker never opens full screen');
+  assert.match(video[1], /aria-label="[^"]{80,}"/, 'film description');
+  ['en', 'fr'].forEach(l => ['.mp4', '-portrait.mp4', '.jpg', '-portrait.jpg'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, 'images', 'film-' + l + x)), 'film-' + l + x)));
+  assert.ok(!fs.existsSync(path.join(ROOT, 'images', 'reel-web.mp4')), 'the 15-second cut is retired');
   assert.ok(!/conversation-card|Tell us about your floor/.test(s), 'the mid-page booking card is gone');
   assert.ok(!/w1-/.test(s + read('website.css')), 'W1 classes folded into the system');
 });
 
 /* ---------- W4: French homepage (fr/index.html) ---------- */
 const FR = 'fr/index.html';
-const FR_CTA = ['Réserver un appel de 15 min', 'Écrivez-nous sur WhatsApp'];
+const FR_CTA = ['Réserver une démo', 'Écrivez-nous sur WhatsApp'];
 const decode = s => s.replace(/&#8239;/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 // The language switch is the one link with hreflang; the English page has it in the header, the French page in the footer.
-const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr)"[^>]*>(?:EN|FR)<\/a>/g;
+const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr|ar)"[^>]*>(?:EN|FR|عربي|English|Français|العربية)<\/a>/g;
 const noSwitch = s => s.replace(LANG_SWITCH, '');
 const all = (s, re) => [...s.matchAll(re)].map(m => m[1]);
 // What a reader or a screen reader gets: text between tags in the body, alt and aria-label, and the head's title and meta contents.
@@ -361,7 +379,7 @@ test('fr homepage: same ids, classes, tags, images and tracked placements as ind
   assert.deepEqual(tags(fr), tags(en), 'element sequence in the body');
   const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
   assert.deepEqual(pairs(fr), pairs(en), 'tracked placements, in order');
-  assert.deepEqual(all(fr, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/');
+  assert.deepEqual(all(fr, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g).map(u => u.replace('film-fr', 'film-en')), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/ (the film in French)');
   assert.equal((fr.match(/(?:src|srcset)="images\//g) || []).length, 0, 'no image path left relative to the root');
   const imgAttrs = s => all(s, /<img ([^>]*)>/g).map(a => a.replace(/ alt="[^"]*"/, '').replace('src="../', 'src="'));
   assert.deepEqual(imgAttrs(fr), imgAttrs(en), 'sizes, lazy loading and fetchpriority');
@@ -387,7 +405,7 @@ test('fr homepage: exactly the two French CTA labels, booking to ../book.html, W
   ['Book a 15-min call', 'WhatsApp us', 'Message us', 'Hi%2C', 'Let’s talk', 'Discuss a pilot'].forEach(t => assert.ok(!s.includes(t), 'English CTA text left: ' + t));
   ['hero-copy', 'id="contact"'].forEach(anchor => {
     const actions = s.slice(s.indexOf(anchor)).match(/<div class="actions">([\s\S]*?)<\/div>/)[1].trim();
-    assert.match(actions, /^<a class="btn" data-track="whatsapp_click"[^>]*>Écrivez-nous sur WhatsApp<\/a>\s*<a class="btn outline" data-track="booking_click"[^>]*>Réserver un appel de 15 min<\/a>$/, anchor);
+    assert.match(actions, /^<a class="btn" data-track="booking_click"[^>]*>Réserver une démo<\/a>\s*<a class="btn outline" data-track="whatsapp_click"[^>]*>Écrivez-nous sur WhatsApp<\/a>$/, anchor);
   });
 });
 
@@ -407,24 +425,33 @@ test('fr homepage: every relative path on both homepages resolves to a file', ()
   assert.match(read('.gitignore'), /^!fr\/\*$/m);
 });
 
-test('languages: lang, hreflang on both pages, a 44 px switch each way, French share tags', () => {
+test('languages: lang, hreflang on both pages, a language menu in every header, French share tags', () => {
   const en = read('index.html'), fr = read(FR);
   assert.match(en, /<html lang="en">/);
   assert.match(fr, /<html lang="fr">/);
   [en, fr].forEach((s, i) => {
     const alt = all(s, /<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g);
-    assert.deepEqual(alt, ['en', 'fr', 'x-default'], ['index.html', FR][i] + ' hreflang set');
+    assert.deepEqual(alt, ['en', 'fr', 'ar', 'x-default'], ['index.html', FR][i] + ' hreflang set');
     assert.ok(s.includes('<link rel="alternate" hreflang="en" href="https://aalayna.com/">'));
     assert.ok(s.includes('<link rel="alternate" hreflang="fr" href="https://aalayna.com/fr/">'));
+    assert.ok(s.includes('<link rel="alternate" hreflang="ar" href="https://aalayna.com/ar/">'));
     assert.ok(s.includes('<link rel="alternate" hreflang="x-default" href="https://aalayna.com/">'));
   });
-  const toFr = en.match(/<a href="fr\/" hreflang="fr" lang="fr"([^>]*)>FR<\/a>/);
+  // Every homepage carries a language menu in its header: the current language, then the other two by name.
+  const menu = (s, cur, others) => {
+    const m = s.match(/<header[\s\S]*?<\/header>/)[0].match(/<details class="lang"><summary aria-label="[^"]+">([^<]+)<\/summary><div>([\s\S]*?)<\/div><\/details>/);
+    assert.ok(m, cur + ': a language menu in the header');
+    assert.equal(m[1], cur);
+    assert.deepEqual(all(m[2], /<a href="[^"]*" hreflang="([a-z]+)" lang="\1">[^<]+<\/a>/g), others);
+  };
+  menu(en, 'EN', ['fr', 'ar']); menu(fr, 'FR', ['en', 'ar']); menu(read('ar/index.html'), 'عربي', ['en', 'fr']);
+  assert.match(en, /<details class="lang">[\s\S]*?<a href="fr\/" hreflang="fr" lang="fr">Français<\/a><a href="ar\/" hreflang="ar" lang="ar">العربية<\/a>/);
+  assert.match(fr, /<details class="lang">[\s\S]*?<a href="\.\.\/" hreflang="en" lang="en">English<\/a><a href="\.\.\/ar\/" hreflang="ar" lang="ar">العربية<\/a>/);
+  assert.match(read('website.css'), /\n\.lang summary\{[^}]*min-height:44px/);
+  assert.match(read('website.css'), /\n\.lang a\{[^}]*min-height:44px/);
+  // The French footer keeps its way back too.
   const toEn = fr.match(/<a href="\.\.\/" hreflang="en" lang="en"([^>]*)>EN<\/a>/);
-  assert.ok(toFr, 'FR link on the English page');
-  assert.ok(toEn, 'EN link on the French page');
-  [toFr[1], toEn[1]].forEach(a => assert.match(a, /min-height:44px/));
-  assert.ok(en.match(/<header[\s\S]*?<\/header>/)[0].includes(toFr[0]), 'FR sits in the English header, next to the CTA');
-  assert.ok(fr.match(/<footer[\s\S]*?<\/footer>/)[0].includes(toEn[0]), 'EN sits in the French footer (the French CTA leaves no room in the header at 375 px)');
+  assert.ok(toEn && /min-height:44px/.test(toEn[1]) && fr.match(/<footer[\s\S]*?<\/footer>/)[0].includes(toEn[0]), 'EN in the French footer');
   const meta = k => { const m = fr.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
   assert.equal(meta('og:url'), 'https://aalayna.com/fr/');
   assert.equal(meta('og:locale'), 'fr_FR');
@@ -439,7 +466,7 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   const en = read('index.html'), fr = read(FR);
   assert.ok(!/—|&mdash;|&#8212;|\\2014/.test(fr), 'em dash');
   // Every English phrase of two words or more, cut at punctuation, is gone from the French page; names and the greeting stay.
-  const keep = ['English · Français · العربية', 'Whish Money', 'Ahla w sahla'];
+  const keep = ['English · Français · العربية', 'Whish Money', 'Ahla w sahla', 'EN · FR · عربي'];
   const frText = visible(fr).join('\n');
   const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()]/))).map(t => t.trim()).filter(t => (t.match(/\p{L}{2,}/gu) || []).length >= 2 && !keep.includes(t));
   assert.ok(phrases.length > 150, phrases.length + ' English phrases checked');
@@ -453,10 +480,120 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   const tags = { Assumption: 'Hypothèse', Product: 'Produit', Benchmark: 'Référence' };
   assert.deepEqual(all(fr, /<span class="source-tag">([^<]*)<\/span>/g), all(en, /<span class="source-tag">([^<]*)<\/span>/g).map(t => tags[t]));
   assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g).slice(0, 2), ['13 min', '10%']);
-  const retention = fr.match(/<section[^>]*id="return-visits"[\s\S]*?<\/section>/)[0];
-  assert.match(retention, /<p class="eyebrow">Prochainement<\/p>/);
-  assert.ok(!/data-track|href=/.test(retention), 'no CTA in the coming-next section');
   ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
   assert.ok(!/<p class="price">\$(?!150 )/.test(fr), 'standard price');
-  ['aalay<b>na</b>', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
+  ['Aalayna', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
+});
+
+/* ---------- Arabic homepage (ar/index.html) ---------- */
+const AR = 'ar/index.html';
+const AR_CTA = ['احجز عرضاً توضيحياً', 'راسلنا على واتساب'];
+
+test('ar homepage: right to left, same ids, classes, tags, images and tracked placements as index.html', () => {
+  const en = noSwitch(read('index.html')), ar = noSwitch(read(AR));
+  assert.match(ar, /<html lang="ar" dir="rtl">/);
+  assert.deepEqual(all(ar, /\bid="([^"]*)"/g), all(en, /\bid="([^"]*)"/g), 'ids');
+  assert.deepEqual(all(ar, /\bclass="([^"]*)"/g), all(en, /\bclass="([^"]*)"/g), 'classes');
+  const tags = s => all(s.slice(s.indexOf('<body')), /<([a-z][a-z0-9]*)\b/g);
+  assert.deepEqual(tags(ar), tags(en), 'element sequence in the body');
+  const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
+  assert.deepEqual(pairs(ar), pairs(en), 'tracked placements, in order');
+  assert.deepEqual(all(ar, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g).map(u => u.replace('film-ar', 'film-en')), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/ (the film in Arabic)');
+  assert.match(read(AR), /poster="\.\.\/images\/film-ar\.jpg"[^>]*><source src="\.\.\/images\/film-ar\.mp4" type="video\/mp4">/, 'the Arabic cut and its poster');
+  ['.mp4', '-portrait.mp4', '.jpg', '-portrait.jpg'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, 'images', 'film-ar' + x)), 'film-ar' + x));
+  assert.equal((ar.match(/(?:src|srcset|href)="(?:images|brand|website\.css|book\.html|numbers\.html)/g) || []).length, 0, 'no path left relative to the root');
+  const dir = path.dirname(path.join(ROOT, AR));
+  all(read(AR), /\b(?:href|src|srcset)="([^"]*)"/g).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u)).forEach(u => {
+    let p = path.resolve(dir, u.split(/[?#]/)[0] || '.');
+    if (/\/$/.test(u.split(/[?#]/)[0]) || (fs.existsSync(p) && fs.statSync(p).isDirectory())) p = path.join(p, 'index.html');
+    assert.ok(fs.existsSync(p), AR + ': "' + u + '" does not resolve');
+  });
+  assert.match(read('.gitignore'), /^!ar\/\*$/m);
+});
+
+test('ar homepage: the two Arabic CTA labels, WhatsApp to the same number in Arabic, switches to English and French', () => {
+  const s = read(AR), en = read('index.html'), fr = read(FR);
+  const number = en.match(/wa\.me\/(\d+)/)[1];
+  for (const m of s.matchAll(/<(a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)) {
+    const attrs = m[2], text = decode(strip(m[3]));
+    if (/class="[^"]*\bbtn\b/.test(attrs)) assert.ok(AR_CTA.includes(text), 'button "' + text + '"');
+    if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, AR_CTA[0]); assert.match(attrs, /href="\.\.\/book\.html"/); }
+    if (/data-track="whatsapp_click"/.test(attrs)) {
+      assert.equal(text, AR_CTA[1]);
+      const href = attrs.match(/href="https:\/\/wa\.me\/(\d+)\?text=([^"]*)"/);
+      assert.equal(href[1], number, 'the same WhatsApp number');
+      assert.match(decodeURIComponent(href[2]), /^مرحباً، /, 'the prefilled message is Arabic');
+    }
+  }
+  const foot = s.match(/<footer[\s\S]*?<\/footer>/)[0];
+  assert.match(foot, /<a href="\.\.\/" hreflang="en" lang="en"[^>]*min-height:44px[^>]*>EN<\/a>/);
+  assert.match(foot, /<a href="\.\.\/fr\/" hreflang="fr" lang="fr"[^>]*min-height:44px[^>]*>FR<\/a>/);
+  assert.match(fr.match(/<footer[\s\S]*?<\/footer>/)[0], /<a href="\.\.\/ar\/" hreflang="ar" lang="ar"[^>]*min-height:44px[^>]*>عربي<\/a>/, 'and in the French footer');
+  assert.deepEqual(all(s, /<link rel="alternate" hreflang="([^"]+)"/g), ['en', 'fr', 'ar', 'x-default']);
+  const meta = k => { const m = s.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
+  assert.equal(meta('og:url'), 'https://aalayna.com/ar/');
+  assert.equal(meta('og:locale'), 'ar_LB');
+});
+
+test('ar copy: nothing left in English, the same prices and percentages, the name in the hero is علينا', () => {
+  const en = read('index.html'), ar = read(AR);
+  assert.ok(!/—|&mdash;/.test(ar), 'em dash');
+  const keep = ['English · Français · العربية', 'Whish Money', 'version française'];   // the French switch keeps its French label
+  const arText = visible(ar).join('\n');
+  const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()]/))).map(t => t.trim()).filter(t => (t.match(/\p{L}{2,}/gu) || []).length >= 2 && !keep.includes(t));
+  assert.ok(phrases.length > 150, phrases.length + ' English phrases checked');
+  phrases.forEach(t => assert.ok(!arText.includes(t), 'still in English: "' + t + '"'));
+  const figures = s => [...new Set(visible(s).join(' ').match(/\$\d[\d,.]*\d|\d+%/g))].sort();
+  assert.deepEqual(figures(ar), figures(en), 'the same dollar amounts and percentages');
+  assert.match(ar, /<h1 id="hero-title">الفاتورة\.<br>التقسيم\.<br><span class="sr-only">علينا\.<\/span><span class="name" aria-hidden="true"><em>علينا\.<\/em><\/span><\/h1>/);
+  assert.match(read('website.css'), /\[lang="ar"\]\{--font-text:'Noto Kufi Arabic',/);
+  assert.match(read('website.css'), /\[lang="ar"\] :is\(h1,h2,h3,\.eyebrow,\.number,\.source-tag,\.btn,\.name\)\{letter-spacing:0;text-transform:none\}/, 'Arabic is never tracked or capitalised');
+  assert.ok(!/margin-(?:left|right)|padding-(?:left|right)/.test(read('website.css')), 'spacing is logical, so it mirrors in Arabic');
+});
+
+test('every page asks for the same stylesheet version (bump ?v= on all of them whenever website.css changes, or phones keep the old one)', () => {
+  const pages = ['index.html', 'fr/index.html', 'ar/index.html', 'book.html', 'numbers.html'];
+  const versions = pages.map(f => (read(f).match(/website\.css\?v=(\d+)"/) || [])[1]);
+  versions.forEach((v, i) => assert.ok(v, pages[i] + ' links website.css with a version'));
+  assert.equal(new Set(versions).size, 1, 'one version across pages: ' + versions.join(', '));
+  assert.ok(Number(versions[0]) >= 7, 'the version that carries the phone hero and the Arabic page');
+});
+
+test('the three steps: a carousel on phones (arrows, three dots), a grid on computers, and motion only when it is wanted', () => {
+  const css = read('website.css'), js = read('site.js');
+  const labels = { 'index.html': ['Previous step', 'Next step', 'Step'], 'fr/index.html': ['Étape précédente', 'Étape suivante', 'Étape'], 'ar/index.html': ['الخطوة السابقة', 'الخطوة التالية', 'الخطوة'] };
+  for (const [f, [pv, nx, st]] of Object.entries(labels)) {
+    const s = read(f), how = s.match(/<section[^>]*id="how"[\s\S]*?<\/section>/)[0];
+    assert.match(how, new RegExp('<div class="steps-nav" hidden><button class="steps-arrow" type="button" data-step="-1" aria-label="' + pv + '">'), f + ': previous');
+    assert.match(how, new RegExp('<button class="steps-arrow" type="button" data-step="1" aria-label="' + nx + '">'), f + ': next');
+    assert.deepEqual(all(how, /<span class="steps-dots">([\s\S]*?)<\/span>/g).map(d => all(d, /aria-label="([^"]+)"/g))[0], [1, 2, 3].map(i => st + ' ' + i), f + ': three dots');
+    assert.ok(s.includes('<script src="' + (f.includes('/') ? '../' : '') + 'site.js" defer></script>'), f + ' loads site.js');
+  }
+  assert.match(css, /@media\(max-width:767px\)\{\n  \.steps\{display:flex;[^}]*overflow-x:auto;scroll-snap-type:x mandatory/, 'phones swipe the steps, with or without JavaScript');
+  assert.match(css, /\n\.steps\{display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, 'computers keep the three columns');
+  assert.match(css, /\n\.steps-nav\{display:none\}/, 'the arrows and dots only show on phones');
+  // Every card centres, the first and last too: the padding at each end equals the card's inset from the screen edge.
+  const phoneSteps = css.match(/@media\(max-width:767px\)\{\n  \.steps\{([^}]*)\}[\s\S]*?\.steps article\{([^}]*)\}/);
+  assert.match(phoneSteps[1], /padding:0 2rem \.25rem;scroll-padding-inline:2rem/);
+  assert.match(phoneSteps[2], /flex:0 0 calc\(100vw - 4rem\);scroll-snap-align:center/);
+  assert.match(css, /\.steps-arrow\{[^}]*width:44px;height:44px/);
+  assert.match(css, /\.steps-dots button\{[^}]*height:44px/);
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\)\{\.js-reveal\{opacity:1;transform:none;transition:none\}\}/);
+  assert.match(js, /prefers-reduced-motion: reduce/);
+  assert.match(js, /if \(reduce \|\| !io\) return;/, 'no rise-in or count-up with reduced motion');
+  assert.match(js, /el\.textContent = text;/, 'the figures end on the value in the page');
+  assert.match(read('.gitignore'), /^!site\.js$/m);
+});
+
+test('tapping the hero film, or its play button, pauses and plays it on every homepage', () => {
+  for (const f of ['index.html', 'fr/index.html', 'ar/index.html']) {
+    const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    assert.match(s, /<button class="reel-play" id="reel-play" type="button" aria-label="[^"]+" data-play="[^"]+"><svg [^>]*aria-hidden="true"/, f);
+    assert.match(s, /v\.addEventListener\('click',toggle\);p\.addEventListener\('click',toggle\);/, f);
+    assert.match(s, /b\.hidden=true;p\.hidden=true;return;/, f + ': reduced motion hands over to native controls');
+  }
+  const css = fs.readFileSync(path.join(ROOT, 'website.css'), 'utf8');
+  assert.match(css, /\.reel-play\{position:absolute;left:50%;top:50%;[^}]*width:80px;height:80px/, "one large button in the middle");
+  assert.match(css, /\.is-paused \.reel-play,\.reel-play:focus-visible\{opacity:1\}/, 'shown only while paused');
+  assert.doesNotMatch(css, /\.hero-reel(\.show|:hover) \.reel-play/, 'never over the playing film');
 });

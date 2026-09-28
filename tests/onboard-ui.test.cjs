@@ -17,13 +17,13 @@ const { start } = require('./fixtures/onboard-server.cjs');
 const { createServer } = require('../tools/onboard-ui.js');
 const { loadConfig } = require('../tools/lib/supabase.js');
 
-const SLUG = 'em-sherif', RID = JSON.stringify(['em sherif', 'beirut']);
+const SLUG = 'test-bistro', RID = JSON.stringify(['test bistro', 'beirut']);
 const ANON = loadConfig({}).anonKey;
 const API_KEY = 'sk-ant-test-not-real-0123456789';
 
 const tr = (ar) => ({ fr: { n: '', d: '' }, ar: { n: ar || '', d: '' } });
 const PACK = {
-  name: 'Em Sherif',
+  name: 'Test Bistro',
   sections: [{ id: 'mez', name: 'Cold Mezze', win: 'all' }, { id: 'grl', name: 'Grills', win: 'all' }, { id: 'swt', name: 'Sweets', win: 'all' }],
   items: [
     { id: 'i01', sec: 'mez', name: 'Hummus', desc: 'Chickpeas, tahini, lemon', price: 6, ing: ['chickpeas', 'tahini'], al: ['sesame'], kcal: null, pr: null, ft: null, cb: null, tr: tr('حمص'), conf: 0, opts: [] },
@@ -47,8 +47,8 @@ const PDF = Buffer.from('%PDF-1.4\n% test menu\n');
 const JPG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]);
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const FORM = {
-  name: 'Em Sherif', place: 'Beirut', slug: SLUG, currency: 'USD', tables: 24, owner: 'Owner@EmSherif.com',
-  staff: [{ email: 'sara@emsherif.com', role: 'manager' }, { email: 'ali@emsherif.com', role: 'waiter' }, { email: '', role: 'waiter' }],
+  name: 'Test Bistro', place: 'Beirut', slug: SLUG, currency: 'USD', tables: 24, owner: 'Owner@TestBistro.com',
+  staff: [{ email: 'sara@testbistro.com', role: 'manager' }, { email: 'ali@testbistro.com', role: 'waiter' }, { email: '', role: 'waiter' }],
   files: [{ name: 'page 2.jpg', data: b64(JPG) }, { name: 'page1.png', data: b64(PNG) }, { name: 'menu.pdf', data: b64(PDF) }]
 };
 
@@ -66,7 +66,7 @@ async function setup(o) {
       const file = path.join(a.cwd, 'venues', a.slug + '.json');
       if (fs.existsSync(file) && !a.force) throw new Error('venues/' + a.slug + '.json exists; pass force');
       fs.writeFileSync(file, JSON.stringify(PACK, null, 1));
-      return { pack: PACK, report: 'Menu import: Em Sherif\n5 items in 3 sections\n  Items with no price (0): none', path: file };
+      return { pack: PACK, report: 'Menu import: Test Bistro\n5 items in 3 sections\n  Items with no price (0): none', path: file };
     }
   };
   const env = Object.assign({ AALAYNA_SUPABASE_URL: server.url, ANTHROPIC_BASE_URL: server.url }, o.env || {});
@@ -166,9 +166,9 @@ test('a run from the form reaches the checkpoint, edits save to the pack, approv
     const end = evs.find(e => e.event === 'end');
     assert.deepEqual([end.data.code, end.data.status, end.data.kind], [0, 'waiting', 'start']);
     const menuEv = evs.find(e => e.event === 'step' && e.data.status === 'waiting');
-    assert.match(menuEv.data.summary, /^extracted 5 items in 3 sections\. Review venues\/em-sherif\.json/);
+    assert.match(menuEv.data.summary, /^extracted 5 items in 3 sections\. Review venues\/test-bistro\.json/);
     const log = evs.filter(e => e.event === 'log').map(e => e.data.line).join('\n');
-    assert.match(log, /\[1\/7\] register\s+done\s+Em Sherif, Beirut registered as em-sherif/);   // the terminal's lines
+    assert.match(log, /\[1\/7\] register\s+done\s+Test Bistro, Beirut registered as test-bistro/);   // the terminal's lines
     assert.match(log, /\[2\/7\] theme\s+done\s+brand #8A1C2B/);
     assert.match(log, /5 items in 3 sections/);                                           // the importer's report
     const ids = evs.filter(e => e.id).map(e => e.id);
@@ -181,24 +181,24 @@ test('a run from the form reaches the checkpoint, edits save to the pack, approv
     assert.deepEqual(fs.readFileSync(s.imports[0].files[2]), PDF);
     assert.equal(s.imports[0].rate, undefined);                                           // USD: no rate
     const st = s.state();
-    assert.equal(st.inputs.owner, 'owner@emsherif.com');
-    assert.deepEqual(st.inputs.staff, [{ email: 'sara@emsherif.com', role: 'manager' }, { email: 'ali@emsherif.com', role: 'waiter' }]);
+    assert.equal(st.inputs.owner, 'owner@testbistro.com');
+    assert.deepEqual(st.inputs.staff, [{ email: 'sara@testbistro.com', role: 'manager' }, { email: 'ali@testbistro.com', role: 'waiter' }]);
     assert.equal(s.server.rpcCalls('aal_admin_register_venue').length, 1);
 
     // the list and the venue view
     const list = (await s.call('GET', '/api/status')).json.venues;
-    assert.deepEqual(list.map(v => [v.slug, v.name, v.place, v.lastStep, v.status, v.running]), [[SLUG, 'Em Sherif', 'Beirut', 'menu', 'waiting', false]]);
+    assert.deepEqual(list.map(v => [v.slug, v.name, v.place, v.lastStep, v.status, v.running]), [[SLUG, 'Test Bistro', 'Beirut', 'menu', 'waiting', false]]);
     const view = (await s.call('GET', '/api/venues/' + SLUG)).json.venue;
     assert.deepEqual(view.steps.map(x => x.status), ['done', 'done', 'waiting', 'pending', 'pending', 'pending', 'pending']);
     assert.deepEqual(view.inputs.files, ['01-page-2.jpg', '02-page1.png', '03-menu.pdf']);
-    assert.deepEqual(view.pack, { path: 'venues/em-sherif.json', items: 5, sections: 3 });
+    assert.deepEqual(view.pack, { path: 'venues/test-bistro.json', items: 5, sections: 3 });
     assert.ok(!('venue' in view) && !JSON.stringify(view).includes(st.venue.owner_key));
 
     // the pack: read, edited, refused when broken
     const pk = (await s.call('GET', '/api/venues/' + SLUG + '/pack')).json;
     assert.deepEqual(pk.pack, PACK);
     assert.deepEqual(pk.blockers, []);
-    assert.match(pk.report, /Menu import: Em Sherif/);
+    assert.match(pk.report, /Menu import: Test Bistro/);
     const file = path.join(s.dir, 'venues', SLUG + '.json');
     const edited = JSON.parse(JSON.stringify(PACK));
     edited.items[1].price = 7.5;
@@ -250,16 +250,16 @@ test('a run from the form reaches the checkpoint, edits save to the pack, approv
     assert.equal(done.checks[11].name, 'revoke table 9999\'s code');
     assert.deepEqual(done.published, { version: 1, items: 4, sections: 3 });
     assert.deepEqual(done.tables, { count: 24 });
-    assert.equal(done.cards, '/onboarding/em-sherif-table-cards.html');
+    assert.equal(done.cards, '/onboarding/test-bistro-table-cards.html');
     assert.equal(done.welcome, true);
     assert.deepEqual(done.theme, { brand: '#8A1C2B', bg: '#F7F1E6', font: 'Playfair Display', source: 'model' });
     assert.deepEqual(done.checklist, [
-      '[ ] Print the table cards: open onboarding/em-sherif-table-cards.html in a browser and print on card stock',
-      '[ ] Send the welcome note: onboarding/em-sherif-welcome.md (add your WhatsApp number first)',
-      '[ ] If they want Google reviews, set their Google place id in admin.html (Venues, Em Sherif); there is no Places API key here',
+      '[ ] Print the table cards: open onboarding/test-bistro-table-cards.html in a browser and print on card stock',
+      '[ ] Send the welcome note: onboarding/test-bistro-welcome.md (add your WhatsApp number first)',
+      '[ ] If they want Google reviews, set their Google place id in admin.html (Venues, Test Bistro); there is no Places API key here',
       '[ ] Check brand #8A1C2B, background #F7F1E6 and font Playfair Display against their Instagram',
       '[x] Demo payments are off for this venue (set at registration)']);
-    assert.match(evs2.filter(e => e.event === 'log').map(e => e.data.line).join('\n'), /Em Sherif is live\. Still to do by hand:\n  \[ \] Print the table cards/);   // the terminal's list, unchanged
+    assert.match(evs2.filter(e => e.event === 'log').map(e => e.data.line).join('\n'), /Test Bistro is live\. Still to do by hand:\n  \[ \] Print the table cards/);   // the terminal's list, unchanged
     assert.equal((await s.call('GET', '/api/status')).json.venues[0].status, 'done');
 
     // the card sheet (with the token in the address, as a new tab opens it) and the welcome note
@@ -273,7 +273,7 @@ test('a run from the form reaches the checkpoint, edits save to the pack, approv
     const note = await s.call('GET', '/api/venues/' + SLUG + '/welcome');
     assert.equal(note.status, 200);
     assert.match(note.headers.get('content-type'), /^text\/plain/);
-    assert.match(note.text, /# Welcome to Aalayna, Em Sherif/);
+    assert.match(note.text, /# Welcome to Aalayna, Test Bistro/);
     assert.match(note.text, /Wassim, WhatsApp \[WhatsApp number\]/);
 
     // a finished venue: the stream is idle at once
@@ -310,7 +310,7 @@ test('a failed run shows the step message; resume continues it; reset forgets it
     // reset: the state file and the uploads go, Supabase and the pack stay
     const reset = await s.call('POST', '/api/venues/' + SLUG + '/reset', {});
     assert.equal(reset.status, 200, reset.text);
-    assert.match(reset.json.message, /removed onboarding\/em-sherif\.json\. Supabase is unchanged/);
+    assert.match(reset.json.message, /removed onboarding\/test-bistro\.json\. Supabase is unchanged/);
     assert.ok(!fs.existsSync(path.join(s.dir, 'onboarding', SLUG + '.json')));
     assert.ok(!fs.existsSync(path.join(s.dir, 'onboarding', SLUG)));
     assert.ok(fs.existsSync(path.join(s.dir, 'venues', SLUG + '.json')));
@@ -323,7 +323,7 @@ test('a failed run shows the step message; resume continues it; reset forgets it
     // started again: the venue is found again, not registered twice; the kept pack is shown unless re-read
     assert.equal((await s.call('POST', '/api/venues', FORM)).status, 202);
     evs = await s.stream(SLUG, 0);
-    assert.match(evs.filter(e => e.event === 'log').map(e => e.data.line).join('\n'), /already registered as em-sherif; reused it, keys unchanged/);
+    assert.match(evs.filter(e => e.event === 'log').map(e => e.data.line).join('\n'), /already registered as test-bistro; reused it, keys unchanged/);
     assert.match(evs.find(e => e.event === 'step' && e.data.status === 'waiting').data.summary, /^found 5 items/);
     assert.equal(s.imports.length, 1);
     await s.call('POST', '/api/venues/' + SLUG + '/reset', {});
@@ -383,15 +383,15 @@ test('the form is checked field by field; the LBP rate reaches the importer; fil
       assert.equal(r.json.field, field);
       assert.match(r.json.error, re);
     };
-    await bad({ slug: 'Em Sherif!' }, 'slug', /lower-case letters, digits and hyphens/);
+    await bad({ slug: 'Test Bistro!' }, 'slug', /lower-case letters, digits and hyphens/);
     await bad({ slug: '-em' }, 'slug', /not starting or ending with a hyphen/);
     await bad({ slug: 'index' }, 'slug', /reserved/);
     await bad({ name: '' }, 'name', /The name is required/);
-    await bad({ name: 'Em "Sherif"' }, 'name', /double quotes/);
+    await bad({ name: 'Test "Bistro"' }, 'name', /double quotes/);
     await bad({ tables: 0 }, 'tables', /1 to 200/);
     await bad({ tables: 2.5 }, 'tables', /1 to 200/);
     await bad({ owner: 'owner' }, 'owner', /not a valid email/);
-    await bad({ staff: [{ email: 'owner@emsherif.com', role: 'waiter' }] }, 'staff', /is the owner email already/);
+    await bad({ staff: [{ email: 'owner@testbistro.com', role: 'waiter' }] }, 'staff', /is the owner email already/);
     await bad({ staff: [{ email: 'a@b.co', role: 'chef' }] }, 'staff', /owner, manager or waiter/);
     await bad({ currency: 'EUR' }, 'currency', /USD or LBP/);
     await bad({ currency: 'LBP', rate: 12 }, 'rate', /1,000 to 10,000,000/);
@@ -409,7 +409,7 @@ test('the form is checked field by field; the LBP rate reaches the importer; fil
     // LBP: the rate goes to the importer, and survives a re-extract
     const r = await s.call('POST', '/api/venues', Object.assign({}, FORM, { currency: 'LBP', rate: 90000, slug: '' }));
     assert.equal(r.status, 202, r.text);
-    assert.equal(r.json.slug, 'em-sherif');                                              // derived from the name, as the command line does
+    assert.equal(r.json.slug, 'test-bistro');                                              // derived from the name, as the command line does
     await s.stream(SLUG, 0);
     assert.deepEqual([s.imports[0].currency, s.imports[0].rate], ['LBP', 90000]);
     assert.equal((await s.call('POST', '/api/venues/' + SLUG + '/reimport', {})).status, 202);
@@ -441,6 +441,6 @@ test('node tools/onboard.js ui starts the server on 127.0.0.1 and prints the add
   const ig = f => cp.spawnSync('git', ['check-ignore', '-q', f], { cwd: root }).status === 0;
   assert.ok(!ig('tools/onboard-ui.js'));
   assert.ok(!ig('tools/ui/index.html') && !ig('tools/ui/app.js') && !ig('tools/ui/app.css'));
-  assert.ok(ig('onboarding/em-sherif/uploads/01-menu.pdf'));
-  assert.ok(ig('onboarding/em-sherif/ui.json'));
+  assert.ok(ig('onboarding/test-bistro/uploads/01-menu.pdf'));
+  assert.ok(ig('onboarding/test-bistro/ui.json'));
 });

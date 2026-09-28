@@ -104,4 +104,4 @@ end $$;
 revoke all on function aal_register_venue(text, text) from public, anon, authenticated;
 
 -- Example (edit the names, run, copy the two keys it prints):
--- select * from aal_register_venue('Kababji', 'Lebanese Grill');
+-- select * from aal_register_venue('Mayda', 'Lebanese Grill');

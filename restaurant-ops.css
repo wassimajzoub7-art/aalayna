@@ -11,7 +11,7 @@
 .campaign-outcomes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px 0}
 .campaign-outcomes span{display:block;font-size:13px;color:var(--sub)}.campaign-outcomes strong{display:block;font-size:24px;color:var(--ink);margin-top:4px}
 @media(max-width:720px){.report-toolbar{align-items:flex-start;flex-direction:column;gap:8px}.report-toolbar label{width:100%;justify-content:space-between}.campaign-outcomes{grid-template-columns:1fr}.campaign-outcomes>div{display:flex;justify-content:space-between;gap:12px;align-items:center}.campaign-outcomes strong{font-size:20px;margin:0}}
-:root{--sub:#58655E;--faint:#66736B}
+:root{--sub:#5E544C;--faint:#6E635B}
 [hidden]{display:none!important}
 body{font-size:15px;line-height:1.5}
 main{max-width:1480px;padding:28px 36px 64px}
@@ -22,9 +22,9 @@ h2{font-size:22px;line-height:1.25}
 .card h3,.ops-row h3{font-size:17px;line-height:1.4}
 .card .cs,.cs{font-size:14px;line-height:1.6;margin-top:5px;color:var(--sub)}
 .k,.mini .k{font-size:12px;letter-spacing:.05em}.v{font-size:28px}.d{font-size:13px;line-height:1.5}
-.brand .n{font-size:29px}.brand .s{font-size:12px;color:#B1C7B9;letter-spacing:.03em}
-.ni{font-size:15px;min-height:46px;padding:11px 14px;color:#BDD0C4}
-.side-f{font-size:12px;color:#B1C7B9}
+.brand .s{font-size:11px;color:#B9C7C4;letter-spacing:.06em}
+.ni{font-size:15px;min-height:46px;padding:11px 14px;color:#D7E3E2}
+.side-f{font-size:12px;color:#B9C7C4}
 .btn{font-size:14px;min-height:44px;padding:10px 16px;border-radius:10px}
 .btn:disabled{opacity:.5;cursor:default}
 .in,.cf .in,#guest-search{display:block;width:100%;font:inherit;font-size:16px;line-height:1.45;color:var(--ink);background:var(--surface);border:1px solid #CAD3CB;border-radius:10px;min-height:46px;padding:11px 13px;margin-top:6px;max-width:100%}
@@ -65,7 +65,7 @@ textarea.in{resize:vertical;min-height:132px}.in::placeholder{color:#69776E;opac
 .fl-sv{min-height:44px;font-size:14px}.fl-map{width:100%;max-width:100%;height:300px}.fl-lbl{font-size:11px}.fl-t{font-size:14px}.fl-pool{font-size:14px;line-height:1.5;margin-top:14px}.fl-pool input{width:18px;height:18px}
 .tiprow .name{font-size:15px}.tiprow .meta{font-size:13px}
 @media(max-width:1120px){main{padding:24px}.live-grid{grid-template-columns:1fr}.side{width:190px}}
-@media(max-width:760px){body{display:block}.side{position:sticky;top:0;z-index:50;width:100%;height:auto}.brand{padding:12px 16px;display:flex;align-items:center;gap:14px}.brand .n{font-size:25px}.brand .s{margin:0;font-size:11px}.side nav{display:flex;overflow-x:auto;padding:6px 10px;gap:4px}.ni{width:auto;white-space:nowrap;min-height:44px;margin:0;font-size:14px;padding:10px 12px}.ni .bg{margin-left:3px}.side-f{display:none}main{padding:18px 16px 40px}.top{align-items:center;gap:10px;margin-bottom:18px}h1{font-size:25px}.sub{font-size:14px}.top .actions .btn{padding:8px 10px}.card{padding:18px}.g3{grid-template-columns:1fr}.service-summary{gap:8px}.service-summary>div{padding-inline:10px}.service-summary strong{font-size:25px}.service-summary span{font-size:12px}.ops-heading{gap:10px;flex-wrap:wrap}.ops-dialog{padding:20px;max-height:calc(100dvh - 24px)}.ops-tabs{padding-bottom:16px}.ops-row{flex-direction:column}.setr .rfb{flex:1}.fl-map{height:300px}.ops-campaign>h3{display:block;margin-bottom:6px}}
+@media(max-width:760px){body{display:block}.side{position:sticky;top:0;z-index:50;width:100%;height:auto}.brand{padding:12px 16px;display:flex;align-items:center;gap:14px}.brand .n svg{height:17px}.brand .s{margin:0;font-size:11px}.side nav{display:flex;overflow-x:auto;padding:6px 10px;gap:4px}.ni{width:auto;white-space:nowrap;min-height:44px;margin:0;font-size:14px;padding:10px 12px}.ni .bg{margin-left:3px}.side-f{display:none}main{padding:18px 16px 40px}.top{align-items:center;gap:10px;margin-bottom:18px}h1{font-size:25px}.sub{font-size:14px}.top .actions .btn{padding:8px 10px}.card{padding:18px}.g3{grid-template-columns:1fr}.service-summary{gap:8px}.service-summary>div{padding-inline:10px}.service-summary strong{font-size:25px}.service-summary span{font-size:12px}.ops-heading{gap:10px;flex-wrap:wrap}.ops-dialog{padding:20px;max-height:calc(100dvh - 24px)}.ops-tabs{padding-bottom:16px}.ops-row{flex-direction:column}.setr .rfb{flex:1}.fl-map{height:300px}.ops-campaign>h3{display:block;margin-bottom:6px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .fl-t .tn{font-size:14px}.fl-t .ts{font-size:10px;max-width:42px}.fl-t{width:48px;height:48px;margin:-24px 0 0 -24px}
@@ -113,3 +113,31 @@ textarea.in{resize:vertical;min-height:132px}.in::placeholder{color:#69776E;opac
 .bill-row-actions{flex-direction:column;align-items:stretch;margin-top:0}
 #check-balances .ops-row>.bill-row-actions{width:auto;flex-shrink:0}
 @media(max-width:760px){.bill-entry-top{grid-template-columns:1fr}.bill-line{flex-direction:column;align-items:stretch;gap:8px}.bill-line-end{justify-content:space-between;flex-wrap:wrap}.bill-foot .ops-actions{width:100%}.bill-foot .ops-actions .btn{flex:1}#check-balances .ops-row>.bill-row-actions{flex-direction:row;width:100%}}
+
+/* Aalayna brand on the owner dashboard's own chrome: Saira to read, Kode Mono for small labels, red for
+   the main action, petrol for the frame, square corners and hard or no shadows. Restaurant data keeps its look. */
+h1,h2,h3,.card h3{font-weight:600;letter-spacing:-.01em}
+.k,.mini .k,.fl-lbl,.dish-table th,.side-f,.glr .tg,.lock .tag,.rftag{font-family:var(--font-label)}
+.owner-kpis .k{font-family:var(--font-text)}
+.card,.btn,.in,.cf .in,#guest-search,.mini,.note,.rfb,.rftag,.pill,.toast,.status-badge,.report-toolbar,.report-toolbar select,
+.metric-definitions,.sample-notice,.ops-dialog,.ops-tabs button,.ops-campaign .ops-message,.ni,.ni .bg,.av,.glr .tg,.lock .tag,
+.fl-sv,.fl-add,.fl-map,.fl-t.sq,.bill-result,.col,.track,.fill,.dot,.legend i{border-radius:0}
+.card{box-shadow:none}
+.ops-dialog{box-shadow:8px 8px 0 var(--ink)}
+.ops-dialog::backdrop{background:rgba(33,27,22,.45);backdrop-filter:none}
+.fl-t.drag{box-shadow:4px 4px 0 var(--ink)}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-hover);border-color:var(--brand-hover)}
+.btn:focus-visible,.in:focus-visible,summary:focus-visible,.ni:focus-visible,.ops-tabs button:focus-visible,.bill-result:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.ni.on{background:rgba(250,246,241,.12);color:#fff;box-shadow:inset 3px 0 0 #F6C39F}
+.ni .bg{background:#F6C39F;color:#173E43;font-family:var(--font-label)}
+.brand a.n{text-decoration:none}
+.sample-notice{font-size:13px}
+.staff-gate .card{box-shadow:8px 8px 0 var(--ink);border-color:var(--ink)}
+.staff-gate a,.staff-bar a{color:var(--brand-text)}
+.staff-links{font-size:13px}
+/* A venue link (?font=) sets the restaurant's font on body with !important (aalayna-store.js); the dashboard is
+   Aalayna's tool, so its chrome keeps Saira. */
+html body,html body button,html body input,html body textarea,html body select{font-family:var(--font-text)!important}
+main a{color:var(--brand-text)}

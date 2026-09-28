@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* Menu importer: a restaurant's menu (one or more PDFs, or photos) becomes a menu
-   pack in venues/<slug>.json, the format of venues/kababji.json, which admin.html
+   pack in venues/<slug>.json, the format of venues/mayda.json, which admin.html
    offers under "Menu pack" and aalayna-store.js loads with ?menu=<slug>.
 
-     node tools/import-menu.js --name "Kababji" --slug kababji --currency USD menu.pdf
+     node tools/import-menu.js --name "Mayda" --slug mayda --currency USD menu.pdf
      node tools/import-menu.js --name "Em Sherif" --slug em-sherif --currency LBP p1.jpg p2.jpg
 
    The model only transcribes (Anthropic Messages API, one forced tool call per
@@ -437,7 +437,9 @@ function answerProblems(a, where) {
 }
 
 /* ---------- post-processing ------------------------------------------------------ */
-function clean(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }
+/* Collapses runs of ordinary whitespace but keeps no-break spaces (U+00A0, U+202F):
+   French menus set a narrow no-break space before : ; ? ! and it must survive. */
+function clean(s) { return String(s == null ? '' : s).replace(/[^\S\u00a0\u202f]+/g, ' ').trim(); }
 function key(s) { return clean(s).toLowerCase(); }
 function ascii(s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
 function round2(n) { return Math.round(n * 100) / 100; }
@@ -550,7 +552,7 @@ function buildPack(answers, opts) {
       }) };
     });
     if (price == null) flags.nullPrices.push({ id: id, name: name, section: sec.name });
-    /* key order matches venues/kababji.json */
+    /* key order matches venues/mayda.json */
     return { id: id, sec: sec.id, name: name, desc: clean(x.description), price: price, ing: ing, al: al,
       kcal: null, pr: null, ft: null, cb: null, tr: tr,
       /* conf 0: allergens read off a printed menu are not the kitchen's confirmation;

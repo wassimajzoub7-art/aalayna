@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
-<title>Aalayna × Hallab 1881 · full flow</title>
+<title>Mayda · Aalayna</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
@@ -94,6 +94,9 @@
   .m-head .vn{font-family:'Amiri',serif;font-size:19px;font-weight:700}
   .m-head .vs{font-size:11px;color:var(--sub);margin-top:2px}
   .sels{position:absolute;top:16px;inset-inline-end:14px;z-index:30;display:flex;gap:5px}
+  #v-land{position:relative}
+  /* the landing pickers get their own strip above the crest */
+  #v-land .hero{box-sizing:content-box;padding-top:56px}#v-land .crest{top:calc(50% + 28px)}.crest .est:empty{display:none}
   .sel{position:relative;flex:0 0 auto}
   .sel select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--surface);
     border-radius:8px;padding:6px 18px 6px 9px;font-size:10.5px;font-weight:600;color:var(--ink);
@@ -135,7 +138,7 @@
   .mailbtn:hover{background:rgba(255,255,255,.1)}
   .mailbtn.sent{background:rgba(255,255,255,.18);border-color:transparent;cursor:default}
   .consents{width:100%;max-width:280px;margin:10px auto 0;display:flex;flex-direction:column;gap:6px;
-    text-align:left}
+    text-align:start}
   .consents label{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#CBDDD2;cursor:pointer}
   .consents input{accent-color:var(--gold);width:14px;height:14px;margin:0}
   .consents.done{opacity:.55;pointer-events:none}
@@ -162,7 +165,7 @@
   .wh-s b{display:block;color:var(--green);font-size:12px;margin-bottom:3px}
   .cardhead{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
   .cardhead .lock{font-size:12px}
-  .cardby{margin-left:auto;font-size:10px;color:var(--faint);font-weight:500;letter-spacing:.04em}
+  .cardby{margin-inline-start:auto;font-size:10px;color:var(--faint);font-weight:500;letter-spacing:.04em}
   .fldc{margin-top:12px}
   .lbc{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sub);margin-bottom:5px}
   .inc{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px;font-size:14px;
@@ -173,7 +176,7 @@
   .r-paid{opacity:.5}
   .r-paid .p{text-decoration:line-through}
   .paidtag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:.04em;color:var(--green);
-    background:var(--green-bg);border-radius:5px;padding:1px 6px;margin-left:6px;text-decoration:none}
+    background:var(--green-bg);border-radius:5px;padding:1px 6px;margin-inline-start:6px;text-decoration:none}
   .pl.dis{opacity:.45;pointer-events:none}
   .fc{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;
     font-size:11px;font-weight:500;color:var(--sub);cursor:pointer;font-family:inherit;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
@@ -256,13 +259,13 @@
   .r-item{display:flex;justify-content:space-between;gap:10px;padding:10px 0;
     border-bottom:1px solid var(--line-soft);font-size:12.5px}
   .r-item:last-of-type{border-bottom:none}
-  .r-item .q{color:var(--sub);font-size:11px;margin-right:6px}
+  .r-item .q{color:var(--sub);font-size:11px;margin-inline-end:6px}
   .r-item .p{font-weight:600}
   .r-total{display:flex;justify-content:space-between;align-items:baseline;padding:12px 2px 2px;
     border-top:1px solid var(--ink);margin-top:6px}
   .r-total .l{font-size:10.5px;letter-spacing:.1em;color:var(--sub);font-weight:600}
   .r-total .a{font-size:24px;font-weight:600;letter-spacing:-.01em}
-  .r-ll{text-align:right;font-size:10.5px;color:var(--sub);padding:2px 2px 4px}
+  .r-ll{text-align:end;font-size:10.5px;color:var(--sub);padding:2px 2px 4px}
   .hint{font-size:11.5px;color:var(--sub);margin-top:11px;line-height:1.55;text-align:center}
 
   /* ── settle ── */
@@ -339,7 +342,7 @@
     font-size:8px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.02em}
   .pm .pn{font-size:12.5px;font-weight:600}
   .pm .pd{font-size:10.5px;color:var(--sub);margin-top:1px}
-  .radio{margin-left:auto;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);
+  .radio{margin-inline-start:auto;width:17px;height:17px;border-radius:50%;border:1.5px solid var(--line);
     flex-shrink:0;transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
   .pm.on .radio{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px var(--surface)}
   .cashnote{background:var(--amber-bg);border:1px solid var(--amber-line);border-radius:8px;
@@ -353,6 +356,8 @@
   .chip{border:1px solid var(--amber-line);background:var(--surface);border-radius:7px;padding:9px 2px;
     cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--amber);transition:background .12s,border-color .12s,color .12s,transform .12s,box-shadow .12s,opacity .12s}
   .chip.on{background:var(--green);border-color:var(--green);color:#fff}
+  /* lira notes are long: two per row */
+  .chg.lbp .chg-row{grid-template-columns:repeat(2,1fr)}
   .chg-sub{font-size:10.5px;color:var(--amber);margin:11px 0 6px;font-weight:600}
   .cur{display:flex;gap:6px}
   .curb{flex:1;border:1px solid var(--amber-line);background:var(--surface);border-radius:7px;padding:8px 2px;
@@ -387,7 +392,7 @@
   .done-p{font-size:13px;color:#C9D8CF;line-height:1.7;max-width:270px;text-wrap:balance}
   .done-p b{color:#fff;font-weight:600}
   .twoup{margin-top:20px;width:100%;display:flex;flex-direction:column;gap:8px}
-  .offer{display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;
+  .offer{display:flex;align-items:center;gap:11px;text-align:start;width:100%;cursor:pointer;
     background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);border-radius:10px;
     padding:12px;font-family:inherit;transition:background .12s}
   .offer:active{background:rgba(255,255,255,.14)}
@@ -414,9 +419,15 @@
   @keyframes scrimIn{from{opacity:0}to{opacity:1}}
   @keyframes scrimOut{from{opacity:1}to{opacity:0}}
   .grab{width:34px;height:4px;border-radius:3px;background:var(--line);margin:0 auto 14px}
-  .sh-t{font-size:16px;font-weight:600;text-align:left;letter-spacing:-.01em}
-  .sh-s{font-size:12px;color:var(--sub);text-align:left;margin-top:5px;line-height:1.55}
-  [dir="rtl"] .sh-t,[dir="rtl"] .sh-s{text-align:right}
+  .sh-t{font-size:16px;font-weight:600;text-align:start;letter-spacing:-.01em}
+  .sh-s{font-size:12px;color:var(--sub);text-align:start;margin-top:5px;line-height:1.55}
+  /* Arabic: the whole app (#app) is dir=rtl; arrows point the other way */
+  [dir="rtl"] .back,[dir="rtl"] .details-arrow{transform:scaleX(-1)}
+  [dir="rtl"] .rc-r,[dir="rtl"] .consents label{text-align:start}
+  .rv-alt{display:block;margin:2px auto 0;background:none;border:0;color:var(--sub);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;min-height:40px}
+  .rv-alt[hidden]{display:none}
+  #review-note{display:flex;flex-direction:column;gap:8px}
+  #review-note[hidden]{display:none}
   .idet .sh-t{font-size:20px;line-height:1.2;margin-top:2px}
   .idet .sh-s{font-size:12.5px;margin-top:8px}
   .idet .sh-t::after{content:'';display:block;width:38px;height:1.5px;background:var(--gold);
@@ -525,7 +536,7 @@
   body{padding:0;background:#EEF1EC}
   .stage,.switcher,.note-out{display:none}
   .phone{width:480px;max-width:100%;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:0 0 60px #173D2510}
-  .screen::before{content:'Preview · no money moves';position:absolute;inset:0 0 auto;height:28px;display:flex;align-items:center;justify-content:center;background:#EEF3ED;color:#43594D;font-size:12px;z-index:60}
+  .screen::before{content:attr(data-preview);position:absolute;inset:0 0 auto;height:28px;display:flex;align-items:center;justify-content:center;background:#EEF3ED;color:#43594D;font-size:12px;z-index:60}
   .view{top:28px}
   .scroll{min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
   .back{width:44px;height:44px;font-size:20px;top:12px}
@@ -590,148 +601,157 @@
 </head>
 <body>
 <div class="stage">
-  <div class="t">aalay<b>na</b> &times; <span id="v-name-stage">Hallab 1881</span></div>
+  <div class="t">aalay<b>na</b> &times; <span id="v-name-stage">Mayda</span></div>
   <div class="s">Interactive demo · sample data · no money moves</div>
   <p style="font-size:14px;margin:12px 0"><a href="index.html">Back to website</a> · <a id="staff-demo" href="dashboard.html" target="_blank" rel="noopener">Open staff demo</a></p>
 </div>
-<div class="phone"><div class="screen">
+<!-- #app is the guest app: its dir follows the language (rtl in Arabic), so every view and sheet mirrors -->
+<div class="phone" id="app" dir="ltr"><div class="screen" id="screen" data-preview="Preview · no money moves">
   <div class="net-banner" id="net-banner" role="status" aria-live="polite" hidden></div>
   <!-- ================= 1. LANDING ================= -->
   <div class="view on" id="v-land">
+    <div class="sels sels-land">
+      <div class="sel"><select id="langsel-land" onchange="setLang(this.value)" data-i18n-aria="langLabel" aria-label="Language">
+        <option value="en" lang="en">EN</option><option value="fr" lang="fr">FR</option><option value="ar" lang="ar">AR</option>
+      </select></div>
+      <div class="sel"><select id="ccysel-land" onchange="setCcy(this.value)" data-i18n-aria="ccyLabel" aria-label="Currency">
+        <option value="usd" data-i18n="ccyUsd">USD $</option><option value="lbp" data-i18n="ccyLbp">LBP&nbsp;LL</option>
+      </select></div>
+    </div>
     <div class="hero">
       <div class="pat"></div>
       <div class="crest">
-        <div class="est" id="v-est">EST. 1881 &middot; TRIPOLI</div>
-        <div class="name" id="v-name-crest">Hallab 1881</div>
-        <div class="place" id="v-place">Kasr El Helou &middot; Riad El Solh Street</div>
+        <div class="est" id="v-est">LEBANESE GRILL</div>
+        <div class="name" id="v-name-crest">Mayda</div>
+        <div class="place" id="v-place">Lebanese Grill</div>
         <div class="rule"></div>
       </div>
     </div>
     <div class="land-body">
-      <div class="greet">Ahla w sahla</div>
+      <div class="greet" data-i18n="greet">Ahla w sahla</div>
       <div class="tbl" id="land-tbl"><span class="dot"></span>Table 12 &middot; sample bill</div>
-      <div class="note">
+      <div class="note" data-i18n="landNote">
         Explore the menu. When you’re ready, split the bill your way and pay from your table.
       </div>
     </div>
     <div class="dock">
-      <button class="cta cta-green" onclick="go('v-menu')"><span class="sheen"></span>See the menu</button>
-      <button class="cta cta-line" onclick="go('v-bill')">Open the bill &middot; <b id="land-tot">$152.50</b></button>
-      <div class="powered">powered by <b>Aalayna</b></div>
+      <button class="cta cta-green" onclick="go('v-menu')"><span class="sheen"></span><span data-i18n="seeMenu">See the menu</span></button>
+      <button class="cta cta-line" onclick="go('v-bill')"><span data-i18n="openBill">Open the bill</span> &middot; <b id="land-tot">$0.00</b></button>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
     </div>
   </div>
   <!-- ================= 2. MENU ================= -->
   <div class="view" id="v-menu">
-    <button class="back" onclick="go('v-land')">&#8592;</button>
+    <button class="back" onclick="go('v-land')" data-i18n-aria="back" aria-label="Back">&#8592;</button>
     <div class="m-head">
-      <div class="vn" id="v-name-menu">Hallab 1881</div>
-      <div class="vs" id="m-sub">Table 12 &middot; Kasr El Helou</div>
+      <div class="vn" id="v-name-menu">Mayda</div>
+      <div class="vs" id="m-sub">Table 12 &middot; Lebanese Grill</div>
     </div>
     <div class="sels">
-      <div class="sel"><select id="langsel" onchange="setLang(this.value)" aria-label="Language">
-        <option value="en">EN</option><option value="fr">FR</option><option value="ar">AR</option>
+      <div class="sel"><select id="langsel" onchange="setLang(this.value)" data-i18n-aria="langLabel" aria-label="Language">
+        <option value="en" lang="en">EN</option><option value="fr" lang="fr">FR</option><option value="ar" lang="ar">AR</option>
       </select></div>
-      <div class="sel"><select id="ccysel" onchange="setCcy(this.value)" aria-label="Currency">
-        <option value="usd">USD $</option><option value="lbp">LBP&nbsp;LL</option>
+      <div class="sel"><select id="ccysel" onchange="setCcy(this.value)" data-i18n-aria="ccyLabel" aria-label="Currency">
+        <option value="usd" data-i18n="ccyUsd">USD $</option><option value="lbp" data-i18n="ccyLbp">LBP&nbsp;LL</option>
       </select></div>
     </div>
     <div class="ftrig" id="ftrig">
       <button class="fbtn" onclick="openOv('ov-filters')">
-        <span class="fi">&#9776;</span> Dietary filters
+        <span class="fi">&#9776;</span> <span data-i18n="dietFilters">Dietary filters</span>
         <span class="fbadge" id="fbadge" style="display:none">0</span>
       </button>
       <span class="fsum" id="fsum"></span>
     </div>
     <div class="cats" id="cats"><span id="ink"></span></div>
     <div class="scroll" id="menuscroll" style="padding-bottom:96px"></div>
-    <button class="billpill" onclick="go('v-bill')">Open the bill <span class="amt" id="pill-tot">$152.50</span></button>
+    <button class="billpill" onclick="go('v-bill')"><span data-i18n="openBill">Open the bill</span> <span class="amt" id="pill-tot">$0.00</span></button>
   </div>
   <!-- ================= 3. BILL ================= -->
   <div class="view" id="v-bill">
-    <button class="back" onclick="go('v-menu')">&#8592;</button>
+    <button class="back" onclick="go('v-menu')" data-i18n-aria="back" aria-label="Back">&#8592;</button>
     <div class="scroll b-body">
       <div class="b-title" id="bill-title">Table 12</div>
-      <div class="b-sub" id="bill-sub">4 guests &middot; opened 8:42 pm</div>
+      <div class="b-sub" id="bill-sub" hidden></div>
       <div class="receipt">
-        <div class="r-crest" id="v-name-receipt">HALLAB 1881</div>
+        <div class="r-crest" id="v-name-receipt">MAYDA</div>
         <div id="r-items"></div>
-        <div class="r-total"><div class="l">TOTAL</div><div class="a" id="r-tot">$152.50</div></div>
-        <div class="r-ll" id="r-ll">&asymp; LL 13,633,500</div>
+        <div class="r-total"><div class="l" id="r-tot-l">TOTAL</div><div class="a" id="r-tot">$0.00</div></div>
+        <div class="r-ll" id="r-ll"></div>
       </div>
     </div>
     <div class="dock">
-      <button class="cta cta-green" onclick="go('v-settle')"><span class="sheen"></span>Settle my share</button>
-      <div class="powered">powered by <b>Aalayna</b></div>
+      <button class="cta cta-green" onclick="go('v-settle')"><span class="sheen"></span><span data-i18n="settleShare">Settle my share</span></button>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
     </div>
   </div>
   <!-- ================= 4. SETTLE ================= -->
   <div class="view" id="v-settle">
-    <button class="back" onclick="go('v-bill')">&#8592;</button>
+    <button class="back" onclick="go('v-bill')" data-i18n-aria="back" aria-label="Back">&#8592;</button>
     <div class="scroll b-body">
-      <div class="b-title">How are we doing this?</div>
-      <div class="b-sub">Nobody has to work out the maths</div>
+      <div class="b-title" data-i18n="splitTitle">How are we doing this?</div>
+      <div class="b-sub" data-i18n="splitSub">Nobody has to work out the maths</div>
       <div class="seg">
-        <button id="s-even" class="on" onclick="mode('even')">Evenly</button>
-        <button id="s-item" onclick="mode('item')">My items</button>
-        <button id="s-amt" onclick="mode('amt')">Custom amount</button>
-        <button id="s-all" onclick="mode('all')">All of it</button>
+        <button id="s-even" class="on" onclick="mode('even')" data-i18n="mEven">Evenly</button>
+        <button id="s-item" onclick="mode('item')" data-i18n="mItem">My items</button>
+        <button id="s-amt" onclick="mode('amt')" data-i18n="mAmt">Custom amount</button>
+        <button id="s-all" onclick="mode('all')" data-i18n="mAll">All of it</button>
       </div>
       <div id="evenwrap">
         <div class="ppl">
-          <div class="lab">How many of you?</div>
+          <div class="lab" data-i18n="howMany">How many of you?</div>
           <div class="stp">
-            <button onclick="ppl(-1)">&minus;</button>
+            <button onclick="ppl(-1)" aria-label="&minus;">&minus;</button>
             <div class="n" id="pn">4</div>
-            <button onclick="ppl(1)">+</button>
+            <button onclick="ppl(1)" aria-label="+">+</button>
           </div>
         </div>
       </div>
       <div id="itemwrap" style="display:none">
         <div class="picklist" id="picklist"></div>
-        <div class="hint">Tap what was yours. The rest stays on the table for the others.</div>
+        <div class="hint" data-i18n="itemHint">Tap what was yours. The rest stays on the table for the others.</div>
       </div>
       <div id="amtwrap" style="display:none">
         <div class="amtbox">
-          <span class="acur">$</span>
+          <span class="acur" id="amt-cur">$</span>
           <input class="amtin" id="amt-in" inputmode="decimal" placeholder="0.00" oninput="calcShare()">
         </div>
         <div class="hint" id="amt-hint"></div>
       </div>
       <div class="share">
-        <div class="k">YOUR SHARE</div>
-        <div class="v" id="sh-v">$38.13</div>
-        <div class="ll" id="sh-ll">&asymp; LL 3,408,522</div>
+        <div class="k" data-i18n="yourShare">YOUR SHARE</div>
+        <div class="v" id="sh-v">$0.00</div>
+        <div class="ll" id="sh-ll"></div>
       </div>
-      <div class="hint" id="restnote">$114.37 left for the other three. They'll see it update live.</div>
+      <div class="hint" id="restnote"></div>
     </div>
     <div class="dock">
-      <button class="cta cta-green" id="continue-btn" onclick="go('v-pay')"><span class="sheen"></span>Continue &middot; $38.13</button>
-      <div class="powered">powered by <b>Aalayna</b></div>
+      <button class="cta cta-green" id="continue-btn" onclick="go('v-pay')"><span class="sheen"></span>Continue</button>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
     </div>
   </div>
   <!-- ================= 5. PAY ================= -->
   <div class="view" id="v-pay">
-    <button class="back" onclick="go('v-settle')">&#8592;</button>
+    <button class="back" onclick="go('v-settle')" data-i18n-aria="back" aria-label="Back">&#8592;</button>
     <div class="scroll" style="padding:88px 20px 130px">
       <div class="amt">
         <div class="who" id="pay-who">Total to pay &middot; Table 12</div>
-        <div class="display big" id="bigamt">$38.13</div>
-        <div class="ll" id="bigll">&asymp; LL 3,408,522</div>
-        <div class="pay-breakdown"><span>Bill share<b id="pay-share">$38.13</b></span><span>Tip<b id="pay-tip">$3.81</b></span></div>
+        <div class="display big" id="bigamt">$0.00</div>
+        <div class="ll" id="bigll"></div>
+        <div class="pay-breakdown"><span><span data-i18n="billShare">Bill share</span><b id="pay-share">$0.00</b></span><span><span data-i18n="tip">Tip</span><b id="pay-tip">$0.00</b></span></div>
       </div>
       <div class="tipwrap">
         <div class="tiphead">
-          <div class="l" id="tip-who">Something for Abou Karim?</div>
+          <div class="l" id="tip-who">Something for your server?</div>
         </div>
         <div class="tips">
-          <button class="tipb" onclick="setTip(this,0)"><div class="tp">No tip</div><div class="tv">&nbsp;</div></button>
-          <button class="tipb" onclick="setTip(this,.05)"><div class="tp">5%</div><div class="tv" id="tv5">$1.91</div></button>
-          <button class="tipb on" onclick="setTip(this,.10)"><div class="tp">10%</div><div class="tv" id="tv10">$3.81</div></button>
-          <button class="tipb" onclick="setTip(this,.15)"><div class="tp">15%</div><div class="tv" id="tv15">$5.72</div></button>
-          <button class="tipb" id="tipb-c" onclick="tipCustom(this)"><div class="tp">Other</div><div class="tv">&nbsp;</div></button>
+          <button class="tipb" onclick="setTip(this,0)"><div class="tp" data-i18n="noTip">No tip</div><div class="tv">&nbsp;</div></button>
+          <button class="tipb" onclick="setTip(this,.05)"><div class="tp" id="tp5">5%</div><div class="tv" id="tv5">$0.00</div></button>
+          <button class="tipb on" onclick="setTip(this,.10)"><div class="tp" id="tp10">10%</div><div class="tv" id="tv10">$0.00</div></button>
+          <button class="tipb" onclick="setTip(this,.15)"><div class="tp" id="tp15">15%</div><div class="tv" id="tv15">$0.00</div></button>
+          <button class="tipb" id="tipb-c" onclick="tipCustom(this)"><div class="tp" data-i18n="other">Other</div><div class="tv">&nbsp;</div></button>
         </div>
         <div class="tipcw" id="tipcw" style="display:none">
-          <span class="acur" style="font-size:15px">$</span>
+          <span class="acur" id="tip-cur" style="font-size:15px">$</span>
           <input class="amtin" id="tip-in" style="font-size:17px;padding:6px 0" inputmode="decimal"
             placeholder="0.00" oninput="tipTyped()">
         </div>
@@ -739,38 +759,38 @@
       <div class="pays">
         <div id="pm-whish" class="pm on" role="button" tabindex="0" aria-pressed="true" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'whish')">
           <div class="mark" style="background:#E4002B">whish</div>
-          <div><div class="pn">Whish Money</div><div class="pd">Opens with the amount filled in</div></div>
+          <div><div class="pn">Whish Money</div><div class="pd" data-i18n="whishDesc">Opens with the amount filled in</div></div>
           <div class="radio"></div>
         </div>
         <div id="pm-card" class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'card')">
           <div class="mark" style="background:#1A1F71">VISA</div>
-          <div><div class="pn">Card</div><div class="pd">Visa, Mastercard, Amex</div></div>
+          <div><div class="pn" data-i18n="cardName">Card</div><div class="pd">Visa, Mastercard, Amex</div></div>
           <div class="radio"></div>
         </div>
         <div id="pm-cash" class="pm" role="button" tabindex="0" aria-pressed="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" onclick="pick(this,'cash')">
-          <div class="mark" style="background:#3F8F6B">CASH</div>
-          <div><div class="pn">Paying cash</div><div class="pd">Staff confirm after collection</div></div>
+          <div class="mark" style="background:#3F8F6B" data-i18n="cashMark">CASH</div>
+          <div><div class="pn" data-i18n="cashName">Paying cash</div><div class="pd" data-i18n="cashDesc">Staff confirm after collection</div></div>
           <div class="radio"></div>
         </div>
-        <div class="rails-note" id="rails-note" hidden>Card and Whish arrive with the payment provider.</div>
+        <div class="rails-note" id="rails-note" data-i18n="railsNote" hidden>Card and Whish arrive with the payment provider.</div>
       </div>
       <div class="chg" id="chg">
-        <div class="chg-q">What are you handing over?</div>
+        <div class="chg-q" data-i18n="chgQ">What are you handing over?</div>
         <div class="chg-row">
-          <button class="chip" onclick="setNote(this,20)">$20</button>
-          <button class="chip" onclick="setNote(this,50)">$50</button>
-          <button class="chip" onclick="setNote(this,100)">$100</button>
-          <button class="chip" onclick="setNote(this,0)">Exact</button>
+          <button class="chip" id="note-1" onclick="setNote(this,noteValue(0))">$20</button>
+          <button class="chip" id="note-2" onclick="setNote(this,noteValue(1))">$50</button>
+          <button class="chip" id="note-3" onclick="setNote(this,noteValue(2))">$100</button>
+          <button class="chip" onclick="setNote(this,0)" data-i18n="exact">Exact</button>
         </div>
-        <div class="chg-out" id="chgout">Your server comes <b>once</b>, with your change already counted.</div>
+        <div class="chg-out" id="chgout" data-i18n-html="chgOnce">Your server comes <b>once</b>, with your change already counted.</div>
       </div>
-      <div class="cashnote" id="cashnote">
+      <div class="cashnote" id="cashnote" data-i18n-html="cashNote">
         Your cash request stays <b>awaiting collection</b> until staff confirm it. Please wait for your server before leaving.
       </div>
     </div>
     <div class="dock">
-      <button class="cta cta-green" id="paybtn" onclick="settle()"><span class="sheen"></span>Pay $41.94</button>
-      <div class="powered">powered by <b>Aalayna</b></div>
+      <button class="cta cta-green" id="paybtn" onclick="settle()"><span class="sheen"></span>Pay</button>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
     </div>
   </div>
   <!-- ================= 6. SUCCESS ================= -->
@@ -779,32 +799,32 @@
       <div class="pat2"></div><div class="burst" id="burst"></div><div class="vig"></div>
       <div class="done-body">
         <div class="seal" id="result-seal">&#10003;</div>
-        <div class="est2" id="v-est2">Est. 1881 &middot; Tripoli</div>
+        <div class="est2" id="v-est2">Mayda</div>
         <h2 class="display shukran" id="result-title">Shukran.</h2>
-        <div class="ar">&#1588;&#1603;&#1585;&#1575;&#1611;</div>
+        <div class="ar" id="thanks-ar" lang="ar">&#1588;&#1603;&#1585;&#1575;&#1611;</div>
         <div class="rule2"></div>
         <div class="rcpt">
-          <div class="rc-amt" id="rc-amt">$41.94</div>
+          <div class="rc-amt" id="rc-amt"></div>
           <div class="rc-rows">
-            <div class="rc-r"><span id="method-label">Paid via</span><b id="rc-method">Whish Money</b></div>
-            <div class="rc-r"><span>Table</span><b id="rc-table">12</b></div>
+            <div class="rc-r"><span id="method-label">Paid via</span><b id="rc-method"></b></div>
+            <div class="rc-r"><span data-i18n="table">Table</span><b id="rc-table">12</b></div>
           </div>
-          <div class="rc-note" id="payment-status" role="status" aria-live="polite">Demo payment confirmed</div>
+          <div class="rc-note" id="payment-status" role="status" aria-live="polite"></div>
         </div>
 
         <div class="mailrc" id="mailrc">
           <input class="mailin" id="mail-in" type="text" inputmode="text"
-            placeholder="WhatsApp (+code) or email" aria-label="Optional WhatsApp number with any country code, or email">
+            placeholder="WhatsApp (+code) or email" data-i18n-ph="mailPh" data-i18n-aria="mailAria" aria-label="Optional WhatsApp number with any country code, or email">
           <button class="mailbtn" onclick="sendReceipt()">Send my receipt</button>
         </div>
         <div class="consents" id="consents">
-          <label><input type="checkbox" id="c-mkt"><span>Send me offers from <span id="offers-venue">Hallab 1881</span></span></label>
+          <label><input type="checkbox" id="c-mkt"><span id="offers-line">Send me offers from Mayda</span></label>
         </div>
 
 
         <div class="rate-wrap" id="feedback-options">
-          <div class="rate-q">How was <span class="v-short">Hallab</span> tonight?</div>
-          <div class="dstars" id="dstars" role="group" aria-label="Your rating">
+          <div class="rate-q" id="rate-q">How was Mayda tonight?</div>
+          <div class="dstars" id="dstars" role="group" data-i18n-aria="ratingGroup" aria-label="Your rating">
             <button type="button" class="star" aria-label="1 star" aria-pressed="false" onclick="rate(1)">&#9733;</button><button type="button" class="star" aria-label="2 stars" aria-pressed="false" onclick="rate(2)">&#9733;</button>
             <button type="button" class="star" aria-label="3 stars" aria-pressed="false" onclick="rate(3)">&#9733;</button><button type="button" class="star" aria-label="4 stars" aria-pressed="false" onclick="rate(4)">&#9733;</button><button type="button" class="star" aria-label="5 stars" aria-pressed="false" onclick="rate(5)">&#9733;</button>
           </div>
@@ -812,7 +832,7 @@
         </div>
       </div>
       <div class="dock-dk">
-        <div class="powered dk">powered by <b>Aalayna</b></div>
+        <div class="powered dk"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
       </div>
     </div>
   </div>
@@ -821,31 +841,36 @@
     <div class="scrim" onclick="closeOv('ov-item')"></div>
     <div class="sheet idet">
       <div class="grab"></div>
-      <div class="sh-t" id="i-name">Mixed Grill platter</div>
-      <div class="sh-s" id="i-desc">Kabab, shish taouk, lamb chops, fries</div>
+      <div class="sh-t" id="i-name"></div>
+      <div class="sh-s" id="i-desc"></div>
       <div class="soldout" id="i-out" style="display:none">Sold out</div>
       <div class="alrt" id="i-alrt"></div>
       <div class="disc" id="i-disc">Always confirm allergies with staff.</div>
       <div class="adds" id="i-adds"></div>
-      <div class="i-price"><span class="ipl">Price as selected</span>
-        <span class="ipv" id="i-tot">$16.00</span></div>
-      <button class="cta cta-ghost" style="margin-top:10px" onclick="closeOv('ov-item')">Close</button>
+      <div class="i-price"><span class="ipl" data-i18n="priceAsSel">Price as selected</span>
+        <span class="ipv" id="i-tot">$0.00</span></div>
+      <button class="cta cta-ghost" style="margin-top:10px" onclick="closeOv('ov-item')" data-i18n="close">Close</button>
     </div>
   </div>
-  <!-- One review panel for every rating. No rating-based destination routing. -->
+  <!-- Review panel, routed by the rating (as the website promises): 4-5 stars offer the
+       venue's Google review page (Aalayna.reviewURL), 1-3 stars a private note that goes to
+       the restaurant only (Aalayna.submitReview, destination 'private'). Either guest can
+       still take the other route from the small link under the button. -->
   <div class="ov" id="ov-review" role="dialog" aria-modal="true" aria-labelledby="review-title">
     <div class="scrim" onclick="closeReview()"></div>
     <div class="sheet feedback-sheet">
-      <div class="feedback-head"><h3 class="sh-t" id="review-title">Your review</h3><button class="review-close" type="button" aria-label="Close review" onclick="closeReview()">×</button></div>
-      <div class="stars" id="gstars" role="group" aria-label="Review rating">
+      <div class="feedback-head"><h3 class="sh-t" id="review-title">Your review</h3><button class="review-close" type="button" data-i18n-aria="close" aria-label="Close" onclick="closeReview()">×</button></div>
+      <div class="stars" id="gstars" role="group" data-i18n-aria="ratingGroup" aria-label="Your rating">
         <button type="button" class="star" aria-label="1 star" aria-pressed="false" onclick="setStar(1)">&#9733;</button><button type="button" class="star" aria-label="2 stars" aria-pressed="false" onclick="setStar(2)">&#9733;</button><button type="button" class="star" aria-label="3 stars" aria-pressed="false" onclick="setStar(3)">&#9733;</button><button type="button" class="star" aria-label="4 stars" aria-pressed="false" onclick="setStar(4)">&#9733;</button><button type="button" class="star" aria-label="5 stars" aria-pressed="false" onclick="setStar(5)">&#9733;</button>
       </div>
-      <label class="feedback-label" for="review-text">Your feedback <span>(optional)</span></label>
-      <textarea class="ta" id="review-text" aria-label="Your feedback (optional)" maxlength="1000" placeholder="How was your visit?"></textarea>
-      <label class="feedback-label" for="review-destination">Share with</label>
-      <select id="review-destination" aria-label="Share feedback with" onchange="paintReviewDestination()"><option value="google">Google · public review</option><option value="private">Restaurant · private feedback</option></select>
-      <p class="sh-s" id="review-status" role="status" aria-live="polite">Prototype only: no review or feedback is sent.</p>
-      <button class="cta cta-green" id="review-submit" type="button" onclick="submitReview()">Continue to Google</button>
+      <p class="sh-s" id="review-sub"></p>
+      <div id="review-note">
+        <label class="feedback-label" for="review-text" data-i18n="rvNoteLabel">Your note</label>
+        <textarea class="ta" id="review-text" maxlength="1000" data-i18n-ph="rvNotePh" placeholder="What should they know?"></textarea>
+      </div>
+      <p class="sh-s" id="review-status" role="status" aria-live="polite"></p>
+      <button class="cta cta-green" id="review-submit" type="button" onclick="submitReview()">Send privately</button>
+      <button class="rv-alt" id="review-alt" type="button" onclick="switchReviewRoute()"></button>
     </div>
   </div>
 
@@ -854,8 +879,8 @@
     <div class="scrim" onclick="closeOv('ov-filters')"></div>
     <div class="sheet">
       <div class="grab"></div>
-      <div class="sh-t">Dietary filters</div>
-      <div class="sh-s">Dishes that don't fit stay visible but fade, with the reason shown.</div>
+      <div class="sh-t" data-i18n="dietFilters">Dietary filters</div>
+      <div class="sh-s" data-i18n="filtersSub">Dishes that don't fit stay visible but fade, with the reason shown.</div>
       <div class="fchips" style="padding:14px 0 0">
         <button class="fc" id="f-veg" onclick="togF('veg')">Vegetarian</button>
         <button class="fc" id="f-nonuts" onclick="togF('nonuts')">No nuts</button>
@@ -864,12 +889,12 @@
         <button class="fc" id="f-protein" onclick="togF('protein')">High protein</button>
       </div>
       <div class="fbar" id="fbar">
-        <span class="cnt" id="fcount">16</span>
-        <span id="fmsg">of 16 dishes work for you</span>
+        <span class="cnt" id="fcount">0</span>
+        <span id="fmsg"></span>
         <button class="clr" id="fclear" onclick="clearF()">Clear</button>
       </div>
       <div class="disc" id="f-disc" style="margin:10px 18px 0">Always confirm allergies with staff.</div>
-      <button class="cta cta-green" style="margin-top:16px" onclick="closeOv('ov-filters')">Done</button>
+      <button class="cta cta-green" style="margin-top:16px" onclick="closeOv('ov-filters')" data-i18n="done">Done</button>
     </div>
   </div>
 
@@ -879,17 +904,17 @@
     <div class="sheet" style="text-align:center">
       <div class="grab"></div>
       <div class="wh-mark">whish</div>
-      <div class="sh-t" style="text-align:center" id="wh-amt">Pay $41.94</div>
-      <div class="sh-s" style="text-align:center">The Whish app opens with the amount and reference
+      <div class="sh-t" style="text-align:center" id="wh-amt">Pay</div>
+      <div class="sh-s" style="text-align:center" data-i18n="whishSub">The Whish app opens with the amount and reference
         already filled in. Confirm there and you're brought straight back.</div>
       <div class="wh-steps">
-        <div class="wh-s"><b>1</b> Whish opens</div>
-        <div class="wh-s"><b>2</b> You confirm</div>
-        <div class="wh-s"><b>3</b> Table updates</div>
+        <div class="wh-s"><b>1</b> <span data-i18n="wh1">Whish opens</span></div>
+        <div class="wh-s"><b>2</b> <span data-i18n="wh2">You confirm</span></div>
+        <div class="wh-s"><b>3</b> <span data-i18n="wh3">Table updates</span></div>
       </div>
       <button class="cta cta-green" id="wh-btn" onclick="whishConfirm()">Open Whish</button>
-      <button class="cta cta-ghost" onclick="cancelProvider('ov-whish')">Cancel</button>
-      <div class="sim-note">Simulated. In production this is a Whish deep link with a payment callback.</div>
+      <button class="cta cta-ghost" onclick="cancelProvider('ov-whish')" data-i18n="cancel">Cancel</button>
+      <div class="sim-note" data-i18n="whishSim">Simulated. In production this is a Whish deep link with a payment callback.</div>
     </div>
   </div>
 
@@ -898,19 +923,19 @@
     <div class="scrim"></div>
     <div class="sheet">
       <div class="grab"></div>
-      <div class="cardhead"><span class="lock">&#128274;</span> Secure checkout
-        <span class="cardby">areeba &middot; simulated</span></div>
-      <div class="sh-s">This page is hosted by the venue's payment provider.
+      <div class="cardhead"><span class="lock">&#128274;</span> <span data-i18n="secureCheckout">Secure checkout</span>
+        <span class="cardby" data-i18n="cardSim">Card payment &middot; simulated</span></div>
+      <div class="sh-s" data-i18n="cardSub">This page is hosted by the venue's payment provider.
         This is a simulated provider page. Use the sample details below.</div>
-      <div class="fldc"><div class="lbc">Card number</div>
-        <input class="inc" value="4242 4242 4242 4242" readonly aria-label="Sample card number"></div>
+      <div class="fldc"><div class="lbc" data-i18n="cardNumber">Card number</div>
+        <input class="inc" value="4242 4242 4242 4242" readonly dir="ltr" data-i18n-aria="cardNumber" aria-label="Card number"></div>
       <div class="rowc">
-        <div class="fldc"><div class="lbc">Expiry</div><input class="inc" value="12 / 30" readonly aria-label="Sample expiry"></div>
-        <div class="fldc"><div class="lbc">CVC</div><input class="inc" value="123" readonly aria-label="Sample security code"></div>
+        <div class="fldc"><div class="lbc" data-i18n="expiry">Expiry</div><input class="inc" value="12 / 30" readonly dir="ltr" data-i18n-aria="expiry" aria-label="Expiry"></div>
+        <div class="fldc"><div class="lbc" data-i18n="cvc">CVC</div><input class="inc" value="123" readonly dir="ltr" data-i18n-aria="cvc" aria-label="CVC"></div>
       </div>
-      <button class="cta cta-green" id="card-btn" style="margin-top:20px" onclick="cardConfirm()">Pay $41.94</button>
-      <button class="cta cta-ghost" onclick="cancelProvider('ov-card')">Cancel</button>
-      <div class="sim-note">Simulated. In production this is the gateway's hosted page (3-D Secure included).</div>
+      <button class="cta cta-green" id="card-btn" style="margin-top:20px" onclick="cardConfirm()">Pay</button>
+      <button class="cta cta-ghost" onclick="cancelProvider('ov-card')" data-i18n="cancel">Cancel</button>
+      <div class="sim-note" data-i18n="cardSimNote">Simulated. In production this is the gateway's hosted page (3-D Secure included).</div>
     </div>
   </div>
 </div></div>
@@ -925,7 +950,8 @@
 </div>
 <div class="note-out">
   The venue owns every surface; Aalayna is the footer credit. <b>Change-ahead</b> lives under the
-  cash option. Public reviews and private feedback are offered equally, for every rating. Cash
+  cash option. After paying, 4 or 5 stars offer the restaurant's Google review page and 1 to 3 stars
+  a private note to the restaurant; either guest can take the other route. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
 <script src="aalayna-store.js?v=22"></script>
@@ -954,10 +980,28 @@ var AalaynaTableQR = (function (global) {
   var NOT_ACTIVE = 'This table code is not active. Ask your server for the bill.';
   var A = global.Aalayna, cfg = global.AalaynaConfig || {}, doc = global.document;
   var q = new URLSearchParams(global.location.search), timer = null, busy = false;
+  /* the guest's language (as the page below picks it: ?lang=, this tab's choice, the phone) */
+  var LANGS = /^(en|fr|ar)$/, lang = String(q.get('lang') || '').toLowerCase();
+  if (!LANGS.test(lang)) { try { lang = String(global.sessionStorage.getItem('aal.guest-lang') || ''); } catch (e) { lang = ''; } }
+  if (!LANGS.test(lang)) {
+    var nav = global.navigator || {}, pref = String((nav.languages && nav.languages[0]) || nav.language || '').slice(0, 2).toLowerCase();
+    lang = pref === 'fr' || pref === 'ar' ? pref : 'en';
+  }
+  var MSG = {
+    en: { opening: 'Opening your table…', notActive: NOT_ACTIVE, cannot: 'This table code cannot be opened right now. Ask your server for the bill.',
+          offline: 'We could not reach the restaurant. Check your connection and try again.', retry: 'Try again' },
+    fr: { opening: 'Ouverture de votre table…', notActive: 'Ce code de table n\u2019est pas actif. Demandez l\u2019addition à votre serveur.',
+          cannot: 'Ce code de table ne peut pas être ouvert pour le moment. Demandez l\u2019addition à votre serveur.',
+          offline: 'Impossible de joindre le restaurant. Vérifiez votre connexion et réessayez.', retry: 'Réessayer' },
+    ar: { opening: 'جارٍ فتح طاولتك…', notActive: 'رمز هذه الطاولة غير مفعّل. اطلب الفاتورة من النادل.',
+          cannot: 'لا يمكن فتح رمز هذه الطاولة الآن. اطلب الفاتورة من النادل.',
+          offline: 'تعذّر الوصول إلى المطعم. تحقّق من اتصالك وحاول مجدداً.', retry: 'حاول مجدداً' }
+  };
+  function msg(k) { return MSG[lang][k]; }
   function load() { try { return JSON.parse(global.sessionStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
   function save(s) { try { global.sessionStorage.setItem(STORE, JSON.stringify(s)); } catch (e) {} }
   var session = load();
-  var api = { holding: false, waiting: false, table: null, onAttach: null, ask: ask, poll: poll, start: start, stop: stop, reopen: reopen };
+  var api = { lang: lang, holding: false, waiting: false, table: null, onAttach: null, ask: ask, poll: poll, start: start, stop: stop, reopen: reopen };
 
   function ask() {
     if (!cfg.supabaseUrl || !cfg.anonKey) return Promise.reject(new Error('This page is not connected to a restaurant.'));
@@ -986,9 +1030,10 @@ var AalaynaTableQR = (function (global) {
       doc.body.appendChild(box);
     }
     doc.documentElement.classList.add('tq-hold');
+    box.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr'); box.setAttribute('lang', lang);
     box.innerHTML = '';
     var p = doc.createElement('p'); p.textContent = text; box.appendChild(p);
-    if (retry) { var b = doc.createElement('button'); b.textContent = 'Try again'; b.onclick = retry; box.appendChild(b); }
+    if (retry) { var b = doc.createElement('button'); b.textContent = msg('retry'); b.onclick = retry; box.appendChild(b); }
     api.message = text;
   }
   function refused(e) { return e && e.status >= 400 && e.status < 500; }
@@ -1000,18 +1045,19 @@ var AalaynaTableQR = (function (global) {
     if (!live) A.util.rawWrite('aal.live', { version: 0, sections: [], items: [], at: 'server' });
   }
   function resolve() {
-    notice('Opening your table…');
+    notice(msg('opening'));
     ask().then(function (res) {
       var v = res && res.venue || {}, name = String(v.name || '').trim(), place = String(v.place || '').trim();
       var rid = JSON.stringify([name.toLowerCase(), place.toLowerCase()]);
       // the store derives the venue id from name and place; they must name this restaurant
-      if (!name || rid !== res.restaurant_id || !(res.table > 0)) { notice(NOT_ACTIVE); return; }
+      if (!name || rid !== res.restaurant_id || !(res.table > 0)) { notice(msg('notActive')); return; }
       var p = new URLSearchParams();
       p.set('venue', name); if (place) p.set('place', place);
       if (v.gplace) p.set('gplace', v.gplace);
       if (v.brand) p.set('brand', String(v.brand).replace(/^#/, ''));
       if (v.bg) p.set('bg', String(v.bg).replace(/^#/, ''));
       if (v.font) p.set('font', v.font);
+      if (q.get('lang')) p.set('lang', lang);
       session = { v: session.v, t: session.t, s: session.s, rid: rid, table: res.table, waiting: !res.key, docs: res.key ? null : (res.docs || []) };
       save(session);
       if (res.key) p.set('k', res.key);
@@ -1019,8 +1065,8 @@ var AalaynaTableQR = (function (global) {
       else try { global.localStorage.removeItem('aal.access:' + rid + ':guest'); } catch (e) {}
       global.location.replace(global.location.pathname + '?' + p.toString());
     }, function (e) {
-      if (refused(e)) notice(e.message === NOT_ACTIVE ? NOT_ACTIVE : 'This table code cannot be opened right now. Ask your server for the bill.');
-      else notice('We could not reach the restaurant. Check your connection and try again.', resolve);
+      if (refused(e)) notice(e.message === NOT_ACTIVE ? msg('notActive') : msg('cannot'));
+      else notice(msg('offline'), resolve);
     });
   }
   function stop() { if (timer) { global.clearInterval(timer); timer = null; } }
@@ -1058,7 +1104,7 @@ var AalaynaTableQR = (function (global) {
       land(res && res.docs);
     }, function (e) {
       // a revoked code stops here; a lost connection tries again on the next tick
-      if (refused(e)) { api.waiting = false; stop(); notice(e.message === NOT_ACTIVE ? NOT_ACTIVE : 'This table code cannot be opened right now. Ask your server for the bill.'); }
+      if (refused(e)) { api.waiting = false; stop(); notice(e.message === NOT_ACTIVE ? msg('notActive') : msg('cannot')); }
     }).then(function () { busy = false; }, function () { busy = false; });
   }
 
@@ -1073,7 +1119,7 @@ var AalaynaTableQR = (function (global) {
     global.AalaynaConfig = null;   // the sync layer stays off for this hidden load
     session = { v: v, t: Number(t), s: s };
     save(session);
-    if (!/^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$/.test(v) || !/^[1-9][0-9]{0,3}$/.test(t) || !/^tbl_[0-9a-f]{48}$/.test(s)) notice(NOT_ACTIVE);
+    if (!/^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$/.test(v) || !/^[1-9][0-9]{0,3}$/.test(t) || !/^tbl_[0-9a-f]{48}$/.test(s)) notice(msg('notActive'));
     else resolve();
   } else if (A && session && session.rid && session.rid === A.venueId()) {
     // after the rewrite: this tab's table, for this venue
@@ -1095,8 +1141,366 @@ var AalaynaTableQR = (function (global) {
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
-/* ---------------- data ---------------- */
+/* ---------------- language + currency ----------------
+   One string table for every guest screen (en / fr / ar) and one lookup, t(key, vars):
+   {name} placeholders are filled from vars; a key missing in fr or ar falls back to en.
+   Strings marked in their key with Html are inserted as HTML: their vars are escaped by
+   the caller. French puts a narrow no-break space (U+202F) before : ; ? and !. Arabic
+   sets dir=rtl on the whole app (#app); numbers and prices stay in Western digits, as on
+   the rest of the site. The language is chosen from ?lang=, then this tab's last choice
+   (it survives Start over and a reload), then the phone's language when it is fr or ar. */
+var LANGS = ['en', 'fr', 'ar'];
+/* i18n:start */
+var STR = {
+  en: {
+    preview: 'Preview · no money moves', poweredBy: 'powered by', back: 'Back', langLabel: 'Language', ccyLabel: 'Currency',
+    ccyUsd: 'USD $', ccyLbp: 'LBP LL', table: 'Table', sampleBill: 'sample bill',
+    greet: 'Ahla w sahla', landNote: 'Explore the menu. When you’re ready, split the bill your way and pay from your table.',
+    seeMenu: 'See the menu', openBill: 'Open the bill', crestFallback: 'YOUR MENU, LIVE',
+    dietFilters: 'Dietary filters', filtersSub: 'Dishes that don’t fit stay visible but fade, with the reason shown.',
+    fVeg: 'Vegetarian', fNonuts: 'No nuts', fNodairy: 'No dairy', fLight: 'Under 400 kcal', fProtein: 'High protein',
+    more: 'For more details', of: 'of', work: 'dishes work for you', works: 'dish works for you', clear: 'Clear', done: 'Done',
+    rMeat: 'has meat', rNuts: 'contains nuts', rDairy: 'contains dairy', rSwap: 'works with',
+    rUnk: 'ingredients not confirmed, ask staff', soldOut: 'Sold out', disc: 'Always confirm allergies with staff.',
+    unkSheet: 'Ingredient details are not confirmed for this dish. Please ask your server.',
+    rKcal: 'over 400 kcal ({n})', rProt: 'only {n}g protein',
+    catBrk: 'Breakfast', catMez: 'Mezze & Grill', catSwt: 'Sweets', catDrk: 'Drinks',
+    priceAsSel: 'Price as selected', close: 'Close', free: 'free',
+    containsHtml: '<b>Contains {list}.</b> If you have a serious allergy, tell your server too.',
+    noAllergensHtml: '<b>No common allergens</b> as selected. If you have a serious allergy, tell your server too.',
+    listSep: ', ',
+    al_gluten: 'gluten', al_sesame: 'sesame', al_nuts: 'nuts', al_dairy: 'dairy', al_egg: 'egg', al_eggs: 'eggs',
+    al_fish: 'fish', al_soy: 'soy', al_shellfish: 'shellfish', al_peanuts: 'peanuts', al_mustard: 'mustard', al_celery: 'celery',
+    availSettle: 'AVAILABLE TO SETTLE', settleShare: 'Settle my share', covered: 'COVERED',
+    nOfCovered: '{n} OF {q} COVERED', nCovered: '{n} COVERED',
+    billTotalOnly: 'Your server entered this bill as a total, without items.',
+    billWaiting: 'Your bill appears here once your server enters it.',
+    billEnded: 'This bill is closed. Scan the table code again for a new bill.',
+    guests: '{n} guests', guest1: '1 guest', openedAt: 'opened {time}',
+    splitTitle: 'How are we doing this?', splitSub: 'Nobody has to work out the maths',
+    mEven: 'Evenly', mItem: 'My items', mAmt: 'Custom amount', mAll: 'All of it', howMany: 'How many of you?',
+    itemHint: 'Tap what was yours. The rest stays on the table for the others.', nOf: '{n} of {q}',
+    yourShare: 'YOUR SHARE', amtHint: 'Whatever you like, up to the {amt} remaining.', continueAmt: 'Continue · {amt}',
+    onlyLeft: 'Only {amt} is left on this bill.',
+    restOthers: '{amt} available for other guests. Pending cash is held until staff confirm or cancel it.',
+    noBalance: 'No balance is available for another payment. Check any pending cash request with your server.',
+    coversAll: 'That covers the available balance. Staff still need to confirm any pending cash.',
+    totalToPay: 'Total to pay · {table}', billShare: 'Bill share', tip: 'Tip',
+    tipFor: 'Something for {name}?', tipTeam: 'Something for the team?', noTip: 'No tip', other: 'Other',
+    whishDesc: 'Opens with the amount filled in', cardName: 'Card', cashName: 'Paying cash',
+    cashDesc: 'Staff confirm after collection', cashMark: 'CASH', railsNote: 'Card and Whish arrive with the payment provider.',
+    chgQ: 'What are you handing over?', exact: 'Exact',
+    chgOnceHtml: 'Your server comes <b>once</b>, with your change already counted.',
+    chgExactHtml: 'You’re paying <b>{amt}</b> exactly. {server} just collects the notes. No trip to the till.',
+    chgShortHtml: '<b>{note}</b> doesn’t cover {amt}. Pick a bigger note, or split it with the table.',
+    chgBackHtml: 'Change requested from {server}: <b>{amt}</b>. Please wait for collection.',
+    cashNoteHtml: 'Your cash request stays <b>awaiting collection</b> until staff confirm it. Please wait for your server before leaving.',
+    requestCash: 'Request cash collection', payAmt: 'Pay {amt}',
+    whishSub: 'The Whish app opens with the amount and reference already filled in. Confirm there and you’re brought straight back.',
+    wh1: 'Whish opens', wh2: 'You confirm', wh3: 'Table updates', openWhish: 'Open Whish',
+    confirmingWhish: 'Confirming with Whish…', processing: 'Processing…', cancel: 'Cancel',
+    whishSim: 'Simulated. In production this is a Whish deep link with a payment callback.',
+    secureCheckout: 'Secure checkout', cardSim: 'Card payment · simulated',
+    cardSub: 'This page is hosted by the venue’s payment provider. This is a simulated provider page. Use the sample details below.',
+    cardNumber: 'Card number', expiry: 'Expiry', cvc: 'CVC',
+    cardSimNote: 'Simulated. In production this is the gateway’s hosted page (3-D Secure included).',
+    askOpen: 'Ask your server to open this bill first.',
+    queuedAlert: 'Your request is waiting for a connection and will retry automatically. Please do not submit another payment.',
+    cashRefused: 'The restaurant did not accept this cash request. Please speak with your server.',
+    thanks: 'Shukran.', cashRequested: 'Cash requested.', requestUpdated: 'Request updated.', savedPhone: 'Saved on this phone.',
+    paidVia: 'Paid via', requestedVia: 'Requested via', railWhish: 'Whish Money', railCard: 'Card', railCash: 'Cash',
+    change: '{amt} change',
+    stPending: 'Your server will collect the cash. You can close this screen; not marked paid until collection is confirmed.',
+    stCashConfirmed: 'Cash collection confirmed by your server.', stDemoConfirmed: 'Demo payment confirmed · no money moved.',
+    stOther: 'This request was {status}. Please speak with your server.',
+    stat_cancelled: 'cancelled', stat_refunded: 'refunded', stat_failed: 'declined', stat_expired: 'not completed', stat_other: 'changed',
+    stQueued: 'Cash request saved on this phone. It reaches the restaurant as soon as you are back online.',
+    unableConnect: 'Unable to connect to this bill. Please speak with your server.',
+    mailPh: 'WhatsApp (+code) or email', mailAria: 'Optional WhatsApp number with any country code, or email',
+    sendReceipt: 'Send my receipt', saved: 'Saved',
+    mailInvalid: 'Enter an email or a WhatsApp number with its country code. Numbers from any country are welcome.',
+    prefsShared: 'Preferences saved to the restaurant.', prefsLocal: 'Preferences saved locally.', noneSent: 'No receipt or message sent.',
+    offersFrom: 'Send me offers from {venue}', rateQ: 'How was {venue} tonight?', ratingGroup: 'Your rating',
+    star1: '1 star', starN: '{n} stars',
+    rvHappyT: 'Glad you enjoyed it', rvHappyS: 'Would you say so on Google? Nothing helps {venue} more.',
+    rvGoogle: 'Review on Google', rvOpened: 'Google opened in a new tab. Thank you!',
+    rvNoLink: 'Thank you! Google review link not set up yet for {venue}, so there is nothing more to do.',
+    rvSadT: 'Sorry it wasn’t perfect',
+    rvSadS: 'Tell {venue} what went wrong. Your note goes to the restaurant only, never online.',
+    rvNoteLabel: 'Your note', rvNotePh: 'What should they know?', rvSend: 'Send privately',
+    rvSent: 'Sent to {venue}. Only the restaurant sees it.',
+    rvToPrivate: 'Rather tell the restaurant privately', rvToGoogle: 'Rather post a public review on Google',
+    errPay: 'Enter a valid payment and tip.', errCash: 'Choose enough cash to cover your share and tip.',
+    errChanged: 'The bill changed while you were paying. Check your share and try again.',
+    errTaken: 'Someone at the table already paid for one of these items.',
+    errExpired: 'This payment took too long. Please start again.', errClosed: 'This bill is closed. Ask your waiter.',
+    errLinked: 'This payment is already linked to another contact.', errNet: 'The restaurant could not be reached. Try again in a moment.',
+    errGeneric: 'Something went wrong. Try again, or ask your waiter.',
+    offline: 'No connection. Your bill is as of {time}; we will send your payment when you are back online.'
+  },
+  fr: {
+    preview: 'Aperçu · aucun argent ne circule', poweredBy: 'propulsé par', back: 'Retour', langLabel: 'Langue', ccyLabel: 'Devise',
+    ccyUsd: 'USD $', ccyLbp: 'LBP LL', table: 'Table', sampleBill: 'addition d’exemple',
+    greet: 'Bienvenue', landNote: 'Découvrez le menu. Quand vous êtes prêts, partagez l’addition comme vous voulez et payez depuis votre table.',
+    seeMenu: 'Voir le menu', openBill: 'Voir l’addition', crestFallback: 'VOTRE MENU, EN DIRECT',
+    dietFilters: 'Filtres alimentaires', filtersSub: 'Les plats qui ne conviennent pas restent visibles mais estompés, avec la raison.',
+    fVeg: 'Végétarien', fNonuts: 'Sans noix', fNodairy: 'Sans lactose', fLight: 'Moins de 400 kcal', fProtein: 'Riche en protéines',
+    more: 'Plus de détails', of: 'sur', work: 'plats vous conviennent', works: 'plat vous convient', clear: 'Effacer', done: 'Terminé',
+    rMeat: 'contient de la viande', rNuts: 'contient des noix', rDairy: 'contient du lactose', rSwap: 'possible avec',
+    rUnk: 'ingrédients non confirmés, demandez au personnel', soldOut: 'Épuisé', disc: 'Confirmez toujours vos allergies auprès du personnel.',
+    unkSheet: 'Les ingrédients de ce plat ne sont pas confirmés. Merci de demander à votre serveur.',
+    rKcal: 'plus de 400 kcal ({n})', rProt: 'seulement {n} g de protéines',
+    catBrk: 'Petit-déjeuner', catMez: 'Mezzés et grillades', catSwt: 'Douceurs', catDrk: 'Boissons',
+    priceAsSel: 'Prix selon la sélection', close: 'Fermer', free: 'offert',
+    containsHtml: '<b>Contient : {list}.</b> En cas d’allergie grave, prévenez aussi votre serveur.',
+    noAllergensHtml: '<b>Aucun allergène courant</b> dans cette sélection. En cas d’allergie grave, prévenez aussi votre serveur.',
+    listSep: ', ',
+    al_gluten: 'gluten', al_sesame: 'sésame', al_nuts: 'fruits à coque', al_dairy: 'produits laitiers', al_egg: 'œuf', al_eggs: 'œufs',
+    al_fish: 'poisson', al_soy: 'soja', al_shellfish: 'crustacés', al_peanuts: 'arachides', al_mustard: 'moutarde', al_celery: 'céleri',
+    availSettle: 'RESTE À RÉGLER', settleShare: 'Régler ma part', covered: 'RÉGLÉ',
+    nOfCovered: '{n} SUR {q} RÉGLÉS', nCovered: 'RÉGLÉS : {n}',
+    billTotalOnly: 'Votre serveur a saisi cette addition en un total, sans le détail des plats.',
+    billWaiting: 'Votre addition apparaîtra ici dès que votre serveur l’aura saisie.',
+    billEnded: 'Cette addition est close. Scannez à nouveau le code de la table pour une nouvelle addition.',
+    guests: '{n} convives', guest1: '1 convive', openedAt: 'ouverte à {time}',
+    splitTitle: 'On partage comment ?', splitSub: 'Personne n’a besoin de faire le calcul',
+    mEven: 'À parts égales', mItem: 'Mes plats', mAmt: 'Montant libre', mAll: 'Tout', howMany: 'Combien êtes-vous ?',
+    itemHint: 'Touchez ce qui était à vous. Le reste reste sur la table pour les autres.', nOf: '{n} sur {q}',
+    yourShare: 'VOTRE PART', amtHint: 'Le montant de votre choix, jusqu’aux {amt} restants.', continueAmt: 'Continuer · {amt}',
+    onlyLeft: 'Il ne reste que {amt} sur cette addition.',
+    restOthers: '{amt} disponibles pour les autres convives. Les espèces en attente restent réservées jusqu’à ce que le personnel les confirme ou les annule.',
+    noBalance: 'Aucun solde disponible pour un autre paiement. Vérifiez toute demande en espèces en attente avec votre serveur.',
+    coversAll: 'Cela couvre le solde disponible. Le personnel doit encore confirmer les espèces en attente.',
+    totalToPay: 'Total à payer · {table}', billShare: 'Part de l’addition', tip: 'Pourboire',
+    tipFor: 'Un pourboire pour {name} ?', tipTeam: 'Un pourboire pour l’équipe ?', noTip: 'Aucun', other: 'Autre',
+    whishDesc: 'S’ouvre avec le montant déjà saisi', cardName: 'Carte', cashName: 'Payer en espèces',
+    cashDesc: 'Le personnel confirme à l’encaissement', cashMark: 'ESP.', railsNote: 'La carte et Whish arriveront avec le prestataire de paiement.',
+    chgQ: 'Avec quel billet payez-vous ?', exact: 'Compte juste',
+    chgOnceHtml: 'Votre serveur ne passe <b>qu’une fois</b>, avec votre monnaie déjà comptée.',
+    chgExactHtml: 'Vous payez <b>{amt}</b> tout juste. {server} récupère simplement les billets. Pas de passage à la caisse.',
+    chgShortHtml: '<b>{note}</b> ne couvre pas {amt}. Choisissez un billet plus gros, ou partagez avec la table.',
+    chgBackHtml: 'Monnaie demandée à {server} : <b>{amt}</b>. Merci d’attendre l’encaissement.',
+    cashNoteHtml: 'Votre demande en espèces reste <b>en attente d’encaissement</b> jusqu’à ce que le personnel la confirme. Merci d’attendre votre serveur avant de partir.',
+    requestCash: 'Demander l’encaissement', payAmt: 'Payer {amt}',
+    whishSub: 'L’application Whish s’ouvre avec le montant et la référence déjà remplis. Confirmez-y et vous revenez directement ici.',
+    wh1: 'Whish s’ouvre', wh2: 'Vous confirmez', wh3: 'La table est à jour', openWhish: 'Ouvrir Whish',
+    confirmingWhish: 'Confirmation avec Whish…', processing: 'Traitement en cours…', cancel: 'Annuler',
+    whishSim: 'Simulation. En production, c’est un lien direct vers Whish avec confirmation du paiement.',
+    secureCheckout: 'Paiement sécurisé', cardSim: 'Paiement par carte · simulé',
+    cardSub: 'Cette page est hébergée par le prestataire de paiement du restaurant. Ceci est une page simulée. Utilisez les données d’exemple ci-dessous.',
+    cardNumber: 'Numéro de carte', expiry: 'Expiration', cvc: 'Cryptogramme',
+    cardSimNote: 'Simulation. En production, c’est la page hébergée de la passerelle de paiement (3-D Secure inclus).',
+    askOpen: 'Demandez d’abord à votre serveur d’ouvrir cette addition.',
+    queuedAlert: 'Votre demande attend une connexion et sera renvoyée automatiquement. Merci de ne pas lancer un autre paiement.',
+    cashRefused: 'Le restaurant n’a pas accepté cette demande en espèces. Merci de voir avec votre serveur.',
+    thanks: 'Merci.', cashRequested: 'Espèces demandées.', requestUpdated: 'Demande mise à jour.', savedPhone: 'Enregistré sur ce téléphone.',
+    paidVia: 'Payé par', requestedVia: 'Demandé par', railWhish: 'Whish Money', railCard: 'Carte', railCash: 'Espèces',
+    change: '{amt} de monnaie',
+    stPending: 'Votre serveur viendra encaisser. Vous pouvez fermer cet écran ; le paiement n’est validé qu’après confirmation de l’encaissement.',
+    stCashConfirmed: 'Encaissement confirmé par votre serveur.', stDemoConfirmed: 'Paiement de démonstration confirmé · aucun argent n’a circulé.',
+    stOther: 'Cette demande a été {status}. Merci de voir avec votre serveur.',
+    stat_cancelled: 'annulée', stat_refunded: 'remboursée', stat_failed: 'refusée', stat_expired: 'interrompue', stat_other: 'modifiée',
+    stQueued: 'Demande en espèces enregistrée sur ce téléphone. Elle part au restaurant dès votre retour en ligne.',
+    unableConnect: 'Impossible de se connecter à cette addition. Merci de voir avec votre serveur.',
+    mailPh: 'WhatsApp (+indicatif) ou e-mail', mailAria: 'Numéro WhatsApp avec indicatif, ou e-mail (facultatif)',
+    sendReceipt: 'Recevoir mon reçu', saved: 'Enregistré',
+    mailInvalid: 'Saisissez un e-mail ou un numéro WhatsApp avec son indicatif. Les numéros de tous les pays sont acceptés.',
+    prefsShared: 'Préférences enregistrées auprès du restaurant.', prefsLocal: 'Préférences enregistrées sur ce téléphone.', noneSent: 'Aucun reçu ni message envoyé.',
+    offersFrom: 'Recevoir les offres de {venue}', rateQ: 'Comment était {venue} ce soir ?', ratingGroup: 'Votre note',
+    star1: '1 étoile', starN: '{n} étoiles',
+    rvHappyT: 'Ravis que cela vous ait plu', rvHappyS: 'Vous le diriez sur Google ? Rien n’aide davantage {venue}.',
+    rvGoogle: 'Laisser un avis Google', rvOpened: 'Google s’est ouvert dans un nouvel onglet. Merci !',
+    rvNoLink: 'Merci\u202F! Le lien d’avis Google de {venue} n’est pas encore configuré\u202F; il n’y a rien d’autre à faire.',
+    rvSadT: 'Désolés que tout n’ait pas été parfait',
+    rvSadS: 'Dites à {venue} ce qui n’allait pas. Votre message va au restaurant seulement, jamais en ligne.',
+    rvNoteLabel: 'Votre message', rvNotePh: 'Que doivent-ils savoir ?', rvSend: 'Envoyer en privé',
+    rvSent: 'Envoyé à {venue}. Seul le restaurant le voit.',
+    rvToPrivate: 'Plutôt écrire au restaurant en privé', rvToGoogle: 'Plutôt publier un avis public sur Google',
+    errPay: 'Saisissez un paiement et un pourboire valides.', errCash: 'Choisissez assez d’espèces pour couvrir votre part et le pourboire.',
+    errChanged: 'L’addition a changé pendant votre paiement. Vérifiez votre part et réessayez.',
+    errTaken: 'Quelqu’un à la table a déjà payé l’un de ces plats.',
+    errExpired: 'Ce paiement a pris trop de temps. Veuillez recommencer.', errClosed: 'Cette addition est close. Demandez au serveur.',
+    errLinked: 'Ce paiement est déjà lié à un autre contact.', errNet: 'Impossible de joindre le restaurant. Réessayez dans un instant.',
+    errGeneric: 'Un problème est survenu. Réessayez ou demandez au serveur.',
+    offline: 'Pas de connexion. Votre addition date de {time} ; nous enverrons votre paiement dès votre retour en ligne.'
+  },
+  ar: {
+    preview: 'معاينة · لا تُحوَّل أي أموال', poweredBy: 'مدعوم من', back: 'رجوع', langLabel: 'اللغة', ccyLabel: 'العملة',
+    ccyUsd: 'دولار $', ccyLbp: 'ليرة ل.ل.', table: 'طاولة', sampleBill: 'فاتورة تجريبية',
+    greet: 'أهلاً وسهلاً', landNote: 'تصفّح القائمة. وعندما تكون جاهزاً، قسّم الفاتورة على طريقتك وادفع من طاولتك.',
+    seeMenu: 'عرض القائمة', openBill: 'افتح الفاتورة', crestFallback: 'قائمتك، مباشرة',
+    dietFilters: 'فلاتر غذائية', filtersSub: 'الأطباق غير المناسبة تبقى ظاهرة لكن باهتة، مع ذكر السبب.',
+    fVeg: 'نباتي', fNonuts: 'بدون مكسرات', fNodairy: 'بدون ألبان', fLight: 'أقل من 400 سعرة', fProtein: 'غني بالبروتين',
+    more: 'تفاصيل أكثر', of: 'من', work: 'أطباق تناسبك', works: 'طبق يناسبك', clear: 'مسح', done: 'تم',
+    rMeat: 'يحتوي على لحم', rNuts: 'يحتوي على مكسرات', rDairy: 'يحتوي على ألبان', rSwap: 'متاح مع',
+    rUnk: 'المكوّنات غير مؤكدة، اسأل الموظفين', soldOut: 'نفد', disc: 'تأكّد دائماً من الحساسية مع الموظفين.',
+    unkSheet: 'تفاصيل مكوّنات هذا الطبق غير مؤكدة. يُرجى سؤال النادل.',
+    rKcal: 'أكثر من 400 سعرة ({n})', rProt: 'بروتين قليل · {n} غ',
+    catBrk: 'ترويقة', catMez: 'مازة ومشاوي', catSwt: 'حلويات', catDrk: 'مشروبات',
+    priceAsSel: 'السعر حسب الاختيار', close: 'إغلاق', free: 'مجاناً',
+    containsHtml: '<b>يحتوي على: {list}.</b> إذا كانت لديك حساسية شديدة، أخبر النادل أيضاً.',
+    noAllergensHtml: '<b>لا مسبّبات حساسية شائعة</b> حسب الاختيار. إذا كانت لديك حساسية شديدة، أخبر النادل أيضاً.',
+    listSep: '، ',
+    al_gluten: 'الغلوتين', al_sesame: 'السمسم', al_nuts: 'المكسرات', al_dairy: 'الألبان', al_egg: 'البيض', al_eggs: 'البيض',
+    al_fish: 'السمك', al_soy: 'الصويا', al_shellfish: 'القشريات', al_peanuts: 'الفول السوداني', al_mustard: 'الخردل', al_celery: 'الكرفس',
+    availSettle: 'المتبقّي للدفع', settleShare: 'ادفع حصّتي', covered: 'مدفوع',
+    nOfCovered: '{n} من {q} مدفوع', nCovered: 'مدفوع: {n}',
+    billTotalOnly: 'أدخل النادل هذه الفاتورة كمجموع، من دون تفاصيل الأطباق.',
+    billWaiting: 'تظهر فاتورتك هنا حين يُدخلها النادل.',
+    billEnded: 'هذه الفاتورة مغلقة. امسح رمز الطاولة مجدداً لفاتورة جديدة.',
+    guests: 'عدد الأشخاص: {n}', guest1: 'شخص واحد', openedAt: 'فُتحت الساعة {time}',
+    splitTitle: 'كيف سنقسم الفاتورة؟', splitSub: 'لا أحد مضطر إلى الحساب',
+    mEven: 'بالتساوي', mItem: 'أطباقي', mAmt: 'مبلغ آخر', mAll: 'كل الفاتورة', howMany: 'كم عددكم؟',
+    itemHint: 'اضغط على ما طلبته. الباقي يبقى على الطاولة للآخرين.', nOf: '{n} من {q}',
+    yourShare: 'حصّتك', amtHint: 'أي مبلغ تريده، حتى {amt} المتبقّية.', continueAmt: 'متابعة · {amt}',
+    onlyLeft: 'لم يتبقَّ سوى {amt} على هذه الفاتورة.',
+    restOthers: '{amt} متاحة لبقية الضيوف. يبقى النقد المعلّق محجوزاً حتى يؤكّده الموظفون أو يلغوه.',
+    noBalance: 'لا يوجد رصيد متاح لدفعة أخرى. راجع أي طلب نقدي معلّق مع النادل.',
+    coversAll: 'هذا يغطي الرصيد المتاح. لا يزال على الموظفين تأكيد أي نقد معلّق.',
+    totalToPay: 'المبلغ المطلوب · {table}', billShare: 'حصّة الفاتورة', tip: 'إكرامية',
+    tipFor: 'إكرامية لـ{name}؟', tipTeam: 'إكرامية للفريق؟', noTip: 'بدون', other: 'مبلغ آخر',
+    whishDesc: 'يُفتح مع المبلغ معبّأً مسبقاً', cardName: 'بطاقة', cashName: 'الدفع نقداً',
+    cashDesc: 'يؤكّد الموظفون بعد الاستلام', cashMark: 'نقداً', railsNote: 'البطاقة وWhish تتوفّران مع مزوّد الدفع.',
+    chgQ: 'كم ستسلّم نقداً؟', exact: 'المبلغ بالضبط',
+    chgOnceHtml: 'يأتي النادل <b>مرة واحدة</b>، ومعه الباقي محسوباً.',
+    chgExactHtml: 'ستدفع <b>{amt}</b> بالضبط. يستلم {server} الأوراق فقط، من دون ذهاب إلى الصندوق.',
+    chgShortHtml: '<b>{note}</b> لا يغطي {amt}. اختر ورقة أكبر، أو تقاسم المبلغ مع الطاولة.',
+    chgBackHtml: 'الباقي المطلوب من {server}: <b>{amt}</b>. يُرجى انتظار الاستلام.',
+    cashNoteHtml: 'يبقى طلبك النقدي <b>بانتظار الاستلام</b> حتى يؤكّده الموظفون. يُرجى انتظار النادل قبل المغادرة.',
+    requestCash: 'اطلب استلام النقد', payAmt: 'ادفع {amt}',
+    whishSub: 'يُفتح تطبيق Whish مع المبلغ والمرجع معبّأين. أكّد هناك وتعود مباشرةً إلى هنا.',
+    wh1: 'يُفتح Whish', wh2: 'تؤكّد', wh3: 'تُحدَّث الطاولة', openWhish: 'افتح Whish',
+    confirmingWhish: 'جارٍ التأكيد مع Whish…', processing: 'جارٍ المعالجة…', cancel: 'إلغاء',
+    whishSim: 'محاكاة. في الإنتاج، هذا رابط مباشر إلى Whish مع تأكيد للدفع.',
+    secureCheckout: 'دفع آمن', cardSim: 'الدفع بالبطاقة · محاكاة',
+    cardSub: 'هذه الصفحة يستضيفها مزوّد الدفع لدى المطعم. هذه صفحة محاكاة. استخدم البيانات التجريبية أدناه.',
+    cardNumber: 'رقم البطاقة', expiry: 'تاريخ الانتهاء', cvc: 'رمز التحقق',
+    cardSimNote: 'محاكاة. في الإنتاج، هذه صفحة بوابة الدفع (مع التحقق الآمن 3-D Secure).',
+    askOpen: 'اطلب من النادل فتح هذه الفاتورة أولاً.',
+    queuedAlert: 'طلبك بانتظار الاتصال وسيُعاد إرساله تلقائياً. يُرجى عدم إرسال دفعة أخرى.',
+    cashRefused: 'لم يقبل المطعم هذا الطلب النقدي. يُرجى التحدث مع النادل.',
+    thanks: 'شكراً.', cashRequested: 'تم طلب الدفع نقداً.', requestUpdated: 'تم تحديث الطلب.', savedPhone: 'محفوظ على هذا الهاتف.',
+    paidVia: 'الدفع عبر', requestedVia: 'الطلب عبر', railWhish: 'Whish Money', railCard: 'بطاقة', railCash: 'نقداً',
+    change: 'الباقي {amt}',
+    stPending: 'سيستلم النادل المبلغ نقداً. يمكنك إغلاق هذه الشاشة؛ لا يُعتبر مدفوعاً حتى يُؤكَّد الاستلام.',
+    stCashConfirmed: 'أكّد النادل استلام المبلغ نقداً.', stDemoConfirmed: 'تم تأكيد الدفع التجريبي · لم تُحوَّل أي أموال.',
+    stOther: 'هذا الطلب {status}. يُرجى التحدث مع النادل.',
+    stat_cancelled: 'أُلغي', stat_refunded: 'استُرِدّ', stat_failed: 'رُفض', stat_expired: 'لم يكتمل', stat_other: 'تغيّر',
+    stQueued: 'الطلب النقدي محفوظ على هذا الهاتف. يصل إلى المطعم فور عودتك إلى الاتصال.',
+    unableConnect: 'تعذّر الاتصال بهذه الفاتورة. يُرجى التحدث مع النادل.',
+    mailPh: 'واتساب (+رمز الدولة) أو البريد الإلكتروني', mailAria: 'رقم واتساب مع رمز الدولة، أو بريد إلكتروني (اختياري)',
+    sendReceipt: 'أرسل إيصالي', saved: 'تم الحفظ',
+    mailInvalid: 'أدخل بريداً إلكترونياً أو رقم واتساب مع رمز الدولة. نرحّب بالأرقام من أي بلد.',
+    prefsShared: 'حُفظت تفضيلاتك لدى المطعم.', prefsLocal: 'حُفظت تفضيلاتك على هذا الهاتف.', noneSent: 'لم يُرسَل أي إيصال أو رسالة.',
+    offersFrom: 'أرسلوا لي عروض {venue}', rateQ: 'كيف كانت سهرتك في {venue}؟', ratingGroup: 'تقييمك',
+    star1: 'نجمة واحدة', starN: '{n} نجوم',
+    rvHappyT: 'يسعدنا أنها أعجبتك', rvHappyS: 'هل تقولها على Google؟ لا شيء يساعد {venue} أكثر من ذلك.',
+    rvGoogle: 'اكتب مراجعة على Google', rvOpened: 'فُتح Google في علامة تبويب جديدة. شكراً!',
+    rvNoLink: 'شكراً! رابط مراجعات Google لـ{venue} غير مُعدّ بعد، فلا شيء آخر عليك فعله.',
+    rvSadT: 'نأسف لأن السهرة لم تكن مثالية',
+    rvSadS: 'أخبر {venue} بما لم يكن جيداً. ملاحظتك تصل إلى المطعم فقط، ولا تُنشر أبداً.',
+    rvNoteLabel: 'ملاحظتك', rvNotePh: 'ما الذي يجب أن يعرفوه؟', rvSend: 'أرسل بشكل خاص',
+    rvSent: 'أُرسلت إلى {venue}. المطعم وحده يراها.',
+    rvToPrivate: 'أفضّل أن أكتب للمطعم بشكل خاص', rvToGoogle: 'أفضّل نشر مراجعة علنية على Google',
+    errPay: 'أدخل مبلغاً وإكرامية صحيحين.', errCash: 'اختر نقداً يكفي لحصتك والإكرامية.',
+    errChanged: 'تغيّرت الفاتورة أثناء الدفع. راجع حصتك وحاول مجدداً.',
+    errTaken: 'أحدٌ على الطاولة دفع مسبقاً ثمن أحد هذه الأطباق.',
+    errExpired: 'استغرق هذا الدفع وقتاً طويلاً. ابدأ من جديد.', errClosed: 'هذه الفاتورة مغلقة. اسأل النادل.',
+    errLinked: 'هذا الدفع مرتبط مسبقاً بجهة اتصال أخرى.', errNet: 'تعذّر الوصول إلى المطعم. حاول بعد قليل.',
+    errGeneric: 'حدث خطأ ما. حاول مجدداً أو اسأل النادل.',
+    offline: 'لا اتصال. فاتورتك كما كانت عند {time}؛ سنرسل دفعتك حين تعود إلى الاتصال.'
+  }
+};
+/* i18n:end */
+/* the venue's place line in the guest's language, when the link carries one */
+function venuePlace(v){ return (LANG !== 'en' && v.placeTr && v.placeTr[LANG]) || v.place || ''; }
+/* a store or network refusal, in the guest's language; English keeps the store's own wording */
+var ERR_KEYS = [
+  ['Enter a valid payment and tip.', 'errPay'],
+  ['Choose enough cash to cover your share and tip.', 'errCash'],
+  ['The bill changed.', 'errChanged'],
+  ['The selected items do not match the payment amount.', 'errChanged'],
+  ['One of these items is already covered by another payment.', 'errTaken'],
+  ['This payment reservation expired.', 'errExpired'],
+  ['This bill is closed', 'errClosed'],
+  ['This bill is not available', 'errClosed'],
+  ['Use an email or a phone number', 'mailInvalid'],
+  ['This payment is already linked to another contact.', 'errLinked'],
+  ['Link contact details to a confirmed payment first.', 'errLinked'],
+  ['The restaurant could not be reached', 'errNet']
+];
+function errText(e){
+  var m = String(e && e.message || '');
+  if (LANG === 'en' && m) return m;
+  for (var i = 0; i < ERR_KEYS.length; i++) if (m.indexOf(ERR_KEYS[i][0]) === 0) return t(ERR_KEYS[i][1]);
+  return t('errGeneric');
+}
+function t(k, vars){
+  var s = (STR[LANG] || STR.en)[k];
+  if (s == null) s = STR.en[k];
+  if (s == null) return k;
+  return vars ? s.replace(/\{(\w+)\}/g, function(m, n){ return vars[n] != null ? String(vars[n]) : m; }) : s;
+}
+function pickLang(){
+  var v = '';
+  try { v = String(new URLSearchParams(location.search).get('lang') || '').toLowerCase(); } catch(e) {}
+  if (LANGS.indexOf(v) < 0) { try { v = String(sessionStorage.getItem('aal.guest-lang') || ''); } catch(e) { v = ''; } }
+  if (LANGS.indexOf(v) < 0) {
+    var nav = window.navigator || {};
+    v = String((nav.languages && nav.languages[0]) || nav.language || '').slice(0, 2).toLowerCase();
+    if (v !== 'fr' && v !== 'ar') v = 'en';
+  }
+  return v;
+}
+var LANG = pickLang(), CCY = 'usd';
+/* money: the math stays in USD; what the guest sees follows the currency toggle.
+   LBP is rounded to the nearest LL 1,000, as the printed menus are. */
 function RATE(){ return Aalayna.rate(); }
+function toLL(v){ return Math.round(v * RATE() / 1000) * 1000; }
+function fmtLL(n){ var s = Math.round(n).toLocaleString('en-US'); return LANG === 'ar' ? s + ' ل.ل.' : 'LL ' + s; }
+/* in Arabic a dollar amount is isolated left-to-right, or the $ drifts to the other side of the number */
+function fmtUSD(v){ var s = '$' + v.toFixed(2); return LANG === 'ar' ? '\u2066' + s + '\u2069' : s; }
+/* every amount the guest sees, in the guest's currency (the name is historic) */
+function usd(v){ return CCY === 'lbp' ? fmtLL(toLL(v)) : fmtUSD(v); }
+function price(v){ return usd(v); }
+function money(v){ return usd(v); }
+/* the other currency, as a hint under a total */
+function ll(v){ return '≈ ' + (CCY === 'lbp' ? fmtUSD(v) : fmtLL(Math.round(v * RATE()))); }
+function curSign(){ return CCY === 'lbp' ? (LANG === 'ar' ? 'ل.ل.' : 'LL') : '$'; }
+/* typed amounts (custom split, custom tip) are in the guest's currency; returns USD */
+function typedUSD(str){
+  var s = String(str || '').trim();
+  if (CCY === 'lbp') return (parseFloat(s.replace(/[^0-9]/g, '')) || 0) / RATE();
+  if (s.indexOf('.') < 0) s = s.replace(',', '.');
+  return parseFloat(s.replace(/[^0-9.]/g, '')) || 0;
+}
+function typedText(vUSD){ return CCY === 'lbp' ? String(toLL(vUSD)) : vUSD.toFixed(2); }
+function pct(n){ return LANG === 'fr' ? n + ' %' : n + '%'; }
+function clockText(at){
+  var d = new Date(at); if (isNaN(d)) return '';
+  var h = d.getHours(), m = (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+  if (LANG === 'en') return (h % 12 || 12) + ':' + m + ' ' + (h < 12 ? 'am' : 'pm');
+  return (h < 10 ? '0' : '') + h + ':' + m;
+}
+/* static text: data-i18n (text), data-i18n-html (markup from the table), -ph, -aria */
+function paintStatic(){
+  var all = function(sel, fn){ Array.prototype.forEach.call(document.querySelectorAll(sel), fn); };
+  all('[data-i18n]', function(el){ el.textContent = t(el.getAttribute('data-i18n')); });
+  all('[data-i18n-html]', function(el){ el.innerHTML = t(el.getAttribute('data-i18n-html') + 'Html'); });
+  all('[data-i18n-ph]', function(el){ el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph'))); });
+  all('[data-i18n-aria]', function(el){ el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
+  all('.star', function(el, i){ var n = i % 5 + 1; el.setAttribute('aria-label', n === 1 ? t('star1') : t('starN', {n: n})); });
+}
+function applyLang(){
+  var app = $('app');
+  if (app){ app.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr'); app.setAttribute('lang', LANG); }
+  if (document.documentElement) document.documentElement.lang = LANG;
+  var scr = $('screen'); if (scr) scr.setAttribute('data-preview', t('preview'));
+  paintStatic();
+  // the Arabic "thank you" under the title is a flourish; in Arabic the title already says it
+  var tar = $('thanks-ar'); if (tar) tar.hidden = LANG === 'ar';
+}
+/* ---------------- data ---------------- */
 /* ---- everything below is the PUBLISHED menu. Never the draft. ---- */
 var WINDOWS = {all:[0,1440], brkf:[420,690], lunch:[720,960], dinner:[1080,1410]};
 function serving(win){
@@ -1106,7 +1510,9 @@ function serving(win){
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
 var CHECK = null;
 /* T8: this page's bill was closed (Aalayna.sync.onClosed, below) */
-var BILL_ENDED = !!(Aalayna.sync && Aalayna.sync.closed && Aalayna.sync.closed()), BILL_ENDED_MSG = 'This bill is closed. Scan the table code again for a new bill.';
+var BILL_ENDED = !!(Aalayna.sync && Aalayna.sync.closed && Aalayna.sync.closed()), BILL_ENDED_MSG = STR.en.billEnded;
+/* the restaurant's own wording in English; the closed-bill line in the guest's language otherwise */
+function billEndedText(){ return LANG === 'en' ? BILL_ENDED_MSG : t('billEnded'); }
 function paidUnits(l){ return CHECK ? (Aalayna.checkBalance(CHECK.id).items[l.id] || 0) : 0; }
 function linePaid(l){ return paidUnits(l) >= l.q; }
 function remaining(){ return CHECK ? Aalayna.checkBalance(CHECK.id).availableCents / 100 : TOTAL; }
@@ -1115,7 +1521,7 @@ function loadMenu(){
   MENU_V = m.version;
   // a section outside its service window is not on the guest's menu at all
   CATS = m.sections.filter(function(x){ return serving(x.win); })
-                   .map(function(x){ return {id:x.id, label:x.name}; });
+                   .map(function(x){ return {id:x.id, label:x.name, tr:x.tr}; });
   var live = {};
   CATS.forEach(function(c){ live[c.id] = 1; });
   // archived dishes are history, not menu; sold-out ones stay listed but dimmed
@@ -1171,7 +1577,9 @@ function loadBill(){
   }) : Aalayna.check(TABLE);
   var before = BILL, held = {};
   if (picked) before.forEach(function(b, i){ if (picked[i]) held[b.id] = picked[i]; });
-  BILL = lines.map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p}; });
+  var byId = {};
+  items.forEach(function(x){ byId[x.id] = x; });
+  BILL = lines.map(function(l){ return {id:l.id, n:l.name, q:l.q, p:l.p, tr:byId[l.id] ? byId[l.id].tr : null}; });
   TOTAL = BILL.reduce(function(a, b){ return a + Math.round(b.p * 100); }, 0) / 100;
   // a bill staff opened from a POS total carries no items: its total is the bill
   if (CHECK && !BILL.length) TOTAL = CHECK.totalCents / 100;
@@ -1181,37 +1589,30 @@ function loadBill(){
 }
 /* Table labels follow TABLE. "Sample bill" shows only while the bill is the demo
    sample; a staff-entered bill shows the plain table number, in every language. */
-var TABLE_WORD = {en:'Table', fr:'Table', ar:'\u0637\u0627\u0648\u0644\u0629'};
-var SAMPLE_WORD = {en:'sample bill', fr:"addition d'exemple", ar:'\u0641\u0627\u062a\u0648\u0631\u0629 \u062a\u062c\u0631\u064a\u0628\u064a\u0629'};
-function tableLabel(){
-  var n = String(TABLE);
-  if (LANG === 'ar') n = n.replace(/[0-9]/g, function(d){ return String.fromCharCode(0x0660 + Number(d)); });
-  return TABLE_WORD[LANG] + ' ' + n;
-}
+function tableLabel(){ return t('table') + ' ' + String(TABLE); }
 function paintTableLabels(){
   if (TABLE == null || !document.getElementById('land-tbl')) return;
   var v = Aalayna.venue(), label = tableLabel();
   var sample = !!CHECK && CHECK.source !== 'staff' && Aalayna.sampleAllowed();
-  var place = v.heritage && LANG === 'ar' ? '\u0642\u0635\u0631 \u0627\u0644\u062d\u0644\u0648' : (v.place || v.name);
-  $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + SAMPLE_WORD[LANG] : ''));
+  var place = venuePlace(v) || v.name;
+  $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + t('sampleBill') : ''));
   $('m-sub').textContent = label + ' \u00b7 ' + place;
   $('bill-title').textContent = label;
-  $('pay-who').textContent = 'Total to pay \u00b7 ' + label;
+  $('pay-who').textContent = t('totalToPay', {table: label});
   paintPartySize();
 }
-/* T8: the demo keeps its illustrative line; a live bill shows its party size when the
-   check carries one (partySize, or covers from a POS), else nothing */
-var PARTY_WORD = {en:['guest','guests'], fr:['convive','convives']};
+/* The line under the table number says only what the check knows: its party size
+   (partySize, or covers from a POS) and the time it was opened; nothing when neither
+   is known. The demo's sample check is opened when the page opens, so it shows that time. */
 function paintPartySize(){
   var sub = $('bill-sub');
-  if (!sub || Aalayna.demoMode()) return;
-  var n = CHECK ? Number(CHECK.partySize != null ? CHECK.partySize : CHECK.covers) : NaN, text = '';
-  if (n >= 1 && n < 100 && n === Math.floor(n)) {
-    if (LANG === 'ar') text = '\u0639\u062f\u062f \u0627\u0644\u0623\u0634\u062e\u0627\u0635: ' + String(n).replace(/[0-9]/g, function(d){ return String.fromCharCode(0x0660 + Number(d)); });
-    else text = n + ' ' + (PARTY_WORD[LANG] || PARTY_WORD.en)[n === 1 ? 0 : 1];
-  }
-  sub.textContent = text;
-  sub.hidden = !text;
+  if (!sub) return;
+  var n = CHECK ? Number(CHECK.partySize != null ? CHECK.partySize : CHECK.covers) : NaN, parts = [];
+  if (n >= 1 && n < 100 && n === Math.floor(n)) parts.push(n === 1 ? t('guest1') : t('guests', {n: n}));
+  var at = CHECK && CHECK.openedAt ? clockText(CHECK.openedAt) : '';
+  if (at) parts.push(t('openedAt', {time: at}));
+  sub.textContent = parts.join(' \u00b7 ');
+  sub.hidden = !parts.length;
 }
 /* open the table's bill at a scan or a restart: the waiter's check, or, in demo
    mode only, the sample. With a venue key a guest never opens a check; only staff do. */
@@ -1261,41 +1662,7 @@ function hasNuts(e){ return (e.al||[]).indexOf('nuts') > -1; }
 function hasDairy(e){ return (e.al||[]).indexOf('dairy') > -1; }
 function isLight(e){ return e.kcal != null && e.kcal <= 400; }
 function isHighP(e){ return e.pr != null && e.pr >= 20; }
-/* ---------------- i18n + currency ---------------- */
-var LANG = 'en', CCY = 'usd';
-var T = {
-  en:{filters:['Vegetarian','No nuts','No dairy','Under 400 kcal','High protein'],
-      cats:['Breakfast','Mezze & Grill','Knefeh & Sweets','Drinks'],
-      more:'For more details', of:'of', work:'dishes work for you', works:'dish works for you',
-      clear:'Clear', whatsin:"What's in it",
-      rMeat:'has meat', rNuts:'contains nuts', rDairy:'contains dairy',
-      rSwap:'works with', rUnk:'ingredients not confirmed, ask staff', soldOut:'Sold out',
-      disc:'Always confirm allergies with staff.',
-      unkSheet:'Ingredient details are not confirmed for this dish. Please ask your server.',
-      rKcal:function(n){return 'over 400 kcal (' + n + ')'},
-      rProt:function(n){return 'only ' + n + 'g protein'}},
-  fr:{filters:['Végétarien','Sans noix','Sans lactose','Moins de 400 kcal','Riche en protéines'],
-      cats:['Petit-déjeuner','Mezzé & grillades','Knefeh & douceurs','Boissons'],
-      more:'Plus de détails', of:'sur', work:'plats vous conviennent', works:'plat vous convient',
-      clear:'Effacer', whatsin:'Composition',
-      rMeat:'contient de la viande', rNuts:'contient des noix', rDairy:'contient du lactose',
-      rSwap:'possible avec', rUnk:'ingrédients non confirmés, demandez au personnel', soldOut:'Épuisé',
-      disc:'Confirmez toujours vos allergies auprès du personnel.',
-      unkSheet:'Les ingrédients de ce plat ne sont pas confirmés. Merci de demander à votre serveur.',
-      rKcal:function(n){return 'plus de 400 kcal (' + n + ')'},
-      rProt:function(n){return 'seulement ' + n + 'g de protéines'}},
-  ar:{filters:['نباتي','بدون مكسرات','بدون ألبان','أقل من ٤٠٠ سعرة','غني بالبروتين'],
-      cats:['فطور','مازة ومشاوي','كنافة وحلويات','مشروبات'],
-      more:'تفاصيل أكثر', of:'من', work:'أطباق تناسبك', works:'طبق يناسبك',
-      clear:'مسح', whatsin:'المكوّنات',
-      rMeat:'يحتوي على لحم', rNuts:'يحتوي على مكسرات', rDairy:'يحتوي على ألبان',
-      rSwap:'متاح مع', rUnk:'المكوّنات غير مؤكدة، اسأل الموظفين', soldOut:'نفد',
-      disc:'تأكّد دائماً من الحساسية مع الموظفين.',
-      unkSheet:'تفاصيل مكوّنات هذا الطبق غير مؤكدة. يُرجى سؤال النادل.',
-      rKcal:function(n){return 'أكثر من ٤٠٠ سعرة (' + n + ')'},
-      rProt:function(n){return 'بروتين قليل · ' + n + 'غ'}}
-};
-function t(k){ return T[LANG][k]; }
+/* dish and section names: the translation when the menu has one, English otherwise */
 function nameOf(m){
   if (LANG === 'en') return m.n;
   return (m.tr && m.tr[LANG] && m.tr[LANG].n) || m.n;   // English is the fallback
@@ -1304,25 +1671,50 @@ function descOf(m){
   if (LANG === 'en') return m.d;
   return (m.tr && m.tr[LANG] && m.tr[LANG].d) || m.d;
 }
-/* price display follows the currency toggle: the diner-facing half of the FX feature */
-function price(v){
-  if (CCY === 'lbp') return 'LL ' + (Math.round(v * RATE() / 1000) * 1000).toLocaleString('en-US');
-  return '$' + v.toFixed(2);
+var SEED_CATS = {brk:'catBrk', mez:'catMez', swt:'catSwt', drk:'catDrk'};
+function catLabel(c){
+  if (LANG === 'en') return c.label;
+  if (c.tr && c.tr[LANG] && c.tr[LANG].n) return c.tr[LANG].n;
+  return SEED_CATS[c.id] ? t(SEED_CATS[c.id]) : c.label;
 }
+/* option groups and choices may carry tr like dishes do */
+function optName(o){ return (LANG !== 'en' && o.tr && o.tr[LANG] && o.tr[LANG].n) || o.name || o.n; }
+function allergenName(a){ var k = 'al_' + String(a).toLowerCase(); return STR.en[k] ? t(k) : a; }
 /* how guests use the interface: one small event per choice, never a keystroke */
 function ui(action, value, n){ try { Aalayna.logEvent('ui_action', n == null ? { action: action, value: value } : { action: action, value: value, n: n }, { tableId: TABLE }); } catch(e) {} }
-function setLang(v){ LANG = v; ui('language', v); renderMenu(); }
-function setCcy(v){ CCY = v; ui('currency', v); renderMenu(); }
+/* the language and the currency repaint every screen, not only the menu */
+function setLang(v){
+  if (LANGS.indexOf(v) < 0) v = 'en';
+  LANG = v; ui('language', v);
+  try { sessionStorage.setItem('aal.guest-lang', v); } catch(e) {}
+  repaintAll();
+}
+function setCcy(v){
+  var tip = tipFlat, typed = $('amt-in') ? typedUSD($('amt-in').value) : 0;
+  CCY = v === 'lbp' ? 'lbp' : 'usd'; ui('currency', CCY);
+  // typed amounts keep their value in the new currency; a picked note is in the old one
+  if ($('amt-in') && $('amt-in').value) $('amt-in').value = typedText(typed);
+  if (tip != null && $('tip-in')) $('tip-in').value = tip ? typedText(tip) : '';
+  note = 0; document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('on'); });
+  repaintAll();
+}
+function repaintAll(){
+  applyLang();
+  renderMenu();
+  paintVenue();
+  buildBill(); buildPick(); calcShare();
+  paintSettlementResult();
+  if (!lastSettlementId) paintQueued();
+  if ($('ov-review').classList.contains('on')) paintReview();
+  if (NET.off) paintNet();
+}
 function renderMenu(){
-  var m = $('v-menu');
-  m.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
-  $('langsel').value = LANG;
-  $('ccysel').value = CCY;
+  $('langsel').value = $('langsel-land').value = LANG;
+  $('ccysel').value = $('ccysel-land').value = CCY;
   paintTableLabels();
-  $('pill-tot').textContent = price(TOTAL);
-  $('land-tot').textContent = price(TOTAL);
-  var f = t('filters');
-  ['veg','nonuts','nodairy','light','protein'].forEach(function(k,i){ $('f-'+k).textContent = f[i]; });
+  $('pill-tot').textContent = price(remaining());
+  $('land-tot').textContent = price(remaining());
+  ['veg','nonuts','nodairy','light','protein'].forEach(function(k){ $('f-'+k).textContent = t('f' + k.charAt(0).toUpperCase() + k.slice(1)); });
   $('fclear').textContent = t('clear');
   $('f-disc').textContent = t('disc');
   buildCats(true);
@@ -1348,8 +1740,6 @@ function tipAmt(){
 var curItem = null, curSel = {}, rating = 0;
 /* ---------------- helpers ---------------- */
 function $(id){ return document.getElementById(id); }
-function usd(n){ return '$' + n.toFixed(2); }
-function ll(n){ return '≈ LL ' + Math.round(n * RATE()).toLocaleString('en-US'); }
 function go(id){
   if ($('ov-review').classList.contains('on')) closeReview();
   document.body.classList.toggle('receipt-mode', id === 'v-done');
@@ -1393,7 +1783,7 @@ function buildCats(rebuild){
   CATS.forEach(function(c, i){
     var b = document.createElement('button');
     b.className = 'cat' + (i === 0 ? ' on' : '');
-    b.textContent = (LANG==='en') ? c.label : (t('cats')[['brk','mez','swt','drk'].indexOf(c.id)] || c.label);
+    b.textContent = catLabel(c);
     b.onclick = function(){ selectCat(b, c.id); };
     wrap.insertBefore(b, ink);
   });
@@ -1449,7 +1839,7 @@ function buildMenu(){
   CATS.forEach(function(c){
     var h = document.createElement('div');
     h.className = 'sect-h'; h.dataset.sect = c.id;
-    h.textContent = (LANG==='en') ? c.label : (t('cats')[['brk','mez','swt','drk'].indexOf(c.id)] || c.label);
+    h.textContent = catLabel(c);
     s.appendChild(h);
     MENU.filter(function(m){ return m.c === c.id; }).forEach(function(m){
       var d = document.createElement('div');
@@ -1480,8 +1870,8 @@ function reasonsE(e){
   if (filt.veg     && !isVeg(e))    r.push(t('rMeat'));
   if (filt.nonuts  && hasNuts(e))   r.push(t('rNuts'));
   if (filt.nodairy && hasDairy(e))  r.push(t('rDairy'));
-  if (filt.light   && !isLight(e))  r.push(t('rKcal')(e.kcal));
-  if (filt.protein && !isHighP(e))  r.push(t('rProt')(e.pr));
+  if (filt.light   && !isLight(e))  r.push(t('rKcal', {n: e.kcal}));
+  if (filt.protein && !isHighP(e))  r.push(t('rProt', {n: e.pr}));
   return r;
 }
 function reasons(m){ return reasonsE(effDiet(m, null)); }
@@ -1499,7 +1889,7 @@ function fitSwap(m){
       if (n < bestN){ bestN = n; best = ci; }
     });
     sel[gi] = best;
-    if (best !== 0) swaps.push(g.choices[best].n);
+    if (best !== 0) swaps.push(optName(g.choices[best]));
   });
   if (!swaps.length) return null;
   return reasonsE(effDiet(m, sel)).length === 0 ? swaps : null;
@@ -1553,7 +1943,6 @@ function openItem(m){
   curItem = m; curSel = {};
   $('i-name').textContent = nameOf(m);
   $('i-desc').textContent = descOf(m);
-  $('ov-item').setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr');
   var out = $('i-out');
   out.textContent = t('soldOut');
   out.style.display = m.available ? 'none' : 'inline-block';
@@ -1564,7 +1953,7 @@ function openItem(m){
      already in the base price. 'many' groups are independent add-ons. */
   (m.opts || []).forEach(function(g, gi){
     var lb = document.createElement('div');
-    lb.className = 'opt-g'; lb.textContent = g.name;
+    lb.className = 'opt-g'; lb.textContent = optName(g);
     box.appendChild(lb);
     curSel[gi] = g.type === 'one' ? 0 : {};
     g.choices.forEach(function(c, ci){
@@ -1587,8 +1976,8 @@ function openItem(m){
       row.innerHTML =
         '<span class="cb' + (g.type === 'one' ? ' rd' : '') + '">' +
           (g.type === 'one' ? '&#9679;' : '&#10003;') + '</span>' +
-        '<span class="an">' + c.n + '</span>' +
-        '<span class="ap">' + (c.p ? '+' + usd(c.p) : (g.type === 'one' ? '' : 'free')) + '</span>';
+        '<span class="an">' + esc(optName(c)) + '</span>' +
+        '<span class="ap">' + (c.p ? '<bdi>+' + esc(price(c.p)) + '</bdi>' : (g.type === 'one' ? '' : esc(t('free')))) + '</span>';
       box.appendChild(row);
     });
   });
@@ -1609,46 +1998,44 @@ function paintAlert(){
   }
   var al = effDiet(curItem, curSel).al, bg, bd, fg;
   if (al.length){
-    alrt.innerHTML = '<span>&#9888;</span><span><b>Contains ' + al.join(', ') + '.</b> ' +
-      'If you have a serious allergy, tell your server too.</span>';
+    alrt.innerHTML = '<span>&#9888;</span><span>' + t('containsHtml', {list: esc(al.map(allergenName).join(t('listSep')))}) + '</span>';
     bg = '#FBEDEB'; bd = '#F3D9D5'; fg = '#8E3A33';
   } else {
-    alrt.innerHTML = '<span>&#10003;</span><span><b>No common allergens</b> as selected. ' +
-      'If you have a serious allergy, tell your server too.</span>';
+    alrt.innerHTML = '<span>&#10003;</span><span>' + t('noAllergensHtml') + '</span>';
     bg = '#EAF1EC'; bd = '#CFE0D5'; fg = '#2F5A48';
   }
   alrt.style.background = bg; alrt.style.borderColor = bd; alrt.style.color = fg;
 }
 function calcItem(){
   paintAlert();
-  var t = curItem.p;
+  var sum = curItem.p;
   (curItem.opts || []).forEach(function(g, gi){
     if (g.type === 'one'){
       var c = g.choices[curSel[gi] || 0];
-      if (c) t += c.p;
+      if (c) sum += c.p;
     } else {
-      g.choices.forEach(function(c, ci){ if (curSel[gi] && curSel[gi][ci]) t += c.p; });
+      g.choices.forEach(function(c, ci){ if (curSel[gi] && curSel[gi][ci]) sum += c.p; });
     }
   });
-  $('i-tot').textContent = price(t);
+  $('i-tot').textContent = price(sum);
 }
 /* ---------------- bill ---------------- */
 function buildBill(){
   var box = $('r-items'); box.innerHTML = '';
-  if (!BILL.length) box.innerHTML = '<div class="r-item"><div>' + (CHECK && TOTAL > 0 ? 'Your server entered this bill as a total, without items.' : BILL_ENDED && !CHECK ? BILL_ENDED_MSG : 'Your bill appears here once your server enters it.') + '</div></div>';
+  if (!BILL.length) box.innerHTML = '<div class="r-item"><div>' + esc(CHECK && TOTAL > 0 ? t('billTotalOnly') : BILL_ENDED && !CHECK ? billEndedText() : t('billWaiting')) + '</div></div>';
   BILL.forEach(function(b){
     var d = document.createElement('div');
     var paid = paidUnits(b), full = paid >= b.q;
     d.className = 'r-item' + (full ? ' r-paid' : '');
-    var tag = full ? '<span class="paidtag">COVERED</span>'
-            : paid ? '<span class="paidtag">' + paid + ' OF ' + b.q + ' COVERED</span>' : '';
-    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + b.n + tag + '</div>' +
+    var tag = full ? '<span class="paidtag">' + esc(t('covered')) + '</span>'
+            : paid ? '<span class="paidtag">' + esc(t('nOfCovered', {n: paid, q: b.q})) + '</span>' : '';
+    d.innerHTML = '<div><span class="q">' + b.q + '&times;</span>' + esc(nameOf(b)) + tag + '</div>' +
                   '<div class="p">' + usd(full ? b.p : (b.p / b.q) * (b.q - paid)) + '</div>';
     box.appendChild(d);
   });
   var rem = remaining();
   $('r-tot').textContent = usd(rem);
-  document.querySelector('.r-total .l').textContent = 'AVAILABLE TO SETTLE';
+  $('r-tot-l').textContent = t('availSettle');
   $('r-ll').textContent = ll(rem);
   $('land-tot').textContent = price(rem);
   $('pill-tot').textContent = price(rem);
@@ -1662,8 +2049,8 @@ function buildPick(){
     d.className = 'pl' + (avail === 0 ? ' dis' : '');
     if (avail === 0){
       d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
-        '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
-        '<span class="paidtag">COVERED</span></span><span class="pr">' + usd(b.p) + '</span>';
+        '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + esc(nameOf(b)) +
+        '<span class="paidtag">' + esc(t('covered')) + '</span></span><span class="pr">' + usd(b.p) + '</span>';
       box.appendChild(d);
       return;
     }
@@ -1676,15 +2063,15 @@ function buildPick(){
       d.classList.toggle('on', n > 0);
       d.querySelector('.pr').textContent = usd(n > 0 && n < avail ? unit * n : lineOwed);
       var sn = d.querySelector('.sn');
-      if (sn) sn.textContent = n + ' of ' + avail;
+      if (sn) sn.textContent = t('nOf', {n: n, q: avail});
     }
     d.onclick = function(){
       picked[i] = picked[i] ? 0 : 1;
       paint(); calcShare();
     };
     d.innerHTML = '<span class="cb">&#10003;</span><span class="nm">' +
-                  '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + b.n +
-                  (paid ? '<span class="paidtag">' + paid + ' COVERED</span>' : '') +
+                  '<span class="q" style="color:var(--sub)">' + b.q + '&times; </span>' + esc(nameOf(b)) +
+                  (paid ? '<span class="paidtag">' + esc(t('nCovered', {n: paid})) + '</span>' : '') +
                   (avail > 1 ? '<span class="st">' +
                     '<button class="sb" data-d="-1">&minus;</button><span class="sn"></span>' +
                     '<button class="sb" data-d="1">+</button></span>' : '') +
@@ -1732,8 +2119,8 @@ function calcShare(){
   else if (splitMode === 'all')  share = rem;
   else if (splitMode === 'amt'){
     // whatever they type, never more than what the table still owes
-    share = Math.max(0, Math.min(rem, parseFloat($('amt-in').value) || 0));
-    $('amt-hint').textContent = 'Whatever you like, up to the ' + usd(rem) + ' remaining.';
+    share = Math.max(0, Math.min(rem, typedUSD($('amt-in').value)));
+    $('amt-hint').textContent = t('amtHint', {amt: usd(rem)});
   }
   else { share = 0; BILL.forEach(function(b, i){
     var avail = b.q - paidUnits(b);
@@ -1744,12 +2131,13 @@ function calcShare(){
   $('sh-ll').textContent = ll(share);
   var cb = $('continue-btn');
   if (cb) cb.disabled = share <= 0;
-  if (cb) cb.innerHTML = '<span class="sheen"></span>Continue · ' + usd(share);
+  if (cb) cb.innerHTML = '<span class="sheen"></span>' + esc(t('continueAmt', {amt: usd(share)}));
+  $('amt-cur').textContent = curSign();
+  $('amt-in').placeholder = CCY === 'lbp' ? '0' : '0.00';
   var rest = payHold ? rem : rem - share;   // held: rem already excludes this guest's reservation
-  $('restnote').textContent = capped && !payHold ? 'Only ' + usd(rem) + ' is left on this bill.'
-    : rest > 0.01
-    ? usd(rest) + ' available for other guests. Pending cash is held until staff confirm or cancel it.'
-    : rem <= 0 ? 'No balance is available for another payment. Check any pending cash request with your server.' : 'That covers the available balance. Staff still need to confirm any pending cash.';
+  $('restnote').textContent = capped && !payHold ? t('onlyLeft', {amt: usd(rem)})
+    : rest > 0.01 ? t('restOthers', {amt: usd(rest)})
+    : rem <= 0 ? t('noBalance') : t('coversAll');
   paintPay();
 }
 /* ---------------- pay ---------------- */
@@ -1766,12 +2154,12 @@ function tipCustom(el){
   document.querySelectorAll('.tipb').forEach(function(b){ b.classList.remove('on'); });
   el.classList.add('on');
   $('tipcw').style.display = 'flex';
-  tipFlat = parseFloat($('tip-in').value) || 0;
+  tipFlat = typedUSD($('tip-in').value);
   $('tip-in').focus();
   paintPay();
 }
 function tipTyped(){
-  tipFlat = Math.max(0, parseFloat($('tip-in').value) || 0);
+  tipFlat = Math.max(0, typedUSD($('tip-in').value));
   paintPay();
 }
 function pick(el, k){
@@ -1806,32 +2194,47 @@ function setNote(el, n){
   el.classList.add('on');
   paintPay();
 }
-function money(v){ return usd(v); }
+/* the notes a guest can hand over: $20 / $50 / $100, or LL 2,000,000 / 5,000,000 /
+   10,000,000 when paying in lira. note is kept in USD like every other amount. */
+var NOTES = {usd: [20, 50, 100], lbp: [2000000, 5000000, 10000000]};
+function noteValue(i){ return CCY === 'lbp' ? NOTES.lbp[i] / RATE() : NOTES.usd[i]; }
+function paintNotes(){
+  $('chg').classList.toggle('lbp', CCY === 'lbp');
+  [0, 1, 2].forEach(function(i){
+    var el = $('note-' + (i + 1));
+    if (el) el.textContent = CCY === 'lbp' ? fmtLL(NOTES.lbp[i]) : '$' + NOTES.usd[i];
+  });
+}
 function paintChange(due){
   var out = $('chgout');
+  paintNotes();
   if (note === 0){
-    out.innerHTML = 'You’re paying <b>' + usd(due) + '</b> exactly. ' + esc(SERVER) + ' just collects the notes. No trip to the till.';
+    out.innerHTML = t('chgExactHtml', {amt: esc(usd(due)), server: esc(SERVER)});
     return;
   }
   var back = note - due;
-  if (back < 0){
-    out.innerHTML = '<b>$' + note + '</b> doesn’t cover ' + usd(due) + '. Pick a bigger note, or split it with the table.';
+  if (back < -0.004){
+    out.innerHTML = t('chgShortHtml', {note: esc(usd(note)), amt: esc(usd(due))});
     return;
   }
-  out.innerHTML = 'Change requested from ' + esc(SERVER) + ': <b>' + usd(back) + '</b>. Please wait for collection.';
+  out.innerHTML = t('chgBackHtml', {server: esc(SERVER), amt: esc(usd(Math.max(0, back)))});
 }
 function paintPay(){
-  var t = tipAmt(), tot = share + t, isCash = (kind === 'cash');
+  var tip = tipAmt(), tot = share + tip, isCash = (kind === 'cash');
   $('bigamt').textContent = usd(tot);
   $('pay-share').textContent = usd(share);
-  $('pay-tip').textContent = usd(t);
+  $('pay-tip').textContent = usd(tip);
   $('bigll').textContent = ll(tot);
   $('tv5').textContent  = usd(share * .05);
   $('tv10').textContent = usd(share * .10);
   $('tv15').textContent = usd(share * .15);
-  $('paybtn').disabled = share <= 0 || (isCash && note > 0 && note < tot);
+  $('tp5').textContent = pct(5); $('tp10').textContent = pct(10); $('tp15').textContent = pct(15);
+  $('tip-cur').textContent = curSign();
+  $('tip-in').placeholder = CCY === 'lbp' ? '0' : '0.00';
+  // a note in lira is compared at the cent: LL 5,000,000 covers what rounds to it
+  $('paybtn').disabled = share <= 0 || (isCash && note > 0 && note < tot - 0.004);
   $('paybtn').innerHTML = '<span class="sheen"></span>' +
-    (isCash ? 'Request cash collection' : 'Pay ' + usd(tot));
+    esc(isCash ? t('requestCash') : t('payAmt', {amt: usd(tot)}));
   if (isCash) paintChange(tot);   // tot, not share; the change must account for the tip
 }
 /* ---------------- success ---------------- */
@@ -1891,13 +2294,15 @@ function watchGuestChanges(){
 function newRequestId(){ return 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2); }
 /* the same fields whichever rail: the store validates them against the open check */
 function paymentFields(rail){
-  var t = tipAmt(), tot = share + t;
+  var tip = tipAmt(), tot = share + tip;
+  // a note picked in lira is kept to the cent, never under what it was shown to cover
+  var cashNote = rail === 'cash' && note > 0 ? Math.max(Math.round(note * 100) / 100, tot) : 0;
   return {
     checkId: CHECK.id, requestId: paymentRequestId, sessionId: Aalayna.session(), deviceId: Aalayna.device(),
     items: splitMode === 'item' ? BILL.reduce(function(out,b,i){ if(picked[i]) out[b.id]=picked[i]; return out; },{}) : {},
-    table: TABLE, rail: rail, amount: tot, tip: t, server: SERVER,
-    note: (rail === 'cash' ? note : 0),
-    change: (rail === 'cash' && note > 0 && note - tot > 0) ? (note - tot) : 0
+    table: TABLE, rail: rail, amount: tot, tip: tip, server: SERVER,
+    note: cashNote,
+    change: cashNote - tot > 0 ? Math.round((cashNote - tot) * 100) / 100 : 0
   };
 }
 /* a store rejection is shown to the guest and the bill is repainted; the next tap
@@ -1909,25 +2314,25 @@ function paymentFailed(error, fields){
     savePending(fields);
     paymentBusy = true;
     if (fields) { go('v-done'); paintQueued(); return; }
-    alert('Your request is waiting for a connection and will retry automatically. Please do not submit another payment.');
+    alert(t('queuedAlert'));
     return;
   }
   paymentRequestId = newRequestId();
   paymentBusy = false;
   releasePayment();
   buildBill(); buildPick(); calcShare();
-  alert(error.message);
+  alert(errText(error));
 }
 /* Digital rails are two-step (spec section 6): the request is created when the
    guest hands over to the provider, and only the provider's confirmation settles it.
    Cash stays single-step and pending until staff confirm collection. */
 async function settle(){
-  if (!CHECK) { alert(BILL_ENDED ? BILL_ENDED_MSG : "Ask your server to open this bill first."); return; }
+  if (!CHECK) { alert(BILL_ENDED ? billEndedText() : t('askOpen')); return; }
   if (paymentBusy) return;
   applyRails();   // with a venue key only cash is payable
   paintPay();
   holdPayment();  // what the guest sees now is what they pay, whatever the reservation repaints
-  var t = tipAmt(), tot = share + t;
+  var tot = share + tipAmt();
   if (kind === 'cash'){
     paymentBusy = true;
     finishSettle('cash');
@@ -1936,12 +2341,12 @@ async function settle(){
   try { var requested = Aalayna.requestPayment(paymentFields(kind)); if(requested && typeof requested.then === "function") await requested; }
   catch(error) { paymentFailed(error); return; }
   if (kind === 'whish'){
-    $('wh-amt').textContent = 'Pay ' + usd(tot);
-    $('wh-btn').textContent = 'Open Whish';
+    $('wh-amt').textContent = t('payAmt', {amt: usd(tot)});
+    $('wh-btn').textContent = t('openWhish');
     openOv('ov-whish');
     return;
   }
-  $('card-btn').textContent = 'Pay ' + usd(tot);
+  $('card-btn').textContent = t('payAmt', {amt: usd(tot)});
   openOv('ov-card');
 }
 /* closing the provider without confirming: the request expires, a retry starts clean */
@@ -1968,9 +2373,9 @@ function providerConfirm(rail, ovId, btnId, label){
     completeSettle(record, rail);
   }, 900);
 }
-function whishConfirm(){ providerConfirm('whish', 'ov-whish', 'wh-btn', 'Confirming with Whish…'); }
-function cardConfirm(){ providerConfirm('card', 'ov-card', 'card-btn', 'Processing…'); }
-var RAIL_NAMES = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
+function whishConfirm(){ providerConfirm('whish', 'ov-whish', 'wh-btn', t('confirmingWhish')); }
+function cardConfirm(){ providerConfirm('card', 'ov-card', 'card-btn', t('processing')); }
+function railName(r){ return t(r === 'whish' ? 'railWhish' : r === 'card' ? 'railCard' : 'railCash'); }
 async function finishSettle(rail){
   var record, fields = paymentFields(rail);
   try { record = Aalayna.settle(fields); if (record && typeof record.then === "function") record = await record; }
@@ -1998,13 +2403,13 @@ function paintSettlementResult(){
   var status = Aalayna.settlementStatus(record), confirmed = status === 'confirmed';
   $('rc-amt').textContent = usd(record.amount);
   if ($('rc-table')) $('rc-table').textContent = String(record.table != null ? record.table : TABLE);
-  $('rc-method').textContent = RAIL_NAMES[record.rail] + (record.rail === 'cash' && record.change > 0 ? ' · ' + usd(record.change) + ' change' : '');
-  $('result-title').textContent = confirmed ? 'Shukran.' : status === 'pending' ? 'Cash requested.' : 'Request updated.';
+  $('rc-method').textContent = railName(record.rail) + (record.rail === 'cash' && record.change > 0 ? ' · ' + t('change', {amt: usd(record.change)}) : '');
+  $('result-title').textContent = confirmed ? t('thanks') : status === 'pending' ? t('cashRequested') : t('requestUpdated');
   $('result-seal').textContent = confirmed ? '✓' : '…';
-  $('method-label').textContent = confirmed ? 'Paid via' : 'Requested via';
-  $('payment-status').textContent = status === 'pending'
-    ? 'Your server will collect the cash. You can close this screen; not marked paid until collection is confirmed.'
-    : confirmed ? (Aalayna.sync && Aalayna.sync.enabled ? 'Cash collection confirmed by your server.' : 'Demo payment confirmed · no money moved.') : 'This request was ' + status + '. Please speak with your server.';
+  $('method-label').textContent = confirmed ? t('paidVia') : t('requestedVia');
+  $('payment-status').textContent = status === 'pending' ? t('stPending')
+    : confirmed ? (Aalayna.sync && Aalayna.sync.enabled ? t('stCashConfirmed') : t('stDemoConfirmed'))
+    : t('stOther', {status: t(STR.en['stat_' + status] ? 'stat_' + status : 'stat_other')});
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
   if (record.rail === 'cash' && lastSettlementStatus === 'pending' && confirmed && window.AalaynaAnalytics) {
     AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
@@ -2025,9 +2430,19 @@ function prefillReceipt(){
     if (hit) input.value = hit.value;
   } catch(error) {}
 }
-/* Every rating opens the same single review panel. */
+/* Reviews are routed by the rating, as the website promises. 4 or 5 stars: the panel
+   offers the venue's own Google review page (Aalayna.reviewURL, opened in a new tab);
+   when the venue has no Google link set up (reviewURL() gives null) the guest is simply
+   thanked and told so, never sent to a page that pretends. 1 to 3 stars: a private note
+   that goes to the restaurant only (Aalayna.submitReview, destination 'private'; it
+   reaches the owner's dashboard as a review_submitted event). The link under the button
+   lets either guest take the other route. */
+var reviewRoute = 'private', reviewDone = false, reviewDoneMsg = '', ratingLogged = false;
+function routeFor(n){ return n >= 4 ? 'google' : 'private'; }
+function reviewLink(){ try { return (Aalayna.reviewURL && Aalayna.reviewURL()) || null; } catch(error) { return null; } }
 function rate(n){
   setStar(n);
+  reviewRoute = routeFor(rating); reviewDone = false;
   openReview();
 }
 function setStar(n){
@@ -2037,13 +2452,33 @@ function setStar(n){
       st.classList.toggle('on',i<rating); st.setAttribute('aria-pressed',String(i<rating));
     });
   });
-  $('review-title').textContent = 'Your review · ' + rating + '/5';
+  if ($('ov-review').classList.contains('on') && !reviewDone){ reviewRoute = routeFor(rating); paintReview(); }
+}
+function switchReviewRoute(){
+  reviewRoute = reviewRoute === 'google' ? 'private' : 'google';
+  paintReview();
+  if (reviewRoute === 'private') $('review-text').focus();
+}
+function paintReview(){
+  var venue = Aalayna.venue().name, google = reviewRoute === 'google', link = reviewLink();
+  $('review-title').textContent = google ? t('rvHappyT') : t('rvSadT');
+  $('review-sub').textContent = google ? (link ? t('rvHappyS', {venue: venue}) : t('rvNoLink', {venue: venue})) : t('rvSadS', {venue: venue});
+  $('review-note').hidden = google;
+  $('review-submit').hidden = google && !link;          // no Google link: nothing to continue to
+  $('review-submit').textContent = google ? t('rvGoogle') : t('rvSend');
+  $('review-submit').disabled = reviewDone;
+  $('review-alt').textContent = google ? t('rvToPrivate') : t('rvToGoogle');
+  $('review-alt').hidden = reviewDone || (!google && !link);
+  $('review-status').textContent = !reviewDone ? '' : reviewDoneMsg === 'rvSent' ? t('rvSent', {venue: venue}) : t(reviewDoneMsg);
+  // a happy guest with no Google link to go to: the stars still reach the restaurant, once
+  if (google && !link && !ratingLogged){
+    try { Aalayna.submitReview({ settlementId: lastSettlementId, rating: rating, comment: '', destination: null }); ratingLogged = true; } catch(error) {}
+  }
 }
 var reviewReturnFocus = null;
 function openReview(){
   reviewReturnFocus = document.activeElement;
-  $('review-destination').value = 'google';
-  paintReviewDestination();
+  paintReview();
   $('v-done').inert = true;
   openOv('ov-review');
   $('ov-review').querySelector('.review-close').focus();
@@ -2053,19 +2488,16 @@ function closeReview(){
   $('v-done').inert = false;
   if (reviewReturnFocus && reviewReturnFocus.isConnected) reviewReturnFocus.focus();
 }
-function paintReviewDestination(){
-  $('review-submit').textContent = $('review-destination').value === 'google' ? 'Continue to Google' : 'Send privately';
-  $('review-submit').disabled = false;
-  $('review-status').textContent = 'Prototype only: no review or feedback is sent.';
-}
 function submitReview(){
+  var google = reviewRoute === 'google', link = google ? reviewLink() : null;
+  if (google && !link){ paintReview(); return; }
+  // the new tab opens inside the tap, so the browser does not block it
+  if (google) window.open(link, '_blank', 'noopener');
   try { Aalayna.submitReview({ settlementId: lastSettlementId, rating: rating,
-                               comment: $('review-text').value, destination: $('review-destination').value }); }
-  catch(error) { $('review-status').textContent = error.message; return; }
-  $('review-status').textContent = $('review-destination').value === 'google'
-    ? 'Google posting is not connected. No review was published.'
-    : 'Private feedback delivery is not connected. Nothing was sent.';
-  $('review-submit').disabled = true;
+                               comment: google ? '' : $('review-text').value, destination: google ? 'google' : 'private' }); }
+  catch(error) { $('review-status').textContent = errText(error); return; }
+  ratingLogged = true; reviewDone = true; reviewDoneMsg = google ? 'rvOpened' : 'rvSent';
+  paintReview();
 }
 function syncReceiptViewport(){
   if (window.visualViewport) document.documentElement.style.setProperty('--app-height',window.visualViewport.height+'px');
@@ -2075,18 +2507,18 @@ async function sendReceipt(){
   var v = $('mail-in').value.trim();
   var isMail = /^\S+@\S+\.\S+$/.test(v);
   var isPhone = /^(\+|00)[0-9 ().-]{8,22}$/.test(v);
-  if (!isMail && !isPhone){ alert('Enter an email or a WhatsApp number with its country code. Numbers from any country are welcome.'); $('mail-in').focus(); return; }
+  if (!isMail && !isPhone){ alert(t('mailInvalid')); $('mail-in').focus(); return; }
   var mkt = $('c-mkt').checked;
   /* The button requests a receipt; restaurant offers remain a separate, optional choice. */
   try { await Aalayna.optIn({ settlementId:lastSettlementId, contact:v, receipt:true, marketing:mkt }); }
-  catch(error) { alert(error.message); return; }
+  catch(error) { alert(errText(error)); return; }
   $('consents').classList.add('done');
   var btn = document.querySelector('.mailbtn');
-  btn.textContent = 'Saved';
+  btn.textContent = t('saved');
   btn.classList.add('sent');
   btn.onclick = null;
   $('mail-in').disabled = true;
-  $('payment-status').textContent = (Aalayna.sync && Aalayna.sync.enabled ? 'Preferences saved to the restaurant.' : 'Preferences saved locally.') + ' No receipt or message sent.';
+  $('payment-status').textContent = t(Aalayna.sync && Aalayna.sync.enabled ? 'prefsShared' : 'prefsLocal') + ' ' + t('noneSent');
 }
 /* demo only: flip between a venue that has finished confirming its menu and one that
    hasn't. Note what the second state does NOT contain: no warnings, no badges, no
@@ -2106,9 +2538,11 @@ function restart(){
   releasePayment();
   openTableBill();
   logScan();
-  $('review-text').value = ''; $('review-destination').value = 'google'; paintReviewDestination();
+  $('review-text').value = ''; reviewDone = false; reviewDoneMsg = ''; ratingLogged = false;
+  // a new scan on this phone keeps the guest's language and currency
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
-  kind = 'whish'; note = 0; CCY = 'usd'; rating = 0;
+  kind = 'whish'; note = 0; rating = 0;
+  $('amt-in').value = '';
   $('tip-in').value = ''; $('tipcw').style.display = 'none';
   $('pn').textContent = 4;
   mode('even');
@@ -2126,7 +2560,7 @@ function restart(){
   $('mail-in').value = ''; $('mail-in').disabled = false;
   $('consents').classList.remove('done'); $('c-mkt').checked = false;
   var mb = document.querySelector('.mailbtn');
-  mb.textContent = 'Send my receipt'; mb.classList.remove('sent'); mb.onclick = sendReceipt;
+  mb.textContent = t('sendReceipt'); mb.classList.remove('sent'); mb.onclick = sendReceipt;
   buildBill(); buildPick(); calcShare();
   go('v-land');
 }
@@ -2143,7 +2577,7 @@ document.addEventListener('keydown',function(e){
 if(window.visualViewport)window.visualViewport.addEventListener('resize',syncReceiptViewport);
 syncReceiptViewport();
 /* ---------------- boot ---------------- */
-/* venue identity: heritage venues keep their crest lines, custom demos get neutral ones */
+/* venue identity: the crest and every venue line come from Aalayna.venue() */
 /* TABLE: the demo's table 12, or, from a table QR, the table the server named */
 var TABLE = AalaynaTableQR.table != null ? AalaynaTableQR.table : 12, SERVER = 'Abou Karim';
 /* client-side events (spec section 4): the scan, each dish opened, the first look at the bill */
@@ -2163,24 +2597,26 @@ function paintServer(){
   SERVER = Aalayna.serverFor(TABLE);
   var pooled = Aalayna.floor().pooled;
   var el = $('tip-who');
-  if (el) el.textContent = pooled ? 'Something for the team?' : 'Something for ' + SERVER + '?';
+  if (el) el.textContent = pooled ? t('tipTeam') : t('tipFor', {name: SERVER});
 }
 function paintVenue(){
   paintServer();
   var v = Aalayna.venue();
   var short = v.name.split(/[ ·]/)[0];
   var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
+  document.title = v.name + ' · Aalayna';
   set('v-name-stage', v.name); set('v-name-crest', v.name); set('v-name-menu', v.name);
   set('v-name-receipt', v.name.toUpperCase());
-  set('offers-venue', v.name);
-  set('v-place', v.place || '');
-  set('v-est', v.heritage ? 'EST. 1881 · TRIPOLI' : (v.place ? v.place.toUpperCase() : 'YOUR MENU, LIVE'));
-  set('v-est2', v.heritage ? 'Est. 1881 · Tripoli' : v.name);
-  set('v-review-sub', v.heritage ? '144 years, one review at a time' : 'One review at a time');
-  document.querySelectorAll('.v-short').forEach(function(el){ el.textContent = short; });
+  set('offers-line', t('offersFrom', {venue: v.name}));
+  set('rate-q', t('rateQ', {venue: short}));
+  set('v-place', venuePlace(v));
+  set('v-est', v.est || (venuePlace(v) ? '' : t('crestFallback')));
+  set('v-est2', v.name);
+  var mb = document.querySelector('.mailbtn');
+  if (mb) mb.textContent = mb.classList.contains('sent') ? t('saved') : t('sendReceipt');
   paintTableLabels();
 }
-buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue(); applyRails();
+applyLang(); buildCats(); buildMenu(); buildBill(); buildPick(); calcShare(); renderMenu(); paintVenue(); applyRails();
 $('staff-demo').href = 'dashboard.html' + window.location.search;
 staggered = true;
 restoreReceipt();
@@ -2190,7 +2626,7 @@ function sharedFailed(){
   if (BILL_ENDED) return;   // T8: the closed-bill message is already on screen
   // opened without a connection: the bill this phone last saw stays on screen, with the banner
   if (CHECK || readPending()) { paintNet(); return; }
-  $('payment-status').textContent='Unable to connect to this bill. Please speak with your server.';
+  $('payment-status').textContent=t('unableConnect');
 }
 if (Aalayna.sync && Aalayna.sync.enabled) {
   Aalayna.sync.ready.then(sharedReady).catch(sharedFailed);
@@ -2235,7 +2671,7 @@ function paintNet(){
   var off = navigator.onLine === false || NET.readFailures >= 2, b = $('net-banner');
   if (off && !NET.off) NET.droppedAt = Date.now();
   NET.off = off;
-  b.textContent = 'No connection. Your bill is as of ' + clock(NET.lastReadAt || NET.droppedAt || Date.now()) + '; we will send your payment when you are back online.';
+  b.textContent = t('offline', {time: clock(NET.lastReadAt || NET.droppedAt || Date.now())});
   b.hidden = !off;
   document.documentElement.classList.toggle('aal-offline', off);
   if (off) document.documentElement.style.setProperty('--net-h', b.offsetHeight + 'px');
@@ -2264,18 +2700,16 @@ function paintQueued(){
     if (Aalayna.sync.dismiss) Aalayna.sync.dismiss('op:reserve:' + p.requestId);
     if (BILL_ENDED || (Aalayna.sync.closed && Aalayna.sync.closed())) { paymentBusy = false; releasePayment(); return false; }   // the closed-bill message says it
     go('v-pay');
-    paymentFailed(new Error('The restaurant did not accept this cash request. Please speak with your server.'));
+    paymentFailed(new Error(t('cashRefused')));
     return false;
   }
   var sent = job === null;
   $('rc-amt').textContent = p.amount != null ? usd(p.amount) : '';
-  $('rc-method').textContent = 'Cash' + (p.change > 0 ? ' \u00b7 ' + usd(p.change) + ' change' : '');
-  $('method-label').textContent = 'Requested via';
+  $('rc-method').textContent = railName('cash') + (p.change > 0 ? ' \u00b7 ' + t('change', {amt: usd(p.change)}) : '');
+  $('method-label').textContent = t('requestedVia');
   $('result-seal').textContent = '\u2026';
-  $('result-title').textContent = sent ? 'Cash requested.' : 'Saved on this phone.';
-  $('payment-status').textContent = sent
-    ? 'Your server will collect the cash. You can close this screen; not marked paid until collection is confirmed.'
-    : 'Cash request saved on this phone. It reaches the restaurant as soon as you are back online.';
+  $('result-title').textContent = sent ? t('cashRequested') : t('savedPhone');
+  $('payment-status').textContent = sent ? t('stPending') : t('stQueued');
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = 'none'; });
   return true;
 }
@@ -2291,9 +2725,12 @@ if (!lastSettlementId && readPending()) { paymentBusy = true; go('v-done'); refr
 /* Offline: sw.js keeps the guest app shell on the phone (README "Offline"). Its scope
    is this page only; updateViaCache 'none' makes the browser always ask the server
    for sw.js itself, so a new worker is never held back by the HTTP cache. */
-if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-  navigator.serviceWorker.register('sw.js', { scope: 'guest.html', updateViaCache: 'none' }).catch(function(){});
-}
+/* Opened from a file (file://), or in a browser without service workers: no worker, the page works as is. */
+try {
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('sw.js', { scope: 'guest.html', updateViaCache: 'none' }).catch(function(){});
+  }
+} catch (e) {}
 </script>
 </body>
 </html>

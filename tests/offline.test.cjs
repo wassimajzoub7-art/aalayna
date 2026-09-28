@@ -15,7 +15,7 @@ const root=path.join(__dirname,'..'),flush=async(n=12)=>{for(let i=0;i<n;i++)awa
 const html=fs.readFileSync(path.join(root,'guest.html'),'utf8');
 const inline=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 const TQ=inline.find(s=>s.indexOf('var AalaynaTableQR')>=0),PAGE=inline.find(s=>s.indexOf('function loadMenu')>=0);
-const RID=JSON.stringify(['kababji','hamra']),KEY='chk_'+'ab'.repeat(24),LINK='?venue=Kababji&place=Hamra&k='+KEY;
+const RID=JSON.stringify(['mayda','hamra']),KEY='chk_'+'ab'.repeat(24),LINK='?venue=Mayda&place=Hamra&k='+KEY;
 const MENU={version:7,sections:[{id:'grl',name:'Grill',win:'all'}],items:[{id:'k1',sec:'grl',name:'Shish taouk',desc:'',price:9,status:'incomplete',available:true}],at:'2026-09-24T09:00:00.000Z'};
 const CHECK={id:'bill-7',venueId:RID,table:7,source:'staff',openedAt:'2026-09-24T10:00:00.000Z',lines:[{id:'k1',q:2,p:18,name:'Shish taouk'}],totalCents:1800,amountUsd:18,revision:1};
 const SAVED='Cash request saved on this phone. It reaches the restaurant as soon as you are back online.';
@@ -153,7 +153,7 @@ test('opened with no connection: the last known bill from this phone, the banner
  const lastRead=first.run('NET.lastReadAt');
  // later, a new tab with no connection: no k in the address, the key and the bill are on the phone
  server.down=true;
- const p=boot({search:'?venue=Kababji&place=Hamra',server,online:false,local:first.local});await flush();
+ const p=boot({search:'?venue=Mayda&place=Hamra',server,online:false,local:first.local});await flush();
  assert.equal(p.window.Aalayna.demoMode(),false);
  assert.equal(p.run('CHECK.id'),CHECK.id);assert.equal(p.run('TABLE'),7);assert.equal(p.run('TOTAL'),18);
  assert.equal(p.run('BILL[0].n'),'Shish taouk');
@@ -166,7 +166,7 @@ test('opened with no connection: the last known bill from this phone, the banner
  assert.equal(p.receipt().title,'Saved on this phone.');assert.equal(p.receipt().status,SAVED);
  assert.ok(p.outbox()['op:reserve:'+requestId]);
  // reloaded while still offline: the same receipt, not the pay screen
- const again=boot({search:'?venue=Kababji&place=Hamra',server,online:false,local:p.local,session:p.session});await flush();
+ const again=boot({search:'?venue=Mayda&place=Hamra',server,online:false,local:p.local,session:p.session});await flush();
  assert.equal(again.receipt().on,true);assert.equal(again.receipt().status,SAVED);
  assert.equal(again.run('paymentBusy'),true);
  server.down=false;await again.setOnline(true);await flush();

@@ -23,13 +23,13 @@ const { qrSvg, tableURL } = require('../tools/lib/cards.js');
 const { loadConfig } = require('../tools/lib/supabase.js');
 const { FONTS } = require('../tools/steps/theme.js');
 
-const SLUG = 'em-sherif', RID = JSON.stringify(['em sherif', 'beirut']);
-const ARGS = ['--name', 'Em Sherif', '--place', 'Beirut', '--slug', SLUG, '--currency', 'USD', '--tables', '24',
-  '--owner', 'owner@emsherif.com', '--staff', 'sara@emsherif.com:manager,ali@emsherif.com:waiter', 'menu.pdf'];
+const SLUG = 'test-bistro', RID = JSON.stringify(['test bistro', 'beirut']);
+const ARGS = ['--name', 'Test Bistro', '--place', 'Beirut', '--slug', SLUG, '--currency', 'USD', '--tables', '24',
+  '--owner', 'owner@testbistro.com', '--staff', 'sara@testbistro.com:manager,ali@testbistro.com:waiter', 'menu.pdf'];
 const ANON = loadConfig({}).anonKey;
 
 const PACK = {
-  name: 'Em Sherif',
+  name: 'Test Bistro',
   sections: [{ id: 'mez', name: 'Cold Mezze', win: 'all' }, { id: 'grl', name: 'Grills', win: 'all' }, { id: 'swt', name: 'Sweets', win: 'all' }],
   items: [
     { id: 'm01', sec: 'mez', name: 'Hummus', desc: 'Chickpeas, tahini, lemon', price: 6, ing: ['chickpeas', 'tahini', 'lemon'], al: ['sesame'], kcal: null, pr: null, ft: null, cb: null, tr: { fr: { n: '', d: '' }, ar: { n: 'حمص', d: '' } } },
@@ -91,11 +91,11 @@ test('a fresh run registers, themes and extracts the menu, then stops at the che
   try {
     const r = await s.run(ARGS.concat(s.fixture));
     assert.equal(r.code, 0, r.text);
-    assert.match(r.text, /\[1\/7\] register\s+done\s+Em Sherif, Beirut registered as em-sherif/);
+    assert.match(r.text, /\[1\/7\] register\s+done\s+Test Bistro, Beirut registered as test-bistro/);
     assert.match(r.text, /\[2\/7\] theme\s+done\s+brand #8A1C2B, background #F7F1E6, font Playfair Display \(from the menu\)/);
-    assert.match(r.text, /\[3\/7\] menu\s+waiting\s+extracted 5 items in 3 sections\. Review venues\/em-sherif\.json, then run again with --approve-menu/);
+    assert.match(r.text, /\[3\/7\] menu\s+waiting\s+extracted 5 items in 3 sections\. Review venues\/test-bistro\.json, then run again with --approve-menu/);
     assert.match(r.text, /1 item has no ingredients \(Moutabal\)/);                       // the importer's report is printed
-    assert.match(r.text, /node tools\/onboard\.js --slug em-sherif --approve-menu/);
+    assert.match(r.text, /node tools\/onboard\.js --slug test-bistro --approve-menu/);
     assert.doesNotMatch(r.text, /\[4\/7\]/);
     const st = s.state();
     assert.deepEqual(Object.fromEntries(Object.entries(st.steps).map(([k, v]) => [k, v.status])),
@@ -103,11 +103,11 @@ test('a fresh run registers, themes and extracts the menu, then stops at the che
     assert.equal(st.venue.restaurant_id, RID);
     assert.match(st.venue.owner_key, /^own_[0-9a-f]{36}$/);
     assert.equal(st.inputs.tables, 24);
-    assert.deepEqual(st.inputs.staff, [{ email: 'sara@emsherif.com', role: 'manager' }, { email: 'ali@emsherif.com', role: 'waiter' }]);
+    assert.deepEqual(st.inputs.staff, [{ email: 'sara@testbistro.com', role: 'manager' }, { email: 'ali@testbistro.com', role: 'waiter' }]);
     // the profile: slug, menu pack, demo payments off, then the theme
     const reg = s.server.rpcCalls('aal_admin_register_venue');
     assert.equal(reg.length, 1);
-    assert.deepEqual(reg[0].body, { p_name: 'Em Sherif', p_place: 'Beirut', p_slug: SLUG, p_profile: { slug: SLUG, menu_pack: SLUG, demo_payments: false } });
+    assert.deepEqual(reg[0].body, { p_name: 'Test Bistro', p_place: 'Beirut', p_slug: SLUG, p_profile: { slug: SLUG, menu_pack: SLUG, demo_payments: false } });
     assert.equal(reg[0].headers['x-aalayna-admin'], s.server.ADMIN);
     assert.equal(reg[0].headers.apikey, ANON);
     const prof = s.server.db.profiles.get(RID);
@@ -115,7 +115,7 @@ test('a fresh run registers, themes and extracts the menu, then stops at the che
     // importMenu got the same files and the venue details; nothing is published yet
     assert.equal(s.imports.length, 1);
     assert.deepEqual([s.imports[0].files, s.imports[0].name, s.imports[0].slug, s.imports[0].currency, s.imports[0].force, s.imports[0].cwd],
-      [[path.join(s.dir, 'menu.pdf')], 'Em Sherif', SLUG, 'USD', false, s.dir]);
+      [[path.join(s.dir, 'menu.pdf')], 'Test Bistro', SLUG, 'USD', false, s.dir]);
     assert.equal(s.server.calls.filter(c => c.path === '/rest/v1/kv_docs').length, 0);
     // a run without --approve-menu stops again and does not extract again
     const again = await s.run(['--slug', SLUG].concat(s.fixture));
@@ -140,13 +140,13 @@ test('--approve-menu publishes the reviewed pack as the editor would, then table
     assert.equal(r.code, 0, r.text);
     assert.match(r.text, /register\s+done\s+\(earlier\)/);
     assert.match(r.text, /menu\s+done\s+published version 1: 6 items in 3 sections, read back from the server/);
-    assert.match(r.text, /tables\s+done\s+24 table codes \(issued 24\); cards in onboarding\/em-sherif-table-cards\.html/);
+    assert.match(r.text, /tables\s+done\s+24 table codes \(issued 24\); cards in onboarding\/test-bistro-table-cards\.html/);
     assert.match(r.text, /staff\s+done\s+invited 3, already on the list 0; 3 live staff member\(s\), no email sent/);
     assert.match(r.text, /verify\s+done\s+12 of 12 checks passed; test bill left closed on table 9999/);
-    assert.match(r.text, /welcome\s+done\s+drafted onboarding\/em-sherif-welcome\.md with an Arabic greeting; not sent/);
-    assert.match(r.text, /Em Sherif is live\. Still to do by hand:/);
-    assert.match(r.text, /\[ \] Print the table cards: open onboarding\/em-sherif-table-cards\.html/);
-    assert.match(r.text, /\[ \] Send the welcome note: onboarding\/em-sherif-welcome\.md/);
+    assert.match(r.text, /welcome\s+done\s+drafted onboarding\/test-bistro-welcome\.md with an Arabic greeting; not sent/);
+    assert.match(r.text, /Test Bistro is live\. Still to do by hand:/);
+    assert.match(r.text, /\[ \] Print the table cards: open onboarding\/test-bistro-table-cards\.html/);
+    assert.match(r.text, /\[ \] Send the welcome note: onboarding\/test-bistro-welcome\.md/);
     assert.match(r.text, /\[ \] If they want Google reviews, set their Google place id in admin\.html/);
     assert.match(r.text, /\[ \] Check brand #8A1C2B, background #F7F1E6 and font Playfair Display against their Instagram/);
     assert.match(r.text, /\[x\] Demo payments are off for this venue/);
@@ -195,15 +195,15 @@ test('--approve-menu publishes the reviewed pack as the editor would, then table
 
     // staff: invited with the owner key, owner first
     assert.deepEqual(s.server.rpcCalls('aal_staff').filter(c => c.body.p_body.op === 'invite').map(c => [c.body.p_body.email, c.body.p_body.role]),
-      [['owner@emsherif.com', 'owner'], ['sara@emsherif.com', 'manager'], ['ali@emsherif.com', 'waiter']]);
+      [['owner@testbistro.com', 'owner'], ['sara@testbistro.com', 'manager'], ['ali@testbistro.com', 'waiter']]);
 
     // the welcome note: model prose cleaned, facts from the code
     const md = fs.readFileSync(path.join(s.dir, 'onboarding', SLUG + '-welcome.md'), 'utf8');
-    assert.match(md, /^أهلا وسهلا بكم في عائلة عليناء\n\n# Welcome to Aalayna, Em Sherif\n/);
+    assert.match(md, /^أهلا وسهلا بكم في عائلة عليناء\n\n# Welcome to Aalayna, Test Bistro\n/);
     assert.match(md, /https:\/\/aalayna\.com\/dashboard\.html/);
     assert.match(md, /https:\/\/aalayna\.com\/editor\.html/);
-    assert.match(md, /Sign in with owner@emsherif\.com\. A six-digit code arrives by email/);
-    assert.match(md, /- sara@emsherif\.com \(manager\)\n- ali@emsherif\.com \(waiter\)/);
+    assert.match(md, /Sign in with owner@testbistro\.com\. A six-digit code arrives by email/);
+    assert.match(md, /- sara@testbistro\.com \(manager\)\n- ali@testbistro\.com \(waiter\)/);
     assert.match(md, /24 cards, one per table, are in the print sheet/);
     assert.match(md, /6 dishes in 3 sections/);
     assert.match(md, /Wassim, WhatsApp \[WhatsApp number\]/);
@@ -227,7 +227,7 @@ test('re-runs are idempotent: no second registration, no reissued code, no secon
     const again = await s.run(['--slug', SLUG, '--from', 'register', '--approve-menu'].concat(s.fixture));
     assert.equal(again.code, 0, again.text);
     assert.equal(s.server.rpcCalls('aal_admin_register_venue').length, 1);
-    assert.match(again.text, /already registered as em-sherif; reused it, keys unchanged/);
+    assert.match(again.text, /already registered as test-bistro; reused it, keys unchanged/);
     assert.equal(issues(s.server, t => t !== 9999).length, 24);                           // only the first run's
     assert.match(again.text, /24 table codes \(kept 24\)/);
     assert.deepEqual(tokensOf(s), codes);
@@ -256,7 +256,7 @@ test('--reset asks first and keeps the state on no', async () => {
     await s.run(ARGS.concat(s.fixture));
     const r = await s.run(['--slug', SLUG, '--reset'], { confirm: async () => false });
     assert.equal(r.code, 0);
-    assert.match(r.text, /kept onboarding\/em-sherif\.json/);
+    assert.match(r.text, /kept onboarding\/test-bistro\.json/);
     assert.ok(fs.existsSync(path.join(s.dir, 'onboarding', SLUG + '.json')));
   } finally { await s.close(); }
 });
@@ -354,13 +354,13 @@ test('the card sheet has one card per table with its link and its QR from qr-lib
     assert.equal((html.match(/<div class="tcard"/g) || []).length, 24);
     for (let t = 1; t <= 24; t++) {
       const url = tableURL(SLUG, t, codes[t]);
-      assert.equal(url, 'https://aalayna.com/guest.html?v=em-sherif&t=' + t + '&s=' + codes[t]);
+      assert.equal(url, 'https://aalayna.com/guest.html?v=test-bistro&t=' + t + '&s=' + codes[t]);
       assert.ok(html.includes('<div class="tlink">' + url.replace(/&/g, '&amp;') + '</div>'), 'link of table ' + t);
       assert.ok(html.includes(qrSvg(url)), 'QR of table ' + t);
       assert.ok(html.includes('<div class="tno">Table ' + t + '</div>'));
     }
     assert.ok(!html.includes('t=9999'));
-    assert.match(html, /<div class="vn">Em Sherif<\/div><div class="vp">Beirut<\/div>/);
+    assert.match(html, /<div class="vn">Test Bistro<\/div><div class="vp">Beirut<\/div>/);
     assert.match(html, /See the menu · split the bill · pay/);
     // the card CSS is qr.html's
     const qr = fs.readFileSync(path.join(root, 'qr.html'), 'utf8');
@@ -390,8 +390,8 @@ test('the state file never holds the admin key, and the console shows no key or 
     assert.doesNotMatch(all, /own_[0-9a-f]{8}|tbl_[0-9a-f]{8}|chk_[0-9a-f]{8}|sk-ant-/);
     // the git allowlist ignores onboarding/ and ships tools/ and the fixtures
     const ig = f => cp.spawnSync('git', ['check-ignore', '-q', f], { cwd: root }).status === 0;
-    assert.ok(ig('onboarding/em-sherif.json'));
-    assert.ok(ig('onboarding/em-sherif-table-cards.html'));
+    assert.ok(ig('onboarding/test-bistro.json'));
+    assert.ok(ig('onboarding/test-bistro-table-cards.html'));
     assert.ok(!ig('tools/onboard.js'));
     assert.ok(!ig('tools/steps/verify.js'));
     assert.ok(!ig('tools/lib/supabase.js'));
@@ -517,14 +517,14 @@ test('staff: a revoked email is not brought back and a different role is not cha
   const s = await setup();
   try {
     await s.run(ARGS.concat(s.fixture));
-    s.server.db.staff.push({ rid: RID, email: 'sara@emsherif.com', role: 'waiter', invited_by: 'owner key', created_at: '2026-09-01T00:00:00Z', revoked_at: null });
-    s.server.db.staff.push({ rid: RID, email: 'ali@emsherif.com', role: 'waiter', invited_by: 'owner key', created_at: '2026-09-01T00:00:00Z', revoked_at: '2026-09-10T00:00:00Z' });
+    s.server.db.staff.push({ rid: RID, email: 'sara@testbistro.com', role: 'waiter', invited_by: 'owner key', created_at: '2026-09-01T00:00:00Z', revoked_at: null });
+    s.server.db.staff.push({ rid: RID, email: 'ali@testbistro.com', role: 'waiter', invited_by: 'owner key', created_at: '2026-09-01T00:00:00Z', revoked_at: '2026-09-10T00:00:00Z' });
     const r = await s.run(['--slug', SLUG, '--only', 'staff']);
     assert.equal(r.code, 0, r.text);
     assert.match(r.text, /invited 1, already on the list 1/);
-    assert.match(r.text, /sara@emsherif\.com is already on the list as waiter, not manager; left unchanged/);
-    assert.match(r.text, /ali@emsherif\.com was revoked on 2026-09-10; not invited again/);
-    assert.deepEqual(s.server.rpcCalls('aal_staff').filter(c => c.body.p_body.op === 'invite').map(c => c.body.p_body.email), ['owner@emsherif.com']);
+    assert.match(r.text, /sara@testbistro\.com is already on the list as waiter, not manager; left unchanged/);
+    assert.match(r.text, /ali@testbistro\.com was revoked on 2026-09-10; not invited again/);
+    assert.deepEqual(s.server.rpcCalls('aal_staff').filter(c => c.body.p_body.op === 'invite').map(c => c.body.p_body.email), ['owner@testbistro.com']);
   } finally { await s.close(); }
 });
 
@@ -540,11 +540,11 @@ test('Supabase refusals are shown with the server message; a missing function na
       await s2.run(ARGS.concat(s2.fixture));
       const other = await s2.run(['--name', 'Other Place', '--place', 'Hamra', '--slug', SLUG, '--tables', '3', '--owner', 'o@x.com'].concat(s2.fixture), {});
       assert.equal(other.code, 2);
-      assert.match(other.text, /This state file is for Em Sherif, Beirut/);
+      assert.match(other.text, /This state file is for Test Bistro, Beirut/);
       fs.rmSync(path.join(s2.dir, 'onboarding'), { recursive: true });
       const clash = await s2.run(['--name', 'Other Place', '--place', 'Hamra', '--slug', SLUG, '--tables', '3', '--owner', 'o@x.com'].concat(s2.fixture));
       assert.equal(clash.code, 1);
-      assert.match(clash.text, /register\s+failed\s+The slug em-sherif already belongs to another venue \(Em Sherif, Beirut\)/);
+      assert.match(clash.text, /register\s+failed\s+The slug test-bistro already belongs to another venue \(Test Bistro, Beirut\)/);
       s2.env.AALAYNA_ADMIN_KEY = 'adm_wrong';
       const wrong = await s2.run(['--name', 'Third', '--place', 'Jounieh', '--slug', 'third', '--tables', '2', '--owner', 'o@x.com'].concat(s2.fixture));
       assert.match(wrong.text, /register\s+failed\s+Supabase refused aal_admin_list_venues: Admin key required\. \(HTTP 403\)/);
@@ -560,8 +560,8 @@ test('--dry-run calls nothing and writes nothing; --help and bad flags from the 
     assert.equal(r.code, 0);
     assert.equal(s.server.calls.length, 0);
     assert.ok(!fs.existsSync(path.join(s.dir, 'onboarding')));
-    assert.match(r.text, /\[1\/7\] register\s+would find "em-sherif" in aal_admin_list_venues, else aal_admin_register_venue\("Em Sherif", "Beirut"\)/);
-    assert.match(r.text, /\[3\/7\] menu\s+would importMenu\(1 file\(s\)\) writes venues\/em-sherif\.json/);
+    assert.match(r.text, /\[1\/7\] register\s+would find "test-bistro" in aal_admin_list_venues, else aal_admin_register_venue\("Test Bistro", "Beirut"\)/);
+    assert.match(r.text, /\[3\/7\] menu\s+would importMenu\(1 file\(s\)\) writes venues\/test-bistro\.json/);
     assert.match(r.text, /\[6\/7\] verify\s+would on table 9999/);
     assert.equal(s.imports.length, 0);
     const cli = (args, env) => cp.spawnSync(process.execPath, [path.join(root, 'tools', 'onboard.js')].concat(args), { encoding: 'utf8', env: Object.assign({ PATH: process.env.PATH }, env || {}) });
@@ -588,26 +588,26 @@ test('a pack with a missing price is not published', async () => {
     fs.writeFileSync(file, JSON.stringify(pack));
     const r = await s.run(['--slug', SLUG, '--approve-menu'].concat(s.fixture));
     assert.equal(r.code, 1);
-    assert.match(r.text, /menu\s+failed\s+venues\/em-sherif\.json cannot be published: item 2 \(Moutabal\) has no price: write one in\./);
+    assert.match(r.text, /menu\s+failed\s+venues\/test-bistro\.json cannot be published: item 2 \(Moutabal\) has no price: write one in\./);
     assert.equal(s.server.calls.filter(c => c.path === '/rest/v1/kv_docs').length, 0);
   } finally { await s.close(); }
 });
 
 /* The real tools/import-menu.js (T9) with its own replayed fixture, through the checkpoint
    and the approval. Skipped while T9's importer or fixture is not in the tree. */
-const T9 = path.join(root, 'tools', 'import-menu.js'), T9_FIXTURE = path.join(root, 'tests', 'fixtures', 'kababji-response.json');
+const T9 = path.join(root, 'tools', 'import-menu.js'), T9_FIXTURE = path.join(root, 'tests', 'fixtures', 'mayda-response.json');
 test('with the real importer (T9) and its fixture, the pipeline stops for review and then publishes', { skip: !(fs.existsSync(T9) && fs.existsSync(T9_FIXTURE)) && 'tools/import-menu.js or its fixture is not there yet' }, async () => {
   const s = await setup();
   try {
     fs.copyFileSync(T9_FIXTURE, path.join(s.dir, 'fixtures', 'import-menu.json'));
-    const args = ['--name', 'Kababji', '--place', 'Hamra', '--slug', 'kababji-hamra', '--tables', '3', '--owner', 'o@kababji.test', 'menu.pdf'].concat(s.fixture);
+    const args = ['--name', 'Mayda', '--place', 'Hamra', '--slug', 'mayda-hamra', '--tables', '3', '--owner', 'o@mayda.test', 'menu.pdf'].concat(s.fixture);
     const r = await s.run(args, { importMenu: null });
     assert.equal(r.code, 0, r.text);
-    assert.match(r.text, /menu\s+waiting\s+extracted \d+ items in \d+ sections\. Review venues\/kababji-hamra\.json/);
-    assert.match(r.text, /Menu import: Kababji \(kababji-hamra\)/);                      // T9's report, printed
-    const pack = JSON.parse(fs.readFileSync(path.join(s.dir, 'venues', 'kababji-hamra.json'), 'utf8'));
-    const ok = await s.run(['--slug', 'kababji-hamra', '--approve-menu', '--no-welcome'].concat(s.fixture), { importMenu: null });
-    const rid = JSON.stringify(['kababji', 'hamra']);
+    assert.match(r.text, /menu\s+waiting\s+extracted \d+ items in \d+ sections\. Review venues\/mayda-hamra\.json/);
+    assert.match(r.text, /Menu import: Mayda \(mayda-hamra\)/);                      // T9's report, printed
+    const pack = JSON.parse(fs.readFileSync(path.join(s.dir, 'venues', 'mayda-hamra.json'), 'utf8'));
+    const ok = await s.run(['--slug', 'mayda-hamra', '--approve-menu', '--no-welcome'].concat(s.fixture), { importMenu: null });
+    const rid = JSON.stringify(['mayda', 'hamra']);
     if (pack.items.some(x => x.price == null)) { assert.equal(ok.code, 1); return; }
     assert.equal(ok.code, 0, ok.text);
     const live = s.server.db.docs.get(rid + '|aal.live').body;

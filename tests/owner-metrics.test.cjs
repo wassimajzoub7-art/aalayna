@@ -66,7 +66,7 @@ test('return rate uses a mature first-observed cohort and excludes recent guests
 test('previous period comparisons use distinct intervals and respect restaurant scope',()=>{
  const e=setup(),a=e.a;bill(e,{amount:25,contact:'past@example.com'});e.advance(8);bill(e,{amount:50,contact:'now@example.com'});
  let r=a.ownerReport('7');assert.equal(r.previous.netCents,2500);assert.equal(r.current.netCents,5000);assert.equal(r.previousWindow.end,r.window.start);
- a.setVenue({name:'Restaurant',place:'Tripoli'});r=a.ownerReport('7');assert.equal(r.current.netCents,0);assert.equal(r.current.receiptContacts,0);assert.equal(a.ownerPaymentHistory('30').length,0);
+ a.setVenue({name:'Restaurant',place:'Jounieh'});r=a.ownerReport('7');assert.equal(r.current.netCents,0);assert.equal(r.current.receiptContacts,0);assert.equal(a.ownerPaymentHistory('30').length,0);
 });
 test('a refunded completed bill is removed from averages and receipt cohorts',()=>{
  const e=setup(),x=bill(e,{contact:'refund@example.com',marketing:true});e.a.refund(x.p.id);

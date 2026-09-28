@@ -4,6 +4,10 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../aalayna-store.js'), 'utf8');
+/* the guest page's string table and t() (guest.html, i18n:start..pickLang), for the sliced guest code */
+const GUEST_HTML = fs.readFileSync(path.join(__dirname, '../guest.html'), 'utf8');
+const I18N = GUEST_HTML.slice(GUEST_HTML.indexOf('/* i18n:start */'), GUEST_HTML.indexOf('function pickLang(){'));
+const RAIL = r => ({ whish: 'Whish Money', card: 'Card', cash: 'Cash' })[r];
 function setup(records) {
   const map = new Map(records ? [['aal.settle', JSON.stringify(records)]] : []);
   const window = { location: { search: '' }, addEventListener() {}, localStorage: { getItem: k => map.get(k) || null, setItem: (k,v) => map.set(k,v), removeItem: k => map.delete(k) } };
@@ -52,33 +56,53 @@ test('mixed payment totals and tips exclude refunds and pending cash', () => {
   assert.equal(a.byRail().card, 0);
   assert.equal(a.tipsOwed()[0].amount, 2);
 });
-test('every rating opens one review panel with both destinations and restores focus on close', () => {
-  const html = fs.readFileSync(path.join(__dirname, '../guest.html'), 'utf8');
-  const code = html.slice(html.indexOf('function rate(n){'), html.indexOf('/* optional, after payment'));
+test('the rating routes the review: 4-5 stars to the venue Google page, 1-3 stars to a private note, focus restored on close', () => {
+  const html = GUEST_HTML;
+  const code = I18N + html.slice(html.indexOf('/* Reviews are routed by the rating'), html.indexOf('function syncReceiptViewport(){'));
   const stars = Array.from({length:5}, () => ({classList:{toggle(){}},setAttribute(){}}));
-  const fields = Object.fromEntries(['review-title','review-destination','review-submit','review-status','review-text','v-done'].map(id=>[id,{textContent:'',value:'',disabled:false}]));
-  const opened=[],recorded=[];let focused=false;
+  const fields = Object.fromEntries(['review-title','review-sub','review-note','review-submit','review-alt','review-status','review-text','v-done'].map(id=>[id,{textContent:'',value:'',disabled:false,hidden:false,focus(){}}]));
+  const opened=[],recorded=[],tabs=[];let focused=false,open=false,link='https://search.google.com/local/writereview?placeid=ChIJmayda';
   const trigger={isConnected:true,focus(){focused=true;}};
-  fields['ov-review']={classList:{remove(){}},querySelector(){return {focus(){}};}};
-  const context={document:{activeElement:trigger,querySelectorAll:()=>stars},$:id=>fields[id],openOv:id=>opened.push(id),lastSettlementId:'p1',Aalayna:{submitReview:r=>recorded.push(r)}};
+  fields['ov-review']={classList:{remove(){open=false;},contains:()=>open},querySelector(){return {focus(){}};}};
+  const context={LANG:'en',document:{activeElement:trigger,querySelectorAll:()=>stars},$:id=>fields[id],openOv:id=>{opened.push(id);open=true;},lastSettlementId:'p1',
+    window:{open:(...a)=>tabs.push(a)},Aalayna:{submitReview:r=>recorded.push(r),reviewURL:()=>link,venue:()=>({name:'Mayda'})}};
   vm.createContext(context);vm.runInContext(code,context);
-  for(let n=1;n<=5;n++){
+  for(const n of [4,5]){
     context.rate(n);assert.equal(context.rating,n);assert.equal(opened.at(-1),'ov-review');assert.equal(fields['v-done'].inert,true);
-    for(const destination of ['google','private']){
-      fields['review-destination'].value=destination;context.paintReviewDestination();assert.equal(fields['review-submit'].disabled,false);
-      context.submitReview();assert.equal(fields['review-submit'].disabled,true);assert.match(fields['review-status'].textContent,/not connected/);
-    }
-    context.closeReview();assert.equal(fields['v-done'].inert,false);assert.equal(focused,true);
+    assert.equal(fields['review-note'].hidden,true);assert.equal(fields['review-submit'].hidden,false);assert.equal(fields['review-submit'].textContent,'Review on Google');
+    context.submitReview();
+    assert.deepEqual(tabs.at(-1),[link,'_blank','noopener']);
+    assert.deepEqual({rating:recorded.at(-1).rating,destination:recorded.at(-1).destination},{rating:n,destination:'google'});
+    assert.equal(fields['review-submit'].disabled,true);assert.match(fields['review-status'].textContent,/Google opened in a new tab/);
+    context.closeReview();assert.equal(fields['v-done'].inert,false);assert.equal(focused,true);focused=false;
   }
+  for(const n of [1,2,3]){
+    const before=tabs.length;
+    context.rate(n);assert.equal(fields['review-note'].hidden,false);assert.equal(fields['review-submit'].textContent,'Send privately');
+    assert.match(fields['review-sub'].textContent,/goes to the restaurant only/);
+    fields['review-text'].value='The fattoush was soggy';context.submitReview();
+    assert.equal(tabs.length,before);                                     // nothing public is opened
+    assert.deepEqual({rating:recorded.at(-1).rating,destination:recorded.at(-1).destination,comment:recorded.at(-1).comment},{rating:n,destination:'private',comment:'The fattoush was soggy'});
+    assert.match(fields['review-status'].textContent,/Sent to Mayda/);assert.equal(fields['review-submit'].disabled,true);
+    context.closeReview();
+  }
+  // either guest may take the other route
+  context.rate(5);context.switchReviewRoute();assert.equal(fields['review-submit'].textContent,'Send privately');context.closeReview();
+  // no Google link set up for the venue: thanked, told so honestly, the stars still recorded once, no tab
+  link=null;context.ratingLogged=false;const before=tabs.length,count=recorded.length;   // as for a new payment
+  context.rate(5);assert.equal(fields['review-submit'].hidden,true);assert.match(fields['review-sub'].textContent,/Google review link not set up yet/);
+  assert.equal(recorded.length,count+1);assert.equal(recorded.at(-1).destination,null);assert.equal(recorded.at(-1).rating,5);
+  context.submitReview();assert.equal(tabs.length,before);assert.equal(recorded.length,count+1);
   assert.ok(!html.includes('id="ov-google"'));assert.ok(!html.includes('id="ov-priv"'));
-  assert.equal(recorded.length,10);assert.equal(recorded[0].settlementId,'p1');assert.equal(recorded.at(-1).rating,5);
+  assert.ok(!/No rating-based/.test(html));
+  assert.equal(recorded[0].settlementId,'p1');
 });
 test('guest receipt stays pending until staff confirmation, and hides receipt and review actions', () => {
   const a = setup(), cash = a.settle({rail:'cash',amount:42,tip:2});
-  const html = fs.readFileSync(path.join(__dirname,'../guest.html'),'utf8');
-  const code = html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Every rating opens'));
+  const html = GUEST_HTML;
+  const code = I18N + html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Reviews are routed by the rating'));
   const nodes = Object.fromEntries(['rc-amt','rc-method','result-title','result-seal','method-label','payment-status','mailrc','consents','feedback-options'].map(id => [id,{textContent:'',style:{}}]));
-  const ctx = { lastSettlementId:cash.id,lastSettlementStatus:null,Aalayna:a,$:id=>nodes[id],usd:n=>'$'+n.toFixed(2),RAIL_NAMES:{cash:'Cash'},window:{},rememberReceipt(){} };
+  const ctx = { LANG:'en',lastSettlementId:cash.id,lastSettlementStatus:null,Aalayna:a,$:id=>nodes[id],usd:n=>'$'+n.toFixed(2),railName:RAIL,window:{},rememberReceipt(){} };
   vm.createContext(ctx);vm.runInContext(code,ctx);
   ctx.paintSettlementResult();
   assert.match(nodes['payment-status'].textContent,/not marked paid/);
@@ -95,14 +119,14 @@ function guestSession(a, storage = new Map()) {
   const events = {}, tracked = [], views = [];
   a.venueId = a.venueId || (()=>a.venue().name);
   const analytics = {track:(...args)=>tracked.push(args)};
-  const context = {Aalayna:a,TABLE:12,MENU_V:1,$:id=>nodes[id],usd:n=>'$'+n.toFixed(2),RAIL_NAMES:{cash:'Cash',card:'Card'},
+  const context = {LANG:'en',Aalayna:a,TABLE:12,MENU_V:1,$:id=>nodes[id],usd:n=>'$'+n.toFixed(2),railName:RAIL,
     sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},
     window:{addEventListener:(name,fn)=>events[name]=fn,AalaynaAnalytics:analytics},AalaynaAnalytics:analytics,
     document:{visibilityState:'visible',addEventListener:(name,fn)=>events[name]=fn},go:id=>views.push(id),
     loadMenu(){},buildCats(){},buildMenu(){},renderMenu(){},buildBill(){},buildPick(){},calcShare(){}};
   vm.createContext(context);
-  vm.runInContext(html.slice(html.indexOf('var paymentBusy ='),html.indexOf('function settle(){'))+
-    html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Every rating opens')),context);
+  vm.runInContext(I18N+html.slice(html.indexOf('var paymentBusy ='),html.indexOf('function settle(){'))+
+    html.slice(html.indexOf('function paintSettlementResult(){'),html.indexOf('/* Reviews are routed by the rating')),context);
   return {context,nodes,events,tracked,views,storage};
 }
 test('returning to the guest tab catches confirmation without a storage event and counts it once',()=>{
@@ -146,10 +170,12 @@ test('one explicit staff action confirms cash and stale actions show feedback',(
 test('payment breakdown updates with tips and keeps cash coverage validation', () => {
   const html=fs.readFileSync(path.join(__dirname,'../guest.html'),'utf8');
   const code=html.slice(html.indexOf('function paintPay(){'),html.indexOf('/* ---------------- success'));
-  const nodes=Object.fromEntries(['bigamt','bigll','pay-share','pay-tip','tv5','tv10','tv15','paybtn'].map(id=>[id,{}]));
+  const nodes=Object.fromEntries(['bigamt','bigll','pay-share','pay-tip','tv5','tv10','tv15','tp5','tp10','tp15','tip-cur','tip-in','paybtn'].map(id=>[id,{}]));
   let tip=3.81,changeDue;
-  const context={share:38.13,kind:'whish',note:0,tipAmt:()=>tip,$:id=>nodes[id],usd:x=>'$'+x.toFixed(2),ll:x=>'LL '+Math.round(x*89500),paintChange:x=>changeDue=x};
-  vm.createContext(context);vm.runInContext(code,context);context.paintPay();
+  const context={LANG:'en',CCY:'usd',share:38.13,kind:'whish',note:0,tipAmt:()=>tip,$:id=>nodes[id],usd:x=>'$'+x.toFixed(2),ll:x=>'LL '+Math.round(x*89500),paintChange:x=>changeDue=x,
+    esc:x=>String(x),pct:n=>n+'%',curSign:()=>'$'};
+  vm.createContext(context);vm.runInContext(I18N+code,context);context.paintPay();
+  assert.equal(nodes.paybtn.innerHTML,'<span class="sheen"></span>Pay $41.94');
   assert.equal(nodes['pay-share'].textContent,'$38.13');assert.equal(nodes['pay-tip'].textContent,'$3.81');assert.equal(nodes.bigamt.textContent,'$41.94');
   tip=0;context.paintPay();assert.equal(nodes.bigamt.textContent,'$38.13');assert.equal(nodes['pay-tip'].textContent,'$0.00');
   context.kind='cash';context.note=20;context.paintPay();assert.equal(nodes.paybtn.disabled,true);assert.equal(changeDue,38.13);

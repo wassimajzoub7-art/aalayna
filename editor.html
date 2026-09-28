@@ -3,27 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>Aalayna · menu editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
+<link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <style>
   :root{
-    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
-    --ink:#171D1A; --sub:#68716B; --faint:#9AA29C;
-    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
-    --red:#B4423A; --red-bg:#F9EEEC;
+    /* Aalayna brand: cream, ink, red for the main action, petrol for positive states; square corners. */
+    --bg:#FAF6F1; --surface:#FFFFFF; --line:#EAE2D8; --line-soft:#F2ECE4;
+    --ink:#211B16; --sub:#6E635B; --faint:#8A7F76;
+    --green:#173E43; --green-bg:#E6EEED; --green-line:#C5D6D4;
+    --brand:#C9414B; --brand-hover:#AC303B; --brand-text:#B3363F;
+    --red:#B3363F; --red-bg:#FBECE8;
+    --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
+    --font-label:'Kode Mono',ui-monospace,monospace;
     --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
     --ease:cubic-bezier(0.23,1,0.32,1); --ease-drawer:cubic-bezier(0.32,0.72,0,1);
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);
+  body{font-family:var(--font-text);background:var(--bg);
     color:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;
     padding:26px 16px 40px;font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
   .stage{width:100%;max-width:430px;margin-bottom:14px}
-  .stage .t{font-size:15px;font-weight:600;letter-spacing:-.01em}
-  .stage .t b{font-weight:600;color:var(--green)}
-  .stage .s{font-size:11px;color:var(--sub);margin-top:3px;letter-spacing:.05em;text-transform:uppercase}
+  .stage .t{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+  .stage .logo{display:block;color:var(--ink);line-height:0}
+  .stage .logo svg{display:block;height:15px;width:auto}
+  .stage .logo .logo-ink{fill:currentColor}.stage .logo .logo-red{fill:var(--brand)}
+  .stage .s{font-family:var(--font-label);font-size:11px;color:var(--sub);margin-top:6px;letter-spacing:.05em;text-transform:uppercase}
 
   .phone{width:430px;max-width:96vw;height:76vh;min-height:640px;background:var(--surface);
     border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden;
@@ -310,6 +320,27 @@
     .sec-items{transition:none}
     .cta:active,.it.dragging{transform:none}
   }
+  /* Brand pass on Aalayna's chrome: square corners, no soft shadows, red for the one main action,
+     Kode Mono for the small labels. The phone frame is a device, so it keeps its corners. */
+  .fx,.fx .ic,.clock,.fxrate,.fxr-in,.og,.og-seg,.alx,.oc input.cp,.optadd,.grip,.it .tag,.it .act,.win,.addrow .p,
+  .cta,.sheet,.grab,.lb .tag,.in,.aibar,.aibar button,.cx,.chipin,.alg,.sugg,.macro input,.confbar,.pct button,.qb,
+  .scope,.scope button,.prev,.rate,.danger,.wopt,.toast,.swb,.live,.staff-card{border-radius:0}
+  .it.dragging{border-radius:0;box-shadow:4px 4px 0 var(--ink)}
+  .scope button.on{box-shadow:none;outline:1px solid var(--line)}
+  .phone{box-shadow:none}
+  .cta-green{background:var(--brand)}
+  .cta-green:not(:disabled):hover{background:var(--brand-hover)}
+  .live,.sec-h .nm,.arch-h .nm,.lb,.lb .tag,.it .tag,.win,.macro .ml,.prev-h{font-family:var(--font-label)}
+  .swb:hover{border-color:var(--ink)}
+  .toast .k{color:#F6C39F}
+  .tr-miss{display:flex;align-items:flex-start;gap:9px;margin-top:9px;background:var(--red-bg);border:1px solid #EFC9C4;
+    padding:9px 11px;font-size:11.5px;color:var(--brand-text);line-height:1.5}
+  .tr-miss b{font-weight:600}
+  .it .tag.tr{background:var(--red-bg);color:var(--brand-text)}
+  a:focus-visible,button:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+  /* A venue link (?font=) sets the restaurant's font on body with !important (aalayna-store.js); the editor is
+     Aalayna's tool, so it keeps Saira. */
+  html body,html body button,html body input,html body textarea,html body select{font-family:var(--font-text)!important}
   /* ==== T4 staff sign-in: start ==== */
   .staff-gate{position:fixed;inset:0;z-index:10000;background:var(--bg);overflow:auto;display:flex;
     justify-content:center;align-items:flex-start;padding:14vh 16px 40px}
@@ -320,7 +351,8 @@
   .staff-card #staff-msg:empty{display:none}
   .staff-card #staff-msg[data-kind=err]{color:var(--red)}
   .staff-card #staff-msg[data-kind=ok]{color:var(--green)}
-  .staff-card a,.staff-bar a{color:var(--green);font-weight:500}
+  .staff-card a,.staff-bar a{color:var(--brand-text);font-weight:500}
+  .staff-card{box-shadow:8px 8px 0 var(--ink);border-color:var(--ink)}
   .staff-card ul{margin:10px 0 0 18px;line-height:1.8}
   .staff-links{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
   .staff-bar{font-size:11.5px;color:var(--sub);margin-top:6px}
@@ -329,7 +361,7 @@
 </head>
 <body>
 <div class="stage">
-  <div class="t">aalay<b>na</b> · menu editor</div>
+  <div class="t"><a class="logo" href="system.html" aria-label="Aalayna demo hub"><svg viewBox="0 0 350 50" aria-hidden="true" focusable="false"><path class="logo-ink" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM180 0L190 0L190 20.4L220 20.4L220 0L230 0L230 29.6L210 29.6L210 50L200 50L200 29.6L180 29.6ZM240 0L250 0L250 50L240 50ZM280 0L290 0L290 50L280 50ZM240 0L252.5 0L290 50L277.5 50ZM300 0L350 0L350 50L340 50L340 29.6L310 29.6L310 50L300 50ZM310 9.2L310 20.4L340 20.4L340 9.2Z"/><path class="logo-red" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></svg></a><span>· menu editor</span></div>
   <div class="s">what the restaurant sees</div>
   <div class="staff-bar" id="staff-bar" hidden><span id="staff-bar-who"></span> · <a href="#" id="staff-bar-action"></a></div>
 </div>
@@ -338,7 +370,7 @@
     <div class="hd-row">
       <div>
         <h1>Menu</h1>
-        <div class="sub" id="v-sub">Hallab 1881 · Kasr El Helou</div>
+        <div class="sub" id="v-sub">Restaurant</div>
       </div>
       <div class="live" id="state"><span class="d"></span><span id="state-t">LIVE</span></div>
     </div>
@@ -377,9 +409,8 @@
         <textarea class="in" id="ed-desc" oninput="edStash()"></textarea>
       </div>
       <div class="fld"><label class="lb" for="ed-photo">Dish photo (optional)</label><input class="in" id="ed-photo" type="url" placeholder="https://…" oninput="cur().imageUrl=this.value.trim();dirty()"><div class="hint">Use a photo of this dish that your restaurant owns. Leave blank for a text-only menu.</div></div>
-      <button class="cta cta-gold" id="ed-draft-one" style="margin-top:10px;display:none" onclick="draftLang()">
-        Auto-draft this language from English
-      </button>
+      <div class="tr-miss" id="ed-tr-one" style="display:none"><span>&#9888;</span><span><b>Needs translation.</b>
+        Guests reading in this language see the English until you write it here.</span></div>
       <div class="fld">
         <div class="lb">Ingredients <span class="tag">DRIVES FILTERS</span></div>
         <div class="chips" id="ed-ing"></div>
@@ -414,11 +445,7 @@
         <button class="optadd" onclick="addOptGroup()">+ Add option group: milk, size, extras&hellip;</button>
       </div>
 
-      <div class="aibar" id="ed-ai">
-        <span>Missing translations can be <b>drafted automatically</b>. You review them before publishing,
-        or write them yourself in the tabs above.</span>
-        <button onclick="draft()">Draft all</button>
-      </div>
+      <div class="tr-miss" id="ed-ai"><span>&#9888;</span><span id="ed-ai-t"><b>Needs translation.</b></span></div>
       <div class="row2">
         <div class="fld">
           <div class="lb">Price</div>
@@ -541,6 +568,9 @@
    continue without signing in. */
 (function(){
   if(!window.AalaynaAuth){ document.getElementById('staff-gate').hidden = true; return; }
+  /* Opened from the demo hub (system.html adds demo=1): skip the panel. The gate honours this only
+     in demo mode (no staff session, no venue key), so a real venue keeps its sign-in. */
+  try{ if(new URLSearchParams(location.search).get('demo')==='1') sessionStorage.setItem('aal.gate','demo'); }catch(e){}
   window.staffGate = AalaynaAuth.gate({ roles: ['owner', 'manager'],
     roleTitle: 'The menu editor is for owners and managers',
     roleText: 'You are signed in as a waiter. Ask the owner or a manager to change the menu. Bills and cash are on the dashboard.' });
@@ -681,7 +711,8 @@ function render(){
       row.dataset.id = it.id;
       var langs = '<span>' + (it.d ? it.d.split(',')[0] : 'No description yet') + '</span>' +
         (it.available === false ? '<span class="tag out">SOLD OUT</span>' : '') +
-        (it.status === 'incomplete' ? '<span class="tag">FILTERS OFF</span>' : '');
+        (it.status === 'incomplete' ? '<span class="tag">FILTERS OFF</span>' : '') +
+        (!(it.tr.fr.n || it.tr.fr.d) || !(it.tr.ar.n || it.tr.ar.d) ? '<span class="tag tr">NEEDS TRANSLATION</span>' : '');
       row.innerHTML =
         '<span class="grip">&#8942;&#8942;</span>' +
         '<span class="tx"><div class="nm">' + it.n + '</div>' +
@@ -763,8 +794,7 @@ function editItem(i){
   edPaint();
   $('ed-price').value = it.p.toFixed(2);
   fillSecs($('ed-sec'), it.s);
-  var hasFr = it.tr.fr.n || it.tr.fr.d, hasAr = it.tr.ar.n || it.tr.ar.d;
-  $('ed-ai').style.display = (hasFr && hasAr) ? 'none' : 'flex';
+  paintMissing();
 
   ['kcal','pr','ft','cb'].forEach(function(k){
     $('ed-' + k).value = (it[k] == null ? '' : it[k]);
@@ -911,15 +941,18 @@ function addOptGroup(){
 /* ---- per-language editing ----
    Edits go into a buffer per language; everything commits on Save. The fr/ar
    badges are derived from content by the store, never set by hand.
-   Auto-draft is SIMULATED here: names carry over (dish names rarely translate),
-   descriptions copy from English pending review. In production this is a
-   translation-model call. */
+   A language nobody has written is marked "Needs translation". The editor never
+   copies the English into French or Arabic: guests would read English labelled
+   as their language. */
 var edLang = 'en', edBuf = null;
 function edStash(){
   if (!edBuf) return;
   edBuf[edLang].n = $('ed-name').value;
   edBuf[edLang].d = $('ed-desc').value;
   cur().conf = cur().conf;   // translations don't touch confirmation
+  $('ed-tr-one').style.display =
+    (edLang !== 'en' && !edBuf[edLang].n && !edBuf[edLang].d) ? 'flex' : 'none';
+  paintMissing();
   dirty();
 }
 function edPaint(){
@@ -934,8 +967,18 @@ function edPaint(){
   $('ed-lang-tag').textContent = tag;
   $('ed-lang-tag2').textContent = tag;
   $('ed-desc-lb').textContent = edLang === 'en' ? "What's in it" : 'Description';
-  $('ed-draft-one').style.display =
-    (edLang !== 'en' && !edBuf[edLang].n && !edBuf[edLang].d) ? 'block' : 'none';
+  $('ed-tr-one').style.display =
+    (edLang !== 'en' && !edBuf[edLang].n && !edBuf[edLang].d) ? 'flex' : 'none';
+}
+var LANG_NAME = { fr: 'Français', ar: 'العربية' };
+function missingLangs(){
+  return ['fr','ar'].filter(function(l){ return !edBuf[l].n && !edBuf[l].d; });
+}
+function paintMissing(){
+  var miss = missingLangs();
+  $('ed-ai').style.display = miss.length ? 'flex' : 'none';
+  $('ed-ai-t').innerHTML = '<b>Needs translation:</b> ' + miss.map(function(l){ return LANG_NAME[l]; }).join(' and ') +
+    '. Write it in the tab above; until then guests reading in that language see the English.';
 }
 function edSwitch(l, btn){
   edStash();
@@ -943,12 +986,6 @@ function edSwitch(l, btn){
   document.querySelectorAll('#ed-langs button').forEach(function(x){ x.classList.remove('on'); });
   if (btn) btn.classList.add('on');
   edPaint();
-}
-function draftLang(){
-  edBuf[edLang].n = edBuf.en.n;          // dish names carry over
-  edBuf[edLang].d = edBuf.en.d;          // description drafted from English
-  edPaint(); edStash();
-  toast('Drafted from English. Adjust anything that reads wrong');
 }
 function paintAllergens(){
   var it = cur(), box = $('ed-al');
@@ -1007,14 +1044,6 @@ function confirmDish(){
   dirty(); paintConf();
   toast(ITEMS[editing].n + ' confirmed, now in guest filters');
 }
-function draft(){
-  ['fr','ar'].forEach(function(l){
-    if (!edBuf[l].n && !edBuf[l].d){ edBuf[l].n = edBuf.en.n; edBuf[l].d = edBuf.en.d; }
-  });
-  $('ed-ai').style.display = 'none';
-  edPaint(); edStash();
-  toast('Both languages drafted. Review them in the tabs');
-}
 function saveItem(){
   if(cur().imageUrl && !/^https:\/\/[^\s]+$/i.test(cur().imageUrl)){toast('Use a full https:// photo URL, or leave the photo blank.');$('ed-photo').focus();return;}
   edStash();
@@ -1025,15 +1054,7 @@ function saveItem(){
     toast('Give the dish a name first');
     return;
   }
-  var drafted = [];
-  if (addingNew){
-    ['fr','ar'].forEach(function(l){
-      if (!edBuf[l].n && !edBuf[l].d){
-        edBuf[l].n = edBuf.en.n; edBuf[l].d = edBuf.en.d;
-        drafted.push(l === 'fr' ? 'français' : 'العربية');
-      }
-    });
-  }
+  var missing = missingLangs().map(function(l){ return LANG_NAME[l]; });
   it.n = edBuf.en.n || it.n;
   it.d = edBuf.en.d;
   it.tr = { fr: { n: edBuf.fr.n, d: edBuf.fr.d }, ar: { n: edBuf.ar.n, d: edBuf.ar.d } };
@@ -1044,8 +1065,8 @@ function saveItem(){
   closeOv('ov-item'); render(); dirty();
   if (addingNew){
     addingNew = false;
-    toast(it.n + ' added' + (drafted.length
-      ? '. ' + drafted.join(' + ') + ' drafted, edit them any time' : ''));
+    toast(it.n + ' added' + (missing.length
+      ? '. Needs translation: ' + missing.join(' and ') : ''));
   } else {
     toast('Saved. Publish when you’re ready');
   }

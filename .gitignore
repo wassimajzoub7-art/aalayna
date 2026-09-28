@@ -7,6 +7,7 @@
 !book.html
 !system.html
 !guest.html
+!sw.js
 !editor.html
 !dashboard.html
 # old addresses keep working as redirects
@@ -18,6 +19,7 @@
 !qr-lib.js
 !pitch.html
 !website.css
+!site.js
 !analytics-config.js
 !analytics.js
 !README.md
@@ -58,6 +60,23 @@ onboarding/
 # marketing screenshots and the share image (W3a)
 !images/
 !images/*
+# the 45-second film: live page (reel.html), web cuts and posters in images/, tools/render-reel.js and tools/reel-audio.js
+!reel.html
 # the French homepage (W4)
 !fr/
 !fr/*
+!ar/
+!ar/*
+# the logo: brand page, logo.js and motion.js, SVG files and video renders; tools/brand.js builds them
+!brand/
+!brand/*
+!brand/svg/
+!brand/svg/*
+!brand/svg/3layna/*
+!brand/svg/aalayna/*
+!brand/video/
+!brand/video/*
+!brand/fonts/
+!brand/fonts/*
+!brand/icons/
+!brand/icons/*

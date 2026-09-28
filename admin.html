@@ -3,32 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
 <title>Aalayna internal admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
+<link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <script src="aalayna-store.js?v=22"></script>
 <script src="restaurant-growth.js?v=6"></script>
 <script src="owner-metrics.js?v=7"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=3"></script>
+<script src="aalayna-sync.js?v=6"></script>
 <style>
   :root{
-    --bg:#F6F6F4; --surface:#FFFFFF; --line:#E7E5E0; --line-soft:#F0EEE9;
-    --ink:#171D1A; --sub:#58655E; --faint:#66736B;
-    --green:#0F4B3A; --green-bg:#EDF3EF; --green-line:#D5E3DA;
-    --red:#B4423A; --red-bg:#F9EEEC;
+    /* Aalayna brand: cream, ink, red for the main action, petrol for positive states; square corners. */
+    --bg:#FAF6F1; --surface:#FFFFFF; --line:#EAE2D8; --line-soft:#F2ECE4;
+    --ink:#211B16; --sub:#5E544C; --faint:#6E635B;
+    --green:#173E43; --green-bg:#E6EEED; --green-line:#C5D6D4;
+    --brand:#C9414B; --brand-hover:#AC303B; --brand-text:#B3363F;
+    --red:#B3363F; --red-bg:#FBECE8;
+    --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
+    --font-label:'Kode Mono',ui-monospace,monospace;
     --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   [hidden]{display:none!important}
-  body{font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+  body{font-family:var(--font-text);background:var(--bg);color:var(--ink);
     font-size:15px;line-height:1.5;font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
   main{max-width:1080px;margin:0 auto;padding:28px 24px 64px}
   header{padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px}
-  header .n{font-family:'Amiri',serif;font-size:29px;font-weight:700;line-height:1;color:var(--green)}
-  header .n b{color:#B4423A;font-weight:700}
-  h1{font-size:28px;line-height:1.2;letter-spacing:-.025em;margin-top:14px}
+  header .n{display:inline-block;color:var(--ink);line-height:0}
+  header .n svg{display:block;height:48px;width:auto}
+  header .n .logo-ink{fill:currentColor}header .n .logo-red{fill:var(--brand)}
+  h1{font-size:28px;line-height:1.2;font-weight:600;letter-spacing:-.01em;margin-top:16px}
   .sub{font-size:15px;color:var(--sub);margin-top:7px}
   .notice{display:inline-block;margin-top:12px;padding:8px 12px;background:var(--amber-bg);border-radius:8px;font-size:13px;color:var(--amber)}
   .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:14px;box-shadow:0 2px 8px #18392804}
@@ -43,7 +52,7 @@
   th,td{text-align:left;padding:10px 12px 10px 0;border-top:1px solid var(--line);vertical-align:top;line-height:1.5}
   th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);font-weight:600;border-top:0;padding-top:0}
   td.num,th.num{text-align:right;white-space:nowrap}
-  td.code{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;overflow-wrap:anywhere}
+  td.code{font-family:var(--font-label);font-size:12.5px;overflow-wrap:anywhere}
   td.time{white-space:nowrap;color:var(--sub)}
   .badge{display:inline-flex;align-items:center;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.5}
   .badge.flag{background:var(--amber-bg);color:var(--amber)}.badge.ok{background:#E5F0E7;color:#245C3D}.badge.new{background:var(--red-bg);color:var(--red)}
@@ -74,13 +83,13 @@
   .sw.none{background:var(--surface);border-style:dashed}
   .sw.on{outline:2px solid var(--ink);outline-offset:2px}
   .chip{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:-1px;margin-right:5px}
-  span.code{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+  span.code{font-family:var(--font-label);font-size:12.5px}
   tr.detail>td{border-top:0;padding-top:0}
   .vd{border:1px solid var(--line);border-radius:12px;padding:4px 16px 14px;margin-bottom:6px}
   .vd h3{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);font-weight:600;margin-top:16px}
   .line{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line-soft)}
   .line .t{flex:0 0 150px;font-size:13px;color:var(--sub)}
-  .line .u{flex:1;min-width:0;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;overflow-wrap:anywhere}
+  .line .u{flex:1;min-width:0;font-family:var(--font-label);font-size:12.5px;overflow-wrap:anywhere}
   .line .u.p{font-family:inherit;font-size:13.5px;line-height:1.55}
   .confirm{border:1px solid var(--amber-line);background:var(--amber-bg);border-radius:10px;padding:12px 14px;margin:4px 0 8px;font-size:14px;line-height:1.6}
   .confirm .row{margin-top:10px}
@@ -97,12 +106,22 @@
   .staff-invite select.in,.line select.in{flex:0 0 auto;min-width:130px;width:auto}
   .line.revoked .u{color:var(--faint)}
   /* ==== T4 staff styles: end ==== */
+  /* Brand pass: square corners, no soft shadows, red for the main action, Kode Mono for small labels. */
+  .notice,.card,.btn,.badge,.in,.sw,.chip,.vd,.confirm{border-radius:0}
+  .card{box-shadow:none}
+  .btn:hover{border-color:var(--ink)}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:var(--brand-hover);border-color:var(--brand-hover)}
+  .btn:focus-visible{outline-color:var(--brand)}
+  .foot a{color:var(--brand-text)}
+  th,.k,.lbl,.vd h3{font-family:var(--font-label)}
+  .badge.ok{background:var(--green-bg);color:var(--green)}
 </style>
 </head>
 <body>
 <main>
   <header>
-    <div class="n">aalay<b>na</b></div>
+    <a class="n" href="index.html" aria-label="Aalayna home"><svg viewBox="0 0 170 110" aria-hidden="true" focusable="false"><path class="logo-ink" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM0 60L10 60L10 80.4L40 80.4L40 60L50 60L50 89.6L30 89.6L30 110L20 110L20 89.6L0 89.6ZM60 60L70 60L70 110L60 110ZM100 60L110 60L110 110L100 110ZM60 60L72.5 60L110 110L97.5 110ZM120 60L170 60L170 110L160 110L160 89.6L130 89.6L130 110L120 110ZM130 69.2L130 80.4L160 80.4L160 69.2Z"/><path class="logo-red" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></svg></a>
     <h1>Aalayna internal admin</h1>
     <div class="sub" id="venue-line">Venue</div>
     <p class="notice">Local prototype data on this device, plus the shared store when this page was opened with an owner key.</p>
@@ -374,15 +393,15 @@ Aalayna.on(function(){ paintAll(); });
   /* Fallback only: loadMenuPacks() refills this list in place from venues/index.json
      (written by tools/import-menu.js). In place, because FIELDS and the check in
      validateProfile hold this same array. */
-  var MENU_PACKS=[{v:'',t:'None'},{v:'kababji',t:'Kababji (venues/kababji.json)'}];
-  var SWATCHES=['#EA312B','#B4423A','#E8555B','#E07B39','#D9962E','#6B4A2F','#0F4B3A','#3E7C4F','#6B7A3A','#173E43','#26327A','#5B3E82','#1A1A1A'];
+  var MENU_PACKS=[{v:'',t:'None'},{v:'mayda',t:'Mayda (venues/mayda.json)'}];
+  var SWATCHES=['#2F6B4F','#B4423A','#E8555B','#E07B39','#D9962E','#6B4A2F','#0F4B3A','#3E7C4F','#6B7A3A','#173E43','#26327A','#5B3E82','#1A1A1A'];
   var FIELDS=[
-    {f:'name',label:'Name',max:40,ph:'Kababji'},
+    {f:'name',label:'Name',max:40,ph:'Mayda'},
     {f:'place',label:'Place',max:40,ph:'Lebanese Grill'},
-    {f:'slug',label:'Slug',max:40,ph:'kababji',hint:'Lower-case letters, digits and hyphens. Left empty, it is made from the name.'},
-    {f:'gplace',label:'Google place id',max:60,ph:'ChIJ...',hint:'Optional. With it, five stars open their exact review box.'},
-    {f:'brand',label:'Brand colour',max:7,ph:'#EA312B',swatches:true},
-    {f:'bg',label:'Background',max:7,ph:'#F0EFEA',hint:'Optional. Six digit hex.'},
+    {f:'slug',label:'Slug',max:40,ph:'mayda',hint:'Lower-case letters, digits and hyphens. Left empty, it is made from the name.'},
+    {f:'gplace',label:'Google place id',max:60,ph:'ChIJ...',hint:'Optional. With it, guests who give 4 or 5 stars go straight to its Google review box.'},
+    {f:'brand',label:'Brand colour',max:7,ph:'#2F6B4F',swatches:true},
+    {f:'bg',label:'Background',max:7,ph:'#F5F1EA',hint:'Optional. Six digit hex.'},
     {f:'font',label:'Font',max:40,ph:'Montserrat',hint:'Optional. A Google Fonts name.'},
     {f:'menu',label:'Menu pack',select:MENU_PACKS,hint:'Loaded once on each device that opens an owner link.'}
   ];

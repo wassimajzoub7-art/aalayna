@@ -1,5 +1,13 @@
 /* Aalayna marketing site: index.html, numbers.html, book.html. */
 
+/* Three faces, each with one job, all on the logo's square geometry. Saira (square bowls, horizontal and vertical
+   strokes, like the logo's modules) sets everything you read: headings, text, buttons and figures; Noto Kufi Arabic,
+   geometric like the Kufi mark, sets the Arabic words. Kode Mono, square and
+   monospaced, sets the small labels you scan (eyebrows, step numbers, tags): the grid texture of the brand.
+   Aalayna Block, the logo's own capitals (tools/brand-font.js builds it from brand/logo.js), sets only the name
+   itself. Corners are square everywhere, like the logo; only the phones keep theirs, because phones have them. */
+@font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-weight:100 900;font-style:normal;font-display:swap}
+
 /* Tokens. Six type sizes only (14 / 16 / 19 / 30 / 54 / 67 px). Red has two jobs:
    --brand fills buttons under white text, --brand-text is any red text (5.5:1 on the cream, 5.2:1 on the pink pills). */
 :root{
@@ -8,39 +16,60 @@
   --petrol:#173E43;--peach:#F6C39F;--on-petrol:#D7E3E2;--on-petrol-sub:#B9C7C4;
   --fs-small:.875rem;--fs-body:1rem;--fs-lead:1.1875rem;--fs-heading:1.875rem;--fs-display:3.375rem;--fs-hero:4.1875rem;
   --header-h:4rem;
+  --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
+  --font-label:'Kode Mono',ui-monospace,monospace;
+  --font-name:'Aalayna Block','Kode Mono',ui-monospace,monospace;
 }
 
 /* Base */
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans','IBM Plex Sans Arabic',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.65;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-text);font-size:var(--fs-body);line-height:1.65;-webkit-font-smoothing:antialiased}
 button,a,input{touch-action:manipulation}button,input{font:inherit}a{color:inherit}
 button,a,summary{-webkit-tap-highlight-color:transparent}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
 h1,h2,h3,p,figure{margin:0}
-h2{font-size:var(--fs-heading);line-height:1.2;letter-spacing:-.03em}
-h3{font-size:var(--fs-lead);line-height:1.35}
+/* Headings in Saira, bold and a little tight; the name inside a heading keeps the logo's capitals. */
+h1,h2,h3{font-family:var(--font-text);font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.name{font-family:var(--font-name);font-weight:400;font-synthesis:none;letter-spacing:0}
+h2{font-size:var(--fs-heading);line-height:1.15}
+h3{font-size:var(--fs-lead);line-height:1.3}
 p{color:var(--sub)}
 img{max-width:100%}
 .wrap{width:min(1120px,calc(100% - 3rem));margin-inline:auto}
 .section{padding-block:5rem}
 section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
-.eyebrow{color:var(--brand-text);font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
-.number{font-size:var(--fs-small);font-weight:600;color:var(--brand-text)}
+.eyebrow{color:var(--brand-text);font-family:var(--font-label);font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.number{font-family:var(--font-label);font-size:var(--fs-small);font-weight:600;color:var(--brand-text)}
 .skip{position:absolute;top:-6rem;left:1rem;background:var(--surface);padding:.7rem;z-index:100}.skip:focus{top:.5rem}
+/* Read out, not shown: the hero spells the name 3LAYNA on screen and Aalayna to a screen reader. */
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* Header: 64 px, sticky, one line. Under 768 px only the wordmark and one action. */
 .site-nav{position:sticky;top:0;z-index:20;background:rgba(250,246,241,.97);border-bottom:1px solid var(--line)}
 .nav-in{display:flex;flex-wrap:nowrap;align-items:center;gap:1.5rem;height:calc(var(--header-h) - 1px)}
-.logo{display:inline-block;padding-block:.25rem;font-family:'Amiri',serif;font-size:var(--fs-heading);font-weight:700;line-height:1.2;text-decoration:none;color:var(--ink);white-space:nowrap}
-.logo b{color:var(--brand-text)}
-.nav-links{display:flex;align-items:center;gap:.5rem;margin-left:auto}
+/* The logo: 3LA / YNA in the header, the Arabic and Latin lockup in the footer. Both are inline SVG drawn by
+   brand/logo.js (node tools/brand.js site writes them into the pages). */
+.logo{display:inline-flex;align-items:center;min-height:44px;flex-shrink:0;text-decoration:none;color:var(--ink)}
+.logo svg{display:block;height:2.375rem;width:auto}
+.logo .logo-ink{fill:currentColor}.logo .logo-red{fill:var(--brand)}
+.footer .logo svg{height:2.25rem}
+.nav-links{display:flex;align-items:center;gap:.5rem;margin-inline-start:auto}
 .nav-links a,.nav-links button{display:inline-block;padding:.6875rem .5rem;font-size:var(--fs-small);text-decoration:none;white-space:nowrap}
 .nav-links a:hover,.nav-links button:hover{color:var(--brand-text)}
 .nav-in>.btn{white-space:nowrap}
+/* Language: the current one in the header, the other two in a small menu under it (44 px targets). */
+.lang{position:relative;flex-shrink:0}
+.lang summary{display:inline-flex;align-items:center;gap:.4rem;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;cursor:pointer;list-style:none}
+.lang summary::-webkit-details-marker{display:none}
+.lang summary::after{content:'';width:.4rem;height:.4rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-25%) rotate(45deg)}
+.lang[open] summary::after{transform:translateY(25%) rotate(-135deg)}
+.lang div{position:absolute;top:100%;inset-inline-end:0;z-index:30;display:grid;min-width:9rem;background:var(--surface);border:1px solid var(--line)}
+.lang a{display:flex;align-items:center;min-height:44px;padding-inline:1rem;font-size:var(--fs-small);font-weight:600;text-decoration:none;white-space:nowrap}
+.lang a:hover{color:var(--brand-text);background:var(--bg)}
 
 /* Buttons */
-.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.8rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:.65rem;text-decoration:none;font-size:var(--fs-body);font-weight:600;text-align:center;cursor:pointer;line-height:1.4}
+.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.8rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;text-decoration:none;font-size:var(--fs-body);font-weight:600;text-align:center;cursor:pointer;line-height:1.4}
 .btn:hover{background:var(--brand-hover)}
 .btn.outline{background:var(--surface);border-color:var(--line);color:var(--ink)}.btn.outline:hover{border-color:var(--brand)}
 .btn.light{background:var(--peach);color:var(--petrol)}.btn.light:hover{background:#fff}
@@ -51,7 +80,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 
 /* Product screens. Phone shots are 390 x 844 at 2x; the top 28 px is a demo strip live venues never show,
    so the frame is 390 x 816 and the image is anchored to the bottom. */
-.phone{width:100%;max-width:18rem;padding:.5rem;border-radius:2.5rem;background:var(--ink);box-shadow:0 1.5rem 3rem rgba(33,27,22,.16)}
+.phone{width:100%;max-width:18rem;padding:.5rem;border-radius:2.5rem;background:var(--ink)}
 .phone picture{display:block;overflow:hidden;border-radius:2rem;background:var(--surface)}
 .phone img{display:block;width:100%;height:auto;aspect-ratio:390/816;object-fit:cover;object-position:50% 100%}
 .phone.small{max-width:13.5rem;padding:.375rem;border-radius:1.9rem}.phone.small picture{border-radius:1.55rem}
@@ -59,36 +88,92 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .shot figcaption{max-width:22rem;margin-top:.9rem;font-size:var(--fs-small);line-height:1.5;color:var(--sub);text-align:center}
 .shot figcaption strong{display:block;color:var(--ink);font-weight:600}
 /* The editor, cropped to the menu card: the demo header above it and the demo controls below it are cut. */
-.panel{width:100%;overflow:hidden;border:1px solid var(--line);border-radius:1rem;background:#F5F5F2;box-shadow:0 1.5rem 3rem rgba(33,27,22,.08)}
+.panel{width:100%;overflow:hidden;border:1px solid var(--line);background:#F5F5F2}
 .panel picture{display:block}
 .panel img{display:block;width:100%;height:auto;aspect-ratio:960/1300;object-fit:cover;object-position:50% 63.4%}
 
 /* Hero */
-.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);align-items:center;gap:4rem;padding-block:4.5rem 5rem}
-.hero h1{font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);align-items:center;gap:3rem;padding-block:4.5rem 5rem}
+/* Sized so the longest line ("LE PARTAGE." in French) fits the column. */
+.hero h1{font-size:var(--fs-display);line-height:1.08}
 .hero h1 em{font-style:normal;color:var(--brand-text)}
 .lead{font-size:var(--fs-lead);line-height:1.6;margin-top:1.7rem;max-width:30rem}
 .supporting{font-size:var(--fs-small);line-height:1.9;margin-top:1rem;color:var(--ink)}
-.hero-shot{justify-self:center}
+/* What it is, at a glance: four square chips under the lead. */
+.what{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem;margin:1.5rem 0 0;padding:0;list-style:none;max-width:30rem}
+.what li{display:flex;align-items:center;gap:.6rem;min-height:2.75rem;padding:.5rem .75rem;background:var(--surface);border:1px solid var(--line);font-size:var(--fs-small);font-weight:600;line-height:1.3;color:var(--ink)}
+.what svg{flex-shrink:0;fill:none;stroke:var(--brand-text);stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
+/* The film: muted loop with its last frame (the logo) as poster; sound only on request. A hairline frames it on the cream.
+   Phones get the 9:16 cut, everything else the 16:9 one (the sources choose by width). */
+.hero-reel{position:relative}
+.hero-reel video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
+.reel-sound{position:absolute;right:0;bottom:0;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:var(--ink);color:#fff;cursor:pointer}
+/* A speaker: crossed out while muted, sound waves once playing with sound. */
+.reel-sound svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}.reel-sound .spk{fill:currentColor}
+.reel-sound .on,.reel-sound[aria-pressed="true"] .off{display:none}.reel-sound[aria-pressed="true"] .on{display:inline}
+@media(hover:hover){.reel-sound:hover{background:var(--brand)}}
+/* Play: one large button in the middle of the film, shown only while it is paused. Playing, the film is clear; a tap
+   anywhere on it pauses (keyboard users still see the button when they tab to it). */
+.hero-reel video{cursor:pointer}
+.reel-play{position:absolute;left:50%;top:50%;display:grid;place-items:center;width:80px;height:80px;margin:-40px 0 0 -40px;padding:0;border:0;background:rgba(29,26,24,.82);color:#fff;cursor:pointer;opacity:0;transition:opacity .25s}
+.reel-play svg{width:36px;height:36px;fill:currentColor}.reel-play .play,.is-paused .reel-play .pause{display:none}.is-paused .reel-play .play{display:inline}
+.is-paused .reel-play,.reel-play:focus-visible{opacity:1}
+@media(hover:hover){.reel-play:hover{background:var(--brand)}}
+@media(max-width:767px){.reel-play{width:64px;height:64px;margin:-32px 0 0 -32px}.reel-play svg{width:28px;height:28px}}
+/* Phones: the film is the hero. The 16:9 cut comes first, edge to edge (about a third of the screen), with the headline
+   and buttons in view below it; "Watch with sound" opens it full screen. The markup keeps the headline first, so a
+   screen reader still hears it first. */
+@media(max-width:767px){.hero-reel{order:-1;margin:-1px -1rem 0}}
 
 /* How it works */
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
 .steps article{border-top:1px solid var(--line);padding-top:1.75rem}
 .steps .shot{margin-bottom:1.75rem}
 .steps h3{margin-top:.7rem}.steps p{margin-top:.75rem}
+/* The carousel's arrows and dots (site.js shows them on phones only). Square, like everything else. */
+.steps-nav{display:none}
+.steps-arrow{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.steps-arrow:disabled{opacity:.35;cursor:default}
+.steps-arrow svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
+[dir="rtl"] .steps-arrow svg{transform:scaleX(-1)}
+.steps-dots{display:flex}
+.steps-dots button{display:grid;place-items:center;width:28px;height:44px;padding:0;border:0;background:none;cursor:pointer}
+.steps-dots button::before{content:'';width:10px;height:10px;border:2px solid var(--ink);box-sizing:border-box;transition:background .2s,border-color .2s}
+.steps-dots button[aria-current="true"]::before{background:var(--brand);border-color:var(--brand)}
+
+/* Sections rise in as they scroll into view (site.js adds the class, so without it nothing is hidden). */
+.js-reveal{opacity:0;transform:translateY(1.25rem);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.js-reveal.is-in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js-reveal{opacity:1;transform:none;transition:none}}
 
 /* Outcomes band: every article is a subgrid, so the figure, source line, heading and text line up across columns. */
 .benefits-band{background:var(--petrol);color:#fff}
 .benefits-band .eyebrow{color:var(--peach)}
 .benefits-band p{color:var(--on-petrol)}
 .outcomes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:2rem;row-gap:0;margin-top:2.5rem}
-.outcomes article{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0;align-content:start;padding-bottom:2rem}
+.outcomes article{display:grid;grid-row:span 5;grid-template-rows:subgrid;row-gap:0;align-content:start;padding-bottom:2rem}
 .outcomes h3{margin-top:1.1rem;color:var(--peach)}.outcomes p{margin-top:.75rem}
-.benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-display);font-weight:700;line-height:1;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.outcome-icon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:1rem;background:rgba(246,195,159,.12);color:var(--peach)}
+.outcome-icon svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
+.benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-heading);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
 .benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
-.source-tag{display:inline-block;margin-right:.35rem;padding:0 .45rem;border-radius:.3rem;background:var(--peach);color:var(--petrol);font-weight:600}
+.source-tag{display:inline-block;margin-inline-end:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .calc-link{display:inline-block;margin-top:.5rem;padding-block:.5625rem;color:var(--peach);font-weight:600;text-underline-offset:.25rem}
 .calc-link::after{content:' \2192'}
+/* Every section ends on the same ask: Book a demo. */
+.section-cta{margin-top:2.5rem}
+.faq .section-cta{margin-top:2rem}
+
+/* Arabic (ar/): the page runs right to left in Noto Kufi Arabic, geometric like the Kufi mark. Arabic letters join, so
+   nothing is tracked or set in capitals, and the lines are opened up for the taller script. The name in the hero is
+   علينا itself, in the same face. */
+[lang="ar"]{--font-text:'Noto Kufi Arabic','Saira',system-ui,sans-serif;--font-label:'Noto Kufi Arabic','Kode Mono',system-ui,sans-serif;font-family:var(--font-text)}
+[lang="ar"] body{line-height:1.85}
+[lang="ar"] :is(h1,h2,h3,.eyebrow,.number,.source-tag,.btn,.name){letter-spacing:0;text-transform:none}
+[lang="ar"] h1,[lang="ar"] h2{line-height:1.35}
+[lang="ar"] .name{font-family:var(--font-text);font-weight:700}
+[lang="ar"] .site-nav .logo svg{height:2.75rem}   /* the Kufi mark is square and lighter than the Block */
+[dir="rtl"] .calc-link::after{content:' \2190'}
 
 /* Both sides of the table */
 .experience-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:4rem;align-items:start;margin-top:2.8rem}
@@ -99,17 +184,24 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 /* Pilot and pricing */
 .section-intro{max-width:44rem;margin-top:1.2rem}
 .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2.5rem}
-.pilot{padding:2rem;border:1px solid var(--line);border-radius:1rem;background:var(--surface)}
-.pill{display:inline-block;margin-bottom:1.25rem;padding:.25rem .65rem;border-radius:.4rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small)}
-.pilot-steps{list-style:none;margin:1.5rem 0;padding:0}
-.pilot-steps li{margin-bottom:1rem;color:var(--sub)}
+.pilot{padding:2rem;border:1px solid var(--line);background:var(--surface)}
+.pill{display:inline-block;margin-bottom:1.25rem;padding:.25rem .65rem;background:var(--brand-bg);color:var(--brand-text);font-family:var(--font-label);font-size:var(--fs-small);font-weight:600}
+/* The pilot as a timeline: a square node per step on one line, go-live marked in the brand colour. */
+.pilot-steps{list-style:none;margin:1.75rem 0 1.5rem;padding:0}
+.pilot-steps li{position:relative;padding-inline-start:2.25rem;padding-bottom:1.6rem;color:var(--sub)}
+.pilot-steps li::before{content:"";position:absolute;inset-inline-start:.3rem;top:.3rem;width:.8rem;height:.8rem;box-sizing:border-box;border:2px solid var(--ink);background:var(--surface);z-index:1}
+.pilot-steps li::after{content:"";position:absolute;inset-inline-start:calc(.7rem - 1px);top:.5rem;bottom:-.5rem;width:2px;background:var(--line)}
+.pilot-steps li:last-child{padding-bottom:0}.pilot-steps li:last-child::after{display:none}
+.pilot-steps .go-live::before{inset-inline-start:.1rem;top:.15rem;width:1.2rem;height:1.2rem;border-color:var(--brand);background:var(--brand)}
+.pilot-steps .go-live .number{color:var(--brand-text);font-weight:700}
 .pilot-steps .number{display:block;margin-bottom:.15rem}
-.price-card{padding:2rem;border-radius:1rem;background:var(--petrol);color:#fff}
+.price-card{padding:2rem;background:var(--petrol);color:#fff}
 .price-card .eyebrow{color:var(--peach)}
-.price{color:#fff;font-size:var(--fs-display);font-weight:600;line-height:1.2;letter-spacing:-.04em}
-.price span{display:block;margin-top:.3rem;font-size:var(--fs-body);font-weight:400;letter-spacing:0;color:var(--on-petrol)}
+.price{color:#fff;font-size:var(--fs-display);font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.price span{display:block;margin-top:.5rem;font-size:var(--fs-body);font-weight:400;letter-spacing:0;color:var(--on-petrol)}
 .founder{padding-block:1.25rem;border-bottom:1px solid #ffffff30;color:var(--peach);font-size:var(--fs-body)}
-.price-card ul{padding-left:1.2rem;color:var(--on-petrol)}.price-card li{margin-bottom:.5rem}
+.price-card ul{padding:0;list-style:none;color:var(--on-petrol)}.price-card li{position:relative;margin-bottom:.6rem;padding-inline-start:1.75rem}
+.price-card li::before{content:'';position:absolute;inset-inline-start:.1rem;top:.45em;width:.8rem;height:.42rem;border-left:2px solid var(--peach);border-bottom:2px solid var(--peach);transform:rotate(-45deg)}
 .price-note{margin-block:1.2rem;font-size:var(--fs-small);color:var(--on-petrol)}
 
 /* Coming next: return visits */
@@ -119,16 +211,16 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .retention-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2.5rem;margin-top:2.75rem}
 .retention-steps article{border-top:2px solid var(--line);padding-top:1.25rem}
 .retention-steps h3{margin-top:.75rem}.retention-steps p{margin-top:.8rem}
-.retention-status{display:flex;align-items:flex-start;gap:1.2rem;margin-top:2.5rem;padding:1.25rem 1.5rem;border:1px solid var(--line);border-radius:.75rem;background:var(--surface)}
+.retention-status{display:flex;align-items:flex-start;gap:1.2rem;margin-top:2.5rem;padding:1.25rem 1.5rem;border:1px solid var(--line);background:var(--surface)}
 .retention-status strong{color:var(--ink);font-weight:600}
-.retention-badge{flex-shrink:0;display:inline-block;padding:.3rem .65rem;border-radius:.4rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small);font-weight:600;line-height:1.5}
+.retention-badge{flex-shrink:0;display:inline-block;padding:.3rem .65rem;background:var(--brand-bg);color:var(--brand-text);font-size:var(--fs-small);font-weight:600;line-height:1.5}
 
 /* FAQ: custom chevron, rows at least 48 px */
 .faq-section{display:grid;grid-template-columns:1fr 1.65fr;gap:3rem}
 .faq details{border-bottom:1px solid var(--line)}
 .faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:3rem;padding:.75rem .2rem;cursor:pointer;font-weight:500;list-style:none}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:'';flex-shrink:0;width:.55rem;height:.55rem;margin-right:.4rem;border-right:2px solid var(--brand-text);border-bottom:2px solid var(--brand-text);transform:translateY(-25%) rotate(45deg);transition:transform .2s ease}
+.faq summary::after{content:'';flex-shrink:0;width:.55rem;height:.55rem;margin-inline-end:.4rem;border-right:2px solid var(--brand-text);border-bottom:2px solid var(--brand-text);transform:translateY(-25%) rotate(45deg);transition:transform .2s ease}
 .faq details[open]>summary::after{transform:translateY(25%) rotate(-135deg)}
 .faq summary:hover{color:var(--brand-text)}
 .faq summary:focus-visible{outline-offset:2px}
@@ -142,12 +234,12 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .footer>a:last-child{padding-block:.6875rem;text-underline-offset:.2rem}
 
 @media(max-width:1199px){.outcomes{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:1023px){.hero{gap:2.5rem}.hero h1{font-size:var(--fs-display)}.experience-grid{grid-template-columns:1fr;gap:2.5rem}.both-sides{max-width:40rem}}
+@media(max-width:1023px){.hero{grid-template-columns:1fr;gap:2.5rem}.hero h1{font-size:var(--fs-display)}.experience-grid{grid-template-columns:1fr;gap:2.5rem}.both-sides{max-width:40rem}}
 @media(max-width:960px){.faq-section{grid-template-columns:1fr;gap:1.5rem}.retention-heading{gap:2rem}.retention-steps{gap:1.5rem}}
 @media(max-width:767px){
   .wrap{width:calc(100% - 2rem)}
-  .nav-in{gap:.75rem}.nav-links{display:none}.nav-in>.btn{margin-left:auto}
-  .hero{grid-template-columns:1fr;gap:2.5rem;padding-block:2.5rem 3rem}
+  .nav-in{gap:.75rem}.nav-links{display:none}.nav-in>.btn{margin-inline-start:auto}
+  .hero{grid-template-columns:1fr;gap:2.5rem;padding-block:0 3rem}
   .phone{max-width:16rem}.phone.small{max-width:12rem}
   .section{padding-block:3rem}
   .steps,.outcomes,.pricing-grid,.retention-heading,.retention-steps{grid-template-columns:1fr}
@@ -163,4 +255,37 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.faq summary::after{transition:none}}
 
 /* very narrow phones: the header button gives up padding before the page scrolls sideways */
-@media (max-width:359px){.nav-in .btn.compact{padding-inline:.6rem;letter-spacing:0}}
+/* 320 to 399 px: tighter header; a long CTA (the French one) wraps to two lines inside the 64 px bar when it must. */
+@media (max-width:399px){.nav-in{gap:.5rem}.nav-in .btn.compact{padding-inline:.6rem;letter-spacing:0;white-space:normal;line-height:1.2}}
+/* Below 480 px the widest hero line ("LE PARTAGE.") no longer fits at the display size. */
+@media (max-width:479px){.hero h1{font-size:var(--fs-heading);line-height:1.12}}
+/* Large monitors: scale the whole page so the 1120 px column doesn't sit small in the middle. The type scale keeps its ratios. */
+@media (min-width:1680px){html{zoom:1.15}}
+@media (min-width:2200px){html{zoom:1.4}}
+@media (min-width:3000px){html{zoom:1.8}}
+
+/* Phones: the three steps swipe sideways, one card centred with its neighbours peeking in; the card in view is lit.
+   The row runs edge to edge and each card is the screen less 2rem a side, with 2rem of padding at both ends, so the
+   first and last cards centre too. */
+@media(max-width:767px){
+  .steps{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;margin-inline:-1rem;padding:0 2rem .25rem;scroll-padding-inline:2rem;scrollbar-width:none}
+  .steps::-webkit-scrollbar{display:none}
+  .steps article{flex:0 0 calc(100vw - 4rem);scroll-snap-align:center}
+  .steps article>*{transition:opacity .35s ease}
+  .steps.is-live article:not(.is-active)>*{opacity:.4}
+  .steps-nav:not([hidden]){display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1.25rem}
+}
+
+/* Phones: less air between sections, and the four figures as a 2 x 2 glance (icon, figure, headline and its tag);
+   their explanations are for bigger screens. */
+@media(max-width:767px){
+  .section{padding-block:2.5rem}
+  .lead{margin-top:1.1rem}
+  .outcomes{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1rem}
+  .outcomes article{padding-bottom:1.5rem}
+  .outcomes .source-text,.outcomes article>p:last-child{display:none}
+  .outcomes .outcome-source{margin-top:.5rem}
+  .outcomes h3{margin-top:.6rem;font-size:var(--fs-body);line-height:1.3}
+  .outcome-icon{width:36px;height:36px;margin-bottom:.75rem}
+  .benefits-band .outcome-figure{font-size:var(--fs-heading)}
+}
