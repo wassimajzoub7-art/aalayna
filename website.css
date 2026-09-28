@@ -80,11 +80,11 @@ section[id],main[id]{scroll-margin-top:var(--header-h)}
 .actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.7rem}
 .fine{font-size:var(--fs-small);line-height:1.55;margin-top:1rem}
 
-/* Product screens. Phone shots are 390 x 844 at 2x; the top 28 px is a demo strip live venues never show,
-   so the frame is 390 x 816 and the image is anchored to the bottom. */
+/* Product screens. Phone shots are 390 x 816 at 2x, the frame's own shape: a phone's status bar, then the app.
+   The whole shot shows; were one ever taller, the frame would keep its top and trim the foot. */
 .phone{width:100%;max-width:18rem;padding:.5rem;border-radius:2.5rem;background:var(--ink)}
 .phone picture{display:block;overflow:hidden;border-radius:2rem;background:var(--surface)}
-.phone img{display:block;width:100%;height:auto;aspect-ratio:390/816;object-fit:cover;object-position:50% 100%}
+.phone img{display:block;width:100%;height:auto;aspect-ratio:390/816;object-fit:cover;object-position:50% 0}
 .phone.small{max-width:13.5rem;padding:.375rem;border-radius:1.9rem}.phone.small picture{border-radius:1.55rem}
 .shot{display:flex;flex-direction:column;align-items:center}
 .shot figcaption{max-width:22rem;margin-top:.9rem;font-size:var(--fs-small);line-height:1.5;color:var(--sub);text-align:center}
