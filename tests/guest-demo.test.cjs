@@ -139,6 +139,37 @@ test('Vegetarian: no dish with meat, poultry, fish or seafood passes, whatever t
  ['Fattoush','Tabbouleh','Raheb Salad'].forEach(n=>assert.equal(veg(dish(n).ing),true,n));
 });
 
+test('Balat (?theme=balat): the cement-tile menu, its tiles in the brand colours, and nothing changes without it',()=>{
+ const std=boot(),pal=b=>JSON.parse(JSON.stringify(std.run('Aalayna.balatPalette('+JSON.stringify(b)+')')));
+ // the brand takes the place of the nearest of the four pigments; greys, black and white leave them
+ const base={t:'#B5502C',o:'#D39B2A',s:'#6F9A83',i:'#24366B'};
+ assert.deepEqual(pal(''),base);
+ assert.deepEqual(pal('#2F6B4F'),{...base,s:'#2F6B4F'},'a green brand takes the sage');
+ assert.deepEqual(pal('#1E40AF'),{...base,i:'#1E40AF'},'a blue brand takes the indigo');
+ assert.deepEqual(pal('#C9414B'),{...base,t:'#C9414B'},'a red brand takes the terracotta');
+ assert.deepEqual(pal('#E0B020'),{...base,o:'#E0B020'},'a yellow brand takes the ochre');
+ ['#777777','#050505','#FAFAFA','nope'].forEach(b=>assert.deepEqual(pal(b),base,b));
+ // without the theme: the standard menu, plain tabs and rows
+ const isTile=e=>e&&/^tile k[0-5]\b/.test(e.className||'');
+ const tabs=p=>p.$('cats').children.filter(c=>/\bcat\b/.test(c.className||'')),rows=p=>p.$('menuscroll').children.filter(c=>/^mi\b/.test(c.className||''));
+ assert.equal(std.document.documentElement.classList.contains('theme-balat'),false);
+ assert.ok(tabs(std).length&&tabs(std).every(c=>!c.children.some(isTile)),'standard tabs');
+ assert.ok(rows(std).length&&rows(std).every(r=>!r.children.some(isTile)),'standard rows');
+ // with it: every tab is a tile, every dish carries its section's tile, every section its Arabic name
+ const p=boot({search:'?venue=Mayda&place=Lebanese+Grill&theme=balat'});
+ assert.equal(p.document.documentElement.classList.contains('theme-balat'),true);
+ assert.ok(tabs(p).length&&tabs(p).every(c=>isTile(c.children[0])),'every tab is a tile');
+ assert.ok(rows(p).length&&rows(p).every(r=>isTile(r.children[0])&&/\bdish-tile\b/.test(r.children[0].className)),'every dish has its tile');
+ const heads=p.$('menuscroll').children.filter(c=>c.className==='sect-h');
+ assert.ok(heads.length&&heads.every(h=>h.children.some(c=>c.className==='sect-ar'&&c.lang==='ar'&&c.textContent)),'Arabic beside each section');
+ // anything but a known theme is the standard menu
+ assert.equal(boot({search:'?venue=Mayda&place=Lebanese+Grill&theme=%3Cb%3E'}).document.documentElement.classList.contains('theme-balat'),false);
+ // the page draws the six tiles from the four pigments, and a table QR link keeps the theme
+ for(let k=0;k<6;k++)assert.match(html,new RegExp('\\.theme-balat \\.tile\\.k'+k+'\\{background:[^}]*var\\(--tile-'));
+ assert.match(html,/if \(v\.theme\) p\.set\('theme', v\.theme\);/);
+ assert.match(fs.readFileSync(path.join(root,'qr.html'),'utf8'),/<option value="balat">Balat · Beirut cement tiles<\/option>[\s\S]*if \(th\) q\.push\('theme=' \+ encodeURIComponent\(th\)\);/);
+});
+
 test('reviews are routed by the rating through Aalayna.reviewURL; the old one-panel-for-all note is gone',()=>{
  const code=html.slice(html.indexOf('/* Reviews are routed by the rating'),html.indexOf('function syncReceiptViewport(){'));
  assert.match(code,/Aalayna\.reviewURL\(\)/);

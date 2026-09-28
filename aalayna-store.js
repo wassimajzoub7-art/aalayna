@@ -32,7 +32,8 @@
      prices. Its menu pack is venues/mayda.json (?menu=mayda). */
   var DEFAULT_VENUE = { name: 'Mayda', place: 'Lebanese Grill', placeTr: { fr: 'Grillades libanaises', ar: 'مشاوي لبنانية' },
                         est: '', heritage: 0, gplace: '',
-                        brand: '', bg: '', font: '' };
+                        brand: '', bg: '', font: '', theme: '' };
+  var THEMES = ['balat'];
   function venueFromURL() {
     try {
       var q = new URLSearchParams(global.location.search);
@@ -44,12 +45,15 @@
       };
       var font = (q.get('font') || '').trim().slice(0, 40);
       if (!/^[A-Za-z0-9 +]*$/.test(font)) font = '';
+      /* ?theme= picks a menu style from a short list; anything else is the standard menu */
+      var theme = (q.get('theme') || '').trim().toLowerCase();
+      if (THEMES.indexOf(theme) < 0) theme = '';
       /* the place line in French and Arabic, when the link gives them (?place_fr=, ?place_ar=) */
       var placeTr = {};
       ['fr', 'ar'].forEach(function (l) { var t = (q.get('place_' + l) || '').trim().slice(0, 40); if (t) placeTr[l] = t; });
       return { name: n.slice(0, 40), place: (q.get('place') || '').trim().slice(0, 40), placeTr: placeTr,
                est: '', heritage: 0, gplace: (q.get('gplace') || '').trim().slice(0, 200),
-               brand: hex(q.get('brand')), bg: hex(q.get('bg')), font: font };
+               brand: hex(q.get('brand')), bg: hex(q.get('bg')), font: font, theme: theme };
     } catch (e) { return null; }
   }
 
@@ -810,6 +814,27 @@
       return read(K.venue, null) || DEFAULT_VENUE;
     },
     setVenue: function (v) { if(activeScope)throw new Error('Open a separate restaurant link to change venue.'); write(K.venue, v); },
+    /* Balat, the Beirut cement-tile menu (guest.html, ?theme=balat), draws its tiles in four pigments:
+       terracotta, ochre, sage and indigo. A restaurant's brand colour takes the place of the pigment nearest
+       its hue, so the tiles are theirs and still sit together; greys, near-black and near-white leave them. */
+    balatPalette: function (brand) {
+      var pal = { t: '#B5502C', o: '#D39B2A', s: '#6F9A83', i: '#24366B' };
+      var m = /^#?([0-9a-fA-F]{6})$/.exec(brand || '');
+      if (!m) return pal;
+      var n = parseInt(m[1], 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+      var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min, l = (max + min) / 2;
+      var sat = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+      if (sat < 0.18 || l < 0.08 || l > 0.92) return pal;
+      var h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      h = (h * 60 + 360) % 360;
+      var hues = { t: 16, o: 40, s: 145, i: 225 }, best = 't', gap = 360;
+      Object.keys(hues).forEach(function (k) {
+        var x = Math.abs((((h - hues[k]) % 360) + 540) % 360 - 180);
+        if (x < gap) { gap = x; best = k; }
+      });
+      pal[best] = '#' + m[1].toUpperCase();
+      return pal;
+    },
     /* ---- guests: the venue's own list, built at the receipt moment ----
        Two separate consents, both explicit. Lists are per venue and are never
        joined across venues. Marketing sends require an active marketing consent. */
@@ -929,11 +954,26 @@
     }
     try {
       var v = A.venue(), r = global.document.documentElement.style;
-      if (v.brand) {
-        var brand = v.brand, n = parseInt(brand.slice(1), 16);
+      var balat = v.theme === 'balat';
+      global.document.documentElement.classList.toggle('theme-balat', balat);
+      if (balat) {
+        var pal = A.balatPalette(v.brand);
+        ['t', 'o', 's', 'i'].forEach(function (k) { r.setProperty('--tile-' + k, pal[k]); });
+        if (!global.document.getElementById('balat-font')) {
+          var bl = global.document.createElement('link');
+          bl.id = 'balat-font'; bl.rel = 'stylesheet';
+          bl.href = 'https://fonts.googleapis.com/css2?family=Gloock&family=Reem+Kufi:wght@400;600&display=swap';
+          global.document.head.appendChild(bl);
+        }
+      }
+      /* Balat without a brand colour takes its indigo for the buttons, so the whole app matches the tiles */
+      var brandIn = v.brand || (balat ? A.balatPalette('').i : '');
+      if (brandIn) {
+        var brand = brandIn, n = parseInt(brand.slice(1), 16);
         var lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
         if (lum > 0.62) brand = shade(brand, 0.35);
         r.setProperty('--green', brand);
+        r.setProperty('--green-deep', shade(brand, 0.3));     // the thank-you screen and the receipt
         r.setProperty('--green-bg', mix(brand, 0.92));
         r.setProperty('--green-line', mix(brand, 0.78));
         r.setProperty('--gold', shade(brand, 0.25));
