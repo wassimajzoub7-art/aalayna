@@ -7,7 +7,7 @@
 <title>Aalayna internal admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
@@ -24,8 +24,8 @@
     --green:#173E43; --green-bg:#E6EEED; --green-line:#C5D6D4;
     --brand:#C9414B; --brand-hover:#AC303B; --brand-text:#B3363F;
     --red:#B3363F; --red-bg:#FBECE8;
-    --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
-    --font-label:'Kode Mono',ui-monospace,monospace;
+    --font-text:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+    --font-label:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;--font-code:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
   }
   *{margin:0;padding:0;box-sizing:border-box}
@@ -37,7 +37,7 @@
   header .n{display:inline-block;color:var(--ink);line-height:0}
   header .n svg{display:block;height:48px;width:auto}
   header .n .logo-ink{fill:currentColor}header .n .logo-red{fill:var(--brand)}
-  h1{font-size:28px;line-height:1.2;font-weight:600;letter-spacing:-.01em;margin-top:16px}
+  h1{font-size:28px;line-height:1.2;font-weight:600;letter-spacing:-.02em;margin-top:16px}
   .sub{font-size:15px;color:var(--sub);margin-top:7px}
   .notice{display:inline-block;margin-top:12px;padding:8px 12px;background:var(--amber-bg);border-radius:8px;font-size:13px;color:var(--amber)}
   .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:14px;box-shadow:0 2px 8px #18392804}
@@ -52,7 +52,7 @@
   th,td{text-align:left;padding:10px 12px 10px 0;border-top:1px solid var(--line);vertical-align:top;line-height:1.5}
   th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);font-weight:600;border-top:0;padding-top:0}
   td.num,th.num{text-align:right;white-space:nowrap}
-  td.code{font-family:var(--font-label);font-size:12.5px;overflow-wrap:anywhere}
+  td.code{font-family:var(--font-code);font-size:12.5px;overflow-wrap:anywhere}
   td.time{white-space:nowrap;color:var(--sub)}
   .badge{display:inline-flex;align-items:center;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.5}
   .badge.flag{background:var(--amber-bg);color:var(--amber)}.badge.ok{background:#E5F0E7;color:#245C3D}.badge.new{background:var(--red-bg);color:var(--red)}
@@ -83,13 +83,13 @@
   .sw.none{background:var(--surface);border-style:dashed}
   .sw.on{outline:2px solid var(--ink);outline-offset:2px}
   .chip{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:-1px;margin-right:5px}
-  span.code{font-family:var(--font-label);font-size:12.5px}
+  span.code{font-family:var(--font-code);font-size:12.5px}
   tr.detail>td{border-top:0;padding-top:0}
   .vd{border:1px solid var(--line);border-radius:12px;padding:4px 16px 14px;margin-bottom:6px}
   .vd h3{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--sub);font-weight:600;margin-top:16px}
   .line{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line-soft)}
   .line .t{flex:0 0 150px;font-size:13px;color:var(--sub)}
-  .line .u{flex:1;min-width:0;font-family:var(--font-label);font-size:12.5px;overflow-wrap:anywhere}
+  .line .u{flex:1;min-width:0;font-family:var(--font-code);font-size:12.5px;overflow-wrap:anywhere}
   .line .u.p{font-family:inherit;font-size:13.5px;line-height:1.55}
   .confirm{border:1px solid var(--amber-line);background:var(--amber-bg);border-radius:10px;padding:12px 14px;margin:4px 0 8px;font-size:14px;line-height:1.6}
   .confirm .row{margin-top:10px}
@@ -106,7 +106,8 @@
   .staff-invite select.in,.line select.in{flex:0 0 auto;min-width:130px;width:auto}
   .line.revoked .u{color:var(--faint)}
   /* ==== T4 staff styles: end ==== */
-  /* Brand pass: square corners, no soft shadows, red for the main action, Kode Mono for small labels. */
+  /* Brand pass: square corners, no soft shadows, red for the main action, Instrument Sans for small labels, a system
+     monospace for keys and links. */
   .notice,.card,.btn,.badge,.in,.sw,.chip,.vd,.confirm{border-radius:0}
   .card{box-shadow:none}
   .btn:hover{border-color:var(--ink)}

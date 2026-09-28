@@ -8,11 +8,12 @@
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* Aalayna logo proposal. One look on purpose: the brand's own grounds (cream, ink, petrol) are the content,
-   so the page does not switch palettes with the viewer's theme. As on the site: headings in Aalayna Block (the
-   logo's capitals), everything else in Kode Mono, and square corners (only the phone's icons keep theirs). */
+   so the page does not switch palettes with the viewer's theme. As on the site: everything in Instrument Sans,
+   the logo's capitals (Aalayna Block) for the name and the typeface's own specimen only, and square corners (only
+   the phone's icons keep theirs). */
 @font-face{font-family:'Aalayna Block';src:url(fonts/aalayna-block.woff) format('woff');font-display:swap}
 :root{
   --cream:#FAF6F1;--paper:#FFFFFF;--ink:#211B16;--sub:#6E635B;--line:#E4DBD0;--red:#C9414B;--red-text:#B3363F;
@@ -22,14 +23,15 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--cream);color:var(--ink);font:400 var(--fs-b)/1.6 'Kode Mono','Noto Kufi Arabic',ui-monospace,monospace;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 var(--fs-b)/1.6 'Instrument Sans','Noto Kufi Arabic',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 h1,h2,h3,p,figure,dl,dd{margin:0}
 h1,h2,h3{text-wrap:balance;letter-spacing:-.02em}
-h1,h2,h3,.block-type{font-family:'Aalayna Block','Kode Mono',monospace;font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0}
+h1,h2,h3{font-weight:600}
+.block-type{font-family:'Aalayna Block',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:400;font-synthesis:none;text-transform:uppercase;letter-spacing:0}
 p{color:var(--sub);max-width:62ch}
 .wrap{width:min(1120px,100%);margin-inline:auto;padding-inline:var(--gut)}
-.eyebrow{font:500 var(--fs-s)/1.4 'Kode Mono',ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--sub)}
-.mono{font-family:'Kode Mono',ui-monospace,monospace;font-weight:500;font-size:var(--fs-s)}
+.eyebrow{font:600 var(--fs-s)/1.4 'Instrument Sans',system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--sub)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;font-size:var(--fs-s)}
 [lang=ar]{font-family:'Noto Kufi Arabic',sans-serif}
 .logo svg,.fit svg{display:block;width:100%;height:auto}
 button{font:inherit}
@@ -41,7 +43,7 @@ button{font:inherit}
 .top .lead{font-size:var(--fs-l);margin-top:16px;color:var(--ink)}
 .spell{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:22px}
 .spell .mono{color:var(--sub);margin-right:6px}
-.seg{min-height:44px;padding:0 18px;border-radius:0;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:500 var(--fs-s)/1 'Kode Mono',monospace;letter-spacing:.06em;cursor:pointer}
+.seg{min-height:44px;padding:0 18px;border-radius:0;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:500 var(--fs-s)/1 'Instrument Sans',system-ui,sans-serif;letter-spacing:.04em;cursor:pointer}
 .seg[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--cream)}
 .seg:hover{border-color:var(--ink)}
 
@@ -52,7 +54,7 @@ button{font:inherit}
 .screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .stage-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .stage-head h2{font-size:var(--fs-h);line-height:1.1}
-.stage-head h2 span{color:var(--red-text);font:500 var(--fs-s) 'Kode Mono',monospace;letter-spacing:.04em;margin-right:10px;vertical-align:.35em}
+.stage-head h2 span{color:var(--red-text);font:600 var(--fs-s) 'Instrument Sans',system-ui,sans-serif;letter-spacing:.04em;margin-right:10px;vertical-align:.35em}
 .controls{display:flex;gap:8px;flex-wrap:wrap}
 .btn{min-height:44px;padding:0 16px;border-radius:0;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-weight:600;font-size:var(--fs-s);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
 .btn:hover{border-color:var(--ink)}
@@ -90,7 +92,7 @@ button{font:inherit}
 .band.paper .build .fit{background:var(--cream)}
 .specs{display:grid;gap:0}
 .specs div{display:grid;grid-template-columns:9.5rem 1fr;gap:12px;padding-block:12px;border-top:1px solid var(--line)}
-.specs dt{font:500 var(--fs-s)/1.5 'Kode Mono',monospace;color:var(--sub)}
+.specs dt{font:500 var(--fs-s)/1.5 'Instrument Sans',system-ui,sans-serif;color:var(--sub)}
 .specs dd{font-size:var(--fs-s);line-height:1.5}
 .read{display:grid;grid-template-columns:repeat(14,minmax(0,1fr));margin-top:8px;text-align:center;direction:ltr}
 .read span{justify-self:center;white-space:nowrap}
@@ -101,7 +103,7 @@ button{font:inherit}
 .lockups{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;margin-top:32px}
 .lock{border-radius:0;display:grid;gap:14px;align-content:space-between;padding:clamp(20px,3vw,32px)}
 .lock .logo{margin-block:auto}
-.lock figcaption{font:500 var(--fs-s)/1.4 'Kode Mono',monospace;color:var(--sub)}
+.lock figcaption{font:500 var(--fs-s)/1.4 'Instrument Sans',system-ui,sans-serif;color:var(--sub)}
 .g-ink figcaption,.g-petrol figcaption,.g-red figcaption{color:var(--on-dark-sub)}
 .span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-7{grid-column:span 7}.span-6{grid-column:span 6}.span-5{grid-column:span 5}.span-4{grid-column:span 4}
 .icons{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
@@ -114,7 +116,7 @@ button{font:inherit}
 .card .qr{width:78%;margin-inline:auto;align-self:center}
 .card .qr svg{display:block;width:100%;height:auto}
 .card .t{font:400 clamp(.8rem,2.4vw,.95rem)/1.3 'Aalayna Block',monospace;text-transform:uppercase;color:var(--ink)}
-.card .t small{display:block;font-family:'Kode Mono','Noto Kufi Arabic',monospace;text-transform:none;font-weight:400;color:var(--sub);font-size:.8em;margin-top:4px}
+.card .t small{display:block;font-family:'Instrument Sans','Noto Kufi Arabic',sans-serif;text-transform:none;font-weight:400;color:var(--sub);font-size:.8em;margin-top:4px}
 .card .mark{height:clamp(64px,18vw,92px);display:flex;justify-content:center}
 .homescreen{display:flex;gap:clamp(14px,3vw,28px);flex-wrap:wrap;justify-content:center}
 .app{display:grid;gap:8px;justify-items:center;font-size:.75rem;color:var(--on-petrol)}
@@ -156,17 +158,17 @@ button{font:inherit}
 .band.paper .rules div{border-top-color:var(--line)}
 .band.paper .rules h3{color:var(--ink)}
 .roles .r1{font:400 var(--fs-l)/1.3 'Aalayna Block',monospace;text-transform:uppercase;letter-spacing:0}
-.roles .r2{font:600 var(--fs-l)/1.3 'Kode Mono',monospace}
-.roles .r3{font:400 var(--fs-l)/1.3 'Aalayna Block',monospace;text-transform:uppercase}
+.roles .r2{font:600 var(--fs-l)/1.3 'Instrument Sans',system-ui,sans-serif}
+.roles .r3{font:600 var(--fs-l)/1.3 'Instrument Sans',system-ui,sans-serif}
 
 /* Pick */
 .pick{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center;margin-top:28px}
 .pick .fit{background:var(--cream);border-radius:0;padding:clamp(24px,5vw,48px)}
 .pick ol{margin:16px 0 0;padding-left:1.2em;display:grid;gap:10px;color:var(--ink)}
-.pick li::marker{font-family:'Kode Mono',monospace;color:var(--red-text)}
+.pick li::marker{font-family:'Instrument Sans',system-ui,sans-serif;color:var(--red-text)}
 .files{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px;margin-top:28px}
 .files div{border-top:1px solid var(--line);padding-top:10px}
-.files code{font:500 .8rem/1.6 'Kode Mono',monospace;color:var(--ink);display:block;overflow-wrap:anywhere}
+.files code{font:500 .8rem/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink);display:block;overflow-wrap:anywhere}
 .files p{font-size:var(--fs-s);margin-top:4px}
 footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
 
@@ -341,8 +343,8 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
 <section class="band paper" id="type" aria-labelledby="type-title">
   <div class="wrap">
     <p class="eyebrow">The typeface</p>
-    <h2 id="type-title">Aalayna Block</h2>
-    <p>The Block’s capitals, carried on to a whole alphabet on the same 5 × 5 module grid: A to Z, the digits, punctuation and the French capitals, in one weight. Lowercase maps onto the capitals. The logo is set in it, so the site’s headlines are the logo’s own letters.</p>
+    <h2 id="type-title" class="block-type">Aalayna Block</h2>
+    <p>The Block’s capitals, carried on to a whole alphabet on the same 5 × 5 module grid: A to Z, the digits, punctuation and the French capitals, in one weight. Lowercase maps onto the capitals. The logo is set in it, and so is the name wherever it appears: nothing else.</p>
     <div class="specimen">
       <p class="sp-big block-type">The bill.<br>The split.<br><span data-when="3LAYNA"><em>3</em>layna.</span><span data-when="AALAYNA" hidden>Aalayna<em>.</em></span></p>
       <p class="sp-set block-type">ABCDEFGHIJKLM NOPQRSTUVWXYZ</p>
@@ -350,8 +352,8 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
       <p class="sp-set block-type">À Â Ä Ç É È Ê Ë Î Ï Ô Ö Ù Û Ü</p>
     </div>
     <div class="rules roles">
-      <div><h3 class="r1">Aalayna Block</h3><p>Every heading and big figure. Capitals, one weight, no tracking: the gaps between the letters are part of the grid.</p></div>
-      <div><h3 class="r2">Kode Mono</h3><p>Everything you read or press: sentences, buttons, labels and numbers. Square and monospaced, so every letter sits in a box of the same width.</p></div>
+      <div><h3 class="r1">Aalayna Block</h3><p>The name, and only the name: 3LAYNA in the logo’s own capitals, one weight, no tracking; the gaps between the letters are part of the grid.</p></div>
+      <div><h3 class="r2">Instrument Sans</h3><p>Everything you read or press: headings, sentences, buttons, labels and numbers, on the site, the staff pages and the Balat menu. Calm, so the name is the only loud thing on the page. Arabic reads in IBM Plex Sans Arabic.</p></div>
       <div><h3 class="r3">Square corners</h3><p>Buttons, cards, frames, tags and inputs, as in the logo. Shadows are hard or absent. Only a phone keeps its rounding, because phones have it.</p></div>
     </div>
   </div>
@@ -360,7 +362,7 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
 <section class="band" id="pick" aria-labelledby="pick-title">
   <div class="wrap">
     <p class="eyebrow">My pick</p>
-    <h2 id="pick-title">3LAYNA, if you can own the name.</h2>
+    <h2 id="pick-title"><span class="block-type">3LAYNA</span>, if you can own the name.</h2>
     <div class="pick">
       <div class="fit logo" data-mark="block" data-word="3LAYNA"></div>
       <div>
@@ -369,7 +371,7 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
         <ol>
           <li>Find out who owns 3layna.com, and what they want for it. Until then, links and search stay on aalayna.com.</li>
           <li>Chosen: 3LAYNA, the Block, with the Kufi as its Arabic signature.</li>
-          <li>On the site now: the header and footer, the headlines in the logo’s own typeface, the favicon, the share image and the reel’s end card. The table cards are next.</li>
+          <li>On the site now: the header and footer, the name in the logo’s own typeface (everything else in Instrument Sans), the favicon, the share image and the reel’s end card. The table cards are next.</li>
           <li>Print one table card and look at it on a real table before anything else.</li>
         </ol>
       </div>
