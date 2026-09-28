@@ -654,9 +654,9 @@
   .theme-balat #v-menu .billpill .amt{color:var(--bone);font-variant-numeric:tabular-nums}
   .theme-balat #menuscroll{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
 
-  /* A dish opens in place (showInline): its description, ingredients, what it is, its allergens, its options and the
-     price as chosen, under its row, on the same paper. */
-  .idet .i-ing,.idet .i-meta{display:none}
+  /* A dish opens in place (showInline): its short description, what it is, its allergens, its options and the price
+     as chosen, under its row, on the same paper. No ingredient list: the description says enough. */
+  .idet .i-meta{display:none}
   .theme-balat .mi.open{border-bottom-color:transparent}
   .theme-balat .mi.open .md{display:none}
   .theme-balat .idet.inline{position:static;width:auto;max-height:none;overflow:visible;margin:0 20px;padding:0 0 18px 54px;background:transparent;border:0;border-bottom:1px dashed var(--balat-line);border-radius:0;animation:balatIn .28s var(--ease) both}
@@ -664,9 +664,6 @@
   @keyframes balatIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
   .theme-balat .idet.inline .grab,.theme-balat .idet.inline #i-name,.theme-balat .idet.inline .cta-ghost{display:none}
   .theme-balat .idet.inline #i-desc{margin:0;font-size:14px;line-height:1.55;color:#3D362F}
-  .theme-balat .idet.inline .i-ing{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .theme-balat .idet.inline .i-ing:empty{display:none}
-  .theme-balat .idet.inline .i-ing span{padding:3px 8px;background:#E6DBC8;font-size:12px;line-height:1.4;color:#3D362F}
   .theme-balat .idet.inline .i-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-top:10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tile-i)}
   .theme-balat .idet.inline .i-meta .kc{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:#6B6158}
   .theme-balat .idet.inline .i-meta:empty{display:none}
@@ -975,7 +972,6 @@
       <div class="grab"></div>
       <div class="sh-t" id="i-name"></div>
       <div class="sh-s" id="i-desc"></div>
-      <div class="i-ing" id="i-ing"></div>
       <div class="i-meta" id="i-meta"></div>
       <div class="soldout" id="i-out" style="display:none">Sold out</div>
       <div class="alrt" id="i-alrt"></div>
@@ -2153,12 +2149,10 @@ function openItem(m, row){
       box.appendChild(row);
     });
   });
-  // what the dish is: vegetarian or not, its calories, and (in English, the language of the record) its ingredients
+  // what the dish is: vegetarian or not, and its calories
   var meta = $('i-meta'); meta.innerHTML = '';
   if (filterable(m) && isVeg(effDiet(m, null))){ var tg = document.createElement('span'); tg.className = 'tg'; tg.textContent = t('fVeg'); meta.appendChild(tg); }
   if (m.kcal){ var kc = document.createElement('span'); kc.className = 'kc'; kc.textContent = t('kcalN', {n: m.kcal}); meta.appendChild(kc); }
-  var ing = $('i-ing'); ing.innerHTML = '';
-  if (LANG === 'en') (m.ing || []).forEach(function(x){ var s = document.createElement('span'); s.textContent = x; ing.appendChild(s); });
   calcItem();
   if (balat() && row){ showInline(row); return; }
   openOv('ov-item');

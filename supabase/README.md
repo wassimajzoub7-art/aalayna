@@ -42,7 +42,20 @@ no-key demos continue to work independently.
 
 Apply `migration.sql`, `site-events.sql`, then `hardening-2026-09-15.sql`, in that
 order. `policies-update-2026-09-10.sql` is retired and no longer reinstates old
-permissions. The files under `schema/` describe a separate future normalized
+permissions.
+
+Then, in this order: `hardening-2026-09-24.sql`, `admin.sql`, `sessions-2026-09-24.sql`,
+`auth-2026-09-24.sql`, `followups-2026-09-24.sql`, `theme-2026-09-28.sql`. Each later
+file replaces some functions of the earlier ones and says which; re-running an earlier
+file means running the later ones again.
+
+## Menu style (September 28)
+
+`theme-2026-09-28.sql` adds `venue_profiles.theme`: empty is the standard guest menu,
+`balat` the Beirut cement-tile menu. Pick it in admin.html (Venues, a venue's profile,
+Menu style). A table scan (`aal_table_session`) returns it and the guest page opens in
+that style; the tiles take the venue's brand colour. Staff "Guest bill link"s carry the
+venue's name only, so they open the standard look. The files under `schema/` describe a separate future normalized
 schema; do not apply them as an alternative to these shared-store migrations.
 
 ## Authority and recovery
