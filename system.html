@@ -7,7 +7,7 @@
 <title>Aalayna demo hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
@@ -19,8 +19,8 @@
     --ink:#211B16; --sub:#6E635B;
     --brand:#C9414B; --brand-hover:#AC303B; --brand-text:#B3363F; --brand-bg:#FBECE8;
     --petrol:#173E43; --peach:#F6C39F; --on-petrol:#D7E3E2;
-    --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
-    --font-label:'Kode Mono',ui-monospace,monospace;
+    --font-text:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+    --font-label:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;--font-code:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:var(--font-text);color:var(--ink);background:var(--bg);min-height:100vh;
@@ -28,14 +28,14 @@
   a{color:inherit}
   a:focus-visible,button:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
   .wrap{max-width:1040px;margin:0 auto}
-  .label{font-family:var(--font-label);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .label{font-family:var(--font-label);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
 
   header{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap;margin-bottom:30px;padding-bottom:24px;border-bottom:1px solid var(--line)}
   .logo{display:block;color:var(--ink);text-decoration:none;flex-shrink:0}
   .logo svg{display:block;height:64px;width:auto}
   .logo .logo-ink{fill:currentColor}.logo .logo-red{fill:var(--brand)}
   header .eyebrow{color:var(--brand-text)}
-  header h1{font-size:34px;font-weight:600;line-height:1.1;letter-spacing:-.01em;margin-top:6px}
+  header h1{font-size:34px;font-weight:600;line-height:1.1;letter-spacing:-.02em;margin-top:6px}
   header p{color:var(--sub);margin-top:8px;max-width:620px}
 
   h2.label{color:var(--sub);margin:30px 0 12px}
@@ -66,12 +66,12 @@
 
   .flow{background:var(--petrol);color:var(--on-petrol);border-radius:0;padding:24px;margin-top:12px}
   .flow h3{font-size:19px;font-weight:600;color:#fff}
-  .flow pre{font-family:var(--font-label);font-size:12px;line-height:1.75;color:var(--peach);
+  .flow pre{font-family:var(--font-code);font-size:12px;line-height:1.75;color:var(--peach);
     background:rgba(0,0,0,.18);border:0;border-radius:0;padding:16px;margin-top:14px;overflow-x:auto}
   .rules{margin-top:16px;display:grid;gap:10px}
   .rule{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.6}
   .rule b{color:#fff;font-weight:600}
-  .rule code{font-family:var(--font-label);font-size:12.5px;color:var(--peach)}
+  .rule code{font-family:var(--font-code);font-size:12.5px;color:var(--peach)}
   .rule .n{width:22px;height:22px;background:var(--peach);color:var(--petrol);font-family:var(--font-label);
     font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
   .foot{color:var(--sub);font-size:13px;margin-top:22px;line-height:1.75}

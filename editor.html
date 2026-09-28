@@ -7,7 +7,7 @@
 <title>Aalayna · menu editor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Kode+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
@@ -19,8 +19,8 @@
     --green:#173E43; --green-bg:#E6EEED; --green-line:#C5D6D4;
     --brand:#C9414B; --brand-hover:#AC303B; --brand-text:#B3363F;
     --red:#B3363F; --red-bg:#FBECE8;
-    --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
-    --font-label:'Kode Mono',ui-monospace,monospace;
+    --font-text:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+    --font-label:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;--font-code:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     --amber:#8A6A1F; --amber-bg:#F8F1DF; --amber-line:#EBDDB4;
     --ease:cubic-bezier(0.23,1,0.32,1); --ease-drawer:cubic-bezier(0.32,0.72,0,1);
   }
@@ -321,7 +321,7 @@
     .cta:active,.it.dragging{transform:none}
   }
   /* Brand pass on Aalayna's chrome: square corners, no soft shadows, red for the one main action,
-     Kode Mono for the small labels. The phone frame is a device, so it keeps its corners. */
+     Instrument Sans for the small labels too. The phone frame is a device, so it keeps its corners. */
   .fx,.fx .ic,.clock,.fxrate,.fxr-in,.og,.og-seg,.alx,.oc input.cp,.optadd,.grip,.it .tag,.it .act,.win,.addrow .p,
   .cta,.sheet,.grab,.lb .tag,.in,.aibar,.aibar button,.cx,.chipin,.alg,.sugg,.macro input,.confbar,.pct button,.qb,
   .scope,.scope button,.prev,.rate,.danger,.wopt,.toast,.swb,.live,.staff-card{border-radius:0}
@@ -339,7 +339,7 @@
   .it .tag.tr{background:var(--red-bg);color:var(--brand-text)}
   a:focus-visible,button:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
   /* A venue link (?font=) sets the restaurant's font on body with !important (aalayna-store.js); the editor is
-     Aalayna's tool, so it keeps Saira. */
+     Aalayna's tool, so it keeps Instrument Sans. */
   html body,html body button,html body input,html body textarea,html body select{font-family:var(--font-text)!important}
   /* ==== T4 staff sign-in: start ==== */
   .staff-gate{position:fixed;inset:0;z-index:10000;background:var(--bg);overflow:auto;display:flex;

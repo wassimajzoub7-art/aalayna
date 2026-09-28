@@ -1,20 +1,22 @@
 /* The sales demo pages (system.html, dashboard.html, editor.html, admin.html, pitch.html, qr.html)
    carry Aalayna's own brand and the fictional demo restaurant, Mayda: the Block logo instead of the old
-   wordmark, Saira and no Amiri, a favicon, noindex, no real restaurant in the copy. system.html opens
+   wordmark, Instrument Sans (as on the site) and no Amiri, a favicon, noindex, no real restaurant in the copy. system.html opens
    the demo with menu=mayda and demo=1 and does not list the internal admin. With demo=1 the dashboard
    and the editor open straight into the demo; a real venue (a key or a staff session) keeps its sign-in. */
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.join(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const PAGES=['system.html','dashboard.html','editor.html','admin.html','pitch.html','qr.html'];
 
-test('every demo page carries the brand: Block logo, Saira, favicon, noindex, no old wordmark or Amiri',()=>{
+test('every demo page carries the brand: Block logo, Instrument Sans, favicon, noindex, no old wordmark or Amiri',()=>{
  for(const page of PAGES){
   const html=read(page);
   assert.ok(!/aalay<b>na/i.test(html),page+' has no old wordmark');
   assert.ok(!/Amiri/.test(html),page+' does not load Amiri');
-  assert.ok(!/IBM\+Plex|IBM Plex/.test(html),page+' does not load IBM Plex');
-  assert.match(html,/family=Saira:/,page+' loads Saira');
-  assert.match(html,/family=[^"]*Kode\+Mono/,page+' loads Kode Mono');
+  assert.ok(!/IBM\+Plex\+Sans:|IBM Plex Sans'|IBM Plex Mono/.test(html),page+' does not load the Latin IBM Plex (the guest app\'s face)');
+  assert.ok(!/Saira|Kode Mono|Kode\+Mono/.test(html),page+' has no Saira or Kode Mono left');
+  assert.match(html,/family=Instrument\+Sans:wght@400;500;600;700&family=IBM\+Plex\+Sans\+Arabic:/,page+' loads Instrument Sans, and Plex Arabic for Arabic words');
+  assert.match(html,/--font-text:'Instrument Sans','IBM Plex Sans Arabic',/,page+' reads in Instrument Sans');
+  assert.match(html,/--font-label:'Instrument Sans','IBM Plex Sans Arabic',/,page+' labels in Instrument Sans');
   assert.match(html,/<meta name="robots" content="noindex">/,page+' is noindex');
   assert.ok(html.includes('<link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">'),page+' has the PNG favicon');
   assert.ok(html.includes('<link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">'),page+' has the SVG favicon');

@@ -114,7 +114,7 @@ textarea.in{resize:vertical;min-height:132px}.in::placeholder{color:#69776E;opac
 #check-balances .ops-row>.bill-row-actions{width:auto;flex-shrink:0}
 @media(max-width:760px){.bill-entry-top{grid-template-columns:1fr}.bill-line{flex-direction:column;align-items:stretch;gap:8px}.bill-line-end{justify-content:space-between;flex-wrap:wrap}.bill-foot .ops-actions{width:100%}.bill-foot .ops-actions .btn{flex:1}#check-balances .ops-row>.bill-row-actions{flex-direction:row;width:100%}}
 
-/* Aalayna brand on the owner dashboard's own chrome: Saira to read, Kode Mono for small labels, red for
+/* Aalayna brand on the owner dashboard's own chrome: Instrument Sans to read and for small labels, red for
    the main action, petrol for the frame, square corners and hard or no shadows. Restaurant data keeps its look. */
 h1,h2,h3,.card h3{font-weight:600;letter-spacing:-.01em}
 .k,.mini .k,.fl-lbl,.dish-table th,.side-f,.glr .tg,.lock .tag,.rftag{font-family:var(--font-label)}
@@ -138,6 +138,6 @@ h1,h2,h3,.card h3{font-weight:600;letter-spacing:-.01em}
 .staff-gate a,.staff-bar a{color:var(--brand-text)}
 .staff-links{font-size:13px}
 /* A venue link (?font=) sets the restaurant's font on body with !important (aalayna-store.js); the dashboard is
-   Aalayna's tool, so its chrome keeps Saira. */
+   Aalayna's tool, so its chrome keeps Instrument Sans. */
 html body,html body button,html body input,html body textarea,html body select{font-family:var(--font-text)!important}
 main a{color:var(--brand-text)}
