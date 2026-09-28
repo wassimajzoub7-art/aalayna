@@ -538,8 +538,6 @@
   body{padding:0;background:#EEF1EC}
   .stage,.switcher,.note-out{display:none}
   .phone{width:480px;max-width:100%;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:0 0 60px #173D2510}
-  .screen::before{content:attr(data-preview);position:absolute;inset:0 0 auto;height:28px;display:flex;align-items:center;justify-content:center;background:#EEF3ED;color:#43594D;font-size:12px;z-index:60}
-  .view{top:28px}
   .scroll{min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
   .back{width:44px;height:44px;font-size:20px;top:12px}
   .cta{font-size:16px;min-height:48px}
@@ -583,7 +581,7 @@
   .pm{min-height:72px}.pm .pn{font-size:16px}.pm .pd{font-size:13px;line-height:1.4;margin-top:3px}
   .chg-q,.cashnote,.chg-out{font-size:14px;line-height:1.5}.chip{min-height:44px;font-size:15px}
   .sheet .ss,.sim-note,.wh-s,.hint,.inc{font-size:14px}.inc{font-size:16px;min-height:44px}
-  .receipt-mode .screen::before{display:none}.receipt-mode .view{top:0}
+  .receipt-mode .view{top:0}
   .receipt-mode .mailin{border-color:#789C88;background:#204F3E;padding-inline:10px}
   .receipt-mode .mailin::placeholder{color:#CEE0D4;opacity:1}
   .receipt-mode .mailbtn{width:96px;padding:6px 10px;min-width:96px;font-size:14px;line-height:1.2;font-weight:600;border-color:#789C88}
@@ -593,7 +591,7 @@
   @media(max-width:380px){.m-head{padding-inline-end:20px;padding-top:66px}.sels{inset-inline-end:16px}.mi{gap:8px;padding-inline:16px}.menu-photo{width:48px;height:48px}.mi .item-end{gap:5px}.seg button{font-size:13px}}
   @container receipt (max-height:600px){.receipt-mode .consents{gap:6px}}
 
-  /* Offline banner: over the preview band at the top of the screen; the views move down
+  /* Offline banner: at the top of the screen; the views move down
      under it while it shows. The sync status chip hides meanwhile: one message, not two. */
   .net-banner{position:absolute;inset:0 0 auto;z-index:61;min-height:28px;padding:6px 16px;background:var(--amber-bg);color:#5C4611;border-bottom:1px solid var(--amber-line);font-size:12.5px;line-height:1.4;text-align:center}
   .net-banner[hidden]{display:none}
@@ -735,7 +733,7 @@
 <!-- the Aalayna wordmark (brand/svg/3layna/line.svg), drawn once and used in every "powered by" -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="aal-logo" viewBox="0 0 350 50"><path fill="currentColor" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM180 0L190 0L190 20.4L220 20.4L220 0L230 0L230 29.6L210 29.6L210 50L200 50L200 29.6L180 29.6ZM240 0L250 0L250 50L240 50ZM280 0L290 0L290 50L280 50ZM240 0L252.5 0L290 50L277.5 50ZM300 0L350 0L350 50L340 50L340 29.6L310 29.6L310 50L300 50ZM310 9.2L310 20.4L340 20.4L340 9.2Z"/><path style="fill:var(--logo-red,#C9414B)" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></symbol></svg>
 <!-- #app is the guest app: its dir follows the language (rtl in Arabic), so every view and sheet mirrors -->
-<div class="phone" id="app" dir="ltr"><div class="screen" id="screen" data-preview="Preview · no money moves">
+<div class="phone" id="app" dir="ltr"><div class="screen" id="screen">
   <div class="net-banner" id="net-banner" role="status" aria-live="polite" hidden></div>
   <!-- ================= 1. LANDING ================= -->
   <div class="view on" id="v-land">
@@ -975,7 +973,6 @@
       <div class="i-meta" id="i-meta"></div>
       <div class="soldout" id="i-out" style="display:none">Sold out</div>
       <div class="alrt" id="i-alrt"></div>
-      <div class="disc" id="i-disc">Always confirm allergies with staff.</div>
       <div class="adds" id="i-adds"></div>
       <div class="i-price"><span class="ipl" data-i18n="priceAsSel">Price as selected</span>
         <span class="ipv" id="i-tot">$0.00</span></div>
@@ -1284,7 +1281,7 @@ var LANGS = ['en', 'fr', 'ar'];
 /* i18n:start */
 var STR = {
   en: {
-    preview: 'Preview · no money moves', poweredBy: 'powered by', back: 'Back', langLabel: 'Language', ccyLabel: 'Currency',
+    poweredBy: 'powered by', back: 'Back', langLabel: 'Language', ccyLabel: 'Currency',
     ccyUsd: 'USD $', ccyLbp: 'LBP LL', table: 'Table', sampleBill: 'sample bill',
     greet: 'Ahla w sahla', landNote: 'Explore the menu. When you’re ready, split the bill your way and pay from your table.',
     seeMenu: 'See the menu', openBill: 'Open the bill', crestFallback: 'YOUR MENU, LIVE',
@@ -1299,7 +1296,6 @@ var STR = {
     catBrk: 'Breakfast', catMez: 'Mezze & Grill', catSwt: 'Sweets', catDrk: 'Drinks',
     priceAsSel: 'Price as selected', close: 'Close', free: 'free',
     containsHtml: '<b>Contains {list}.</b> If you have a serious allergy, tell your server too.',
-    noAllergensHtml: '<b>No common allergens</b> as selected. If you have a serious allergy, tell your server too.',
     listSep: ', ',
     al_gluten: 'gluten', al_sesame: 'sesame', al_nuts: 'nuts', al_dairy: 'dairy', al_egg: 'egg', al_eggs: 'eggs',
     al_fish: 'fish', al_soy: 'soy', al_shellfish: 'shellfish', al_peanuts: 'peanuts', al_mustard: 'mustard', al_celery: 'celery',
@@ -1371,7 +1367,7 @@ var STR = {
     offline: 'No connection. Your bill is as of {time}; we will send your payment when you are back online.'
   },
   fr: {
-    preview: 'Aperçu · aucun argent ne circule', poweredBy: 'propulsé par', back: 'Retour', langLabel: 'Langue', ccyLabel: 'Devise',
+    poweredBy: 'propulsé par', back: 'Retour', langLabel: 'Langue', ccyLabel: 'Devise',
     ccyUsd: 'USD $', ccyLbp: 'LBP LL', table: 'Table', sampleBill: 'addition d’exemple',
     greet: 'Bienvenue', landNote: 'Découvrez le menu. Quand vous êtes prêts, partagez l’addition comme vous voulez et payez depuis votre table.',
     seeMenu: 'Voir le menu', openBill: 'Voir l’addition', crestFallback: 'VOTRE MENU, EN DIRECT',
@@ -1386,7 +1382,6 @@ var STR = {
     catBrk: 'Petit-déjeuner', catMez: 'Mezzés et grillades', catSwt: 'Douceurs', catDrk: 'Boissons',
     priceAsSel: 'Prix selon la sélection', close: 'Fermer', free: 'offert',
     containsHtml: '<b>Contient : {list}.</b> En cas d’allergie grave, prévenez aussi votre serveur.',
-    noAllergensHtml: '<b>Aucun allergène courant</b> dans cette sélection. En cas d’allergie grave, prévenez aussi votre serveur.',
     listSep: ', ',
     al_gluten: 'gluten', al_sesame: 'sésame', al_nuts: 'fruits à coque', al_dairy: 'produits laitiers', al_egg: 'œuf', al_eggs: 'œufs',
     al_fish: 'poisson', al_soy: 'soja', al_shellfish: 'crustacés', al_peanuts: 'arachides', al_mustard: 'moutarde', al_celery: 'céleri',
@@ -1458,7 +1453,7 @@ var STR = {
     offline: 'Pas de connexion. Votre addition date de {time} ; nous enverrons votre paiement dès votre retour en ligne.'
   },
   ar: {
-    preview: 'معاينة · لا تُحوَّل أي أموال', poweredBy: 'مدعوم من', back: 'رجوع', langLabel: 'اللغة', ccyLabel: 'العملة',
+    poweredBy: 'مدعوم من', back: 'رجوع', langLabel: 'اللغة', ccyLabel: 'العملة',
     ccyUsd: 'دولار $', ccyLbp: 'ليرة ل.ل.', table: 'طاولة', sampleBill: 'فاتورة تجريبية',
     greet: 'أهلاً وسهلاً', landNote: 'تصفّح القائمة. وعندما تكون جاهزاً، قسّم الفاتورة على طريقتك وادفع من طاولتك.',
     seeMenu: 'عرض القائمة', openBill: 'افتح الفاتورة', crestFallback: 'قائمتك، مباشرة',
@@ -1473,7 +1468,6 @@ var STR = {
     catBrk: 'ترويقة', catMez: 'مازة ومشاوي', catSwt: 'حلويات', catDrk: 'مشروبات',
     priceAsSel: 'السعر حسب الاختيار', close: 'إغلاق', free: 'مجاناً',
     containsHtml: '<b>يحتوي على: {list}.</b> إذا كانت لديك حساسية شديدة، أخبر النادل أيضاً.',
-    noAllergensHtml: '<b>لا مسبّبات حساسية شائعة</b> حسب الاختيار. إذا كانت لديك حساسية شديدة، أخبر النادل أيضاً.',
     listSep: '، ',
     al_gluten: 'الغلوتين', al_sesame: 'السمسم', al_nuts: 'المكسرات', al_dairy: 'الألبان', al_egg: 'البيض', al_eggs: 'البيض',
     al_fish: 'السمك', al_soy: 'الصويا', al_shellfish: 'القشريات', al_peanuts: 'الفول السوداني', al_mustard: 'الخردل', al_celery: 'الكرفس',
@@ -1629,7 +1623,6 @@ function applyLang(){
   var app = $('app');
   if (app){ app.setAttribute('dir', LANG === 'ar' ? 'rtl' : 'ltr'); app.setAttribute('lang', LANG); }
   if (document.documentElement) document.documentElement.lang = LANG;
-  var scr = $('screen'); if (scr) scr.setAttribute('data-preview', t('preview'));
   paintStatic();
   // the Arabic "thank you" under the title is a flourish; in Arabic the title already says it
   var tar = $('thanks-ar'); if (tar) tar.hidden = LANG === 'ar';
@@ -2190,27 +2183,24 @@ function closeInline(){
   inlineRow = null;
 }
 /* the allergen line is computed from what is actually selected; pick oat milk
-   and the dairy warning goes away, pick almond and a nuts warning appears */
+   and the dairy warning goes away, pick almond and a nuts warning appears. It shows only when there is something
+   to say: the allergens, or that the ingredients are not confirmed; both tell the guest to ask their server, so a
+   dish carries no separate disclaimer (the dietary filters keep theirs) and a dish with none says nothing. */
 function paintAlert(){
   var alrt = $('i-alrt');
-  $('i-disc').textContent = t('disc');
-  alrt.style.display = 'flex';
   if (!filterable(curItem)){
     // no confirmed ingredient record: no claim either way, just point at the staff
+    alrt.style.display = 'flex';
     alrt.innerHTML = '<span>&#8505;</span><span>' + esc(t('unkSheet')) + '</span>';
     alrt.style.background = balat() ? 'transparent' : 'var(--bg)'; alrt.style.borderColor = 'var(--line)'; alrt.style.color = 'var(--sub)';
     return;
   }
-  var al = effDiet(curItem, curSel).al, bg, bd, fg;
-  if (al.length){
-    alrt.innerHTML = '<span>&#9888;</span><span>' + t('containsHtml', {list: esc(al.map(allergenName).join(t('listSep')))}) + '</span>';
-    bg = '#FBEDEB'; bd = '#F3D9D5'; fg = '#8E3A33';
-  } else {
-    alrt.innerHTML = '<span>&#10003;</span><span>' + t('noAllergensHtml') + '</span>';
-    bg = '#EAF1EC'; bd = '#CFE0D5'; fg = '#2F5A48';
-  }
-  if (balat()){ bg = 'transparent'; bd = al.length ? 'var(--tile-t)' : 'var(--tile-s)'; }   // Balat: a pigment rule on the paper
-  alrt.style.background = bg; alrt.style.borderColor = bd; alrt.style.color = fg;
+  var al = effDiet(curItem, curSel).al;
+  if (!al.length){ alrt.style.display = 'none'; alrt.innerHTML = ''; return; }
+  alrt.style.display = 'flex';
+  alrt.innerHTML = '<span>&#9888;</span><span>' + t('containsHtml', {list: esc(al.map(allergenName).join(t('listSep')))}) + '</span>';
+  // Balat: a terracotta rule on the paper instead of a tinted box
+  alrt.style.background = balat() ? 'transparent' : '#FBEDEB'; alrt.style.borderColor = balat() ? 'var(--tile-t)' : '#F3D9D5'; alrt.style.color = '#8E3A33';
 }
 function calcItem(){
   paintAlert();
