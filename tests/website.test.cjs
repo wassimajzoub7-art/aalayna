@@ -167,14 +167,20 @@ test('calculator: no headline is rounded up (or down) through an intermediate st
   }
 });
 
-test('homepage minutes match the calculator default exactly', () => {
-  const turns = runNumbers('?focus=turns')[0];
-  const saved = turns.steps.find(s => s.label === 'Minutes given back on every table').value;
-  const minutes = parseShown(saved).raw;
+test('homepage figures: published research, each with its source, none of them from the calculator', () => {
+  // The calculator estimates one restaurant from its own inputs; the homepage quotes what others measured, and says who.
+  const sources = { 'index.html': ['Barclaycard, 2018', 'The New York Times', 'BrightLocal, 2026', 'Toast, 2026'],
+    'fr/index.html': ['Barclaycard, 2018', 'New York Times', 'BrightLocal, 2026', 'Toast, 2026'],
+    'ar/index.html': ['Barclaycard، 2018', 'نيويورك تايمز', 'BrightLocal، 2026', 'Toast، 2026'] };
+  Object.entries(sources).forEach(([f, want]) => {
+    const s = read(f);
+    const cards = [...s.matchAll(/<p class="outcome-figure">[^<]+<\/p><p class="outcome-source">[^<]+<cite>([^<]+)<\/cite><\/p>/g)];
+    assert.deepEqual(cards.map(m => m[1]), want, f + ': one source under each figure');
+    assert.ok(!/outcome-note|illustrative|indicatif|توضيحي\)/.test(s.match(/<section[^>]*id="outcomes"[\s\S]*?<\/section>/)[0]), f + ': no calculator defaults or illustrative figures');
+  });
   const index = read('index.html');
-  assert.ok(index.includes('Up to ' + minutes + ' minutes back per table (illustrative)'), 'outcome sentence');
-  assert.ok(index.includes('<p class="outcome-figure">' + minutes + ' min</p>'), 'in-numbers figure');
-  assert.ok(!/Fourteen minutes/i.test(index));
+  assert.ok(!/Fourteen minutes|13 min/i.test(index));
+  assert.match(read('website.css'), /\n\.benefits-band \.outcome-source cite\{display:block;[^}]*font-family:var\(--font-label\);font-style:normal\}/, 'the source, in the label face');
 });
 
 test('contact links: one WhatsApp number and at most one email address across every page', () => {
@@ -258,21 +264,14 @@ test('homepage structure: four sections that each end on Book a demo, six questi
   assert.match(s, /<summary>What is included in the price\?<\/summary><p>[^<]*No commission on your sales/, 'it lives in the price answer');
   numbers.filter(n => n !== 'Go-live').forEach(n => assert.match(n, /^\d{2} · \S/));
   assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
-  // Each figure has one plain line saying where it comes from; no internal labels (Assumption, Product) on the page.
-  const figures = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source">([^<]+)<\/p>/g)].map(m => m[1]);
-  assert.deepEqual(figures, ['13 min', '+62%', '8×', '140']);
-  // Each figure is the calculator's default for its outcome, rounded down, and says what it measures.
-  const calc = Object.fromEntries(runNumbers('?focus=all').map(o => [o.key, o]));
-  const money = t => Number(t.replace(/[$,]/g, ''));
-  const tipsToday = money(calc.tips.unit.match(/on top of the (\$[\d,]+)/)[1]), tipsMore = money(calc.tips.figure.replace('+', ''));
-  assert.equal(figures[1], '+' + Math.floor(tipsMore / tipsToday * 100) + '%', 'tips: the calculator\'s change over today');
-  assert.ok(s.includes('More in tips: $' + tipsToday.toLocaleString('en-US') + ' to $' + (tipsToday + tipsMore).toLocaleString('en-US') + ' a month.'), 'tips, in dollars');
-  const [, revToday, revThen] = calc.reviews.unit.match(/from (\d+) today to about (\d+)/).map(Number);
-  assert.equal(figures[2], Math.floor(revThen / revToday) + '×', 'reviews: how many times as many');
-  assert.ok(s.includes('Google reviews a month: ' + revToday + ' today, ' + revThen + ' with Aalayna.'));
-  assert.equal(figures[3], calc.guests.figure, 'guests: the calculator\'s contacts after three months');
-  assert.ok(s.includes('<p class="outcome-source">Saved per table, from the last bite to the door.</p>'), 'the 13 minutes say what they are');
-  assert.ok(s.includes('<p class="outcome-note">Calculator defaults: a 30-table restaurant, 360 bills a week, $45 average bill.</p>'), 'where the figures come from');
+  // Each figure is published research: one plain line saying what it measures, then who measured it. No internal labels
+  // (Assumption, Product) on the page, and nothing presented as an Aalayna result.
+  const cards = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source">([^<]+)<cite>([^<]+)<\/cite><\/p><h3>([^<]+)<\/h3>/g)];
+  assert.deepEqual(cards.map(m => m[1]), ['10 min', '22%', '83%', '50%']);
+  assert.deepEqual(cards.map(m => m[2]), ['The average wait just to be handed the bill.', 'Average tip in New York taxis once the screen suggested one, up from 10%.',
+    'Of people asked for a review went on to write one.', 'Of orders can come from the 7% of guests who return.']);
+  assert.deepEqual(cards.map(m => m[4]), ['Tables turn faster', 'Servers earn more tips', 'More Google reviews', 'Guests who come back'], 'the four things an owner measures');
+  assert.match(s, /<p class="eyebrow">What the research says<\/p><h2 id="benefits-title">Four things owners can measure\.<\/h2>/);
   assert.ok(!/source-tag|>(?:Assumption|Product|Benchmark)</.test(s), 'no source tags');
   assert.equal(all(s, /<ul>([\s\S]*?)<\/ul>/g).map(u => (u.match(/<li>/g) || []).length)[0], 5, 'the price card lists what ships today');
 });
@@ -491,9 +490,9 @@ test('fr copy: no em dash, nothing left in English, French spacing before : ; ? 
   // Numbers stay as in English: the same dollar amounts, percentages and minutes.
   const figures = s => [...new Set(visible(s).join(' ').replace(/(\d)-min\b/g, '$1 min').match(/\$\d[\d,.]*\d|\d+%|\d+ min\b/g))].sort();
   assert.deepEqual(figures(fr), figures(en));
-  assert.equal(all(fr, /<p class="outcome-source">([^<]+)<\/p>/g).length, 4, 'one line under each figure');
+  assert.equal(all(fr, /<p class="outcome-source">([^<]+)<cite>[^<]+<\/cite><\/p>/g).length, 4, 'one line under each figure, then its source');
   assert.ok(!/source-tag|>(?:Hypothèse|Produit|Référence)</.test(fr), 'no source tags');
-  assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g), ['13 min', '+62%', '8×', '140']);
+  assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g), ['10 min', '22%', '83%', '50%']);
   ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
   assert.ok(!/<p class="price">\$(?!150 )/.test(fr), 'standard price');
   ['Aalayna', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
