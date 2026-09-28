@@ -40,13 +40,15 @@
 
   h2.label{color:var(--sub);margin:30px 0 12px}
   .apps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .apps.kit{grid-template-columns:repeat(4,1fr)}
-  @media(max-width:900px){.apps.kit{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:760px){.apps,.apps.kit{grid-template-columns:1fr}header h1{font-size:28px}.logo svg{height:52px}}
+  .apps.kit,.apps.main{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:900px){.apps.kit,.apps.main{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:760px){.apps,.apps.kit,.apps.main{grid-template-columns:1fr}header h1{font-size:28px}.logo svg{height:52px}}
   a.app{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:0;
     padding:20px;text-decoration:none;color:var(--ink);transition:border-color .12s,box-shadow .12s}
   a.app:hover{border-color:var(--ink);box-shadow:4px 4px 0 var(--ink)}
   .apps.main a.app{border-top:4px solid var(--brand)}
+  /* the Balat table: its top edge is the four tile pigments, Mayda's green in the sage's place */
+  .apps.main a.app.balat{border-top-color:transparent;background:linear-gradient(90deg,#B5502C 0 25%,#D39B2A 0 50%,#2F6B4F 0 75%,#24366B 0) border-box top/100% 4px no-repeat,var(--surface)}
   .who{color:var(--sub);font-size:11px}
   a.app h3{font-size:19px;font-weight:600;margin-top:8px;line-height:1.25}
   a.app p{font-size:14px;color:var(--sub);line-height:1.6;margin-top:8px;flex:1}
@@ -96,6 +98,14 @@
       <p>Menu in English, français or العربية, in dollars or lira. See the bill, split it,
          settle on Whish, card or cash, and tell the floor what note you're handing over.</p>
       <span class="go">Open the table</span>
+    </a>
+
+    <a class="app balat" href="guest.html?menu=mayda&amp;venue=Mayda&amp;place=Lebanese%20Grill&amp;place_fr=Grillades%20libanaises&amp;place_ar=%D9%85%D8%B4%D8%A7%D9%88%D9%8A%20%D9%84%D8%A8%D9%86%D8%A7%D9%86%D9%8A%D8%A9&amp;brand=%232F6B4F&amp;theme=balat">
+      <div class="label who">The guest · Balat</div>
+      <h3>Table, Balat style</h3>
+      <p>The same table as Beirut cement tiles, in Mayda's colours. Each dish opens in place;
+         the bill, the payment and the review keep the look.</p>
+      <span class="go">Open the Balat table</span>
     </a>
 
     <a class="app" href="dashboard.html?menu=mayda&amp;venue=Mayda&amp;place=Lebanese%20Grill&amp;place_fr=Grillades%20libanaises&amp;place_ar=%D9%85%D8%B4%D8%A7%D9%88%D9%8A%20%D9%84%D8%A8%D9%86%D8%A7%D9%86%D9%8A%D8%A9&amp;brand=%232F6B4F&amp;bg=%23F5F1EA&amp;font=Montserrat&amp;demo=1">

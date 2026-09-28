@@ -170,6 +170,73 @@ test('Balat (?theme=balat): the cement-tile menu, its tiles in the brand colours
  assert.match(fs.readFileSync(path.join(root,'qr.html'),'utf8'),/<option value="balat">Balat · Beirut cement tiles<\/option>[\s\S]*if \(th\) q\.push\('theme=' \+ encodeURIComponent\(th\)\);/);
 });
 
+test('Balat opens a dish in place, as the tile concept does: under its row, with its Arabic name, tags and calories; a second tap closes it',()=>{
+ const rows=p=>p.$('menuscroll').children.filter(c=>/^mi\b/.test(c.className||''));
+ const dwell=p=>JSON.parse(JSON.stringify(p.run("Aalayna.events().filter(function(e){return e.eventType==='ui_action'&&e.payload.action==='dwell';}).map(function(e){return e.payload.value;})")));
+ // the standard menu keeps its sheet
+ const std=boot(),sr=rows(std)[0];
+ assert.ok(!/class="mar"/.test(sr.innerHTML)&&!sr.classList.contains('has-alt'),'no second name without the theme');
+ sr.onclick();assert.equal(std.$('ov-item').classList.contains('on'),true,'the standard menu opens the sheet');
+ // Balat: the row shows the Arabic name, and the tap opens the dish under the row, not the sheet
+ const p=boot({search:'?venue=Mayda&place=Lebanese+Grill&theme=balat'}),rs=rows(p),[a,b]=rs,esc=x=>p.run('esc('+JSON.stringify(x)+')');
+ const arN=m=>m.tr&&m.tr.ar&&m.tr.ar.n,named=rs.filter(r=>arN(r._m)),bare=rs.filter(r=>!arN(r._m));
+ assert.ok(named.length>20&&named.every(r=>r.classList.contains('has-alt')&&r.innerHTML.includes('<div class="mar" lang="ar"><bdi>'+esc(arN(r._m))+'</bdi></div>')),'a dish with an Arabic name shows it under its own');
+ assert.ok(bare.length&&bare.every(r=>!r.classList.contains('has-alt')&&!/class="mar"/.test(r.innerHTML)),'one without keeps its description line');
+ assert.equal(a.getAttribute('aria-expanded'),'false');
+ a.onclick();
+ assert.equal(p.$('ov-item').classList.contains('on'),false,'no sheet');
+ assert.ok(a.classList.contains('open'));assert.equal(a.getAttribute('aria-expanded'),'true');
+ assert.equal(p.$('i-desc').textContent,p.run('descOf(curItem)'),'the description opens with the dish');
+ assert.ok(p.$('i-ing').children.length>0,'its ingredients');
+ const meta=p.$('i-meta').children;
+ assert.ok(meta.some(c=>c.className==='kc'&&/^\d+ kcal$/.test(c.textContent)),'its calories');
+ assert.ok(meta.every(c=>c.className==='kc'||(c.className==='tg'&&c.textContent==='Vegetarian')),'its tags');
+ // the allergen line is a pigment rule on the paper, not a tinted box
+ assert.equal(p.$('i-alrt').style.background,'transparent');
+ assert.match(p.$('i-alrt').style.borderColor,/^var\(--(tile-t|tile-s|line)\)$/);
+ // straight to the next dish: the first logs its dwell before the second takes its place
+ b.onclick();
+ assert.ok(!a.classList.contains('open')&&b.classList.contains('open'));assert.equal(a.getAttribute('aria-expanded'),'false');
+ assert.deepEqual(dwell(p),[a._m.id]);
+ b.onclick();
+ assert.ok(!b.classList.contains('open'));assert.equal(b.getAttribute('aria-expanded'),'false');
+ assert.deepEqual(dwell(p),[a._m.id,b._m.id]);
+ // Escape (closeOv) closes it too, and a rebuild never leaves it open
+ a.onclick();p.run("closeOv('ov-item')");assert.ok(!a.classList.contains('open'));
+ a.onclick();p.run('buildMenu()');assert.ok(!a.classList.contains('open'));assert.equal(p.run('inlineRow'),null);
+ // in Arabic the second line is the name the menu was written with
+ p.run("setLang('ar')");
+ const ar=rows(p).slice(-p.run('MENU.length'));          // the stub keeps earlier builds' children: the last build is the Arabic one
+ assert.ok(ar.length&&ar.every(r=>/<div class="mn">/.test(r.innerHTML)));
+ assert.ok(ar.filter(r=>arN(r._m)).length>10&&ar.filter(r=>arN(r._m)).every(r=>r.innerHTML.includes('<div class="mar"><bdi>'+esc(r._m.n)+'</bdi></div>')),'the original name under the Arabic');
+ assert.ok(ar.filter(r=>!arN(r._m)).every(r=>!/class="mar"/.test(r.innerHTML)),'no second line when the Arabic is the original');
+});
+
+test('the landing keeps its two buttons at the foot of the screen, every "powered by" is the Aalayna wordmark, and Balat runs through the bill, payment and review',()=>{
+ // the buttons: a sticky dock at the bottom of the landing, in both themes
+ assert.match(html,/#v-land \.dock\{position:sticky;bottom:0;[^}]*margin-top:auto/);
+ assert.ok(!/#v-land\{position:relative\}/.test(html),'the landing fills the screen');
+ // the wordmark is the brand's own line logo, drawn once and used in each "powered by"
+ const line=fs.readFileSync(path.join(root,'brand/svg/3layna/line.svg'),'utf8'),d=[...line.matchAll(/ d="([^"]+)"/g)].map(m=>m[1]);
+ const sym=html.match(/<symbol id="aal-logo" viewBox="0 0 350 50">([\s\S]*?)<\/symbol>/);
+ assert.ok(sym,'the sprite');assert.deepEqual([...sym[1].matchAll(/ d="([^"]+)"/g)].map(m=>m[1]),d,'the same paths as brand/svg/3layna/line.svg');
+ const powered=[...html.matchAll(/<div class="powered[^"]*">([\s\S]*?)<\/div>/g)].map(m=>m[1]);
+ assert.equal(powered.length,5);
+ assert.ok(powered.every(x=>x.includes('<svg class="pw-logo" role="img" aria-label="Aalayna"><use href="#aal-logo"></use></svg>')),'the logo in each');
+ assert.ok(!/<b>Aalayna<\/b>/.test(html),'no plain-text name left');
+ // Balat: the bill docked as an ink bar, and the rest of the visit on the same paper, rules and type
+ assert.match(html,/\.theme-balat #v-menu \.billpill\{left:0;right:0;bottom:0;transform:none;justify-content:space-between/);
+ assert.match(html,/  #menuscroll\{padding-bottom:96px\}/);assert.ok(!/id="menuscroll" style=/.test(html));
+ assert.match(html,/html\.theme-balat\{--surface:var\(--bone\);/);
+ const square=html.match(/\.theme-balat :is\(([^)]*)\)\{border-radius:0\}/);
+ assert.ok(square,'square corners');
+ for(const c of ['.sheet','.receipt','.pays','.tipb','.seg','.share','.pay-breakdown','.cashnote','.chg','.rcpt','.mailin','.ta','.review-close'])assert.ok(square[1].split(',').includes(c),c);
+ const serif=html.match(/\.theme-balat :is\(([^)]*)\)\{font-family:'Gloock'/);
+ for(const c of ['.b-title','.amt .big','.share .v','.shukran','.rc-amt'])assert.ok(serif&&serif[1].split(',').includes(c),c);
+ // the thank-you screen gets its own row of tiles
+ assert.match(html,/\[3, 1, 4, 0, 5, 2\]\.forEach\(function\(k\)\{ row\.appendChild\(tileEl\(k\)\); \}\);\s*inner\.prepend\(row\);/);
+});
+
 test('reviews are routed by the rating through Aalayna.reviewURL; the old one-panel-for-all note is gone',()=>{
  const code=html.slice(html.indexOf('/* Reviews are routed by the rating'),html.indexOf('function syncReceiptViewport(){'));
  assert.match(code,/Aalayna\.reviewURL\(\)/);

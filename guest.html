@@ -67,6 +67,8 @@
   .cta:hover .sheen{display:none}
   .powered{text-align:center;font-size:10.5px;color:var(--faint);padding:10px 0 2px}
   .powered b{color:var(--sub);font-weight:600}
+  .pw-logo{display:inline-block;width:70px;height:10px;margin-inline-start:4px;vertical-align:-1px;color:var(--ink)}
+  .powered.dk .pw-logo{color:rgba(255,255,255,.85);--logo-red:#F6C39F}
   .powered.dk{color:rgba(255,255,255,.45)} .powered.dk b{color:rgba(255,255,255,.7)}
 
   /* ── landing ── */
@@ -94,7 +96,6 @@
   .m-head .vn{font-family:'Amiri',serif;font-size:19px;font-weight:700}
   .m-head .vs{font-size:11px;color:var(--sub);margin-top:2px}
   .sels{position:absolute;top:16px;inset-inline-end:14px;z-index:30;display:flex;gap:5px}
-  #v-land{position:relative}
   /* the landing pickers get their own strip above the crest */
   #v-land .hero{box-sizing:content-box;padding-top:56px}#v-land .crest{top:calc(50% + 28px)}.crest .est:empty{display:none}
   .sel{position:relative;flex:0 0 auto}
@@ -245,6 +246,7 @@
     font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;
     gap:10px;white-space:nowrap;box-shadow:0 6px 18px rgba(15,75,58,.3);transition:opacity .12s}
   .billpill:active{opacity:.85}
+  #menuscroll{padding-bottom:96px}
   .billpill .amt{color:var(--gold-lt)}
 
   /* ── bill ── */
@@ -550,7 +552,8 @@
   .crest .rule{margin-top:8px}
   .land-body{flex:0 0 auto;padding:28px 24px 20px;overflow:visible}
   #v-land{overflow-y:auto}
-  #v-land .dock{position:static;flex:0 0 auto;margin-top:auto;padding:12px 24px max(24px,env(safe-area-inset-bottom));background:none}
+  /* the landing's two buttons sit at the foot of the screen, and stay there when a small phone scrolls it */
+  #v-land .dock{position:sticky;bottom:0;flex:0 0 auto;margin-top:auto;padding:12px 24px max(24px,env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--surface) 14px)}
   .greet{font-size:32px}.tbl{font-size:14px;padding:7px 12px}
   .note{font-size:16px;line-height:1.6}
   .powered{font-size:12px}
@@ -612,7 +615,6 @@
   .theme-balat .tile.k5{background:radial-gradient(circle at 50% 50%,var(--tile-i) 0 10%,transparent 10.6%),conic-gradient(from 0deg at 50% 50%,var(--bone) 0 25%,var(--tile-s) 0 50%,var(--bone) 0 75%,var(--tile-s) 0 100%)}
   .theme-balat .screen,.theme-balat #v-land,.theme-balat #v-menu,.theme-balat #v-land .land-body{background:var(--bone)}
   .theme-balat #v-land .cta-line{background:transparent;border-color:var(--balat-ink)}
-  .theme-balat #v-land .dock{background:linear-gradient(transparent,var(--bone) 16%)}
   .theme-balat #v-land .cta,.theme-balat #v-menu .fbtn,.theme-balat .sel select,.theme-balat #v-menu .back,.theme-balat .billpill{border-radius:0}
   .theme-balat .hero{height:auto;overflow:visible;background:transparent}
   .theme-balat .tile-band{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}
@@ -640,7 +642,91 @@
   .theme-balat .mi .mn{font-family:'Gloock','Reem Kufi',Georgia,serif;font-weight:400;font-size:18px;line-height:1.2}
   .theme-balat .mi .mp{padding:4px 8px;border:1.5px solid var(--balat-ink);font-size:15px}
   .theme-balat .details-arrow{display:none}
+  /* under the name, its Arabic name (in Arabic, the name the menu was written with); the description opens with the dish */
+  .theme-balat .mi .mar{margin-top:3px;font-size:13px;line-height:1.3;color:#6B6158}
+  .theme-balat .mi .mar:lang(ar){font-family:'Reem Kufi','IBM Plex Sans Arabic',sans-serif;font-size:15px}
+  .theme-balat .mi.has-alt .md{display:none}
+  /* the bill, docked at the foot of the menu: an ink bar on a strip of bone under an ink rule */
   .theme-balat .billpill{background:var(--balat-ink)}
+  .theme-balat #v-menu .billpill{left:0;right:0;bottom:0;transform:none;justify-content:space-between;min-height:0;padding:17px 18px;
+    border:solid var(--bone);border-width:12px 18px max(24px,env(safe-area-inset-bottom));background:var(--balat-ink) padding-box;
+    box-shadow:0 -1.5px 0 var(--balat-ink);font-size:16px}
+  .theme-balat #v-menu .billpill .amt{color:var(--bone);font-variant-numeric:tabular-nums}
+  .theme-balat #menuscroll{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+
+  /* A dish opens in place (showInline): its description, ingredients, what it is, its allergens, its options and the
+     price as chosen, under its row, on the same paper. */
+  .idet .i-ing,.idet .i-meta{display:none}
+  .theme-balat .mi.open{border-bottom-color:transparent}
+  .theme-balat .mi.open .md{display:none}
+  .theme-balat .idet.inline{position:static;width:auto;max-height:none;overflow:visible;margin:0 20px;padding:0 0 18px 54px;background:transparent;border:0;border-bottom:1px dashed var(--balat-line);border-radius:0;animation:balatIn .28s var(--ease) both}
+  [dir="rtl"] .theme-balat .idet.inline,.theme-balat [dir="rtl"] .idet.inline{padding:0 54px 18px 0}
+  @keyframes balatIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .theme-balat .idet.inline .grab,.theme-balat .idet.inline #i-name,.theme-balat .idet.inline .cta-ghost{display:none}
+  .theme-balat .idet.inline #i-desc{margin:0;font-size:14px;line-height:1.55;color:#3D362F}
+  .theme-balat .idet.inline .i-ing{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .theme-balat .idet.inline .i-ing:empty{display:none}
+  .theme-balat .idet.inline .i-ing span{padding:3px 8px;background:#E6DBC8;font-size:12px;line-height:1.4;color:#3D362F}
+  .theme-balat .idet.inline .i-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-top:10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--tile-i)}
+  .theme-balat .idet.inline .i-meta .kc{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:#6B6158}
+  .theme-balat .idet.inline .i-meta:empty{display:none}
+  .theme-balat .idet.inline .alrt{margin-top:12px;padding:2px 0 2px 12px;border-radius:0;border-width:0 0 0 3px;background:transparent}
+  [dir="rtl"] .theme-balat .idet.inline .alrt,.theme-balat [dir="rtl"] .idet.inline .alrt{padding:2px 12px 2px 0;border-width:0 3px 0 0}
+  .theme-balat .idet.inline .i-price{display:none}
+  .theme-balat .idet.inline.has-opts .i-price{display:flex}
+  @media (prefers-reduced-motion:reduce){.theme-balat .idet.inline{animation:none}}
+
+  /* Balat through the whole visit: the bill, the split, the payment, the thank-you and the review keep the tiles'
+     bone paper, ink rules, square corners and Gloock figures; a choice, once made, is filled in ink. */
+  html.theme-balat{--surface:var(--bone);--bg:#EAE0CE;--line:#CDBFAA;--line-soft:#E4D9C6;--hair:#CDBFAA;--paper:var(--bone);--ivory:var(--bone)}
+  .theme-balat :is(.cta,.sheet,.alrt,.pays,.tipb,.seg,.seg button,.chip,.receipt,.rcpt,.mailin,.mailbtn,.pay-breakdown,.share,.stp button,.sb,.fc,.fbar,.picklist,.amtbox,.tipcw,.cashnote,.chg,.review-close,.ta,.back,.sel select,.fbtn,.billpill,.tbl){border-radius:0}
+  .theme-balat :is(.b-title,.amt .big,.share .v,.r-total .a,.sh-t,.shukran,.rc-amt){font-family:'Gloock','Reem Kufi',Georgia,serif;font-weight:400;letter-spacing:0}
+  .theme-balat .back,.theme-balat .sel select,.theme-balat .fbtn,.theme-balat .review-close{border:1.5px solid var(--balat-ink)}
+  .theme-balat .receipt{border:1.5px solid var(--balat-ink);background:var(--bone)}
+  .theme-balat .receipt::before{content:'';display:block;height:18px;margin:-13px -16px 12px;background:radial-gradient(circle at 50% 50%,var(--tile-o) 0 13%,transparent 13.6%),radial-gradient(circle at 0 0,var(--bone) 0 30%,transparent 30.6%),radial-gradient(circle at 100% 0,var(--bone) 0 30%,transparent 30.6%),radial-gradient(circle at 0 100%,var(--bone) 0 30%,transparent 30.6%),radial-gradient(circle at 100% 100%,var(--bone) 0 30%,transparent 30.6%),var(--tile-i);background-size:18px 18px}
+  .theme-balat .r-item{border-bottom-style:dashed;border-bottom-color:var(--balat-line)}
+  .theme-balat .r-total{border-top:1.5px solid var(--balat-ink)}
+  .theme-balat .seg{background:transparent;border:1.5px solid var(--balat-ink);padding:0}
+  .theme-balat .seg button.on{background:var(--balat-ink);color:var(--bone);box-shadow:none}
+  .theme-balat .stp button{border:1.5px solid var(--balat-ink);background:transparent}
+  .theme-balat .share{background:transparent;border:1.5px solid var(--balat-ink)}
+  .theme-balat .share .k,.theme-balat .share .v,.theme-balat .share .ll{color:var(--balat-ink)}
+  .theme-balat .pay-breakdown{background:transparent;border:1.5px solid var(--balat-ink)}
+  .theme-balat .tipb{border:1.5px solid var(--line)}
+  .theme-balat .tipb.on{background:var(--balat-ink);border-color:var(--balat-ink)}
+  .theme-balat .tipb.on .tp,.theme-balat .tipb.on .tv{color:var(--bone)}
+  .theme-balat .pays{border:1.5px solid var(--balat-ink)}
+  .theme-balat .pm.on{background:#EAE0CE}
+  .theme-balat .pm.on .radio{border-color:var(--balat-ink);background:var(--balat-ink);box-shadow:inset 0 0 0 3px var(--bone)}
+  .theme-balat .chip.on{background:var(--balat-ink);border-color:var(--balat-ink);color:var(--bone)}
+  .theme-balat .fc.on{background:var(--balat-ink);border-color:var(--balat-ink);color:var(--bone)}
+  .theme-balat .amtbox,.theme-balat .ta{border:1.5px solid var(--balat-ink)}
+  .theme-balat .ppl{background:transparent;border:1.5px solid var(--balat-ink);border-radius:0}
+  .theme-balat .picklist{background:transparent;border:1.5px solid var(--balat-ink)}
+  .theme-balat .pl{border-bottom:1px dashed var(--balat-line)}
+  .theme-balat .pl.on{background:#EAE0CE}
+  .theme-balat :is(.pl,.add) .cb{border-radius:0;border-color:var(--balat-ink);color:var(--bone)}
+  .theme-balat .add .cb.rd{border-radius:50%}
+  .theme-balat .add.on .cb{background:var(--balat-ink);border-color:var(--balat-ink)}
+  .theme-balat .pl.on .cb{background:var(--balat-ink);border-color:var(--balat-ink)}
+  .theme-balat .paidtag,.theme-balat .soldout,.theme-balat .wh-s,.theme-balat .inc,.theme-balat .curb{border-radius:0}
+  .theme-balat .tipcw,.theme-balat .inc{border:1.5px solid var(--balat-ink)}
+  .theme-balat .cashnote,.theme-balat .chg{background:transparent;border:1.5px solid var(--balat-ink);color:var(--balat-ink)}
+  .theme-balat :is(.chg-q,.chg-sub,.chg-out){color:var(--balat-ink)}
+  .theme-balat .chg-out{border-top-color:var(--balat-line)}
+  .theme-balat .chip,.theme-balat .curb{background:transparent;border:1.5px solid var(--line);color:var(--balat-ink)}
+  .theme-balat .curb.on{background:var(--balat-ink);border-color:var(--balat-ink);color:var(--bone)}
+  /* the thank-you screen is the brand's deepest shade; its text and fields in bone rather than the standard green-greys */
+  .theme-balat .mailin,.theme-balat .receipt-mode .mailin{background:rgba(244,237,225,.08);border:1px solid rgba(244,237,225,.4)}
+  .theme-balat .mailin::placeholder,.theme-balat .receipt-mode .mailin::placeholder{color:rgba(244,237,225,.6)}
+  .theme-balat .mailbtn,.theme-balat .receipt-mode .mailbtn{border-color:rgba(244,237,225,.4)}
+  .theme-balat :is(.done-p,.consents label,.rc-r,.rc-note),.theme-balat .receipt-mode :is(.rc-r,.rc-note){color:rgba(244,237,225,.78)}
+  .theme-balat .star.on{color:var(--tile-o)}
+  .theme-balat #ov-review .star{color:var(--balat-line)}
+  .theme-balat #ov-review .star.on{color:var(--amber)}
+  .theme-balat .done-inner .tile-band{flex:0 0 auto}
+  .theme-balat .shukran{font-size:46px}
+  .theme-balat .rule2{display:none}
 </style>
 </head>
 <body>
@@ -649,6 +735,8 @@
   <div class="s">Interactive demo · sample data · no money moves</div>
   <p style="font-size:14px;margin:12px 0"><a href="index.html">Back to website</a> · <a id="staff-demo" href="dashboard.html" target="_blank" rel="noopener">Open staff demo</a></p>
 </div>
+<!-- the Aalayna wordmark (brand/svg/3layna/line.svg), drawn once and used in every "powered by" -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="aal-logo" viewBox="0 0 350 50"><path fill="currentColor" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM180 0L190 0L190 20.4L220 20.4L220 0L230 0L230 29.6L210 29.6L210 50L200 50L200 29.6L180 29.6ZM240 0L250 0L250 50L240 50ZM280 0L290 0L290 50L280 50ZM240 0L252.5 0L290 50L277.5 50ZM300 0L350 0L350 50L340 50L340 29.6L310 29.6L310 50L300 50ZM310 9.2L310 20.4L340 20.4L340 9.2Z"/><path style="fill:var(--logo-red,#C9414B)" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></symbol></svg>
 <!-- #app is the guest app: its dir follows the language (rtl in Arabic), so every view and sheet mirrors -->
 <div class="phone" id="app" dir="ltr"><div class="screen" id="screen" data-preview="Preview · no money moves">
   <div class="net-banner" id="net-banner" role="status" aria-live="polite" hidden></div>
@@ -681,7 +769,7 @@
     <div class="dock">
       <button class="cta cta-green" onclick="go('v-menu')"><span class="sheen"></span><span data-i18n="seeMenu">See the menu</span></button>
       <button class="cta cta-line" onclick="go('v-bill')"><span data-i18n="openBill">Open the bill</span> &middot; <b id="land-tot">$0.00</b></button>
-      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <svg class="pw-logo" role="img" aria-label="Aalayna"><use href="#aal-logo"></use></svg></div>
     </div>
   </div>
   <!-- ================= 2. MENU ================= -->
@@ -707,7 +795,7 @@
       <span class="fsum" id="fsum"></span>
     </div>
     <div class="cats" id="cats"><span id="ink"></span></div>
-    <div class="scroll" id="menuscroll" style="padding-bottom:96px"></div>
+    <div class="scroll" id="menuscroll"></div>
     <button class="billpill" onclick="go('v-bill')"><span data-i18n="openBill">Open the bill</span> <span class="amt" id="pill-tot">$0.00</span></button>
   </div>
   <!-- ================= 3. BILL ================= -->
@@ -725,7 +813,7 @@
     </div>
     <div class="dock">
       <button class="cta cta-green" onclick="go('v-settle')"><span class="sheen"></span><span data-i18n="settleShare">Settle my share</span></button>
-      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <svg class="pw-logo" role="img" aria-label="Aalayna"><use href="#aal-logo"></use></svg></div>
     </div>
   </div>
   <!-- ================= 4. SETTLE ================= -->
@@ -770,7 +858,7 @@
     </div>
     <div class="dock">
       <button class="cta cta-green" id="continue-btn" onclick="go('v-pay')"><span class="sheen"></span>Continue</button>
-      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <svg class="pw-logo" role="img" aria-label="Aalayna"><use href="#aal-logo"></use></svg></div>
     </div>
   </div>
   <!-- ================= 5. PAY ================= -->
@@ -834,7 +922,7 @@
     </div>
     <div class="dock">
       <button class="cta cta-green" id="paybtn" onclick="settle()"><span class="sheen"></span>Pay</button>
-      <div class="powered"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
+      <div class="powered"><span data-i18n="poweredBy">powered by</span> <svg class="pw-logo" role="img" aria-label="Aalayna"><use href="#aal-logo"></use></svg></div>
     </div>
   </div>
   <!-- ================= 6. SUCCESS ================= -->
@@ -876,7 +964,7 @@
         </div>
       </div>
       <div class="dock-dk">
-        <div class="powered dk"><span data-i18n="poweredBy">powered by</span> <b>Aalayna</b></div>
+        <div class="powered dk"><span data-i18n="poweredBy">powered by</span> <svg class="pw-logo" role="img" aria-label="Aalayna"><use href="#aal-logo"></use></svg></div>
       </div>
     </div>
   </div>
@@ -887,6 +975,8 @@
       <div class="grab"></div>
       <div class="sh-t" id="i-name"></div>
       <div class="sh-s" id="i-desc"></div>
+      <div class="i-ing" id="i-ing"></div>
+      <div class="i-meta" id="i-meta"></div>
       <div class="soldout" id="i-out" style="display:none">Sold out</div>
       <div class="alrt" id="i-alrt"></div>
       <div class="disc" id="i-disc">Always confirm allergies with staff.</div>
@@ -1203,6 +1293,7 @@ var STR = {
     greet: 'Ahla w sahla', landNote: 'Explore the menu. When you’re ready, split the bill your way and pay from your table.',
     seeMenu: 'See the menu', openBill: 'Open the bill', crestFallback: 'YOUR MENU, LIVE',
     dietFilters: 'Dietary filters', filtersSub: 'Dishes that don’t fit stay visible but fade, with the reason shown.',
+    kcalN: '{n} kcal',
     fVeg: 'Vegetarian', fNonuts: 'No nuts', fNodairy: 'No dairy', fLight: 'Under 400 kcal', fProtein: 'High protein',
     more: 'For more details', of: 'of', work: 'dishes work for you', works: 'dish works for you', clear: 'Clear', done: 'Done',
     rMeat: 'has meat', rNuts: 'contains nuts', rDairy: 'contains dairy', rSwap: 'works with',
@@ -1289,6 +1380,7 @@ var STR = {
     greet: 'Bienvenue', landNote: 'Découvrez le menu. Quand vous êtes prêts, partagez l’addition comme vous voulez et payez depuis votre table.',
     seeMenu: 'Voir le menu', openBill: 'Voir l’addition', crestFallback: 'VOTRE MENU, EN DIRECT',
     dietFilters: 'Filtres alimentaires', filtersSub: 'Les plats qui ne conviennent pas restent visibles mais estompés, avec la raison.',
+    kcalN: '{n} kcal',
     fVeg: 'Végétarien', fNonuts: 'Sans noix', fNodairy: 'Sans lactose', fLight: 'Moins de 400 kcal', fProtein: 'Riche en protéines',
     more: 'Plus de détails', of: 'sur', work: 'plats vous conviennent', works: 'plat vous convient', clear: 'Effacer', done: 'Terminé',
     rMeat: 'contient de la viande', rNuts: 'contient des noix', rDairy: 'contient du lactose', rSwap: 'possible avec',
@@ -1375,6 +1467,7 @@ var STR = {
     greet: 'أهلاً وسهلاً', landNote: 'تصفّح القائمة. وعندما تكون جاهزاً، قسّم الفاتورة على طريقتك وادفع من طاولتك.',
     seeMenu: 'عرض القائمة', openBill: 'افتح الفاتورة', crestFallback: 'قائمتك، مباشرة',
     dietFilters: 'فلاتر غذائية', filtersSub: 'الأطباق غير المناسبة تبقى ظاهرة لكن باهتة، مع ذكر السبب.',
+    kcalN: '{n} سعرة',
     fVeg: 'نباتي', fNonuts: 'بدون مكسرات', fNodairy: 'بدون ألبان', fLight: 'أقل من 400 سعرة', fProtein: 'غني بالبروتين',
     more: 'تفاصيل أكثر', of: 'من', work: 'أطباق تناسبك', works: 'طبق يناسبك', clear: 'مسح', done: 'تم',
     rMeat: 'يحتوي على لحم', rNuts: 'يحتوي على مكسرات', rDairy: 'يحتوي على ألبان', rSwap: 'متاح مع',
@@ -1714,6 +1807,11 @@ function nameOf(m){
   if (LANG === 'en') return m.n;
   return (m.tr && m.tr[LANG] && m.tr[LANG].n) || m.n;   // English is the fallback
 }
+/* Balat's second line under a dish: its Arabic name, or in Arabic, the name the menu was written with */
+function altName(m){
+  if (LANG === 'ar') return m.n && m.n !== nameOf(m) ? m.n : '';
+  return (m.tr && m.tr.ar && m.tr.ar.n) || '';
+}
 function descOf(m){
   if (LANG === 'en') return m.d;
   return (m.tr && m.tr[LANG] && m.tr[LANG].d) || m.d;
@@ -1812,6 +1910,7 @@ function openOv(id){
 }
 var itemOpenedAt = 0;
 function closeOv(id){
+  if (id === 'ov-item' && inlineRow){ closeInline(); return; }
   var ov = $(id);
   if (!ov.classList.contains('on')) return;
   /* how long the dish held their attention, in whole seconds */
@@ -1889,6 +1988,7 @@ function spy(){
 }
 var staggered = false;
 function buildMenu(){
+  closeInline();                                   // the dish panel lives in the list; take it out before rebuilding
   var sc = $('menuscroll');
   if (!sc._spy){ sc.addEventListener('scroll', spy, { passive: true }); sc._spy = 1; }
   var ready = anyFilterable();
@@ -1910,17 +2010,21 @@ function buildMenu(){
     MENU.filter(function(m){ return m.c === c.id; }).forEach(function(m){
       var d = document.createElement('div');
       d.className = 'mi' + (m.available ? '' : ' out');
-      d.onclick = function(){ openItem(m); };
+      d.onclick = function(){ if (balat() && inlineRow === d){ closeInline(); return; } openItem(m, d); };
       d.tabIndex=0;d.setAttribute('role','button');d.setAttribute('aria-label',nameOf(m)+' · '+price(m.p));
-      d.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openItem(m);}};
+      d.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.onclick();}};
+      if (balat()) d.setAttribute('aria-expanded', 'false');
       if (!staggered){
         d.style.animation = 'rowIn .25s var(--ease) both';
         d.style.animationDelay = Math.min(MENU.indexOf(m), 8) * 35 + 'ms';
       }
+      var alt = balat() ? altName(m) : '';
+      if (alt) d.classList.add('has-alt');
       d.innerHTML =
         '<div class="tx">' +
           '<div class="mn">' + esc(nameOf(m)) +
             (m.available ? '' : '<span class="soldout">' + esc(t('soldOut')) + '</span>') + '</div>' +
+          (alt ? '<div class="mar"' + (LANG === 'ar' ? '' : ' lang="ar"') + '><bdi>' + esc(alt) + '</bdi></div>' : '') +
           '<div class="md">' + esc(descOf(m)) + '</div>' +
           '<div class="why"><span class="x">&#10005;</span><span class="wt"></span></div>' +
         '</div>' +
@@ -2006,7 +2110,8 @@ function applyF(){
   if (badge){ badge.style.display = nOn ? 'inline-block' : 'none'; badge.textContent = nOn; }
   if (sum) sum.textContent = nOn ? (ok + ' ' + t('of') + ' ' + total + ' ' + t('work')) : '';
 }
-function openItem(m){
+function openItem(m, row){
+  if (inlineRow) closeInline();                    // the dish already open logs its dwell before the next takes its place
   curItem = m; curSel = {};
   $('i-name').textContent = nameOf(m);
   $('i-desc').textContent = descOf(m);
@@ -2048,8 +2153,47 @@ function openItem(m){
       box.appendChild(row);
     });
   });
+  // what the dish is: vegetarian or not, its calories, and (in English, the language of the record) its ingredients
+  var meta = $('i-meta'); meta.innerHTML = '';
+  if (filterable(m) && isVeg(effDiet(m, null))){ var tg = document.createElement('span'); tg.className = 'tg'; tg.textContent = t('fVeg'); meta.appendChild(tg); }
+  if (m.kcal){ var kc = document.createElement('span'); kc.className = 'kc'; kc.textContent = t('kcalN', {n: m.kcal}); meta.appendChild(kc); }
+  var ing = $('i-ing'); ing.innerHTML = '';
+  if (LANG === 'en') (m.ing || []).forEach(function(x){ var s = document.createElement('span'); s.textContent = x; ing.appendChild(s); });
   calcItem();
+  if (balat() && row){ showInline(row); return; }
   openOv('ov-item');
+}
+/* Balat opens a dish in place, under its row, like the tile menu concept; the standard menu uses the sheet. It is
+   the same sheet element either way, moved into the list, so options, allergens and price work the same. */
+var inlineRow = null;
+function itemSheet(){ return document.querySelector('.idet'); }
+function showInline(row){
+  closeInline();
+  var sheet = itemSheet();
+  if (!sheet) return;
+  sheet.classList.toggle('has-opts', !!(curItem && (curItem.opts || []).length));
+  sheet.classList.add('inline');
+  row.classList.add('open'); row.setAttribute('aria-expanded', 'true');
+  if (typeof row.after === 'function') row.after(sheet);
+  inlineRow = row;
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(function(){ revealInline(row, sheet); });
+}
+/* scroll the opened dish clear of the docked bill bar, but never so far that its own row leaves the top */
+function revealInline(row, sheet){
+  var sc = $('menuscroll'), pill = document.querySelector('#v-menu .billpill');
+  if (!sc || !sc.getBoundingClientRect || !sc.scrollBy || inlineRow !== row) return;
+  var box = sc.getBoundingClientRect(), floor = pill ? Math.min(box.bottom, pill.getBoundingClientRect().top) : box.bottom;
+  var over = sheet.getBoundingClientRect().bottom + 12 - floor;
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (over > 0) sc.scrollBy({ top: Math.min(over, Math.max(0, row.getBoundingClientRect().top - box.top)), behavior: calm ? 'auto' : 'smooth' });
+}
+function closeInline(){
+  if (!inlineRow) return;
+  var sheet = itemSheet(), home = $('ov-item');
+  if (curItem && itemOpenedAt){ ui('dwell', curItem.id, Math.round((Date.now() - itemOpenedAt) / 1000)); itemOpenedAt = 0; }
+  inlineRow.classList.remove('open'); inlineRow.setAttribute('aria-expanded', 'false');
+  if (sheet){ sheet.classList.remove('inline'); if (home && home.appendChild) home.appendChild(sheet); }
+  inlineRow = null;
 }
 /* the allergen line is computed from what is actually selected; pick oat milk
    and the dairy warning goes away, pick almond and a nuts warning appears */
@@ -2060,7 +2204,7 @@ function paintAlert(){
   if (!filterable(curItem)){
     // no confirmed ingredient record: no claim either way, just point at the staff
     alrt.innerHTML = '<span>&#8505;</span><span>' + esc(t('unkSheet')) + '</span>';
-    alrt.style.background = 'var(--bg)'; alrt.style.borderColor = 'var(--line)'; alrt.style.color = 'var(--sub)';
+    alrt.style.background = balat() ? 'transparent' : 'var(--bg)'; alrt.style.borderColor = 'var(--line)'; alrt.style.color = 'var(--sub)';
     return;
   }
   var al = effDiet(curItem, curSel).al, bg, bd, fg;
@@ -2071,6 +2215,7 @@ function paintAlert(){
     alrt.innerHTML = '<span>&#10003;</span><span>' + t('noAllergensHtml') + '</span>';
     bg = '#EAF1EC'; bd = '#CFE0D5'; fg = '#2F5A48';
   }
+  if (balat()){ bg = 'transparent'; bd = al.length ? 'var(--tile-t)' : 'var(--tile-s)'; }   // Balat: a pigment rule on the paper
   alrt.style.background = bg; alrt.style.borderColor = bd; alrt.style.color = fg;
 }
 function calcItem(){
@@ -2686,6 +2831,13 @@ function paintVenue(){
     band.className = 'tile-band'; band.setAttribute('aria-hidden', 'true');
     [1, 3, 0, 2, 4, 5, 3, 5, 1, 4, 0, 2].forEach(function(k){ band.appendChild(tileEl(k)); });
     hero.prepend(band);
+  }
+  var inner = $('inner');
+  if (balat() && inner && !inner.querySelector('.tile-band')){
+    var row = document.createElement('div');
+    row.className = 'tile-band'; row.setAttribute('aria-hidden', 'true');
+    [3, 1, 4, 0, 5, 2].forEach(function(k){ row.appendChild(tileEl(k)); });
+    inner.prepend(row);
   }
   var mb = document.querySelector('.mailbtn');
   if (mb) mb.textContent = mb.classList.contains('sent') ? t('saved') : t('sendReceipt');

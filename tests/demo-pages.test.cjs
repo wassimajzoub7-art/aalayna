@@ -42,6 +42,11 @@ test('system.html: the Mayda demo with demo=1, no admin link, honest pitch copy'
   assert.ok(l.startsWith(page+'?'+Q),page+' opens the Mayda demo: '+l);
   if(page!=='guest.html')assert.ok(/[?&]demo=1(&|$)/.test(l),page+' skips the sign-in');
  }
+ // the Balat table: the same restaurant, its brand for the tiles, and Balat's own type rather than the brand font
+ const balat=links.filter(x=>x.startsWith('guest.html?')&&/[?&]theme=balat(&|$)/.test(x));
+ assert.equal(balat.length,1,'one Balat table');
+ assert.ok(balat[0].startsWith('guest.html?'+Q.replace('&bg=%23F5F1EA&font=Montserrat','')),balat[0]);
+ assert.ok(!/[?&](font|bg)=/.test(balat[0]),'no font or background override on the Balat table');
  assert.ok(!links.some(l=>/admin\.html/.test(l)),'no link to the internal admin');
  assert.ok(!/nine diagnostic/i.test(html));
  const questions=(read('pitch.html').match(/<ul class="qs">([\s\S]*?)<\/ul>/)[1].match(/<li>/g)||[]).length;
