@@ -394,6 +394,9 @@ Aalayna.on(function(){ paintAll(); });
      (written by tools/import-menu.js). In place, because FIELDS and the check in
      validateProfile hold this same array. */
   var MENU_PACKS=[{v:'',t:'None'},{v:'mayda',t:'Mayda (venues/mayda.json)'}];
+  /* The menu styles a venue can have: the same list as THEMES in aalayna-store.js and the check on
+     venue_profiles.theme (supabase/theme-2026-09-28.sql). A table QR opens the venue in its style. */
+  var MENU_STYLES=[{v:'',t:'Standard'},{v:'balat',t:'Balat · Beirut cement tiles'}];
   var SWATCHES=['#2F6B4F','#B4423A','#E8555B','#E07B39','#D9962E','#6B4A2F','#0F4B3A','#3E7C4F','#6B7A3A','#173E43','#26327A','#5B3E82','#1A1A1A'];
   var FIELDS=[
     {f:'name',label:'Name',max:40,ph:'Mayda'},
@@ -403,6 +406,7 @@ Aalayna.on(function(){ paintAll(); });
     {f:'brand',label:'Brand colour',max:7,ph:'#2F6B4F',swatches:true},
     {f:'bg',label:'Background',max:7,ph:'#F5F1EA',hint:'Optional. Six digit hex.'},
     {f:'font',label:'Font',max:40,ph:'Montserrat',hint:'Optional. A Google Fonts name.'},
+    {f:'theme',label:'Menu style',select:MENU_STYLES,hint:'What guests see when they scan a table code. Balat draws its tiles in the brand colour.'},
     {f:'menu',label:'Menu pack',select:MENU_PACKS,hint:'Loaded once on each device that opens an owner link.'}
   ];
   var LINK_LABELS=[['ownerEditor','Owner editor'],['ownerDashboard','Owner dashboard'],['systemHub','System hub']];
@@ -446,7 +450,7 @@ Aalayna.on(function(){ paintAll(); });
   function profileOf(v){
     var p=v.profile||{}, ids=ridParts(v.restaurant_id);
     return {name:p.name||v.name||ids[0]||'',place:p.place!=null?p.place:(ids[1]||''),slug:p.slug||'',gplace:p.gplace||'',
-            brand:p.brand||'',bg:p.bg||'',font:p.font||'',menu:p.menu_pack||'',demo:p.demo_payments!==false};
+            brand:p.brand||'',bg:p.bg||'',font:p.font||'',theme:p.theme||'',menu:p.menu_pack||'',demo:p.demo_payments!==false};
   }
   function slugify(name){
     var s=String(name||'');
@@ -454,7 +458,7 @@ Aalayna.on(function(){ paintAll(); });
     return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,36).replace(/-+$/,'');
   }
   var SLUG_RULE='Slug uses lower-case letters, digits and hyphens only, up to 40 characters, and cannot start or end with a hyphen.';
-  /* Same rules as aal_admin_field() in supabase/admin.sql and venueFromURL() in aalayna-store.js. */
+  /* Same rules as aal_admin_field() in supabase/admin.sql (theme: supabase/theme-2026-09-28.sql) and venueFromURL() in aalayna-store.js. */
   function validateProfile(raw,rid){
     var p={}, i, f, v;
     function bad(field,message){ return {ok:false,field:field,message:message}; }
@@ -477,6 +481,8 @@ Aalayna.on(function(){ paintAll(); });
     }
     p.font=trimmed(raw.font);
     if(p.font&&!/^[A-Za-z0-9 +]{1,40}$/.test(p.font))return bad('font','Font must be a Google Fonts name: letters, digits and spaces, up to 40 characters.');
+    p.theme=trimmed(raw.theme).toLowerCase();
+    if(!MENU_STYLES.some(function(m){ return m.v===p.theme; }))return bad('theme','Pick a menu style from the list.');
     p.menu=trimmed(raw.menu);
     if(!MENU_PACKS.some(function(m){ return m.v===p.menu; }))return bad('menu','Pick a menu pack from the list.');
     if(rid){
@@ -486,7 +492,7 @@ Aalayna.on(function(){ paintAll(); });
     }
     return {ok:true,profile:p};
   }
-  function profilePayload(p){ return {name:p.name,place:p.place,slug:p.slug,gplace:p.gplace,brand:p.brand,bg:p.bg,font:p.font,menu_pack:p.menu}; }
+  function profilePayload(p){ return {name:p.name,place:p.place,slug:p.slug,gplace:p.gplace,brand:p.brand,bg:p.bg,font:p.font,theme:p.theme,menu_pack:p.menu}; }
 
   /* ---- links ---- */
   function defaultBase(){
@@ -675,7 +681,7 @@ Aalayna.on(function(){ paintAll(); });
       if(p.brand)parts.appendChild(chip(p.brand));
       parts.appendChild(document.createTextNode((p.brand||'none')+' · Background '));
       if(p.bg)parts.appendChild(chip(p.bg));
-      parts.appendChild(document.createTextNode((p.bg||'none')+' · Font '+(p.font||'default')+' · Google place id '+(p.gplace||'none')+' · Menu pack '+(p.menu||'none')+(v.profile?'':' · No profile saved yet')));
+      parts.appendChild(document.createTextNode((p.bg||'none')+' · Font '+(p.font||'default')+' · Menu style '+(p.theme==='balat'?'Balat':'standard')+' · Google place id '+(p.gplace||'none')+' · Menu pack '+(p.menu||'none')+(v.profile?'':' · No profile saved yet')));
       sum.appendChild(parts);
       box.appendChild(line('Look',sum,[button('Edit profile','',function(){ VS.editing[rid]=true; VS.msg[rid]=null; paintVenues(); })],true));
     }
@@ -779,7 +785,7 @@ Aalayna.on(function(){ paintAll(); });
   paintVenues();
   if(VS.key)loadVenues();
   loadMenuPacks();
-  window.AalaynaAdminVenues={venueLinks:venueLinks,validateProfile:validateProfile,slugify:slugify};
+  window.AalaynaAdminVenues={venueLinks:venueLinks,validateProfile:validateProfile,profilePayload:profilePayload,profileOf:profileOf,slugify:slugify};
 })();
 </script>
 <!-- ==== T6 Venues (onboarding) script: end ==== -->

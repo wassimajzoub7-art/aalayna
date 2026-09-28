@@ -170,7 +170,7 @@ test('Balat (?theme=balat): the cement-tile menu, its tiles in the brand colours
  assert.match(fs.readFileSync(path.join(root,'qr.html'),'utf8'),/<option value="balat">Balat · Beirut cement tiles<\/option>[\s\S]*if \(th\) q\.push\('theme=' \+ encodeURIComponent\(th\)\);/);
 });
 
-test('Balat opens a dish in place, as the tile concept does: under its row, with its Arabic name, tags and calories; a second tap closes it',()=>{
+test('Balat opens a dish in place, as the tile concept does: under its row, with its Arabic name, its description, tags and calories; a second tap closes it',()=>{
  const rows=p=>p.$('menuscroll').children.filter(c=>/^mi\b/.test(c.className||''));
  const dwell=p=>JSON.parse(JSON.stringify(p.run("Aalayna.events().filter(function(e){return e.eventType==='ui_action'&&e.payload.action==='dwell';}).map(function(e){return e.payload.value;})")));
  // the standard menu keeps its sheet
@@ -187,7 +187,7 @@ test('Balat opens a dish in place, as the tile concept does: under its row, with
  assert.equal(p.$('ov-item').classList.contains('on'),false,'no sheet');
  assert.ok(a.classList.contains('open'));assert.equal(a.getAttribute('aria-expanded'),'true');
  assert.equal(p.$('i-desc').textContent,p.run('descOf(curItem)'),'the description opens with the dish');
- assert.ok(p.$('i-ing').children.length>0,'its ingredients');
+ assert.ok(!/id="i-ing"|class="i-ing"/.test(html),'no ingredient list: the short description says enough');
  const meta=p.$('i-meta').children;
  assert.ok(meta.some(c=>c.className==='kc'&&/^\d+ kcal$/.test(c.textContent)),'its calories');
  assert.ok(meta.every(c=>c.className==='kc'||(c.className==='tg'&&c.textContent==='Vegetarian')),'its tags');

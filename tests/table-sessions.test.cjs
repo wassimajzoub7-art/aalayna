@@ -94,6 +94,20 @@ test('a scan with v, t and s calls aal_table_session with the slug, table and co
  assert.equal(next.get('k'),'chk_'+'cd'.repeat(24));assert.equal(next.get('s'),null);assert.equal(next.get('menu'),null);
 });
 
+test('a venue with a menu style: the scan puts its theme in the address, and the page opens in it',async()=>{
+ const server=serverWith(async()=>ok(answer({venue:Object.assign({},VENUE,{theme:'balat'}),checkId:CHECK.id,key:'chk_'+'cd'.repeat(24)})));
+ const p=boot({search:'?v='+SLUG+'&t=7&s='+TOKEN,server});
+ await flush();
+ const next=new URLSearchParams(p.replaced[0].split('?')[1]);
+ assert.equal(next.get('theme'),'balat');assert.equal(next.get('brand'),'2F6B4F');
+ const q=reload(p,server);await flush();
+ assert.equal(q.document.documentElement.classList.contains('theme-balat'),true);
+ // the standard menu: no theme in the answer, none in the address
+ const plainServer=serverWith(async()=>ok(answer({checkId:CHECK.id,key:'chk_'+'cd'.repeat(24)})));
+ const r=boot({search:'?v='+SLUG+'&t=7&s='+TOKEN,server:plainServer});await flush();
+ assert.equal(new URLSearchParams(r.replaced[0].split('?')[1]).get('theme'),null);
+});
+
 test('with an open bill the rewritten page is a bill link: TABLE from the server, key held, check bound',async()=>{
  const KEY='chk_'+'cd'.repeat(24);
  const server=serverWith(async()=>ok(answer({checkId:CHECK.id,key:KEY})));server.keys[KEY]=CHECK.id;
