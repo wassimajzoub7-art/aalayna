@@ -273,6 +273,9 @@ test('book.html: site colour token, one calendar that needs no script, one Whats
   assert.equal((s.match(/wa\.me\//g) || []).length, 1);
   assert.ok(!/mailto:/.test(s));
   assert.ok(!/<script>/.test(s), 'the calendar is in the HTML, not injected');
+  const main = s.match(/<main[\s\S]*?<\/main>/)[0];
+  assert.ok(!/<h2|<ul|class="lead"|class="what"/.test(main), 'the page is the booking calendar only');
+  assert.match(main, /<h1 class="sr-only">Book a demo<\/h1>/);
   assert.match(read('website.css'), /--brand:#C9414B/);
 });
 
