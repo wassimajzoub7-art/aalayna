@@ -9,8 +9,8 @@
   var io = 'IntersectionObserver' in window;
 
   /* ---------- The four steps: a carousel at every width ---------- */
-  // Computers see three cards and the edge of the fourth, phones one card with its neighbours peeking in. A card is
-  // lit while it is fully in view, and so is its dot; the arrows move one card at a time.
+  // One step at a time: from tablets up a spread (the screen beside its text), on phones one card with its neighbours
+  // peeking in. A step is lit while it is fully in view, and so is its dot; the arrows move one step at a time.
   var steps = document.querySelector('#how .steps'), nav = document.querySelector('#how .steps-nav');
   if (steps && nav && io) {
     var cards = Array.prototype.slice.call(steps.children);
