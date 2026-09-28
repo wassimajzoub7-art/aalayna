@@ -1,11 +1,11 @@
 /* Aalayna marketing site: index.html, numbers.html, book.html. */
 
-/* Three faces, each with one job, all on the logo's square geometry. Saira (square bowls, horizontal and vertical
-   strokes, like the logo's modules) sets everything you read: headings, text, buttons and figures; Noto Kufi Arabic,
-   geometric like the Kufi mark, sets the Arabic words. Kode Mono, square and
-   monospaced, sets the small labels you scan (eyebrows, step numbers, tags): the grid texture of the brand.
-   Aalayna Block, the logo's own capitals (tools/brand-font.js builds it from brand/logo.js), sets only the name
-   itself. Corners are square everywhere, like the logo; only the phones keep theirs, because phones have them. */
+/* One reading face, so the logo is the only loud thing on the page. Instrument Sans, a calm grotesque (the Balat
+   menu sets its text in it too), sets everything you read and scan: headings, text, buttons, figures and the small
+   labels; IBM Plex Sans Arabic, the guest app's Arabic, sets the Arabic words. Aalayna Block, the logo's own capitals
+   (tools/brand-font.js builds it from brand/logo.js), sets only the name itself, and on the Arabic page the name,
+   علينا, is in Noto Kufi Arabic, the Kufi of the mark. Corners are square everywhere, like the logo; only the phones
+   keep theirs, because phones have them. */
 @font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-weight:100 900;font-style:normal;font-display:swap}
 
 /* Tokens. Six type sizes only (14 / 16 / 19 / 30 / 54 / 67 px). Red has two jobs:
@@ -16,9 +16,9 @@
   --petrol:#173E43;--peach:#F6C39F;--on-petrol:#D7E3E2;--on-petrol-sub:#B9C7C4;
   --fs-small:.875rem;--fs-body:1rem;--fs-lead:1.1875rem;--fs-heading:1.875rem;--fs-display:3.375rem;--fs-hero:4.1875rem;
   --header-h:4rem;
-  --font-text:'Saira','Noto Kufi Arabic',system-ui,sans-serif;
-  --font-label:'Kode Mono',ui-monospace,monospace;
-  --font-name:'Aalayna Block','Kode Mono',ui-monospace,monospace;
+  --font-text:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --font-label:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --font-name:'Aalayna Block',ui-monospace,monospace;
 }
 
 /* Base */
@@ -29,8 +29,8 @@ button,a,input{touch-action:manipulation}button,input{font:inherit}a{color:inher
 button,a,summary{-webkit-tap-highlight-color:transparent}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
 h1,h2,h3,p,figure{margin:0}
-/* Headings in Saira, bold and a little tight; the name inside a heading keeps the logo's capitals. */
-h1,h2,h3{font-family:var(--font-text);font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+/* Headings in Instrument Sans, semibold and a little tight; the name inside a heading keeps the logo's capitals. */
+h1,h2,h3{font-family:var(--font-text);font-weight:600;letter-spacing:-.02em;text-wrap:balance}
 .name{font-family:var(--font-name);font-weight:400;font-synthesis:none;letter-spacing:0}
 h2{font-size:var(--fs-heading);line-height:1.15}
 h3{font-size:var(--fs-lead);line-height:1.3}
@@ -41,7 +41,7 @@ img{max-width:100%}
    under the header; a click in the menu lands the section right under it, its own padding giving the air. */
 .section{padding-block:clamp(2.5rem,7vh,5rem)}
 section[id],main[id]{scroll-margin-top:var(--header-h)}
-.eyebrow{color:var(--brand-text);font-family:var(--font-label);font-size:var(--fs-small);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.eyebrow{color:var(--brand-text);font-family:var(--font-label);font-size:var(--fs-small);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1rem}
 .number{font-family:var(--font-label);font-size:var(--fs-small);font-weight:600;color:var(--brand-text)}
 .skip{position:absolute;top:-6rem;left:1rem;background:var(--surface);padding:.7rem;z-index:100}.skip:focus{top:.5rem}
 /* Read out, not shown: the hero spells the name 3LAYNA on screen and Aalayna to a screen reader. */
@@ -195,14 +195,14 @@ section[id],main[id]{scroll-margin-top:var(--header-h)}
 .section-cta{margin-top:2.5rem}
 .faq .section-cta{margin-top:2rem}
 
-/* Arabic (ar/): the page runs right to left in Noto Kufi Arabic, geometric like the Kufi mark. Arabic letters join, so
+/* Arabic (ar/): the page runs right to left in IBM Plex Sans Arabic, the guest app's Arabic. Arabic letters join, so
    nothing is tracked or set in capitals, and the lines are opened up for the taller script. The name in the hero is
-   علينا itself, in the same face. */
-[lang="ar"]{--font-text:'Noto Kufi Arabic','Saira',system-ui,sans-serif;--font-label:'Noto Kufi Arabic','Kode Mono',system-ui,sans-serif;font-family:var(--font-text)}
+   علينا itself, in Noto Kufi Arabic, the Kufi of the mark, as the Latin name is in the logo's capitals. */
+[lang="ar"]{--font-text:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif;--font-label:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif;font-family:var(--font-text)}
 [lang="ar"] body{line-height:1.85}
 [lang="ar"] :is(h1,h2,h3,.eyebrow,.number,.btn,.name){letter-spacing:0;text-transform:none}
 [lang="ar"] h1,[lang="ar"] h2{line-height:1.35}
-[lang="ar"] .name{font-family:var(--font-text);font-weight:700}
+[lang="ar"] .name{font-family:'Noto Kufi Arabic','IBM Plex Sans Arabic',sans-serif;font-weight:700}
 [lang="ar"] .site-nav .logo svg{height:2.75rem}   /* the Kufi mark is square and lighter than the Block */
 [dir="rtl"] .calc-link::after{content:' \2190'}
 

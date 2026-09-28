@@ -558,7 +558,8 @@ test('ar copy: nothing left in English, the same prices and percentages, the nam
   const figures = s => [...new Set(visible(s).join(' ').match(/\$\d[\d,.]*\d|\d+%/g))].sort();
   assert.deepEqual(figures(ar), figures(en), 'the same dollar amounts and percentages');
   assert.match(ar, /<h1 id="hero-title">الفاتورة\.<br>التقسيم\.<br><span class="sr-only">علينا\.<\/span><span class="name" aria-hidden="true"><em>علينا\.<\/em><\/span><\/h1>/);
-  assert.match(read('website.css'), /\[lang="ar"\]\{--font-text:'Noto Kufi Arabic',/);
+  assert.match(read('website.css'), /\[lang="ar"\]\{--font-text:'IBM Plex Sans Arabic',/);
+  assert.match(read('website.css'), /\[lang="ar"\] \.name\{font-family:'Noto Kufi Arabic',/, 'the name, علينا, in the Kufi of the mark');
   assert.match(read('website.css'), /\[lang="ar"\] :is\(h1,h2,h3,\.eyebrow,\.number,\.btn,\.name\)\{letter-spacing:0;text-transform:none\}/, 'Arabic is never tracked or capitalised');
   assert.ok(!/margin-(?:left|right)|padding-(?:left|right)/.test(read('website.css')), 'spacing is logical, so it mirrors in Arabic');
 });
