@@ -134,6 +134,13 @@
       <input class="in" id="f-font" value="Montserrat" oninput="paint()" placeholder="Montserrat">
       <div class="hint">One hex from their logo re-skins the whole demo; the font swaps the
         typography. Pull both from their menu PDF or Instagram.</div>
+      <div class="lb">Menu style</div>
+      <select class="in" id="f-theme" onchange="paint()">
+        <option value="">Standard</option>
+        <option value="balat">Balat · Beirut cement tiles</option>
+      </select>
+      <div class="hint">Balat draws the menu in cement tiles; their brand colour takes the place of
+        the nearest tile colour, so the tiles are theirs.</div>
       <div class="lb">Demo base URL</div>
       <input class="in" id="f-base" value="" oninput="paint()">
       <div class="hint">Where the system is deployed. The QR points at the guest app with the
@@ -190,6 +197,7 @@ function demoURL(){
   var g = document.getElementById('f-gplace').value.trim();
   var br = document.getElementById('f-brand').value.trim();
   var ft = document.getElementById('f-font').value.trim();
+  var th = document.getElementById('f-theme').value;
   /* The demo restaurant opens its own menu; any other name opens the demo menu under that name. */
   if (n === DEMO_VENUE) q.push('menu=' + DEMO_MENU);
   if (n) q.push('venue=' + encodeURIComponent(n));
@@ -197,6 +205,7 @@ function demoURL(){
   if (g) q.push('gplace=' + encodeURIComponent(g));
   if (br) q.push('brand=' + encodeURIComponent(br));
   if (ft) q.push('font=' + encodeURIComponent(ft));
+  if (th) q.push('theme=' + encodeURIComponent(th));
   return q.length ? u + '?' + q.join('&') : u;
 }
 function baseURL(){

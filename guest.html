@@ -597,6 +597,50 @@
   html.aal-offline .view{top:var(--net-h,44px)}
   html.aal-offline #aal-sync-status{display:none}
   .b-title{font-size:23px;line-height:1.3}.b-sub{font-size:14px;margin-top:5px}.r-crest{font-size:12px;letter-spacing:.1em}.r-item{font-size:15px;line-height:1.45;padding:13px 0}.r-item .q{font-size:14px}.r-item .p{white-space:nowrap}.r-total .l{font-size:12px;letter-spacing:.04em}.r-total .a{font-size:28px}.r-ll{font-size:14px}.billpill{font-size:15px;min-height:48px}
+  /* ---------- Balat (?theme=balat): the Beirut cement-tile menu ----------
+     The landing and the menu only: a band of tiles above the restaurant's name, a tile per section in the tabs
+     and beside each dish, Gloock for names and Reem Kufi for the Arabic, square corners on bone paper. The four
+     pigments are --tile-t/o/s/i, set by the store from the restaurant's brand (aalayna-store.js, balatPalette);
+     each tile pattern is drawn in CSS, so any colours re-skin it. */
+  html.theme-balat{--bone:#F4EDE1;--balat-ink:#1D1A16;--balat-line:#C9BCA9;--tile-t:#B5502C;--tile-o:#D39B2A;--tile-s:#6F9A83;--tile-i:#24366B}
+  .theme-balat .tile{display:block;flex-shrink:0}
+  .theme-balat .tile.k0{background:radial-gradient(circle at 50% 0,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 50% 100%,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 0 50%,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 100% 50%,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 50% 50%,var(--tile-t) 0 12%,transparent 12.6%),var(--bone)}
+  .theme-balat .tile.k1{background:radial-gradient(circle at 50% 50%,var(--tile-o) 0 13%,transparent 13.6%),radial-gradient(circle at 0 0,var(--bone) 0 30%,transparent 30.6%),radial-gradient(circle at 100% 0,var(--bone) 0 30%,transparent 30.6%),radial-gradient(circle at 0 100%,var(--bone) 0 30%,transparent 30.6%),radial-gradient(circle at 100% 100%,var(--bone) 0 30%,transparent 30.6%),var(--tile-i)}
+  .theme-balat .tile.k2{background:radial-gradient(circle at 0 0,var(--bone) 0 35%,transparent 35.6%),radial-gradient(circle at 100% 100%,var(--bone) 0 35%,transparent 35.6%),radial-gradient(circle at 100% 0,var(--tile-i) 0 15%,transparent 15.6%),radial-gradient(circle at 0 100%,var(--tile-i) 0 15%,transparent 15.6%),var(--tile-o)}
+  .theme-balat .tile.k3{background:radial-gradient(circle at 50% 50%,var(--bone) 0 11%,transparent 11.6%),radial-gradient(circle at 50% 50%,transparent 0 46%,var(--tile-t) 46.6%),conic-gradient(from 22.5deg at 50% 50%,var(--tile-o) 0 45deg,var(--tile-t) 0 90deg,var(--tile-o) 0 135deg,var(--tile-t) 0 180deg,var(--tile-o) 0 225deg,var(--tile-t) 0 270deg,var(--tile-o) 0 315deg,var(--tile-t) 0 360deg)}
+  .theme-balat .tile.k4{background:radial-gradient(circle at 50% 50%,var(--tile-i) 0 10%,transparent 10.6%),linear-gradient(135deg,var(--bone) 0 25%,transparent 25.2%),linear-gradient(225deg,var(--bone) 0 25%,transparent 25.2%),linear-gradient(315deg,var(--bone) 0 25%,transparent 25.2%),linear-gradient(45deg,var(--bone) 0 25%,transparent 25.2%),var(--tile-t)}
+  .theme-balat .tile.k5{background:radial-gradient(circle at 50% 50%,var(--tile-i) 0 10%,transparent 10.6%),conic-gradient(from 0deg at 50% 50%,var(--bone) 0 25%,var(--tile-s) 0 50%,var(--bone) 0 75%,var(--tile-s) 0 100%)}
+  .theme-balat .screen,.theme-balat #v-land,.theme-balat #v-menu,.theme-balat #v-land .land-body{background:var(--bone)}
+  .theme-balat #v-land .cta-line{background:transparent;border-color:var(--balat-ink)}
+  .theme-balat #v-land .dock{background:linear-gradient(transparent,var(--bone) 16%)}
+  .theme-balat #v-land .cta,.theme-balat #v-menu .fbtn,.theme-balat .sel select,.theme-balat #v-menu .back,.theme-balat .billpill{border-radius:0}
+  .theme-balat .hero{height:auto;overflow:visible;background:transparent}
+  .theme-balat .tile-band{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px}
+  .theme-balat .tile-band .tile{aspect-ratio:1/1}
+  .theme-balat #v-land .crest{position:relative;left:auto;top:auto;transform:none;width:auto;margin:-42px 18px 0;padding:16px 18px 14px;background:var(--bone);border:1.5px solid var(--balat-ink);border-radius:0;color:var(--balat-ink);text-align:start;display:flex;flex-direction:column;gap:6px}
+  .theme-balat .crest .name{order:-1;font-family:'Gloock','Reem Kufi',Georgia,serif;font-weight:400;font-size:40px;line-height:1;color:var(--balat-ink)}
+  .theme-balat .crest .est{margin:0;font-size:11px;letter-spacing:.14em;color:var(--sub)}
+  .theme-balat .crest .place{margin:0;font-size:14px;color:var(--sub)}
+  .theme-balat .crest .rule{display:none}
+  .theme-balat .greet{font-family:'Gloock','Reem Kufi',Georgia,serif;font-weight:400}
+  .theme-balat .tbl{border-radius:0;background:transparent;border:1px solid var(--balat-ink);color:var(--balat-ink)}
+  .theme-balat .m-head .vn{font-family:'Gloock','Reem Kufi',Georgia,serif;font-weight:400;font-size:26px}
+  .theme-balat .cats{gap:12px;padding:14px 20px 6px}
+  .theme-balat .cat{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:64px;max-width:88px;padding:4px 0 6px;font-size:12px;line-height:1.25;text-align:center;white-space:normal;color:var(--sub)}
+  .theme-balat .cat .tile{width:44px;height:44px;transition:box-shadow .2s var(--ease)}
+  .theme-balat .cat.on{color:var(--balat-ink)}
+  .theme-balat .cat.on .tile{box-shadow:0 0 0 3px var(--bone),0 0 0 5px var(--balat-ink)}
+  .theme-balat #ink{display:none}
+  .theme-balat .sect-h{justify-content:space-between;align-items:baseline;margin:0 20px;padding:22px 0 8px;background:transparent;border-bottom:1.5px solid var(--balat-ink);font-family:'Gloock','Reem Kufi',Georgia,serif;font-weight:400;font-size:24px;letter-spacing:0;text-transform:none;color:var(--balat-ink)}
+  .theme-balat .sect-h::after{content:none}
+  .theme-balat .sect-ar{font-family:'Reem Kufi','IBM Plex Sans Arabic',sans-serif;font-size:17px;color:var(--sub)}
+  .theme-balat .mi{align-items:center;margin:0 20px;padding:14px 0;border-bottom:1px dashed var(--balat-line)}
+  .theme-balat .mi:hover{background:transparent}
+  .theme-balat .mi .dish-tile{width:40px;height:40px}
+  .theme-balat .mi .mn{font-family:'Gloock','Reem Kufi',Georgia,serif;font-weight:400;font-size:18px;line-height:1.2}
+  .theme-balat .mi .mp{padding:4px 8px;border:1.5px solid var(--balat-ink);font-size:15px}
+  .theme-balat .details-arrow{display:none}
+  .theme-balat .billpill{background:var(--balat-ink)}
 </style>
 </head>
 <body>
@@ -1057,6 +1101,7 @@ var AalaynaTableQR = (function (global) {
       if (v.brand) p.set('brand', String(v.brand).replace(/^#/, ''));
       if (v.bg) p.set('bg', String(v.bg).replace(/^#/, ''));
       if (v.font) p.set('font', v.font);
+      if (v.theme) p.set('theme', v.theme);
       if (q.get('lang')) p.set('lang', lang);
       session = { v: session.v, t: session.t, s: session.s, rid: rid, table: res.table, waiting: !res.key, docs: res.key ? null : (res.docs || []) };
       save(session);
@@ -1779,13 +1824,26 @@ var filt = {veg:false, nonuts:false, nodairy:false, light:false, protein:false};
 /* Every reason is derived from the ingredient record, not from a hand-typed tag.
    Items are DIMMED and given a reason, never hidden: four people share one menu,
    and one person's filter should not erase the other three's dinner. */
+/* Balat (?theme=balat, set by the store): each section is a cement tile, k0 to k5 by its place on the menu */
+function balat(){ return document.documentElement.classList.contains('theme-balat'); }
+function tileEl(k, extra){
+  var s = document.createElement('span');
+  s.className = 'tile k' + (k % 6) + (extra ? ' ' + extra : '');
+  s.setAttribute('aria-hidden', 'true');
+  return s;
+}
 function buildCats(rebuild){
   var wrap = $('cats'), ink = $('ink');
   if (rebuild) wrap.querySelectorAll('.cat').forEach(function(c){ c.remove(); });
   CATS.forEach(function(c, i){
     var b = document.createElement('button');
     b.className = 'cat' + (i === 0 ? ' on' : '');
-    b.textContent = catLabel(c);
+    if (balat()){
+      var cl = document.createElement('span');
+      cl.textContent = catLabel(c);
+      b.appendChild(tileEl(i));
+      b.appendChild(cl);
+    } else b.textContent = catLabel(c);
     b.onclick = function(){ selectCat(b, c.id); };
     wrap.insertBefore(b, ink);
   });
@@ -1842,6 +1900,12 @@ function buildMenu(){
     var h = document.createElement('div');
     h.className = 'sect-h'; h.dataset.sect = c.id;
     h.textContent = catLabel(c);
+    // Balat sets the section's Arabic name beside it, unless the menu is already in Arabic
+    if (balat() && LANG !== 'ar' && c.tr && c.tr.ar && c.tr.ar.n){
+      var ar = document.createElement('span');
+      ar.className = 'sect-ar'; ar.lang = 'ar'; ar.textContent = c.tr.ar.n;
+      h.appendChild(ar);
+    }
     s.appendChild(h);
     MENU.filter(function(m){ return m.c === c.id; }).forEach(function(m){
       var d = document.createElement('div');
@@ -1862,6 +1926,7 @@ function buildMenu(){
         '</div>' +
         '<div class="item-end"><div class="mp">' + price(m.p) + '</div><span class="details-arrow" aria-hidden="true">&#8250;</span></div>';
       if(m.imageUrl){var img=document.createElement('img');img.className='menu-photo';img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=m.imageUrl;img.onerror=function(){this.remove();};d.prepend(img);}
+      else if (balat()) d.prepend(tileEl(CATS.indexOf(c), 'dish-tile'));
       d._m = m;
       s.appendChild(d);
     });
@@ -2614,6 +2679,14 @@ function paintVenue(){
   set('v-place', venuePlace(v));
   set('v-est', v.est || (venuePlace(v) ? '' : t('crestFallback')));
   set('v-est2', v.name);
+  // Balat: a band of twelve tiles above the name card, every section's pattern in turn
+  var hero = document.querySelector('#v-land .hero');
+  if (balat() && hero && !hero.querySelector('.tile-band')){
+    var band = document.createElement('div');
+    band.className = 'tile-band'; band.setAttribute('aria-hidden', 'true');
+    [1, 3, 0, 2, 4, 5, 3, 5, 1, 4, 0, 2].forEach(function(k){ band.appendChild(tileEl(k)); });
+    hero.prepend(band);
+  }
   var mb = document.querySelector('.mailbtn');
   if (mb) mb.textContent = mb.classList.contains('sent') ? t('saved') : t('sendReceipt');
   paintTableLabels();
