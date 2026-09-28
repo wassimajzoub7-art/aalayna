@@ -126,12 +126,18 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media(max-width:767px){.hero-reel{order:-1;margin:-1px -1rem 0}}
 
 /* How it works */
-.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;margin-top:2.5rem}
-.steps article{border-top:1px solid var(--line);padding-top:1.75rem}
+/* The four steps are a carousel at every width: computers see three cards and the edge of the fourth, tablets two and
+   a bit, phones one (below). Without JavaScript the row still scrolls and snaps; site.js adds the arrows and dots and
+   lights the cards fully in view. */
+.steps{display:flex;gap:2rem;margin-top:2.5rem;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.steps article{flex:0 0 calc((100% - 3 * 2rem) / 3.3);scroll-snap-align:start;border-top:1px solid var(--line);padding-top:1.75rem}
 .steps .shot{margin-bottom:1.75rem}
 .steps h3{margin-top:.7rem}.steps p{margin-top:.75rem}
-/* The carousel's arrows and dots (site.js shows them on phones only). Square, like everything else. */
-.steps-nav{display:none}
+.steps article>*{transition:opacity .35s ease}
+.steps.is-live article:not(.is-seen)>*{opacity:.4}
+/* The carousel's arrows and dots, square like everything else. */
+.steps-nav:not([hidden]){display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1.25rem}
 .steps-arrow{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .steps-arrow:disabled{opacity:.35;cursor:default}
 .steps-arrow svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
@@ -139,7 +145,8 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .steps-dots{display:flex}
 .steps-dots button{display:grid;place-items:center;width:28px;height:44px;padding:0;border:0;background:none;cursor:pointer}
 .steps-dots button::before{content:'';width:10px;height:10px;border:2px solid var(--ink);box-sizing:border-box;transition:background .2s,border-color .2s}
-.steps-dots button[aria-current="true"]::before{background:var(--brand);border-color:var(--brand)}
+.steps-dots button.is-seen::before{background:var(--brand);border-color:var(--brand)}
+@media(min-width:768px) and (max-width:1023px){.steps article{flex-basis:calc((100% - 2rem) / 2.3)}}
 
 /* Sections rise in as they scroll into view (site.js adds the class, so without it nothing is hidden). */
 .js-reveal{opacity:0;transform:translateY(1.25rem);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
@@ -157,7 +164,8 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 .outcome-icon svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter}
 .benefits-band .outcome-figure{margin:0;color:#fff;font-size:var(--fs-heading);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
 .benefits-band .outcome-source{margin-top:.6rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
-.source-tag{display:inline-block;margin-inline-end:.35rem;padding:0 .45rem;background:var(--peach);color:var(--petrol);font-family:var(--font-label);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+/* Where the four figures come from, once for all of them, above the link to the calculator itself. */
+.benefits-band .outcome-note{margin-top:.5rem;font-size:var(--fs-small);line-height:1.5;color:var(--on-petrol-sub)}
 .calc-link{display:inline-block;margin-top:.5rem;padding-block:.5625rem;color:var(--peach);font-weight:600;text-underline-offset:.25rem}
 .calc-link::after{content:' \2192'}
 /* Every section ends on the same ask: Book a demo. */
@@ -169,7 +177,7 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
    علينا itself, in the same face. */
 [lang="ar"]{--font-text:'Noto Kufi Arabic','Saira',system-ui,sans-serif;--font-label:'Noto Kufi Arabic','Kode Mono',system-ui,sans-serif;font-family:var(--font-text)}
 [lang="ar"] body{line-height:1.85}
-[lang="ar"] :is(h1,h2,h3,.eyebrow,.number,.source-tag,.btn,.name){letter-spacing:0;text-transform:none}
+[lang="ar"] :is(h1,h2,h3,.eyebrow,.number,.btn,.name){letter-spacing:0;text-transform:none}
 [lang="ar"] h1,[lang="ar"] h2{line-height:1.35}
 [lang="ar"] .name{font-family:var(--font-text);font-weight:700}
 [lang="ar"] .site-nav .logo svg{height:2.75rem}   /* the Kufi mark is square and lighter than the Block */
@@ -264,26 +272,22 @@ section[id],main[id]{scroll-margin-top:calc(var(--header-h) + 1rem)}
 @media (min-width:2200px){html{zoom:1.4}}
 @media (min-width:3000px){html{zoom:1.8}}
 
-/* Phones: the three steps swipe sideways, one card centred with its neighbours peeking in; the card in view is lit.
-   The row runs edge to edge and each card is the screen less 2rem a side, with 2rem of padding at both ends, so the
-   first and last cards centre too. */
+/* Phones: one card centred with its neighbours peeking in; the card in view is lit. The row runs edge to edge and
+   each card is the screen less 2rem a side, with 2rem of padding at both ends, so the first and last cards centre too. */
 @media(max-width:767px){
   .steps{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;margin-inline:-1rem;padding:0 2rem .25rem;scroll-padding-inline:2rem;scrollbar-width:none}
-  .steps::-webkit-scrollbar{display:none}
   .steps article{flex:0 0 calc(100vw - 4rem);scroll-snap-align:center}
-  .steps article>*{transition:opacity .35s ease}
-  .steps.is-live article:not(.is-active)>*{opacity:.4}
-  .steps-nav:not([hidden]){display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1.25rem}
 }
 
-/* Phones: less air between sections, and the four figures as a 2 x 2 glance (icon, figure, headline and its tag);
-   their explanations are for bigger screens. */
+/* Phones: less air between sections, and the four figures as a 2 x 2 glance (icon, figure, the line that says where
+   it comes from, headline); their explanations are for bigger screens. */
 @media(max-width:767px){
   .section{padding-block:2.5rem}
   .lead{margin-top:1.1rem}
   .outcomes{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1rem}
+  .outcomes article:nth-child(2){padding-top:0;border-top:0}   /* two across: only the second row gets the divider */
   .outcomes article{padding-bottom:1.5rem}
-  .outcomes .source-text,.outcomes article>p:last-child{display:none}
+  .outcomes article>p:last-child{display:none}
   .outcomes .outcome-source{margin-top:.5rem}
   .outcomes h3{margin-top:.6rem;font-size:var(--fs-body);line-height:1.3}
   .outcome-icon{width:36px;height:36px;margin-bottom:.75rem}

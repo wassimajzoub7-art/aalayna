@@ -135,7 +135,7 @@ test('type: Saira for reading, Kode Mono for labels, Aalayna Block for the name 
   assert.match(css, /\n\.name\{font-family:var\(--font-name\)/);
   // The logo face is for the name, not for reading: nothing else points at it.
   assert.equal((css.match(/var\(--font-name\)/g) || []).length, 1, 'only .name uses Aalayna Block');
-  ['.eyebrow', '.number', '.source-tag'].forEach(sel => assert.match(css, new RegExp('\\n' + sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-label\\)'), sel + ' in Kode Mono'));
+  ['.eyebrow', '.number'].forEach(sel => assert.match(css, new RegExp('\\n' + sel.replace(/\./g, '\\.') + '\\{[^}]*font-family:var\\(--font-label\\)'), sel + ' in Kode Mono'));
   const covered = t => [...t.toUpperCase()].filter(ch => !/\s/.test(ch) && !Logo.TYPE[ch]);
   for (const f of SITE_PAGES) {
     const s = read(f), p = /^(?:fr|ar)\//.test(f) ? '../' : '';
