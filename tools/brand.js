@@ -103,7 +103,10 @@ async function browserPage(w, h) {
   await routeFonts(page);
   const piece = opt('piece', 'block'), ground = opt('ground', 'cream'), word = opt('word');
   await page.goto('file://' + path.join(root, 'brand/motion.html') + `?capture&piece=${piece}&w=${w}&h=${h}&ground=${ground}` + (word ? '&word=' + word : '') + (args.includes('--notag') ? '&notag' : ''));
-  await page.evaluate(async () => { await document.fonts.load("40px 'Aalayna Block'"); await document.fonts.ready; });
+  // The tagline is canvas text in Instrument Sans 600, which no frame asks for by itself: load it before the first one,
+  // and stop rather than render the words in a fallback face.
+  const faces = await page.evaluate(async () => { const f = await document.fonts.load("600 40px 'Instrument Sans'"); await document.fonts.ready; return f.length; });
+  if (!faces && !args.includes('--notag')) throw new Error('Instrument Sans did not load: pass --fonts <dir> if the browser cannot reach Google Fonts');
   return { browser, page };
 }
 
