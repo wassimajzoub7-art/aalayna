@@ -213,3 +213,35 @@ test('brand pages: every local src and href resolves to a file', () => {
     for (const u of refs) assert.ok(fs.existsSync(path.join(ROOT, path.dirname(f), u.split(/[?#]/)[0])), f + ': ' + u);
   }
 });
+
+test('the reveals set the tagline in Instrument Sans 600 as set text, the name from brand/logo.js, and every brand page that plays one loads that face first', () => {
+  global.self = global; global.AalaynaLogo = Logo; global.Path2D = global.Path2D || class {};
+  require('../brand/motion.js');
+  // A canvas that keeps the text drawn on it; the space is narrower than any letter, so a gap of three modules shows.
+  const canvas = () => new Proxy({ text: [], measureText: s => ({ width: s === ' ' ? 7 : 10 * s.length }), fillText(s, x) { this.text.push({ s, x, font: this.font }); } }, { get: (o, k) => (k in o ? o[k] : () => {}) });
+  const cases = [
+    ['block', {}, "'Instrument Sans', sans-serif", ['scan,', 'split,', 'settle.']],
+    ['kufi', {}, "'Instrument Sans', sans-serif", ['scan,', 'split,', 'settle.']],
+    ['kufi', { words: ['امسح،', 'قسّم،', 'ادفع.'], font: "'IBM Plex Sans Arabic', sans-serif", rtl: true }, "'IBM Plex Sans Arabic', sans-serif", ['ادفع.', 'قسّم،', 'امسح،']],
+  ];
+  for (const [name, o, face, placed] of cases) {
+    const piece = global.AalaynaMotion[name](o), g = canvas();
+    piece.render(g, piece.duration, 1920, 1080);
+    assert.deepEqual(g.text.map(w => w.s), placed, name + ': the tagline is the only text, placed left to right');
+    g.text.forEach(w => assert.match(w.font, new RegExp('^600 \\d+px ' + face + '$'), name + ': ' + w.font));
+    const ends = g.text.map(w => w.x + 10 * w.s.length);
+    g.text.slice(1).forEach((w, i) => assert.equal(w.x - ends[i], 7, name + ': one of the face\'s own spaces between words'));
+    assert.equal(g.text[0].x + ends[ends.length - 1], 1920, name + ': centred');
+  }
+  assert.ok(!/Aalayna Block/.test(read('brand/motion.js')), 'the motion sets no text in the logo\'s capitals');
+  // Canvas text loads no font by itself: the brand pages ask for Instrument Sans 600 before a reveal plays or renders.
+  const load = "document.fonts.load(\"600 40px 'Instrument Sans'\")";
+  const motion = read('brand/motion.html');
+  assert.ok(motion.includes('<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@600&display=block" rel="stylesheet">'), 'brand/motion.html loads Instrument Sans 600');
+  assert.ok(!/Aalayna Block/.test(motion), 'brand/motion.html draws the name from logo.js, not the font');
+  assert.ok(motion.includes(load + '.then(play, play)'), 'brand/motion.html plays once the face is in');
+  const page = read('brand/index.html');
+  assert.match(page.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1], /family=Instrument\+Sans:wght@[\d;]*600/, 'brand/index.html loads Instrument Sans 600');
+  assert.ok(page.includes('var font = document.fonts ? ' + load), 'brand/index.html asks for it before the reveals play');
+  assert.ok(read('tools/brand.js').includes('const f = await ' + load), 'tools/brand.js waits for it before the first frame');
+});
