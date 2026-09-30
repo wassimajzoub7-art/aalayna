@@ -103,7 +103,7 @@
   A.checkBalance = function (id, excludePaymentId) {
     var c = A.serviceChecks().find(function(x){ return x.id === id; });
     if (!c) throw new Error('This bill is not available for this restaurant.');
-    var confirmed = 0, pending = 0, tips = 0, methods = { cash:0, card:0, whish:0 }, items = {};
+    var confirmed = 0, pending = 0, tips = 0, methods = { cash:0, card:0, whish:0, pos:0 }, items = {};
     A.settlements().filter(function(s){ return s.venueId === c.venueId && s.checkId === c.id && s.id !== excludePaymentId; }).forEach(function(s){
       var state = A.settlementStatus(s), net = cents(s.amount) - cents(s.tip || 0);
       if (state === 'confirmed') { confirmed += net; tips += cents(s.tip || 0); methods[s.rail] += net; }

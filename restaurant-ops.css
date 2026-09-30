@@ -141,3 +141,26 @@ h1,h2,h3,.card h3{font-weight:600;letter-spacing:-.01em}
    Aalayna's tool, so its chrome keeps Instrument Sans. */
 html body,html body button,html body input,html body textarea,html body select{font-family:var(--font-text)!important}
 main a{color:var(--brand-text)}
+
+/* Integrations (T16): POS keys, webhook endpoints, deliveries, and the show-once copy box. */
+.int-section{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
+.int-section:first-of-type{margin-top:18px}
+.int-section h4{font-size:15px;font-weight:600;line-height:1.4;margin:0}
+.int-section>.ops-heading h4{margin:0}
+.int-section .ops-list{margin-top:8px}
+.int-section .ops-empty{padding:12px 0 6px}
+.int-form{margin-top:10px}
+.int-form .ops-label{margin-top:8px}
+.int-row{display:flex;gap:12px;align-items:stretch}
+.int-row .in{flex:1 1 auto;min-width:0;margin-top:6px}
+.int-row .btn,.cf .int-row .btn{flex:0 0 auto;margin-top:6px;white-space:nowrap}
+.int-events{display:flex;flex-wrap:wrap;gap:4px 22px;margin:6px 0 4px}
+.int-events .ops-label{margin-top:4px}
+.int-form>.btn{margin-top:14px}
+.int-url{overflow-wrap:anywhere;word-break:break-word}
+.int-actions{flex-direction:column;align-items:stretch;margin-top:0}
+.int-reveal{margin-top:16px;padding:16px;border:1px solid var(--ink);background:var(--bg);box-shadow:4px 4px 0 var(--ink)}
+.int-reveal h4{font-size:15px;font-weight:600;overflow-wrap:anywhere}
+.int-secret{display:block;margin-top:10px;padding:12px;background:var(--surface);border:1px solid var(--line);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;overflow-wrap:anywhere;word-break:break-all;user-select:all;-webkit-user-select:all}
+.int-reveal .cs{margin-top:8px}
+@media(max-width:720px){.int-row{flex-direction:column;gap:0}.int-row .btn,.cf .int-row .btn{width:100%;margin-top:12px}.int-form>.btn{width:100%}.int-actions{flex-direction:row}.int-reveal .ops-actions .btn{flex:1}.int-reveal{padding:14px}}

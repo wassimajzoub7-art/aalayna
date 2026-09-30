@@ -238,7 +238,7 @@
     .btn:active{transform:none}
   }
 </style>
-<link rel="stylesheet" href="restaurant-ops.css?v=7">
+<link rel="stylesheet" href="restaurant-ops.css?v=8">
 <style>
   /* ==== T4 staff sign-in: start ==== */
   .staff-gate{position:fixed;inset:0;z-index:10000;background:var(--bg);overflow:auto;display:flex;
@@ -349,7 +349,8 @@
           <div class="sr"><span class="rail"><span class="dot" style="background:#C4283C"></span>Whish Money</span><span class="amt" id="r-whish">$0.00</span></div>
           <div class="sr"><span class="rail"><span class="dot" style="background:#26327A"></span>Card</span><span class="amt" id="r-card">$0.00</span></div>
           <div class="sr"><span class="rail"><span class="dot" style="background:#173E43"></span>Cash collected</span><span class="amt" id="r-cash">$0.00</span></div>
-          <div class="sr tot"><span class="rail">Total settled in-app</span><span class="amt" id="r-tot">$0.00</span></div>
+          <div class="sr"><span class="rail"><span class="dot" style="background:#7A6A55"></span>Paid at the till</span><span class="amt" id="r-pos">$0.00</span></div>
+          <div class="sr tot"><span class="rail">Total settled</span><span class="amt" id="r-tot">$0.00</span></div>
         </div>
         <div class="note warn" id="shortbox" style="display:none"></div>
         <details class="ops-help"><summary>About this statement</summary><p id="t-note"></p></details>
@@ -359,6 +360,7 @@
         <h3>Tips payable</h3>
         <div class="cs">Outstanding digital tips across all recorded activity, independent of the reporting period. Record each payout under your restaurant’s policy.</div>
         <div id="tips" style="margin-top:8px"></div>
+        <p class="cs" id="tips-till" hidden></p>
         <div class="note" id="tipdone" style="display:none"><span>✓</span><span>All tip payments recorded.</span></div>
       </div>
     </div>
@@ -523,6 +525,47 @@
           payouts; they do not transfer money to staff.</span></div>
       </div>
     </div>
+
+    <!-- ==== T16 integrations: start ==== -->
+    <div class="card mt int-card" id="integrations-card" data-owner-only hidden>
+      <div class="ops-heading"><h3>Integrations</h3><button class="btn" type="button" id="int-refresh-all">Refresh</button></div>
+      <p class="cs">A POS key lets your point-of-sale system send each table&rsquo;s bill to Aalayna and record payments taken at the till. Give each vendor or till its own key, keep it on their server, and revoke it here the moment it leaks. <a href="docs/pos-integration.md" target="_blank" rel="noopener">Give this page to your POS vendor</a>.</p>
+
+      <section class="int-section" aria-labelledby="int-keys-h">
+        <h4 id="int-keys-h">POS keys</h4>
+        <div class="ops-list" id="int-keys" aria-live="polite"></div>
+        <form class="cf int-form" id="int-key-form" novalidate>
+          <label class="ops-label" for="int-key-label">Issue a key</label>
+          <div class="int-row">
+            <input class="in" id="int-key-label" maxlength="80" autocomplete="off" spellcheck="false" placeholder="Label, for example Front till">
+            <button class="btn primary" id="int-key-issue" type="submit">Issue a key</button>
+          </div>
+        </form>
+        <div class="int-reveal" id="int-key-reveal" role="status" hidden></div>
+      </section>
+
+      <section class="int-section" aria-labelledby="int-ep-h">
+        <h4 id="int-ep-h">Webhooks</h4>
+        <div class="ops-list" id="int-endpoints" aria-live="polite"></div>
+        <form class="cf int-form" id="int-ep-form" novalidate>
+          <label class="ops-label" for="int-ep-url">Add endpoint</label>
+          <input class="in" id="int-ep-url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://pos.example.com/aalayna">
+          <div class="int-events" role="group" aria-label="Events to send">
+            <label class="ops-label"><input type="checkbox" id="int-ev-paid" checked>bill.paid</label>
+            <label class="ops-label"><input type="checkbox" id="int-ev-closed" checked>bill.closed</label>
+          </div>
+          <button class="btn primary" id="int-ep-add" type="submit">Add endpoint</button>
+        </form>
+        <div class="int-reveal" id="int-ep-reveal" role="status" hidden></div>
+      </section>
+
+      <section class="int-section" aria-labelledby="int-dl-h">
+        <div class="ops-heading"><h4 id="int-dl-h">Deliveries</h4><button class="btn" type="button" id="int-dl-refresh">Refresh</button></div>
+        <p class="cs">The last 50, newest first. Times are Beirut time.</p>
+        <div class="ops-list" id="int-deliveries" aria-live="polite"></div>
+      </section>
+    </div>
+    <!-- ==== T16 integrations: end ==== -->
   </div>
 
 </main>
@@ -571,7 +614,7 @@
 })();
 </script>
 <!-- ==== T4 staff sign-in: end ==== -->
-<script src="restaurant-ops.js?v=12"></script>
+<script src="restaurant-ops.js?v=13"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
@@ -601,13 +644,14 @@ function go(el, v){
   document.querySelectorAll('.view').forEach(function(x){ x.classList.remove('on'); });
   $('v-' + v).classList.add('on');
   $('report-toolbar').hidden = v !== 'tonight' && v !== 'week';
+  if (v === 'team' && window.opsIntegrationsOpen) opsIntegrationsOpen();   // T16: loads the owner's Integrations card
 }
 
 /* ───────── Tonight · live from the store ───────── */
 function paintTonight(){
   ownerReportSnapshot = Aalayna.ownerReport($('report-period').value);
   var report=opsReport(), m=report.current, r=m.rails;
-  $('r-whish').textContent=money(r.whish/100);$('r-card').textContent=money(r.card/100);$('r-cash').textContent=money(r.cash/100);
+  $('r-whish').textContent=money(r.whish/100);$('r-card').textContent=money(r.card/100);$('r-cash').textContent=money(r.cash/100);$('r-pos').textContent=money((r.pos||0)/100);
   $('r-tot').textContent=money(m.grossCents/100);$('k-tot').textContent=money(m.netCents/100);
   $('t-scan').textContent=m.completedBills;$('k-avg').textContent=m.averageBillCents==null?'–':money(m.averageBillCents/100);
   $('k-tip').textContent=m.netCents>0?opsPercent(m.tipCents/m.netCents):'–';
@@ -733,7 +777,7 @@ function floorPool(on){
   Aalayna.setFloor(f);
 }
 function paintGuests(){ paintGrowth(); }
-var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash' };
+var RAIL_LABEL = { whish: 'Whish Money', card: 'Card', cash: 'Cash', pos: 'Paid at the till' };   // opsRailLabel (restaurant-ops.js) adds the till method
 function paintRows(){
   var box = $('setrows'), cashbox=$('cash-queue'); box.innerHTML = '';cashbox.replaceChildren();
   var pendingRows=Aalayna.pendingCash();$('cash-count').textContent=pendingRows.length+' waiting';
@@ -754,7 +798,7 @@ function paintRows(){
     d.innerHTML =
       '<span class="tm">' + hh + '</span>' +
       '<span class="tb2">Table ' + x.table + '</span>' +
-      '<span class="rl">' + ((RAIL_LABEL[x.rail] || x.rail) + (x.rail === 'cash' ? (Aalayna.isConfirmed(x) ? ', collected' : ', ' + Aalayna.settlementStatus(x)) : '')) + '</span>' +
+      '<span class="rl">' + (opsRailLabel(x) + (x.rail === 'cash' ? (Aalayna.isConfirmed(x) ? ', collected' : ', ' + Aalayna.settlementStatus(x)) : '')) + '</span>' +
       '<span class="am">' + money(x.amount) + '</span>' +
       '<span class="tp2">' + (x.tip ? '+' + money(x.tip) + ' tip' : '') + '</span>' +
       (x.refunded ? '<span class="rftag">REFUNDED</span>'
@@ -801,6 +845,9 @@ async function refundRow(btn, id){
 function paintTips(){
   var box = $('tips'); box.innerHTML = '';
   var owed = Aalayna.tipsOwed();
+  var till = Aalayna.tipsAtTill ? Aalayna.tipsAtTill().amount : 0;   // tips on payments taken at the till: shown, never owed by server
+  $('tips-till').hidden = !(till > 0);
+  $('tips-till').textContent = till > 0 ? 'Tips recorded at the till: ' + money(till) : '';
   if (!owed.length){
     box.innerHTML = '<div style="font-size:12px;color:var(--sub);padding:12px 0">No digital tips recorded ' +
       'this service. Entries appear as guests settle.</div>';
@@ -904,6 +951,7 @@ Aalayna.on(function(){ paintTonight(); paintTips(); });
 simpleBars('rtrend','rtrend-ax','rtrend-v', RTREND.map(function(r){return {d:r.d,v:r.v};}), function(v){ return v.toFixed(1); });
 paintReviews();
 paintTeam();
+if (window.opsIntegrationsInit) opsIntegrationsInit();   // T16
 </script>
 </body>
 </html>

@@ -774,7 +774,7 @@
       write(K.settle, all);
     },
     byRail: function () {
-      var t = { whish: 0, card: 0, cash: 0 };
+      var t = { whish: 0, card: 0, cash: 0, pos: 0 };
       A.settlements().forEach(function (s) {
         if (A.isConfirmed(s) && t[s.rail] !== undefined) t[s.rail] += s.amount;
       });
@@ -787,12 +787,22 @@
     /* ---- tips ---- */
     tipsOwed: function () {
       var paid = read(K.tips, {}), by = {};
+      /* Till tenders (rail 'pos') carry no server on the floor plan; their tips are the
+         restaurant's own to share out and are reported by tipsAtTill, not owed by server. */
       A.settlements().forEach(function (s) {
-        if (s.tip > 0 && A.isConfirmed(s) && s.rail !== 'cash') by[s.server] = (by[s.server] || 0) + s.tip;
+        if (s.tip > 0 && A.isConfirmed(s) && s.rail !== 'cash' && s.rail !== 'pos') by[s.server] = (by[s.server] || 0) + s.tip;
       });
       return Object.keys(by).map(function (n) {
         return { server: n, amount: by[n], paid: !!paid[n] };
       });
+    },
+    /* Tips on confirmed payments taken at the till (rail 'pos'), in the same units as tipsOwed. */
+    tipsAtTill: function () {
+      var total = 0;
+      A.settlements().forEach(function (s) {
+        if (s.tip > 0 && A.isConfirmed(s) && s.rail === 'pos') total += s.tip;
+      });
+      return { amount: Math.round(total * 100) / 100 };
     },
     payTip: function (server) {
       var paid = read(K.tips, {});

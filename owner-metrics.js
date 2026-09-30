@@ -32,7 +32,7 @@
     var profiles=A.customerProfiles(),checks=A.serviceChecks();
     function summary(window){
       var payments=confirmed.filter(function(s){return within(timestamp(s),window);});
-      var billIds=new Set(),identified=new Set(),net=0,tips=0,rails={cash:0,card:0,whish:0};
+      var billIds=new Set(),identified=new Set(),net=0,tips=0,rails={cash:0,card:0,whish:0,pos:0};
       payments.forEach(function(s){
         net+=cents(s.amount)-cents(s.tip||0);tips+=cents(s.tip||0);rails[s.rail]+=cents(s.amount);
         if(s.checkId){billIds.add(s.checkId);if(s.customerId)identified.add(s.checkId);}
@@ -94,10 +94,11 @@
     var neverOrdered=Object.keys(views).filter(function(id){ return !ordered.has(id); })
       .map(function(id){ return {itemId:id,name:names[id]||id,views:views[id]}; })
       .sort(function(a,b){ return b.views-a.views; }).slice(0,10);
-    // cash vs digital, on the normalised amount
-    var rails={cash:0,card:0,whish:0,other:0}, payments=byType.payment_completed||[];
+    // cash vs digital vs the till, on the normalised amount. Three shares: in-app cash (cash),
+    // in-app digital (card, whish) and paid at the till (pos: tenders the POS bridge recorded).
+    var rails={cash:0,card:0,whish:0,pos:0,other:0}, payments=byType.payment_completed||[];
     payments.forEach(function(e){ var r=rails.hasOwnProperty(e.payload.rail)?e.payload.rail:'other'; rails[r]+=cents(e.payload.amountUsd==null?e.payload.amount:e.payload.amountUsd); });
-    var digital=rails.card+rails.whish, total=digital+rails.cash+rails.other;
+    var digital=rails.card+rails.whish, total=digital+rails.cash+rails.pos+rails.other;
     // repeat devices: a session whose device was seen before that session started
     var firstSeen={}; A.events().forEach(function(e){ var t=Date.parse(e.createdAt); if(firstSeen[e.deviceId]==null||t<firstSeen[e.deviceId])firstSeen[e.deviceId]=t; });
     var sessionStart={}, sessionDevice={};
@@ -110,7 +111,7 @@
     var gaps=Object.keys(firstBill).filter(function(id){ return firstPay[id]!=null&&firstPay[id]>=firstBill[id]; }).map(function(id){ return firstPay[id]-firstBill[id]; });
     var identified=payments.filter(function(e){ return !!e.customerId; }).length;
     return {window:w, scans:scans.size, paidSessions:paidScanned, conversion:ratio(paidScanned,scans.size),
-      neverOrdered:neverOrdered, rails:rails, digitalShare:ratio(digital,total), cashShare:ratio(rails.cash,total),
+      neverOrdered:neverOrdered, rails:rails, digitalShare:ratio(digital,total), cashShare:ratio(rails.cash,total), tillShare:ratio(rails.pos,total),
       sessions:sessionIds.length, repeatSessions:repeat, repeatRate:ratio(repeat,sessionIds.length),
       medianBillToPaymentMs:median(gaps), timedSessions:gaps.length,
       payments:payments.length, identifiedPayments:identified, captureRate:ratio(identified,payments.length)};

@@ -80,3 +80,9 @@ onboarding/
 !brand/fonts/*
 !brand/icons/
 !brand/icons/*
+# Edge Functions (supabase/functions/<name>/index.ts + handler.js, _shared/) and the POS integration spec (T13)
+!supabase/functions/
+!supabase/functions/*/
+!supabase/functions/*/*
+!docs/
+!docs/*

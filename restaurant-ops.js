@@ -19,6 +19,12 @@ function opsReportDates(w){
 }
 function opsEl(tag, text, cls) { var n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n; }
 function opsButton(label, fn) { var b=opsEl('button',label,'btn');b.type='button';b.onclick=function(){try{fn();}catch(e){toast(e.message);}};return b; }
+/* A payment's rail in words. A till tender the POS bridge recorded (rail 'pos') says how the till took it. */
+var OPS_RAIL_LABEL={whish:'Whish Money',card:'Card',cash:'Cash',pos:'Paid at the till'};
+function opsRailLabel(x){
+  var base=OPS_RAIL_LABEL[x.rail]||x.rail;
+  return x.rail==='pos'&&/^(cash|card|other)$/.test(x.method||'')?base+' ('+x.method+')':base;
+}
 function opsDate(value) { return value ? new Date(value).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'No confirmed visit'; }
 function opsMask(contact) { if(contact.indexOf('@')>=0){var p=contact.split('@');return p[0].slice(0,2)+'***@'+p[1];}return '•••• '+contact.slice(-4); }
 function opsGo(view) { var nav=Array.from(document.querySelectorAll('.ni')).find(function(n){return (n.getAttribute('onclick')||'').indexOf("'"+view+"'")>=0;}); if(nav)go(nav,view); }
@@ -146,7 +152,7 @@ function paintCheckBalances() {
     var balance=opsEl('p',null,'bill-balance');balance.append(opsEl('strong',money(b.remainingCents/100)),opsEl('span',' outstanding'));body.appendChild(balance);
     body.appendChild(opsEl('p','Collected '+money(b.confirmedCents/100)+' of '+money(c.totalCents/100),'cs'));
     if(b.pendingCents)body.appendChild(opsEl('p',money(b.pendingCents/100)+' reserved · '+money(b.availableCents/100)+' available to pay','cs'));
-    var detail=opsEl('details',null,'ops-help');detail.appendChild(opsEl('summary','Bill details'));detail.appendChild(opsEl('p','Opened '+opsDate(c.openedAt)+' · bill '+c.id.slice(-8)+' · Cash '+money(b.methods.cash/100)+' · Whish '+money(b.methods.whish/100)+' · Card '+money(b.methods.card/100)+' · Tips '+money(b.tipCents/100),'cs'));body.appendChild(detail);row.appendChild(body);
+    var detail=opsEl('details',null,'ops-help');detail.appendChild(opsEl('summary','Bill details'));detail.appendChild(opsEl('p','Opened '+opsDate(c.openedAt)+' · bill '+c.id.slice(-8)+' · Cash '+money(b.methods.cash/100)+' · Whish '+money(b.methods.whish/100)+' · Card '+money(b.methods.card/100)+(b.methods.pos?' · Paid at the till '+money(b.methods.pos/100):'')+' · Tips '+money(b.tipCents/100),'cs'));body.appendChild(detail);row.appendChild(body);
     var actions=opsEl('div',null,'ops-actions bill-row-actions');
     if(!c.closedAt)actions.appendChild(opsButton('Edit bill',function(){billPickTable(c.table);$('bills-card').scrollIntoView({block:'start',behavior:'smooth'});}));
     if(liveStaff && !c.closedAt)actions.appendChild(opsButton('Guest bill link',async function(){
@@ -318,8 +324,9 @@ function paintGuestJourney(){
   $('journey-period').textContent=m.window.label+' · from QR scan to payment, computed from recorded events.';
   box.appendChild(opsMetric('Scan to payment',opsPercent(m.conversion),opsCount(m.paidSessions,'paid session')+' of '+opsCount(m.scans,'scan')));
   box.appendChild(opsMetric('Repeat devices',opsPercent(m.repeatRate),m.repeatSessions+' of '+opsCount(m.sessions,'session')+' from a device seen before'));
-  var total=m.rails.cash+m.rails.card+m.rails.whish+m.rails.other, digital=m.rails.card+m.rails.whish;
-  box.appendChild(opsMetric('Cash vs digital',m.digitalShare==null?'–':Math.round(m.cashShare*100)+'% / '+Math.round(m.digitalShare*100)+'%',total?'Cash '+money(m.rails.cash/100)+', digital '+money(digital/100)+' of '+money(total/100)+' collected':'No collected amount in this period'));
+  var till=m.rails.pos||0, total=m.rails.cash+m.rails.card+m.rails.whish+till+(m.rails.other||0), digital=m.rails.card+m.rails.whish;
+  var tillOn=till>0&&m.tillShare!=null,pct=function(v){return Math.round(v*100)+'%';};
+  box.appendChild(opsMetric(tillOn?'Cash, digital, at the till':'Cash vs digital',m.digitalShare==null?'–':pct(m.cashShare)+' / '+pct(m.digitalShare)+(tillOn?' / '+pct(m.tillShare):''),total?'Cash '+money(m.rails.cash/100)+', digital '+money(digital/100)+(till?', at the till '+money(till/100):'')+' of '+money(total/100)+' collected':'No collected amount in this period'));
   box.appendChild(opsMetric('Bill to payment',m.medianBillToPaymentMs==null?'–':opsDuration(m.medianBillToPaymentMs),m.timedSessions?'Median across '+opsCount(m.timedSessions,'timed session')+', bill opened to first payment':'No timed sessions yet'));
   box.appendChild(opsMetric('Identity capture',opsPercent(m.captureRate),m.identifiedPayments+' of '+opsCount(m.payments,'payment')+' linked to a known guest'));
   var list=$('journey-never'); list.replaceChildren();
@@ -372,3 +379,255 @@ function paintRecordedRatings(){
     row.appendChild(body); box.appendChild(row);
   });
 }
+
+/* ==== T16 Integrations panel: start ====
+   The owner's card on the Team view: POS keys (aal_integration) and webhook endpoints and deliveries
+   (aal_webhooks). Both RPCs are owner-only on the server; the card shows only for a live owner whose role
+   the first server read has named, and every call carries the credential the rest of the dashboard uses:
+   a signed-in session goes through AalaynaAuth.rpc (Bearer JWT, no venue key), an owner link sends
+   x-aalayna-key. A key or webhook secret is returned by the server exactly once; it lives in the copy box
+   and in that box's closures only, and is wiped when the box is closed, the role changes or the card hides. */
+var opsInt={ready:false,shown:false,wired:false,busy:{},keys:null,endpoints:null,deliveries:null,state:{keys:'idle',endpoints:'idle',deliveries:'idle'}};
+var OPS_INT_MISSING='Integrations are not installed on the shared store yet. Run supabase/integrations-2026-09-30.sql.';
+var OPS_INT_OFFLINE='Could not reach the shared store. Check the connection and try again.';
+function opsIntVisible(){
+  var A=window.Aalayna,s=A&&A.sync;
+  return !!(s&&s.enabled&&opsInt.ready&&s.state().role==='owner');
+}
+/* One call to an owner RPC; resolves with the parsed JSON, rejects with an Error carrying the server's sentence. */
+function opsIntRpc(fn,body){
+  var A=window.Aalayna,cfg=window.AalaynaConfig||{},args={p_rid:A.venueId(),p_body:body},call;
+  if(A.sync.signedIn&&window.AalaynaAuth)call=window.AalaynaAuth.rpc(fn,args);
+  else{
+    var key=A.sync.key();
+    if(!key)return Promise.reject(new Error('Open the dashboard with your owner link, or sign in, to manage integrations.'));
+    call=fetch(String(cfg.supabaseUrl||'').replace(/\/$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',
+      headers:{apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey,'x-aalayna-key':key,'Content-Type':'application/json'},body:JSON.stringify(args)})
+    .then(function(r){return r.text().then(function(t){
+      var j=null;try{j=t?JSON.parse(t):null;}catch(ignore){}
+      if(!r.ok){var e=new Error((j&&j.message)||'The shared store answered '+r.status+'.');e.status=r.status;throw e;}
+      return j;});},function(){var e=new Error(OPS_INT_OFFLINE);e.offline=true;throw e;});
+  }
+  return call.then(null,function(e){
+    if(e&&e.status===404)e.message=OPS_INT_MISSING;
+    else if(e&&!e.status&&!e.signin&&!e.offline)e.message=OPS_INT_OFFLINE;
+    throw e;
+  });
+}
+/* Runs one action at a time per name; a refused or failed action shows the server's sentence in a toast. */
+function opsIntRun(name,fn){
+  if(opsInt.busy[name])return Promise.resolve();
+  opsInt.busy[name]=true;
+  var done=function(){opsInt.busy[name]=false;};
+  return fn().then(done,function(e){done();toast(e&&e.message?e.message:'That did not work. Try again.');});
+}
+function opsIntList(v){return Object.prototype.toString.call(v)==='[object Array]'?v:[];}
+function opsIntTime(v){return v?opsBeirutTime(v):'';}
+
+/* ---- the copy box: a key or secret shown once ---- */
+function opsIntClose(boxId){
+  var box=$(boxId);if(!box)return;
+  Array.prototype.slice.call(box.children||[]).forEach(function(n){n.textContent='';});
+  box.replaceChildren();box.hidden=true;
+}
+function opsIntSelect(node){
+  try{var r=document.createRange(),s=window.getSelection();r.selectNodeContents(node);s.removeAllRanges();s.addRange(r);return true;}catch(e){return false;}
+}
+function opsIntCopy(node,value){
+  var manual=function(){opsIntSelect(node);toast('Copying did not work here. The text is selected: copy it by hand.');};
+  var nav=window.navigator;
+  if(nav&&nav.clipboard&&nav.clipboard.writeText){nav.clipboard.writeText(value).then(function(){toast('Copied.');},manual);return;}
+  var ok=false;opsIntSelect(node);
+  try{ok=!!document.execCommand('copy');}catch(e){}
+  if(ok)toast('Copied.');else manual();
+}
+function opsIntReveal(boxId,title,value,lines){
+  var box=$(boxId);if(!box)return;
+  opsIntClose(boxId);
+  var secret=opsEl('code',value,'int-secret'),actions=opsEl('div',null,'ops-actions');
+  box.appendChild(opsEl('h4',title));box.appendChild(secret);
+  lines.forEach(function(t){box.appendChild(opsEl('p',t,'cs'));});
+  actions.appendChild(opsButton('Copy',function(){opsIntCopy(secret,value);}));
+  actions.appendChild(opsButton('I have copied it',function(){opsIntClose(boxId);}));
+  box.appendChild(actions);box.hidden=false;
+  if(secret.scrollIntoView)try{secret.scrollIntoView({block:'nearest'});}catch(e){}
+}
+
+/* ---- painting ---- */
+function opsIntNote(box,section,emptyText){
+  var st=opsInt.state[section];
+  if(st==='loading'&&opsInt[section]==null){box.appendChild(opsEl('p','Loading...','ops-empty'));return true;}
+  if(st==='error'&&opsInt[section]==null){box.appendChild(opsEl('p','Could not load this. Use Refresh to try again.','ops-empty'));return true;}
+  if(opsInt[section]==null||!opsInt[section].length){box.appendChild(opsEl('p',emptyText,'ops-empty'));return true;}
+  return false;
+}
+function opsIntBadge(text,kind){return opsEl('span',text,'status-badge '+kind);}
+function paintIntKeys(){
+  var box=$('int-keys');if(!box)return;box.replaceChildren();
+  if(opsIntNote(box,'keys','No keys yet. Issue one when your POS vendor is ready.'))return;
+  opsInt.keys.forEach(function(k){
+    var live=!k.revoked_at,row=opsEl('article',null,'ops-row'),body=opsEl('div'),head=opsEl('div',null,'ops-heading'),name=k.label||'Unlabelled key';
+    head.append(opsEl('h3',name),opsIntBadge(live?'Live':'Revoked',live?'approved':'draft'));body.appendChild(head);
+    body.appendChild(opsEl('p',(k.hint||'')+' · Issued '+opsIntTime(k.created_at)+' · '+(k.last_used_at?'Last used '+opsIntTime(k.last_used_at):'Never used')+(live?'':' · Revoked '+opsIntTime(k.revoked_at)),'cs'));
+    row.appendChild(body);
+    if(live)row.appendChild(opsButton('Revoke',function(){opsIntRevoke(k);}));
+    box.appendChild(row);
+  });
+}
+function paintIntEndpoints(){
+  var box=$('int-endpoints');if(!box)return;box.replaceChildren();
+  if(opsIntNote(box,'endpoints','No webhook endpoints yet. Add one when your POS vendor gives you an address.'))return;
+  opsInt.endpoints.forEach(function(e){
+    var row=opsEl('article',null,'ops-row'),body=opsEl('div'),head=opsEl('div',null,'ops-heading'),actions=opsEl('div',null,'ops-actions int-actions');
+    head.append(opsEl('h3',e.url,'int-url'),opsIntBadge(e.active?'Active':'Removed',e.active?'approved':'draft'));body.appendChild(head);
+    body.appendChild(opsEl('p',opsIntList(e.events).join(', ')+' · Added '+opsIntTime(e.created_at),'cs'));
+    row.appendChild(body);
+    if(e.active){
+      actions.appendChild(opsButton('Send a test',function(){opsIntTest(e);}));
+      actions.appendChild(opsButton('Remove',function(){opsIntRemove(e);}));
+      row.appendChild(actions);
+    }
+    box.appendChild(row);
+  });
+}
+/* delivered, retrying (with the next attempt) or failed after N; what the last attempt answered */
+function opsIntDeliveryState(d){
+  var n=Number(d.attempts)||0;
+  if(d.delivered_at)return {label:'Delivered',kind:'approved',text:'Delivered '+opsIntTime(d.delivered_at)};
+  if(d.next_attempt_at)return n>0?{label:'Retrying',kind:'pending',text:'Attempt '+n+' failed. Next attempt '+opsIntTime(d.next_attempt_at)}:{label:'Queued',kind:'pending',text:'Waiting to be sent. First attempt '+opsIntTime(d.next_attempt_at)};
+  return {label:'Failed',kind:'flag',text:n?'Failed after '+n+' attempt'+(n===1?'':'s'):'Never sent'};
+}
+function opsIntLastAnswer(d){
+  var parts=[],code=Number(d.last_status)||0,err=d.last_error||'';
+  if(code>0&&err.indexOf('HTTP '+code)<0)parts.push('HTTP '+code);
+  if(err)parts.push(err);
+  return parts.length?parts.join(' · '):'No answer yet';
+}
+function paintIntDeliveries(){
+  var box=$('int-deliveries');if(!box)return;box.replaceChildren();
+  if(opsIntNote(box,'deliveries','No deliveries yet. Send a test to see one here.'))return;
+  var urls={};opsIntList(opsInt.endpoints).forEach(function(e){urls[e.id]=e.url;});
+  opsInt.deliveries.slice().sort(function(a,b){return String(b.created_at||'').localeCompare(String(a.created_at||''));}).forEach(function(d){
+    var s=opsIntDeliveryState(d),row=opsEl('article',null,'ops-row'),body=opsEl('div'),head=opsEl('div',null,'ops-heading');
+    head.append(opsEl('h3',d.event||d.event_type||'event'),opsIntBadge(s.label,s.kind));body.appendChild(head);
+    var where=urls[d.endpointId]||(opsInt.state.endpoints==='ok'?'Endpoint no longer listed':'');
+    if(where)body.appendChild(opsEl('p',where,'cs int-url'));
+    body.appendChild(opsEl('p',s.text+' · '+opsIntLastAnswer(d),'cs'));
+    row.appendChild(body);box.appendChild(row);
+  });
+}
+function paintIntegrations(){paintIntKeys();paintIntEndpoints();paintIntDeliveries();}
+
+/* ---- loading ---- */
+function opsIntFetch(section,fn,pick){
+  opsInt.state[section]='loading';
+  if(opsInt[section]==null)paintIntegrations();
+  return opsIntRpc(fn.rpc,fn.body).then(function(res){
+    opsInt[section]=opsIntList(pick(res));opsInt.state[section]='ok';paintIntegrations();return '';
+  },function(e){
+    opsInt.state[section]='error';paintIntegrations();return e&&e.message?e.message:'Could not load.';
+  });
+}
+function opsIntLoadKeys(){return opsIntFetch('keys',{rpc:'aal_integration',body:{op:'list'}},function(r){return r&&r.keys;});}
+function opsIntLoadEndpoints(){return opsIntFetch('endpoints',{rpc:'aal_webhooks',body:{op:'list'}},function(r){return r&&r.endpoints;});}
+function opsIntLoadDeliveries(){return opsIntFetch('deliveries',{rpc:'aal_webhooks',body:{op:'deliveries'}},function(r){return r&&r.deliveries;});}
+function opsIntLoadAll(){
+  if(!opsIntVisible())return Promise.resolve();
+  return Promise.all([opsIntLoadKeys(),opsIntLoadEndpoints(),opsIntLoadDeliveries()]).then(function(errs){
+    var first=errs.filter(function(m){return !!m;})[0];if(first)toast(first);
+  });
+}
+function opsIntRefresh(section,load){
+  return opsIntRun('refresh:'+section,function(){return load().then(function(m){if(m)toast(m);});});
+}
+
+/* ---- actions ---- */
+function opsIntIssue(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  var label=String($('int-key-label').value||'').trim();
+  if(!label){toast('Give the key a label, for example the vendor or till it is for.');return Promise.resolve();}
+  return opsIntRun('issue',function(){
+    var b=$('int-key-issue');b.disabled=true;
+    return opsIntRpc('aal_integration',{op:'issue',label:label}).then(function(res){
+      b.disabled=false;
+      opsInt.keys=opsIntList(res&&res.keys);opsInt.state.keys='ok';$('int-key-label').value='';paintIntKeys();
+      opsIntReveal('int-key-reveal','New POS key: '+label,res&&res.key,['Copy it now. It is shown once and never again.','Give it to the POS vendor over a private channel. Aalayna keeps only a fingerprint of it.']);
+    },function(err){b.disabled=false;throw err;});
+  });
+}
+function opsIntRevoke(k){
+  if(!window.confirm('Revoke '+(k.label||'this key')+'? The POS using it stops at once and cannot be reconnected with this key.'))return Promise.resolve();
+  return opsIntRun('revoke:'+k.id,function(){
+    return opsIntRpc('aal_integration',{op:'revoke',id:k.id}).then(function(res){
+      if(res&&res.keys){opsInt.keys=opsIntList(res.keys);paintIntKeys();}else return opsIntLoadKeys();
+      toast('Key revoked.');
+    });
+  });
+}
+/* https only, a public host name with a dot; the server applies its own, stricter rules */
+function opsIntUrlOk(url){
+  var m=/^https:\/\/([^\s\/?#:@]+)(:[0-9]{1,5})?([\/?#]\S*)?$/i.exec(url);
+  return !!m&&m[1].indexOf('.')>0&&url.length<=2000;
+}
+function opsIntAddEndpoint(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  var url=String($('int-ep-url').value||'').trim(),events=[];
+  if($('int-ev-paid').checked)events.push('bill.paid');
+  if($('int-ev-closed').checked)events.push('bill.closed');
+  if(!opsIntUrlOk(url)){toast('The address must start with https:// and use a public host name, for example https://pos.example.com/aalayna.');return Promise.resolve();}
+  if(!events.length){toast('Choose at least one event to send.');return Promise.resolve();}
+  return opsIntRun('add',function(){
+    var b=$('int-ep-add');b.disabled=true;
+    return opsIntRpc('aal_webhooks',{op:'add',url:url,events:events}).then(function(res){
+      b.disabled=false;$('int-ep-url').value='';
+      opsIntReveal('int-ep-reveal','Secret for '+url,res&&res.secret,['Copy it now. It is shown once and never again.','Give this secret to the POS vendor; it signs every delivery.']);
+      return opsIntLoadEndpoints();
+    },function(err){b.disabled=false;throw err;});
+  });
+}
+function opsIntTest(ep){
+  return opsIntRun('test:'+ep.id,function(){
+    return opsIntRpc('aal_webhooks',{op:'test',id:ep.id}).then(function(){
+      toast('Test queued. It appears under Deliveries within a minute; press Refresh if it is not there yet.');
+      return opsIntLoadDeliveries();
+    });
+  });
+}
+function opsIntRemove(ep){
+  if(!window.confirm('Remove '+ep.url+'? Aalayna stops sending to it and drops deliveries still waiting.'))return Promise.resolve();
+  return opsIntRun('remove:'+ep.id,function(){
+    return opsIntRpc('aal_webhooks',{op:'remove',id:ep.id}).then(function(res){
+      if(res&&res.endpoints){opsInt.endpoints=opsIntList(res.endpoints);paintIntEndpoints();}else return opsIntLoadEndpoints();
+      toast('Endpoint removed.');
+      return opsIntLoadDeliveries();
+    });
+  });
+}
+
+/* ---- visibility and wiring ---- */
+function opsIntWipe(){
+  opsIntClose('int-key-reveal');opsIntClose('int-ep-reveal');
+  opsInt.keys=null;opsInt.endpoints=null;opsInt.deliveries=null;opsInt.state={keys:'idle',endpoints:'idle',deliveries:'idle'};
+  paintIntegrations();
+}
+function opsIntegrationsPaint(){
+  var card=$('integrations-card');if(!card)return;
+  var on=opsIntVisible();
+  card.hidden=!on;
+  if(!on&&opsInt.shown)opsIntWipe();
+  opsInt.shown=on;
+}
+function opsIntegrationsOpen(){if(opsIntVisible())return opsIntLoadAll();return Promise.resolve();}
+function opsIntegrationsInit(){
+  if(opsInt.wired)return;opsInt.wired=true;
+  var A=window.Aalayna;
+  $('int-key-form').onsubmit=opsIntIssue;
+  $('int-ep-form').onsubmit=opsIntAddEndpoint;
+  $('int-refresh-all').onclick=function(){opsIntRun('refresh:all',opsIntLoadAll);};
+  $('int-dl-refresh').onclick=function(){opsIntRefresh('deliveries',opsIntLoadDeliveries);};
+  if(!A||!A.sync||!A.sync.enabled){opsIntegrationsPaint();return;}
+  if(A.sync.onReady)A.sync.onReady(function(){opsInt.ready=true;opsIntegrationsPaint();});
+  if(A.sync.subscribe)A.sync.subscribe(opsIntegrationsPaint);
+  opsIntegrationsPaint();
+}
+/* ==== T16 Integrations panel: end ==== */

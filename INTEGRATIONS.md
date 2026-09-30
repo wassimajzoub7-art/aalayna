@@ -55,6 +55,10 @@ Choose one POS/version installed at willing pilot restaurants. Obtain partner ac
 
 Sending new online orders to a POS does not prove support for these existing-bill operations. Provider fees, licensing, supported versions and local support remain to be confirmed.
 
+## POS bridge (built, not yet connected to a POS)
+
+`docs/pos-integration.md` is the one-page contract for a POS vendor: the `pos-bill` endpoint that pushes a table's bill into Aalayna (open, update, close, versioned and idempotent) and the signed `bill.paid` / `bill.closed` webhooks. It covers the "Read an existing waiter-created bill" and "Observe bill changes" rows above by push instead of polling: the POS sends the whole bill, with its line IDs, quantities, modifiers, discount, service charge, total, currency and version, whenever it changes, including a table move, a void (quantity 0) and the close. Tenders taken at the till come in on the same call and are recorded in Aalayna as confirmed payments (rail `pos`), so a bill paid at the till closes cleanly; a new bill for a table whose Aalayna bill has no payment records supersedes it. It does not yet cover "Apply a partial payment" or "Reconcile" in the POS: Aalayna reports its payments by webhook, and the POS must post them as tenders itself. Refunds and voids after close stay out of the bridge. Implementation: `supabase/functions/pos-bill`, `supabase/functions/pos-webhook-deliver`, `supabase/integrations-2026-09-30.sql`; set-up in `supabase/README.md` ("POS bridge"). No POS has been connected; the acceptance test with a real POS sandbox above still applies.
+
 ## Whish, card and cash
 
 1. Obtain merchant credentials, provider documentation and a test environment. Keep secrets on a backend, never in these static files.
