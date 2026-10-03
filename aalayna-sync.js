@@ -179,7 +179,10 @@
       // Owner credentials never become the default on a guest page.
       if(!guestPage||key.indexOf('own_')!==0)global.localStorage.setItem(credentialKey,key);
       if(global.history&&global.history.replaceState){q.delete('k');global.history.replaceState(null,'',global.location.pathname+(q.toString()?'?'+q.toString():''));}
-    }else key=global.localStorage.getItem(credentialKey)||'';
+    }
+    // A bill link and a table scan both name the venue in the address, and a reload keeps it. A bare
+    // guest.html is the demo: it never attaches to a bill key this browser remembers from a real visit.
+    else if(!guestPage||q.get('venue'))key=global.localStorage.getItem(credentialKey)||'';
   }catch(e){}
   // A signed-in member is 'staff' until the first snapshot names the role (owner or waiter): nothing is
   // queued as an owner write before the server has said so, so a waiter never gets a refused change.
@@ -415,7 +418,8 @@
   A.sync.onClosed=function(f){closedFns.push(f);if(closedNow)f(CLOSED_MSG);};
   A.sync.closed=function(){return closedNow;};
   if(guestPage){
-    if(key){try{global.sessionStorage.removeItem(CLOSED);}catch(e){}}
+    // a key, or the bare demo page (no venue in the address): no closed bill to report
+    if(key||!q.get('venue')){try{global.sessionStorage.removeItem(CLOSED);}catch(e){}}
     else{var closedMark='';try{closedMark=global.sessionStorage.getItem(CLOSED)||'';}catch(e){}if(closedMark){closedNow=true;A.demoMode=function(){return false;};}}
   }
   /* T8: a staff device that changes credential for this venue (an owner link to a signed-in

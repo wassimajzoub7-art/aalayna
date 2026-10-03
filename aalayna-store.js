@@ -619,15 +619,14 @@
       try { k = new URLSearchParams(global.location.search).get('k') || ''; } catch (e) {}
       return !String(key).trim() && !String(k).trim() && !String(access).trim();
     },
-    /* The sample bill is allowed only in demo mode AND while the venue has never
-       had a staff-entered check. Checks the guest app opened from the sample keep
-       source 'prototype' and do not count, so a demo venue can close a bill and
-       start the next session. */
-    sampleAllowed: function () {
-      if (!A.demoMode()) return false;
-      var scope = A.venueId();
-      return !read('aal.checks', []).some(function (c) { return c.venueId === scope && c.source && c.source !== 'prototype'; });
-    },
+    /* The sample bill is allowed in demo mode, and only there. It is table 12's bill
+       whenever that table has no open check: a staff bill entered for table 12 replaces
+       it, a staff bill on another table leaves it alone, and a closed bill gives way to
+       a fresh sample at the next scan, so the demo always reaches the bill and the
+       checkout. (Until October 2026 one staff bill anywhere hid the sample for good,
+       which left the demo's guest page at $0 with nothing to pay.) With a key the
+       sample never appears. */
+    sampleAllowed: function () { return A.demoMode(); },
     /* ---- the open check ----
        A table's bill is the open check a waiter (or, later, the POS) entered for
        it: that check's lines, or none. Where the sample is not allowed, a leftover

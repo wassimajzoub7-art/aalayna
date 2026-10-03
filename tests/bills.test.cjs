@@ -1,5 +1,5 @@
 /* T1: waiter bill entry. A table's bill is the open check staff entered for it;
-   the seeded sample only appears for a venue that never had a staff-entered check. */
+   the seeded sample is table 12's bill in demo mode whenever that table has no open check. */
 const test=require('node:test'), assert=require('node:assert/strict'), fs=require('node:fs'), vm=require('node:vm'), path=require('node:path');
 function setup(options={}){
  let time=Date.parse('2026-06-01T12:00:00Z');
@@ -69,7 +69,7 @@ test('a closed check refuses changes',()=>{
  assert.equal(a.serviceChecks()[0].totalCents,200);
 });
 
-test('check(table) returns the open check, and the sample only for a venue without staff checks',()=>{
+test('check(table) returns the open check, and the sample at table 12 while it has no staff check',()=>{
  const {a,switchVenue}=setup();
  // an empty venue shows the sample so demos keep working
  assert.equal(a.check(5).length,12);assert.equal(a.checkTotal(5),152.5);assert.equal(a.check().length,12);
@@ -78,13 +78,13 @@ test('check(table) returns the open check, and the sample only for a venue witho
  assert.equal(sample.source,'prototype');assert.equal(sample.totalCents,15250);
  a.settle({table:12,checkId:sample.id,rail:'card',amount:152.5});a.closeServiceCheck(sample.id);
  assert.equal(a.check(12).length,12);
- // once staff entered a bill, only real checks show
+ // staff entered a bill on table 5: that table shows it; table 12 keeps its sample to pay
  a.openServiceCheck({table:5,lines:LINES,source:'staff'});
  const lines=a.check(5);
  assert.deepEqual(JSON.parse(JSON.stringify(lines)),[{id:'i07',q:1,p:16,name:'Mixed Grill platter'},{id:'i06',q:2,p:10,name:'Hummus Beiruti'},{id:'i14',q:4,p:10,name:'Lebanese coffee'}]);
  assert.equal(a.checkTotal(5),36);
- assert.deepEqual(JSON.parse(JSON.stringify(a.check(12))),[]);assert.equal(a.checkTotal(12),0);
- assert.deepEqual(JSON.parse(JSON.stringify(a.check())),[]);
+ assert.equal(a.check(12).length,12);assert.equal(a.checkTotal(12),152.5);
+ assert.equal(a.check().length,12);
  // lines resolve current menu names; checks are scoped to their venue
  const d=a.draft();d.items.find(x=>x.id==='i06').name='Hummus';a.saveDraft(d);a.publish();
  assert.equal(a.check(5)[1].name,'Hummus');
@@ -136,13 +136,21 @@ test('with a venue key a leftover sample check is hidden from guests until staff
  assert.deepEqual(JSON.parse(JSON.stringify(a.check(12))),[{id:'i13',q:2,p:4,name:'Espresso'}]);
 });
 
-test('demo mode also hides a leftover sample check once the venue has a staff bill',()=>{
+test('demo mode keeps the sample at table 12 while staff bill other tables; a staff bill for table 12 replaces it',()=>{
  const {a}=setup();
- // the coordinator's repro: a guest opens first, then staff enter a bill elsewhere
+ // the demo's trap: a guest opens first, then staff enter a bill elsewhere; table 12 must still have its bill to pay
  const left=a.openServiceCheck({table:12,lines:a.check(12)});
  assert.equal(a.sampleAllowed(),true);assert.equal(a.check(12).length,12);
  a.openServiceCheck({table:5,lines:LINES,source:'staff'});
- assert.equal(a.sampleAllowed(),false);
- assert.deepEqual(JSON.parse(JSON.stringify(a.check(12))),[]);
- assert.equal(a.openCheckFor(12).id,left.id);   // staff still see it to clear it
+ assert.equal(a.sampleAllowed(),true);
+ assert.equal(a.check(12).length,12);assert.equal(a.checkTotal(12),152.5);
+ assert.equal(a.openCheckFor(12).id,left.id);
+ // staff replace table 12's sample with the real bill: the guest sees that one
+ const real=a.updateServiceCheck(left.id,[{id:'i13',q:2,p:4,name:'Espresso'}]);
+ assert.equal(real.source,'staff');
+ assert.deepEqual(JSON.parse(JSON.stringify(a.check(12))),[{id:'i13',q:2,p:4,name:'Espresso'}]);
+ // a bill entered as a total on another table, then a fresh scan at table 12: still the sample
+ const {a:b}=setup();
+ b.openServiceCheck({table:3,total:40,lines:[],source:'staff'});
+ assert.equal(b.check(12).length,12);assert.equal(b.checkTotal(12),152.5);
 });
