@@ -182,7 +182,8 @@ test('Balat type: soft Fraunces for names and figures, Instrument Sans for the r
  assert.ok(display.every(m=>m[1]==='520'));
  // every page loads the same store
  const v=f=>(fs.readFileSync(path.join(root,f),'utf8').match(/aalayna-store\.js\?v=(\d+)/)||[])[1];
- assert.ok(['admin.html','dashboard.html','editor.html','guest.html','system.html'].every(f=>v(f)==='23'));
+ const versions=['admin.html','dashboard.html','editor.html','guest.html','system.html'].map(v);
+ assert.ok(/^\d+$/.test(versions[0])&&versions.every(x=>x===versions[0]),'one store version on every page: '+versions.join(', '));
 });
 
 test('Balat opens a dish in place, as the tile concept does: under its row, with its Arabic name, its description, tags and calories; a second tap closes it',()=>{

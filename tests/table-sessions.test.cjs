@@ -187,6 +187,20 @@ test('demo mode is untouched: no v, t or s means table 12, no request, no poll',
  assert.equal(server.calls.length,0);assert.equal(p.intervals.filter(i=>i.ms===10000).length,0);
 });
 
+test('a bare guest address is the demo even when this browser remembers a bill key or a closed bill',async()=>{
+ const server=serverWith(async()=>{throw new Error('must not call');});
+ // the venue this browser last saw, its remembered bill key, and the closed-bill mark of that tab
+ const local=new Map([['aal.venue',JSON.stringify({name:'Mayda',place:'Hamra'})],['aal.access:'+RID+':guest','chk_'+'99'.repeat(24)]]);
+ const session=new Map([['aal.bill-closed:'+RID,'1']]);
+ const p=boot({search:'',server,local,session});await flush();
+ assert.equal(p.window.Aalayna.venueId(),RID);
+ assert.equal(p.window.Aalayna.sync.enabled,false);assert.equal(p.window.Aalayna.demoMode(),true);
+ assert.equal(p.run('BILL_ENDED'),false);assert.equal(p.run('TABLE'),12);assert.ok(p.run('BILL.length')>0);assert.ok(p.run('TOTAL')>0);
+ assert.equal(p.local.get('aal.access:'+RID+':guest'),'chk_'+'99'.repeat(24));   // left for the bill page that owns it
+ assert.equal(p.session.has('aal.bill-closed:'+RID),false);
+ assert.equal(server.calls.length,0);
+});
+
 /* The SQL, against a real PostgreSQL (PGlite), like tests/database.test.cjs. Skipped
    unless PGLITE_MODULE points at @electric-sql/pglite (see supabase/README.md). */
 const modulePath=process.env.PGLITE_MODULE;
