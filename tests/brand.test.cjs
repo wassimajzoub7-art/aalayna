@@ -187,10 +187,61 @@ test('the reel closes on the logo: reel.html plays the Block reveal, and its sou
   assert.match(read('tools/reel-audio.js'), /const joinAr = [^\n]*LOGO_AR/);
 });
 
+test('the film reads like the site: Instrument Sans for its words, IBM Plex Sans Arabic for Arabic, the name alone in the logo\'s capitals or the Kufi', () => {
+  const s = read('reel.html');
+  assert.ok(!/Saira|Kode Mono|Kode\+Mono/.test(s), 'no Saira or Kode Mono left');
+  const fonts = s.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1];
+  ['Instrument+Sans:wght@400;500;600;700', 'IBM+Plex+Sans+Arabic:wght@400;500;600;700', 'Noto+Kufi+Arabic:wght@700'].forEach(f => assert.ok(fonts.includes('family=' + f), 'loads ' + f));
+  assert.match(s, /--label:'Instrument Sans','IBM Plex Sans Arabic',[^;]*;--text:'Instrument Sans','IBM Plex Sans Arabic',/);
+  assert.match(s, /html\[lang="ar"\]\{--label:'IBM Plex Sans Arabic','Instrument Sans',[^;]*;--text:'IBM Plex Sans Arabic','Instrument Sans',/);
+  // The restaurant's panels are the dashboard and the editor, which read in Instrument Sans in every cut.
+  assert.match(s, /--staff:'Instrument Sans',/);
+  assert.match(s, /\n\.pnl\{[^}]*font-family:var\(--staff\)/);
+  // The logo's capitals set 3layna. and nothing else; in Arabic the name, علينا, is in the Kufi of the mark.
+  assert.equal((s.match(/var\(--display\)/g) || []).length, 1, 'only #k3 uses Aalayna Block');
+  assert.match(s, /\n#k3\{[^}]*font-family:var\(--display\)/);
+  assert.match(s, /html\[lang="ar"\] #k3\{font-family:'Noto Kufi Arabic',/);
+  // The tagline under the logo is words, so the close sets it in the reading face, not the Block.
+  assert.match(s, /AalaynaMotion\.block\(\{ tagAt: [\d.]+, words: C\.tagw, font: "'Instrument Sans', sans-serif"/);
+  assert.match(s, /AalaynaMotion\.kufi\(\{ tagAt: [\d.]+, words: C\.tagw, font: "'IBM Plex Sans Arabic', sans-serif"/);
+});
+
 test('brand pages: every local src and href resolves to a file', () => {
   for (const f of ['brand/index.html', 'brand/motion.html', 'reel.html']) {
     const refs = [...read(f).matchAll(/\b(?:href|src|data-sound)="([^"]*)"/g)].map(m => m[1]).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u));
     assert.ok(refs.length, f + ' loads local files');
     for (const u of refs) assert.ok(fs.existsSync(path.join(ROOT, path.dirname(f), u.split(/[?#]/)[0])), f + ': ' + u);
   }
+});
+
+test('the reveals set the tagline in Instrument Sans 600 as set text, the name from brand/logo.js, and every brand page that plays one loads that face first', () => {
+  global.self = global; global.AalaynaLogo = Logo; global.Path2D = global.Path2D || class {};
+  require('../brand/motion.js');
+  // A canvas that keeps the text drawn on it; the space is narrower than any letter, so a gap of three modules shows.
+  const canvas = () => new Proxy({ text: [], measureText: s => ({ width: s === ' ' ? 7 : 10 * s.length }), fillText(s, x) { this.text.push({ s, x, font: this.font }); } }, { get: (o, k) => (k in o ? o[k] : () => {}) });
+  const cases = [
+    ['block', {}, "'Instrument Sans', sans-serif", ['scan,', 'split,', 'settle.']],
+    ['kufi', {}, "'Instrument Sans', sans-serif", ['scan,', 'split,', 'settle.']],
+    ['kufi', { words: ['امسح،', 'قسّم،', 'ادفع.'], font: "'IBM Plex Sans Arabic', sans-serif", rtl: true }, "'IBM Plex Sans Arabic', sans-serif", ['ادفع.', 'قسّم،', 'امسح،']],
+  ];
+  for (const [name, o, face, placed] of cases) {
+    const piece = global.AalaynaMotion[name](o), g = canvas();
+    piece.render(g, piece.duration, 1920, 1080);
+    assert.deepEqual(g.text.map(w => w.s), placed, name + ': the tagline is the only text, placed left to right');
+    g.text.forEach(w => assert.match(w.font, new RegExp('^600 \\d+px ' + face + '$'), name + ': ' + w.font));
+    const ends = g.text.map(w => w.x + 10 * w.s.length);
+    g.text.slice(1).forEach((w, i) => assert.equal(w.x - ends[i], 7, name + ': one of the face\'s own spaces between words'));
+    assert.equal(g.text[0].x + ends[ends.length - 1], 1920, name + ': centred');
+  }
+  assert.ok(!/Aalayna Block/.test(read('brand/motion.js')), 'the motion sets no text in the logo\'s capitals');
+  // Canvas text loads no font by itself: the brand pages ask for Instrument Sans 600 before a reveal plays or renders.
+  const load = "document.fonts.load(\"600 40px 'Instrument Sans'\")";
+  const motion = read('brand/motion.html');
+  assert.ok(motion.includes('<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@600&display=block" rel="stylesheet">'), 'brand/motion.html loads Instrument Sans 600');
+  assert.ok(!/Aalayna Block/.test(motion), 'brand/motion.html draws the name from logo.js, not the font');
+  assert.ok(motion.includes(load + '.then(play, play)'), 'brand/motion.html plays once the face is in');
+  const page = read('brand/index.html');
+  assert.match(page.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1], /family=Instrument\+Sans:wght@[\d;]*600/, 'brand/index.html loads Instrument Sans 600');
+  assert.ok(page.includes('var font = document.fonts ? ' + load), 'brand/index.html asks for it before the reveals play');
+  assert.ok(read('tools/brand.js').includes('const f = await ' + load), 'tools/brand.js waits for it before the first frame');
 });
