@@ -74,7 +74,7 @@ only be added to, never removed, reduced or repriced, and the total never drops
 below what is paid. Every save appends an `order_placed` event with a revision;
 reports count the latest revision per bill. In the no-key demo this runs in the
 browser and the guest page (table 12, or `TABLE` set in the console) shows the
-sample bill until the venue has a staff bill. With a venue key, saves go through
+sample bill whenever table 12 has no open staff bill. With a venue key, saves go through
 `aal_mutate` (`open_check` with lines, `update_check`); run
 `supabase/hardening-2026-09-24.sql` after the September 15 file. A guest opens
 the bill from its **Guest bill link** (`chk_` key); the table comes from that
