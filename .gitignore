@@ -80,6 +80,9 @@ onboarding/
 !brand/fonts/*
 !brand/icons/
 !brand/icons/*
+# the Qalam logo proposal: the 3 drawn as an ع; tools/qalam-logo.py builds it
+!brand/qalam/
+!brand/qalam/*
 # Edge Functions (supabase/functions/<name>/index.ts + handler.js, _shared/) and the POS integration spec (T13)
 !supabase/functions/
 !supabase/functions/*/
