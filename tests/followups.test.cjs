@@ -342,8 +342,8 @@ test('after 24 hours the server refuses the key: dropped, no more reads, never t
  const asked=server.calls.length;await p.tick();await p.tick();
  assert.equal(server.calls.length,asked);                                           // no more reads with a dead key
  assert.deepEqual(told,[CLOSED]);                                                    // announced once: at the close, not again at the refusal
- // reload of the first tab: still the message, still not the demo
- const again=guestBoot({search:SEARCH,server,local:p.local,session:p.session});await flush();
+ // reload of the first tab (the address keeps live=1 where the key was): still the message, still not the demo
+ const again=guestBoot({search:SEARCH+'&live=1',server,local:p.local,session:p.session});await flush();
  assert.equal(again.window.Aalayna.demoMode(),false);assert.equal(again.run('CHECK'),null);
  again.run('buildBill()');assert.match(again.items(),/This bill is closed\./);
  // a new bill link in the same tab clears it

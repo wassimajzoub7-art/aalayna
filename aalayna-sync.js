@@ -170,6 +170,11 @@
   if(!A||!cfg.supabaseUrl||!cfg.anonKey||!global.localStorage)return;
   var rid=A.venueId(), q=new URLSearchParams(global.location.search), supplied=(q.get('k')||'').trim();
   var guestPage=/guest\.html$/.test(global.location.pathname||''), slot=guestPage?'guest':'owner';
+  /* A guest page that a bill link or a table scan brought here carries live=1 in its address (put there
+     in place of the key, below, and by the scan's rewrite). Only such a page may pick up the bill key this
+     browser remembers for the venue, or report a closed bill. Every other guest address is the demo, the
+     branded demo links that name the venue included, whatever this browser holds from a real visit. */
+  var livePage=guestPage&&q.get('live')==='1';
   // T4: on the dashboard and editor a staff session is the credential and the owner key only a fallback.
   var staffPage=/(dashboard|editor)(\.html)?$/.test(global.location.pathname||''), session=staffPage&&Auth?Auth.session():null, signedIn=!!session;
   var key='', credentialKey='aal.access:'+rid+':'+slot;
@@ -178,11 +183,9 @@
       key=supplied;
       // Owner credentials never become the default on a guest page.
       if(!guestPage||key.indexOf('own_')!==0)global.localStorage.setItem(credentialKey,key);
-      if(global.history&&global.history.replaceState){q.delete('k');global.history.replaceState(null,'',global.location.pathname+(q.toString()?'?'+q.toString():''));}
+      if(global.history&&global.history.replaceState){q.delete('k');if(guestPage)q.set('live','1');global.history.replaceState(null,'',global.location.pathname+(q.toString()?'?'+q.toString():''));}
     }
-    // A bill link and a table scan both name the venue in the address, and a reload keeps it. A bare
-    // guest.html is the demo: it never attaches to a bill key this browser remembers from a real visit.
-    else if(!guestPage||q.get('venue'))key=global.localStorage.getItem(credentialKey)||'';
+    else if(!guestPage||livePage)key=global.localStorage.getItem(credentialKey)||'';
   }catch(e){}
   // A signed-in member is 'staff' until the first snapshot names the role (owner or waiter): nothing is
   // queued as an owner write before the server has said so, so a waiter never gets a refused change.
@@ -418,8 +421,8 @@
   A.sync.onClosed=function(f){closedFns.push(f);if(closedNow)f(CLOSED_MSG);};
   A.sync.closed=function(){return closedNow;};
   if(guestPage){
-    // a key, or the bare demo page (no venue in the address): no closed bill to report
-    if(key||!q.get('venue')){try{global.sessionStorage.removeItem(CLOSED);}catch(e){}}
+    // a key, or a demo address (no live=1 mark): no closed bill to report
+    if(key||!livePage){try{global.sessionStorage.removeItem(CLOSED);}catch(e){}}
     else{var closedMark='';try{closedMark=global.sessionStorage.getItem(CLOSED)||'';}catch(e){}if(closedMark){closedNow=true;A.demoMode=function(){return false;};}}
   }
   /* T8: a staff device that changes credential for this venue (an owner link to a signed-in

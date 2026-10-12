@@ -114,7 +114,7 @@ test('with an open bill the rewritten page is a bill link: TABLE from the server
  const first=boot({search:'?v='+SLUG+'&t=7&s='+TOKEN,server});await flush();
  const p=reload(first,server);
  assert.equal(p.run('TABLE'),7);                                            // from the answer, before the snapshot
- assert.equal(p.window.location.search,'?venue=Mayda&place=Hamra&brand=2F6B4F');   // k stripped by the sync layer
+ assert.equal(p.window.location.search,'?venue=Mayda&place=Hamra&brand=2F6B4F&live=1');   // k stripped by the sync layer, live=1 left in its place
  assert.equal(p.local.get('aal.access:'+RID+':guest'),KEY);                  // held per venue and page role
  assert.equal(p.window.Aalayna.venueId(),RID);
  await flush();
@@ -187,18 +187,31 @@ test('demo mode is untouched: no v, t or s means table 12, no request, no poll',
  assert.equal(server.calls.length,0);assert.equal(p.intervals.filter(i=>i.ms===10000).length,0);
 });
 
-test('a bare guest address is the demo even when this browser remembers a bill key or a closed bill',async()=>{
+test('a demo address is the demo even when this browser remembers a bill key, a closed bill or a table scan for the same venue',async()=>{
  const server=serverWith(async()=>{throw new Error('must not call');});
- // the venue this browser last saw, its remembered bill key, and the closed-bill mark of that tab
- const local=new Map([['aal.venue',JSON.stringify({name:'Mayda',place:'Hamra'})],['aal.access:'+RID+':guest','chk_'+'99'.repeat(24)]]);
- const session=new Map([['aal.bill-closed:'+RID,'1']]);
- const p=boot({search:'',server,local,session});await flush();
- assert.equal(p.window.Aalayna.venueId(),RID);
- assert.equal(p.window.Aalayna.sync.enabled,false);assert.equal(p.window.Aalayna.demoMode(),true);
- assert.equal(p.run('BILL_ENDED'),false);assert.equal(p.run('TABLE'),12);assert.ok(p.run('BILL.length')>0);assert.ok(p.run('TOTAL')>0);
- assert.equal(p.local.get('aal.access:'+RID+':guest'),'chk_'+'99'.repeat(24));   // left for the bill page that owns it
- assert.equal(p.session.has('aal.bill-closed:'+RID),false);
- assert.equal(server.calls.length,0);
+ const KEY='chk_'+'99'.repeat(24);
+ // what a phone holds after a real visit: the remembered bill key, the closed-bill mark of that tab,
+ // and the tab's table session, all for the venue the demo link names
+ const held=()=>({local:new Map([['aal.venue',JSON.stringify({name:'Mayda',place:'Hamra'})],['aal.access:'+RID+':guest',KEY]]),
+  session:new Map([['aal.bill-closed:'+RID,'1'],['aal.table-qr',JSON.stringify({v:SLUG,t:7,s:TOKEN,rid:RID,table:7,waiting:true,docs:[]})]])});
+ for(const search of ['','?venue=Mayda&place=Hamra','?menu=mayda&venue=Mayda&place=Hamra&brand=2F6B4F&theme=balat']){
+  const {local,session}=held(),p=boot({search,server,local,session});await flush();
+  assert.equal(p.window.Aalayna.venueId(),RID,search);
+  assert.equal(p.window.Aalayna.sync.enabled,false,search);assert.equal(p.window.Aalayna.demoMode(),true,search);
+  assert.equal(p.run('AalaynaTableQR.waiting'),false,search);assert.equal(p.run('AalaynaTableQR.table'),null,search);
+  assert.equal(p.run('BILL_ENDED'),false,search);assert.equal(p.run('TABLE'),12,search);assert.ok(p.run('TOTAL')>0,search);
+  assert.equal(p.document.getElementById('pm-whish').hidden,false,search);        // Whish is offered: the checkout can be shown
+  assert.equal(p.local.get('aal.access:'+RID+':guest'),KEY,search);              // left for the bill page that owns it
+  assert.equal(p.session.has('aal.bill-closed:'+RID),false,search);
+  assert.equal(server.calls.length,0,search);
+ }
+ // the live page itself, reloaded on the address the key left behind: the key is picked up again
+ const KEY2='chk_'+'cd'.repeat(24),live=serverWith(async()=>ok(answer()));live.keys[KEY2]=CHECK.id;
+ const {local,session}=held();local.set('aal.access:'+RID+':guest',KEY2);session.delete('aal.bill-closed:'+RID);
+ session.set('aal.table-qr',JSON.stringify({v:SLUG,t:7,s:TOKEN,rid:RID,table:7,waiting:false}));   // the tab's scan found its bill
+ const q=boot({search:'?venue=Mayda&place=Hamra&brand=2F6B4F&live=1',server:live,local,session});await flush();
+ assert.equal(q.window.Aalayna.sync.enabled,true);assert.equal(q.window.Aalayna.sync.key(),KEY2);assert.equal(q.window.Aalayna.demoMode(),false);
+ assert.equal(q.run('CHECK.id'),CHECK.id);assert.equal(q.run('TOTAL'),18);
 });
 
 /* The SQL, against a real PostgreSQL (PGlite), like tests/database.test.cjs. Skipped

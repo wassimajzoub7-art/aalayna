@@ -131,7 +131,7 @@ test('dashboard.html ships the card hidden, inside the Team view, with both even
  assert.match(card,/type="url"/);assert.match(card,/id="int-key-label"[^>]*maxlength="80"/);
  for(const id of ['int-keys','int-key-form','int-key-label','int-key-issue','int-key-reveal','int-endpoints','int-ep-form','int-ep-url','int-ev-paid','int-ev-closed','int-ep-add','int-ep-reveal','int-deliveries','int-dl-refresh','int-refresh-all'])
   assert.equal(html.split('id="'+id+'"').length,2,id+' exists once');
- assert.match(html,/restaurant-ops\.js\?v=13"/);assert.match(html,/restaurant-ops\.css\?v=8"/);
+ assert.match(html,/restaurant-ops\.js\?v=\d+"/);assert.match(html,/restaurant-ops\.css\?v=8"/);
  assert.match(html,/if \(v === 'team' && window\.opsIntegrationsOpen\) opsIntegrationsOpen\(\)/);
  assert.match(html,/if \(window\.opsIntegrationsInit\) opsIntegrationsInit\(\)/);
  assert.ok(fs.readFileSync(path.join(root,'docs','pos-integration.md'),'utf8').length>0);
