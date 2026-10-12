@@ -1094,9 +1094,10 @@
       sessionStorage only and stripped from the address (as the sync layer strips k).
       The shared-store config is withheld from the sync layer for this load, so a key
       stored for another venue never wakes up, and aal_table_session is asked. Its answer
-      rewrites the location once, to guest.html?venue=&place=(&gplace&brand&bg&font), plus
-      k=<chk key> when the table has an open bill. From there the page is exactly a staff
-      bill link: the existing sync path holds the key and TABLE comes from the check.
+      rewrites the location once, to guest.html?venue=&place=(&gplace&brand&bg&font)&live=1,
+      plus k=<chk key> when the table has an open bill. From there the page is exactly a staff
+      bill link: the existing sync path holds the key and TABLE comes from the check. live=1
+      marks a page a scan or a bill link brought here; a demo address never has it.
    2. Waiting (no open bill yet). The reloaded page has the venue and no key. It runs in
       its own local scope holding the server's published menu, never in demo mode, and
       the bill reads "Your bill appears here once your server enters it." While the bill
@@ -1188,6 +1189,7 @@ var AalaynaTableQR = (function (global) {
       if (v.font) p.set('font', v.font);
       if (v.theme) p.set('theme', v.theme);
       if (q.get('lang')) p.set('lang', lang);
+      p.set('live', '1');   // a table scan brought this page here (see the sync layer)
       session = { v: session.v, t: session.t, s: session.s, rid: rid, table: res.table, waiting: !res.key, docs: res.key ? null : (res.docs || []) };
       save(session);
       if (res.key) p.set('k', res.key);
@@ -1204,8 +1206,9 @@ var AalaynaTableQR = (function (global) {
      A page that came from this tab's table code waits for the table's next bill exactly
      as a scan of a table without a bill does: the poll asks aal_table_session again and
      attaches the new key. The menu on screen is kept for a reload. False otherwise. */
+  function livePage() { return q.get('live') === '1' || !!q.get('k'); }
   function reopen() {
-    if (!A || !session || !session.s || !session.rid || session.rid !== A.venueId()) return false;
+    if (!A || !session || !session.s || !session.rid || session.rid !== A.venueId() || !livePage()) return false;
     api.waiting = true;
     session.waiting = true;
     session.docs = DOCS.map(function (k) { return { key: k, body: A.util.read(k, null) }; }).filter(function (d) { return d.body != null; });
@@ -1251,8 +1254,9 @@ var AalaynaTableQR = (function (global) {
     save(session);
     if (!/^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$/.test(v) || !/^[1-9][0-9]{0,3}$/.test(t) || !/^tbl_[0-9a-f]{48}$/.test(s)) notice(msg('notActive'));
     else resolve();
-  } else if (A && session && session.rid && session.rid === A.venueId()) {
-    // after the rewrite: this tab's table, for this venue
+  } else if (A && session && session.rid && session.rid === A.venueId() && livePage()) {
+    // after the rewrite (live=1 in the address): this tab's table, for this venue. A demo link opened
+    // in this tab, even one naming the same venue, carries no mark and is not this table.
     api.table = session.table;
     if (session.waiting && !q.get('k')) {
       // 2. no bill yet: a local scope of its own, with the server's menu, never the demo
@@ -1267,7 +1271,7 @@ var AalaynaTableQR = (function (global) {
   return api;
 })(window);
 </script>
-<script src="aalayna-sync.js?v=7"></script>
+<script src="aalayna-sync.js?v=8"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
