@@ -1084,7 +1084,7 @@
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
 <script src="aalayna-store.js?v=24"></script>
-<script src="restaurant-growth.js?v=6"></script>
+<script src="restaurant-growth.js?v=7"></script>
 <script src="aalayna-config.js"></script>
 <script>
 /* ---------------- table QR ----------------
@@ -1750,11 +1750,25 @@ function paintPartySize(){
   sub.textContent = parts.join(' \u00b7 ');
   sub.hidden = !parts.length;
 }
+/* Demo only. A sample bill (one this app opened from the sample) is over when nothing is left
+   to pay on it, or when it cannot price a bill (no lines and no total: left by an earlier build).
+   openTableBill closes it so the next scan opens a fresh sample; until October 2026 a sample paid
+   in full stayed open and every later scan found a $0 bill with nothing to pay. A staff bill is
+   never ended here: the waiter closes it from the dashboard. A pending cash request keeps a
+   sample open, so the dashboard can still confirm it. */
+function sampleOver(c){
+  if (!c || c.closedAt || !Aalayna.demoMode() || (c.source || 'prototype') !== 'prototype') return false;
+  var priced = (c.lines || []).some(function(l){ return Number(l.p) > 0; }) || Number(c.totalCents) > 0;
+  if (!priced) return true;
+  var b = Aalayna.checkBalance(c.id);
+  return b.remainingCents <= 0 && !b.pendingCents;
+}
 /* open the table's bill at a scan or a restart: the waiter's check, or, in demo
    mode only, the sample. With a venue key a guest never opens a check; only staff do. */
 function openTableBill(){
   loadBill();
   if (Aalayna.sync && Aalayna.sync.enabled) return;   // shared mode: the bill link decides the check
+  if (sampleOver(CHECK)){ try { Aalayna.endSampleCheck(CHECK.id); } catch (e) {} CHECK = null; }
   if (!CHECK || CHECK.closedAt){
     var lines = Aalayna.demoMode() ? Aalayna.check(TABLE) : [];
     if (lines.length) CHECK = Aalayna.openServiceCheck({table:TABLE, lines:lines, sessionId:Aalayna.session()});
