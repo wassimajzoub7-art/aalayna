@@ -1642,6 +1642,9 @@ function serving(win){
 }
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
 var CHECK = null;
+/* The build the phone is running, shown on the demo landing next to "sample bill" so a demo
+   that misbehaves can be matched to a deploy without a screenshot. Demo only; never at a venue. */
+var BUILD = '12 Oct';
 /* T8: this page's bill was closed (Aalayna.sync.onClosed, below) */
 var BILL_ENDED = !!(Aalayna.sync && Aalayna.sync.closed && Aalayna.sync.closed()), BILL_ENDED_MSG = STR.en.billEnded;
 /* the restaurant's own wording in English; the closed-bill line in the guest's language otherwise */
@@ -1728,7 +1731,7 @@ function paintTableLabels(){
   var v = Aalayna.venue(), label = tableLabel();
   var sample = !!CHECK && CHECK.source !== 'staff' && Aalayna.sampleAllowed();
   var place = venuePlace(v) || v.name;
-  $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + t('sampleBill') : ''));
+  $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + t('sampleBill') + ' \u00b7 ' + BUILD : ''));
   $('m-sub').textContent = label + ' \u00b7 ' + place;
   $('bill-title').textContent = label;
   $('pay-who').textContent = t('totalToPay', {table: label});

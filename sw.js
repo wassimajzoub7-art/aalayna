@@ -3,11 +3,16 @@
    only; every request that page makes passes through here.
    - guest.html, its scripts and venues/*.json: network first. A deploy or a menu change
      is picked up whenever the phone is online; the cached copy answers when the network
-     fails or takes more than six seconds.
+     fails or takes more than six seconds. The page itself is revalidated with the server
+     on every load (one small round trip on an ETag answer), so a copy the phone's HTTP
+     cache took minutes before a deploy never outlives it. A versioned script
+     (aalayna-store.js?v=N) is a new address at every deploy: when the network is slow it
+     waits for the network rather than answer with an older version next to a new page;
+     only a failed network falls back to the same file under any query.
    - Google Fonts and images: cache first.
    - The Supabase API, other hosts and every non-GET request: never cached, never touched.
    Bump VERSION when this file or SHELL changes; activate deletes the older caches. */
-var VERSION = 'aal-guest-v1';
+var VERSION = 'aal-guest-v2';
 var SHELL = [
   'guest.html',
   'aalayna-store.js',
@@ -45,33 +50,37 @@ function keep(request, response) {
   return response;
 }
 
-function cached(request) {
+function cached(request, loose) {
   // the page is opened with different queries (?menu=, ?table=, ?v= on scripts):
-  // an exact match first, then the same file under any query
+  // an exact match first, then, when loose, the same file under any query
   return caches.match(request).then(function (hit) {
-    return hit || caches.match(request, { ignoreSearch: true });
+    return hit || (loose ? caches.match(request, { ignoreSearch: true }) : null);
   });
 }
 
 function networkFirst(request) {
+  var navigate = request.mode === 'navigate';
   return new Promise(function (resolve, reject) {
     var settled = false;
-    function fallback(error) {
-      cached(request).then(function (hit) {
+    function fallback(error, loose) {
+      cached(request, loose).then(function (hit) {
         if (settled) return;
         if (hit) { settled = true; resolve(hit); }
         else if (error) { settled = true; reject(error); }
       });
     }
-    var timer = setTimeout(function () { fallback(null); }, TIMEOUT_MS);
-    fetch(request).then(function (response) {
+    // slow: the page under any query answers; a versioned script only in its exact version
+    var timer = setTimeout(function () { fallback(null, navigate); }, TIMEOUT_MS);
+    // the page is revalidated with the server; a request with mode 'navigate' cannot be rebuilt, so its URL is fetched
+    var fetching = navigate ? fetch(request.url, { cache: 'no-cache', credentials: 'same-origin' }) : fetch(request);
+    fetching.then(function (response) {
       clearTimeout(timer);
       if (settled) { keep(request, response); return; }
       settled = true;
       resolve(keep(request, response));
     }, function (error) {
       clearTimeout(timer);
-      fallback(error || new Error('offline'));
+      fallback(error || new Error('offline'), true);   // no network: anything kept for this file
     });
   });
 }
