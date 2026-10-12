@@ -129,6 +129,19 @@
     if (b.remainingCents || b.pendingCents) throw new Error('Collect the outstanding balance before closing this bill.');
     var all = read('aal.checks'); all.find(function(c){ return c.id === id && same(c); }).closedAt = now(); save('aal.checks', all);
   };
+  /* Demo only: closes a sample check (source 'prototype', opened by the guest app from the sample)
+     whatever its balance, so the guest app can start the next session on a fresh sample. A staff
+     bill is never ended here: the waiter closes it from the dashboard, through closeServiceCheck. */
+  A.endSampleCheck = function (id) {
+    if (!A.demoMode()) throw new Error('Only the demo ends a sample bill.');
+    var all = read('aal.checks'), c = all.find(function(x){ return x.id === id && same(x); });
+    if (!c) throw new Error('This bill is not available for this restaurant.');
+    if ((c.source || 'prototype') !== 'prototype') throw new Error('A staff bill is closed from the dashboard.');
+    if (c.closedAt) return c;
+    A.settlements().forEach(function(s){ if (s.checkId === c.id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') A.cancelCash(s.id); });
+    c.closedAt = now(); save('aal.checks', all);
+    return c;
+  };
   A.optIn = function (input) {
     var contact = A.normaliseContact(input.contact), all = read('aal.guests');
     if (typeof input.receipt !== 'boolean' || typeof input.marketing !== 'boolean') throw new Error('Choose receipt and marketing permissions separately.');

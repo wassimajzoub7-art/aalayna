@@ -1083,8 +1083,32 @@
   a private note to the restaurant; either guest can take the other route. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=24"></script>
-<script src="restaurant-growth.js?v=6"></script>
+<script>
+/* ?reset=1: a clean demo on this browser. Every aal.* key in local and session storage goes, the
+   service worker and its caches go, and the page reopens without the parameter. For a phone that
+   has rehearsed for weeks. A venue page never carries it: bill links and table codes do not, and a
+   reset drops any remembered bill key along with the rest. */
+(function () {
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get('reset') !== '1') return;
+    document.documentElement.style.visibility = 'hidden';
+    [localStorage, sessionStorage].forEach(function (s) {
+      var keys = [], i, k;
+      for (i = 0; i < s.length; i++) { k = s.key(i); if (k && k.indexOf('aal.') === 0) keys.push(k); }
+      keys.forEach(function (key) { s.removeItem(key); });
+    });
+    q.delete('reset');
+    var next = location.pathname + (q.toString() ? '?' + q.toString() : ''), jobs = [];
+    var done = function () { location.replace(next); };
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }));
+    if (window.caches && caches.keys) jobs.push(caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }));
+    Promise.all(jobs).then(done, done);
+  } catch (e) {}
+})();
+</script>
+<script src="aalayna-store.js?v=25"></script>
+<script src="restaurant-growth.js?v=8"></script>
 <script src="aalayna-config.js"></script>
 <script>
 /* ---------------- table QR ----------------
@@ -1094,9 +1118,10 @@
       sessionStorage only and stripped from the address (as the sync layer strips k).
       The shared-store config is withheld from the sync layer for this load, so a key
       stored for another venue never wakes up, and aal_table_session is asked. Its answer
-      rewrites the location once, to guest.html?venue=&place=(&gplace&brand&bg&font), plus
-      k=<chk key> when the table has an open bill. From there the page is exactly a staff
-      bill link: the existing sync path holds the key and TABLE comes from the check.
+      rewrites the location once, to guest.html?venue=&place=(&gplace&brand&bg&font)&live=1,
+      plus k=<chk key> when the table has an open bill. From there the page is exactly a staff
+      bill link: the existing sync path holds the key and TABLE comes from the check. live=1
+      marks a page a scan or a bill link brought here; a demo address never has it.
    2. Waiting (no open bill yet). The reloaded page has the venue and no key. It runs in
       its own local scope holding the server's published menu, never in demo mode, and
       the bill reads "Your bill appears here once your server enters it." While the bill
@@ -1188,6 +1213,7 @@ var AalaynaTableQR = (function (global) {
       if (v.font) p.set('font', v.font);
       if (v.theme) p.set('theme', v.theme);
       if (q.get('lang')) p.set('lang', lang);
+      p.set('live', '1');   // a table scan brought this page here (see the sync layer)
       session = { v: session.v, t: session.t, s: session.s, rid: rid, table: res.table, waiting: !res.key, docs: res.key ? null : (res.docs || []) };
       save(session);
       if (res.key) p.set('k', res.key);
@@ -1204,8 +1230,9 @@ var AalaynaTableQR = (function (global) {
      A page that came from this tab's table code waits for the table's next bill exactly
      as a scan of a table without a bill does: the poll asks aal_table_session again and
      attaches the new key. The menu on screen is kept for a reload. False otherwise. */
+  function livePage() { return q.get('live') === '1' || !!q.get('k'); }
   function reopen() {
-    if (!A || !session || !session.s || !session.rid || session.rid !== A.venueId()) return false;
+    if (!A || !session || !session.s || !session.rid || session.rid !== A.venueId() || !livePage()) return false;
     api.waiting = true;
     session.waiting = true;
     session.docs = DOCS.map(function (k) { return { key: k, body: A.util.read(k, null) }; }).filter(function (d) { return d.body != null; });
@@ -1251,8 +1278,9 @@ var AalaynaTableQR = (function (global) {
     save(session);
     if (!/^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$/.test(v) || !/^[1-9][0-9]{0,3}$/.test(t) || !/^tbl_[0-9a-f]{48}$/.test(s)) notice(msg('notActive'));
     else resolve();
-  } else if (A && session && session.rid && session.rid === A.venueId()) {
-    // after the rewrite: this tab's table, for this venue
+  } else if (A && session && session.rid && session.rid === A.venueId() && livePage()) {
+    // after the rewrite (live=1 in the address): this tab's table, for this venue. A demo link opened
+    // in this tab, even one naming the same venue, carries no mark and is not this table.
     api.table = session.table;
     if (session.waiting && !q.get('k')) {
       // 2. no bill yet: a local scope of its own, with the server's menu, never the demo
@@ -1267,7 +1295,7 @@ var AalaynaTableQR = (function (global) {
   return api;
 })(window);
 </script>
-<script src="aalayna-sync.js?v=7"></script>
+<script src="aalayna-sync.js?v=8"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -1638,6 +1666,9 @@ function serving(win){
 }
 var CATS = [], MENU = [], BILL = [], TOTAL = 0, MENU_V = 0;
 var CHECK = null;
+/* The build the phone is running, shown on the demo landing next to "sample bill" so a demo
+   that misbehaves can be matched to a deploy without a screenshot. Demo only; never at a venue. */
+var BUILD = '12 Oct';
 /* T8: this page's bill was closed (Aalayna.sync.onClosed, below) */
 var BILL_ENDED = !!(Aalayna.sync && Aalayna.sync.closed && Aalayna.sync.closed()), BILL_ENDED_MSG = STR.en.billEnded;
 /* the restaurant's own wording in English; the closed-bill line in the guest's language otherwise */
@@ -1724,7 +1755,7 @@ function paintTableLabels(){
   var v = Aalayna.venue(), label = tableLabel();
   var sample = !!CHECK && CHECK.source !== 'staff' && Aalayna.sampleAllowed();
   var place = venuePlace(v) || v.name;
-  $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + t('sampleBill') : ''));
+  $('land-tbl').innerHTML = '<span class="dot"></span>' + esc(label + (sample ? ' \u00b7 ' + t('sampleBill') + ' \u00b7 ' + BUILD : ''));
   $('m-sub').textContent = label + ' \u00b7 ' + place;
   $('bill-title').textContent = label;
   $('pay-who').textContent = t('totalToPay', {table: label});
@@ -1743,11 +1774,30 @@ function paintPartySize(){
   sub.textContent = parts.join(' \u00b7 ');
   sub.hidden = !parts.length;
 }
+/* Demo only. A sample bill (one this app opened from the sample) is over when nothing is left
+   to pay on it, or when it cannot price a bill (no lines and no total: left by an earlier build).
+   openTableBill closes it so the next scan opens a fresh sample; until October 2026 a sample paid
+   in full stayed open and every later scan found a $0 bill with nothing to pay. A staff bill is
+   never ended here: the waiter closes it from the dashboard. This session's own cash request
+   keeps the sample open, so the dashboard can still confirm it; a sample reserved in full by
+   earlier sessions (cash requests nobody confirmed on a phone) is over for the next guest, and
+   those requests are cancelled with it. */
+function sampleOver(c){
+  if (!c || c.closedAt || !Aalayna.demoMode() || (c.source || 'prototype') !== 'prototype') return false;
+  var priced = (c.lines || []).some(function(l){ return Number(l.p) > 0; }) || Number(c.totalCents) > 0;
+  if (!priced) return true;
+  var b = Aalayna.checkBalance(c.id);
+  if (b.remainingCents <= 0 && !b.pendingCents) return true;
+  if (b.availableCents > 0 || !b.pendingCents) return false;
+  var mine = Aalayna.session();
+  return !Aalayna.settlements().some(function(s){ return s.checkId === c.id && s.sessionId === mine && Aalayna.settlementStatus(s) === 'pending'; });
+}
 /* open the table's bill at a scan or a restart: the waiter's check, or, in demo
    mode only, the sample. With a venue key a guest never opens a check; only staff do. */
 function openTableBill(){
   loadBill();
   if (Aalayna.sync && Aalayna.sync.enabled) return;   // shared mode: the bill link decides the check
+  if (sampleOver(CHECK)){ try { Aalayna.endSampleCheck(CHECK.id); } catch (e) {} CHECK = null; }
   if (!CHECK || CHECK.closedAt){
     var lines = Aalayna.demoMode() ? Aalayna.check(TABLE) : [];
     if (lines.length) CHECK = Aalayna.openServiceCheck({table:TABLE, lines:lines, sessionId:Aalayna.session()});

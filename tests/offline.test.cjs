@@ -151,9 +151,10 @@ test('a cash request made offline waits in the outbox, says it is saved on this 
 test('opened with no connection: the last known bill from this phone, the banner, and a cash request that is sent later',async()=>{
  const server=makeServer(),first=boot({search:LINK,server});await flush();
  const lastRead=first.run('NET.lastReadAt');
- // later, a new tab with no connection: no k in the address, the key and the bill are on the phone
+ // later, a new tab with no connection, on the address the first tab was left with (k gone, live=1 in its
+ // place): the key and the bill are on the phone
  server.down=true;
- const p=boot({search:'?venue=Mayda&place=Hamra',server,online:false,local:first.local});await flush();
+ const p=boot({search:'?venue=Mayda&place=Hamra&live=1',server,online:false,local:first.local});await flush();
  assert.equal(p.window.Aalayna.demoMode(),false);
  assert.equal(p.run('CHECK.id'),CHECK.id);assert.equal(p.run('TABLE'),7);assert.equal(p.run('TOTAL'),18);
  assert.equal(p.run('BILL[0].n'),'Shish taouk');
@@ -166,7 +167,7 @@ test('opened with no connection: the last known bill from this phone, the banner
  assert.equal(p.receipt().title,'Saved on this phone.');assert.equal(p.receipt().status,SAVED);
  assert.ok(p.outbox()['op:reserve:'+requestId]);
  // reloaded while still offline: the same receipt, not the pay screen
- const again=boot({search:'?venue=Mayda&place=Hamra',server,online:false,local:p.local,session:p.session});await flush();
+ const again=boot({search:'?venue=Mayda&place=Hamra&live=1',server,online:false,local:p.local,session:p.session});await flush();
  assert.equal(again.receipt().on,true);assert.equal(again.receipt().status,SAVED);
  assert.equal(again.run('paymentBusy'),true);
  server.down=false;await again.setOnline(true);await flush();
