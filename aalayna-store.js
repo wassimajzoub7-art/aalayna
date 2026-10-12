@@ -190,13 +190,36 @@
   /* afterWrite hooks let a sync layer mirror writes elsewhere; rawWrite is the
      path that layer uses to land remote state locally without echoing it back. */
   var hooks = { afterWrite: [] };
+  /* A write the browser refuses (the store is full: Safari allows about 5 MB, and a phone that has
+     rehearsed for weeks fills it with event logs and the caches of past live visits) is retried once
+     after relief: every event log is cut to its last 200 rows, and the server-side caches of other
+     scopes are dropped (the server holds them; outboxes, refusals and credentials stay). Without this
+     a full phone silently kept nothing: the bill it had just opened was gone on the next read, $0. */
+  var RELIEVABLE = /^aal\.scope:.*:aal\.(checks|settle|events|guests|campaigns|edit_log|webhook_log|admin_notifications|health_reports|identity_merges|draft|live|rate|rate_meta|floor|tips|sync\.read|schema|pack|admin)$/;
+  function put(k, v) {
+    try { localStorage.setItem(storageKey(k), JSON.stringify(v)); return true; } catch (e) { return false; }
+  }
+  function relieve() {
+    var keys = [], i, k, mine = activeScope ? 'aal.scope:' + activeScope + ':' : '';
+    try { for (i = 0; i < localStorage.length; i++) { k = localStorage.key(i); if (k && k.indexOf('aal.') === 0) keys.push(k); } } catch (e) { return; }
+    keys.forEach(function (key) {
+      try {
+        if (/(^|:)aal\.events$/.test(key)) {
+          var rows = JSON.parse(localStorage.getItem(key) || '[]');
+          if (rows && rows.length > 200) localStorage.setItem(key, JSON.stringify(rows.slice(-200)));
+        } else if (RELIEVABLE.test(key) && (!mine || key.indexOf(mine) !== 0)) {
+          localStorage.removeItem(key);
+        }
+      } catch (e) {}
+    });
+  }
   function write(k, v) {
-    try { localStorage.setItem(storageKey(k), JSON.stringify(v)); } catch (e) {}
+    if (!put(k, v)) { relieve(); put(k, v); }
     fire(k);
     hooks.afterWrite.forEach(function (h) { try { h(k, v); } catch (e) {} });
   }
   function rawWrite(k, v) {
-    try { localStorage.setItem(storageKey(k), JSON.stringify(v)); } catch (e) {}
+    if (!put(k, v)) { relieve(); put(k, v); }
     fire(k);
   }
   var subs = [];

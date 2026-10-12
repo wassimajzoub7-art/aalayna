@@ -137,7 +137,9 @@
     var all = read('aal.checks'), c = all.find(function(x){ return x.id === id && same(x); });
     if (!c) throw new Error('This bill is not available for this restaurant.');
     if ((c.source || 'prototype') !== 'prototype') throw new Error('A staff bill is closed from the dashboard.');
-    if (!c.closedAt) { c.closedAt = now(); save('aal.checks', all); }
+    if (c.closedAt) return c;
+    A.settlements().forEach(function(s){ if (s.checkId === c.id && s.rail === 'cash' && A.settlementStatus(s) === 'pending') A.cancelCash(s.id); });
+    c.closedAt = now(); save('aal.checks', all);
     return c;
   };
   A.optIn = function (input) {
