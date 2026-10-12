@@ -136,6 +136,30 @@ test('with a venue key a leftover sample check is hidden from guests until staff
  assert.deepEqual(JSON.parse(JSON.stringify(a.check(12))),[{id:'i13',q:2,p:4,name:'Espresso'}]);
 });
 
+test('a full browser store: a refused write is retried after relief, and the bill just opened is there on the next read',()=>{
+ const map=new Map();let cap=Infinity;
+ const size=()=>[...map.values()].reduce((n,v)=>n+String(v).length,0);
+ const storage={getItem:k=>map.get(k)||null,setItem:(k,v)=>{if(size()-(map.has(k)?String(map.get(k)).length:0)+String(v).length>cap)throw new Error('QuotaExceededError');map.set(k,v);},removeItem:k=>map.delete(k),key:i=>[...map.keys()][i],get length(){return map.size;}};
+ const window={location:{search:''},addEventListener(){},localStorage:storage};
+ const ctx=vm.createContext({window,localStorage:storage,URLSearchParams,Date});
+ for(const file of ['aalayna-store.js','restaurant-growth.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'..',file),'utf8'),ctx);
+ const a=window.Aalayna;a.setVenue({name:'Restaurant',place:'Beirut'});
+ // weeks of rehearsal: a long event log, and the caches and unsent changes of a past live visit
+ for(let i=0;i<3000;i++)a.logEvent('item_view',{itemId:'i0'+(i%9+1),n:i},{});
+ map.set('aal.scope:["x","guest","chk_1"]:aal.events',JSON.stringify(Array.from({length:3000},(_,i)=>({eventId:'e'+i,payload:{n:i}}))));
+ map.set('aal.scope:["x","guest","chk_1"]:aal.checks',JSON.stringify([{id:'bill-x'}]));
+ map.set('aal.scope:["x","guest","chk_1"]:aal.outbox',JSON.stringify({j1:{kind:'op'}}));
+ map.set('aal.access:["x","y"]:guest','chk_'+'ab'.repeat(24));
+ cap=size()+100;                                                               // the next real write does not fit
+ const c=a.openServiceCheck({table:12,lines:LINES});
+ assert.equal(a.openCheckFor(12).id,c.id);                                    // the bill is there on the next read
+ assert.ok(JSON.parse(map.get('aal.events')).length<=201,'the event log was cut');
+ assert.ok(JSON.parse(map.get('aal.scope:["x","guest","chk_1"]:aal.events')).length<=200,'every event log is cut');
+ assert.equal(map.has('aal.scope:["x","guest","chk_1"]:aal.checks'),false);  // another scope's caches dropped
+ assert.equal(map.has('aal.scope:["x","guest","chk_1"]:aal.outbox'),true);   // its unsent changes kept
+ assert.equal(map.has('aal.access:["x","y"]:guest'),true);                    // credentials kept
+});
+
 test('demo mode keeps the sample at table 12 while staff bill other tables; a staff bill for table 12 replaces it',()=>{
  const {a}=setup();
  // the demo's trap: a guest opens first, then staff enter a bill elsewhere; table 12 must still have its bill to pay

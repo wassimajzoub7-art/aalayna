@@ -1083,8 +1083,32 @@
   a private note to the restaurant; either guest can take the other route. Cash
   requests remain pending until confirmed in the staff demo. This demo shares data between tabs in this browser only.
 </div>
-<script src="aalayna-store.js?v=24"></script>
-<script src="restaurant-growth.js?v=7"></script>
+<script>
+/* ?reset=1: a clean demo on this browser. Every aal.* key in local and session storage goes, the
+   service worker and its caches go, and the page reopens without the parameter. For a phone that
+   has rehearsed for weeks. A venue page never carries it: bill links and table codes do not, and a
+   reset drops any remembered bill key along with the rest. */
+(function () {
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get('reset') !== '1') return;
+    document.documentElement.style.visibility = 'hidden';
+    [localStorage, sessionStorage].forEach(function (s) {
+      var keys = [], i, k;
+      for (i = 0; i < s.length; i++) { k = s.key(i); if (k && k.indexOf('aal.') === 0) keys.push(k); }
+      keys.forEach(function (key) { s.removeItem(key); });
+    });
+    q.delete('reset');
+    var next = location.pathname + (q.toString() ? '?' + q.toString() : ''), jobs = [];
+    var done = function () { location.replace(next); };
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) jobs.push(navigator.serviceWorker.getRegistrations().then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); }));
+    if (window.caches && caches.keys) jobs.push(caches.keys().then(function (ks) { return Promise.all(ks.map(function (k) { return caches.delete(k); })); }));
+    Promise.all(jobs).then(done, done);
+  } catch (e) {}
+})();
+</script>
+<script src="aalayna-store.js?v=25"></script>
+<script src="restaurant-growth.js?v=8"></script>
 <script src="aalayna-config.js"></script>
 <script>
 /* ---------------- table QR ----------------
@@ -1754,14 +1778,19 @@ function paintPartySize(){
    to pay on it, or when it cannot price a bill (no lines and no total: left by an earlier build).
    openTableBill closes it so the next scan opens a fresh sample; until October 2026 a sample paid
    in full stayed open and every later scan found a $0 bill with nothing to pay. A staff bill is
-   never ended here: the waiter closes it from the dashboard. A pending cash request keeps a
-   sample open, so the dashboard can still confirm it. */
+   never ended here: the waiter closes it from the dashboard. This session's own cash request
+   keeps the sample open, so the dashboard can still confirm it; a sample reserved in full by
+   earlier sessions (cash requests nobody confirmed on a phone) is over for the next guest, and
+   those requests are cancelled with it. */
 function sampleOver(c){
   if (!c || c.closedAt || !Aalayna.demoMode() || (c.source || 'prototype') !== 'prototype') return false;
   var priced = (c.lines || []).some(function(l){ return Number(l.p) > 0; }) || Number(c.totalCents) > 0;
   if (!priced) return true;
   var b = Aalayna.checkBalance(c.id);
-  return b.remainingCents <= 0 && !b.pendingCents;
+  if (b.remainingCents <= 0 && !b.pendingCents) return true;
+  if (b.availableCents > 0 || !b.pendingCents) return false;
+  var mine = Aalayna.session();
+  return !Aalayna.settlements().some(function(s){ return s.checkId === c.id && s.sessionId === mine && Aalayna.settlementStatus(s) === 'pending'; });
 }
 /* open the table's bill at a scan or a restart: the waiter's check, or, in demo
    mode only, the sample. With a venue key a guest never opens a check; only staff do. */

@@ -269,6 +269,22 @@ test('Start over after paying the whole sample bill opens a fresh sample; a pend
  assert.equal(c.run('CHECK.id'),id);assert.equal(closedOf(c,id),false);
 });
 
+test('a sample reserved in full by an earlier session (a cash request nobody confirmed) is over for the next guest',async()=>{
+ const local=new Map(),p=boot({local}),first=p.run('CHECK.id');
+ await payAll(p,'cash');
+ assert.equal(p.available(),0);assert.deepEqual(p.payments().map(x=>x.status),['pending']);
+ // this session keeps its own request: the dashboard can still confirm it
+ p.run('openTableBill()');assert.equal(p.run('CHECK.id'),first);
+ // the next open of the page on this phone is a new guest: a fresh sample, the old request cancelled
+ const q=boot({local});
+ assert.notEqual(q.run('CHECK.id'),first);assert.equal(q.run('TOTAL'),152.5);assert.equal(q.available(),15250);
+ assert.equal(closedOf(q,first),true);
+ assert.deepEqual(q.run("Aalayna.settlements().filter(function(s){return s.checkId==='"+first+"';}).map(function(s){return Aalayna.settlementStatus(s);})"),['cancelled']);
+ // Start over is the same new guest
+ const r=boot(),id=r.run('CHECK.id');await payAll(r,'cash');r.run('restart()');await flush();
+ assert.notEqual(r.run('CHECK.id'),id);assert.equal(r.available(),15250);
+});
+
 test('a staff bill paid in full is not ended by the guest page: the waiter closes it from the dashboard',async()=>{
  const p=boot(),id=p.run('CHECK.id');
  p.run("Aalayna.updateServiceCheck(CHECK.id,[{id:'i13',q:2,p:4,name:'Espresso'}]);openTableBill();buildBill();buildPick();calcShare();");
