@@ -572,57 +572,106 @@ test('every page asks for the same stylesheet version (bump ?v= on all of them w
   assert.ok(Number(versions[0]) >= 7, 'the version that carries the phone hero and the Arabic page');
 });
 
-test('the four steps: a carousel at every width (arrows, four dots), one step at a time on computers too, and motion only when it is wanted', () => {
+test('the four steps: one stage on a computer (one phone that changes screen as each step passes), real screens read top to bottom on a phone, and motion only when it is wanted', () => {
   const css = read('website.css'), js = read('site.js');
-  const labels = { 'index.html': ['Previous step', 'Next step', 'Step'], 'fr/index.html': ['Étape précédente', 'Étape suivante', 'Étape'], 'ar/index.html': ['الخطوة السابقة', 'الخطوة التالية', 'الخطوة'] };
-  for (const [f, [pv, nx, st]] of Object.entries(labels)) {
+  for (const f of ['index.html', 'fr/index.html', 'ar/index.html']) {
     const s = read(f), how = s.match(/<section[^>]*id="how"[\s\S]*?<\/section>/)[0];
     assert.equal((how.match(/<article>/g) || []).length, 4, f + ': four steps');
     assert.match(how, /<span class="number">04 · [^<]+<\/span>/, f + ': the review is step 04');
     assert.match(how, /images\/guest-review\.png"/, f + ': with the rating screen');
-    assert.match(how, new RegExp('<div class="steps-nav" hidden><button class="steps-arrow" type="button" data-step="-1" aria-label="' + pv + '">'), f + ': previous');
-    assert.match(how, new RegExp('<button class="steps-arrow" type="button" data-step="1" aria-label="' + nx + '">'), f + ': next');
-    assert.deepEqual(all(how, /<span class="steps-dots">([\s\S]*?)<\/span>/g).map(d => all(d, /aria-label="([^"]+)"/g))[0], [1, 2, 3, 4].map(i => st + ' ' + i), f + ': four dots');
+    // Each step says what happens first, then shows the guest's own screen in its device window, with its caption.
+    const step = /<article><div class="step-text"><span class="number">0[1-4] · [^<]+<\/span><h3>[^<]+<\/h3><p>[^<]+<\/p><\/div><figure class="shot"><div class="device"><div class="phone"><picture>[\s\S]*?<\/picture><\/div><\/div><figcaption>[^<]+<\/figcaption><\/figure><\/article>/g;
+    assert.equal((how.match(step) || []).length, 4, f + ': text, then the screen, in every step');
+    assert.ok(!/steps-nav|steps-arrow|steps-dots/.test(how), f + ': no carousel controls: the page scrolls through the steps itself');
     assert.ok(s.includes('<script src="' + (f.includes('/') ? '../' : '') + 'site.js" defer></script>'), f + ' loads site.js');
   }
-  assert.match(css, /\n\.steps\{display:flex;[^}]*overflow-x:auto;scroll-snap-type:x mandatory/, 'every width swipes the steps, with or without JavaScript');
-  assert.match(css, /\n\.steps article\{flex:0 0 100%;scroll-snap-align:start/, 'one step fills the row');
-  // Tablets and computers: the step is a spread, the screen in one column and its text beside it; nothing else in view.
-  const spread = css.match(/@media\(min-width:768px\)\{\n(?:  [^\n]*\n)*?  \.steps article\{([^}]*)\}([\s\S]*?)\n\}/);
-  assert.match(spread[1], /display:grid;grid-template-columns:var\(--shot\) minmax\(0,28rem\)/);
-  assert.ok(!/justify-content:center/.test(spread[1]) && !/#how[^{]*\{text-align:center/.test(css), 'left-aligned, like every other section');
-  // The whole section fits in one view on a laptop: the screen's column follows the window's height, and the arrows,
-  // dots and Book a demo sit beside the screen, at the foot of the text column, instead of under it.
-  assert.match(css, /#how\{--shot:clamp\(10\.5rem,calc\(41vh - [\d.]+rem\),15rem\);display:grid;/);
-  assert.match(spread[2], /\.steps \.phone\.small\{max-width:var\(--shot\)\}/);
-  assert.match(spread[2], /#how>\.steps-nav:not\(\[hidden\]\)\{grid-column:2;grid-row:3;align-self:end;/, 'the arrows and dots beside the screen');
-  assert.match(spread[2], /#how>\.section-cta\{grid-column:2;grid-row:4;/, 'and Book a demo under them');
-  assert.match(spread[2], /\.steps \.shot\{grid-row:1\/-1;/);
-  assert.match(spread[2], /\.steps article>:not\(\.shot\)\{grid-column:2\}/);
-  assert.ok(!/3\.3\)|2\.3\)/.test(css), 'no more cards and a bit per view');
-  assert.match(css, /\.steps-nav:not\(\[hidden\]\)\{display:flex/, 'the arrows and dots show once the script runs');
-  assert.match(js, /nav\.hidden = false;/, 'at every width');
-  // Phones: every card centres, the first and last too: the padding at each end equals the card's inset from the screen edge.
-  const phoneSteps = css.match(/@media\(max-width:767px\)\{\n  \.steps\{([^}]*)\}[\s\S]*?\.steps article\{([^}]*)\}/);
-  assert.match(phoneSteps[1], /padding:0 2rem \.25rem;scroll-padding-inline:2rem/);
-  assert.match(phoneSteps[2], /flex:0 0 calc\(100vw - 4rem\);scroll-snap-align:center/);
-  assert.match(css, /\.steps-arrow\{[^}]*width:44px;height:44px/);
-  assert.match(css, /\.steps-dots button\{[^}]*height:44px/);
+  // Without JavaScript, and on tablets, each step is a row: its text beside its screen.
+  assert.match(css, /@media\(min-width:768px\)\{\n(?:  [^\n]*\n)*?  \.steps article\{grid-template-columns:minmax\(0,1fr\) minmax\(0,15rem\);/);
+  // Computers: once site.js runs, the rows fold into one stage. The steps scroll by on the left and one phone stays in
+  // view on the right, as tall as the window allows, showing only the screen of the step that is lit. The stage's
+  // size is the same in the stylesheet and the script.
+  const stage = css.match(/@media\(min-width:1024px\) and \(min-height:600px\)\{\n([\s\S]*?)\n\}/);
+  assert.ok(stage, 'the stage needs a wide and tall enough window');
+  assert.match(js, /stage = mm\('\(min-width: 1024px\) and \(min-height: 600px\)'\)/, 'the script lights the same stage');
+  assert.match(js, /steps\.classList\.toggle\('is-live', stage\.matches\)/);
+  assert.match(stage[1], /--ph:min\(41rem,calc\(100vh - var\(--header-h\) - [\d.]+rem\)\)/, 'the phone fits the window');
+  assert.match(stage[1], /\.steps\.is-live article\{display:contents\}/);
+  assert.match(stage[1], /\.steps\.is-live \.shot\{grid-column:2;grid-row:1\/5;position:sticky;[^}]*opacity:0;transition:opacity \.25s var\(--ease-out\)\}/, 'one phone, in view through all four steps');
+  assert.match(stage[1], /\.steps\.is-live \.is-active \.shot\{opacity:1\}/, 'showing the lit step');
+  assert.match(stage[1], /\.steps\.is-live article:not\(\.is-active\) \.step-text\{opacity:\.32\}/, 'the other steps wait, dimmed');
+  assert.ok(!/justify-content:center/.test(css.match(/\n\.steps article\{([^}]*)\}/)[1]) && !/#how[^{]*\{text-align:center/.test(css), 'left-aligned, like every other section');
+  // Phones: the steps read top to bottom, no swiping; each screen at close to its real size, cut by its card where what
+  // matters is: the menu and the split from the top, the payment and the review from the foot.
+  const phone = css.match(/@media\(max-width:767px\)\{\n  \/\*[^\n]*\*\/\n  \.shot\{container-type:inline-size\}\n  \.device\{height:calc\(\(80cqi - 1rem\) \* 2\.0923 \* \.58 \+ [\d.]+rem\)\}\n  \.device \.phone\{width:80cqi\}\n\}/);
+  assert.ok(phone, 'the window shows 58% of a phone 80% as wide as the card');
+  assert.match(css, /\n\.steps article:nth-child\(n\+3\) \.device\{align-items:flex-end\}/);
+  assert.ok(!/scroll-snap-type/.test(css), 'nothing to swipe');
+  // The script: a band just above the middle of the window lights the step crossing it, however the page got there.
+  assert.match(js, /rootMargin: '-44% 0px -54% 0px'/);
   assert.match(css, /@media \(prefers-reduced-motion:reduce\)\{\.js-reveal\{opacity:1;transform:none;transition:none\}\}/);
   assert.match(js, /prefers-reduced-motion: reduce/);
   assert.match(js, /if \(reduce \|\| !io\) return;/, 'no rise-in or count-up with reduced motion');
   assert.match(js, /el\.textContent = text;/, 'the figures end on the value in the page');
+  assert.match(js, /addEventListener\('focusin'[\s\S]*?el\.style\.transition = 'none'; el\.classList\.add\('is-in'\)/, 'tabbing into a section shows it at once');
   assert.match(read('.gitignore'), /^!site\.js$/m);
 });
 
-test('every homepage section fits in one view on a laptop: padding that follows the window, a menu click lands under the header', () => {
+test('homepage bands breathe with the window, a menu click lands under the header, and the headline and the film paint at once', () => {
   const css = read('website.css');
-  assert.match(css, /\n\.section\{padding-block:clamp\(2\.5rem,7vh,5rem\)\}/, 'sections breathe with the window\'s height');
+  // The homepage's bands share one measure of air that follows the window's height; numbers.html keeps its sections'.
+  assert.match(css, /--band:clamp\(4rem,11vh,7\.5rem\)/);
+  [/\n#how\{padding-block:var\(--band\)\}/, /\n\.benefits-band \.section\{padding-block:var\(--band\)\}/, /\n#pricing\{padding-block:var\(--band\)\}/,
+    /\n\.faq-section\{[^}]*padding-block:var\(--band\)/, /\n\.contact\{[^}]*padding-block:var\(--band\)/].forEach(re => assert.match(css, re));
+  assert.match(css, /\n\.section\{padding-block:clamp\(2\.5rem,7vh,5rem\)\}/, 'numbers.html sections keep their padding');
   assert.match(css, /\nsection\[id\],main\[id\]\{scroll-margin-top:var\(--header-h\)\}/, 'a menu click puts the section right under the header');
-  assert.match(css, /\.hero\{[^}]*padding-block:clamp\(2rem,6vh,4\.5rem\) clamp\(2\.5rem,7vh,5rem\)\}/);
-  // The numbers band's two asks share a line from tablets up; the price sits on one line with its unit.
-  assert.match(css, /\.benefits-band \.section-cta\{grid-row:4;grid-column:1;[^}]*\}\n  \.benefits-band \.calc-link\{grid-row:4;grid-column:2;/);
+  assert.match(css, /\n\.hero\{display:grid;grid-template-columns:minmax\(0,1fr\);padding-block:clamp\(2rem,6vh,4\.5rem\) 0\}/);
+  // The headline and the film are the largest things painted first: neither waits for an animation. Only the copy
+  // under the headline rises in, 60 ms apart.
+  assert.ok(!/\.hero h1[^{]*\{[^}]*animation/.test(css) && !/\.hero-reel[^{]*\{[^}]*animation/.test(css) && !/\.hero \.eyebrow[^{]*\{[^}]*animation/.test(css), 'headline and film not animated');
+  assert.match(css, /\.hero \.lead,\.hero \.actions,\.hero \.fine,\.hero \.what\{animation:rise \.6s var\(--ease-out\) both\}\n  \.hero \.lead\{animation-delay:60ms\}\.hero \.actions\{animation-delay:120ms\}\.hero \.fine\{animation-delay:180ms\}\.hero \.what\{animation-delay:240ms\}/);
+  // The numbers band's two asks share a line; the price sits on one line with its unit.
+  assert.match(css, /\n\.benefits-band \.section-cta\{grid-row:4;grid-column:1;[^}]*\}\n\.benefits-band \.calc-link\{grid-row:4;grid-column:2;/);
   assert.ok(!/\.price span\{display:block/.test(css), '$150 / month / location on one line');
+});
+
+test('motion: two curves, transform and opacity only, controls under 300 ms, hover only with a real pointer, nothing animates on a keyboard action', () => {
+  const css = read('website.css'), js = read('site.js');
+  assert.match(css, /--ease-out:cubic-bezier\(\.23,1,\.32,1\);--ease-in-out:cubic-bezier\(\.77,0,\.175,1\)/);
+  assert.ok(!/transition:\s*all|transition-property:\s*all/.test(css), 'never transition: all');
+  assert.ok(!/scale\(0\)|scale\(0,|scaleX?\(0\)/.test(css), 'nothing grows from nothing');
+  assert.ok(!/\bease-in\b(?!-out)/.test(css), 'no ease-in');
+  // What moves is transform and opacity; colours may fade. Controls answer within 300 ms; only content arriving as
+  // you scroll (the reveal and the hero's copy) takes .6s.
+  const moving = ['transform', 'opacity', 'color', 'background-color', 'border-color'];
+  for (const m of css.matchAll(/([^{}]*)\{[^}]*?transition:([^;}]+)/g)) {
+    if (m[2].trim() === 'none') continue;
+    const props = [...m[2].matchAll(/([a-z-]+) ([\d.]+)(m?s)/g)];
+    assert.ok(props.length, m[1].trim() + ': ' + m[2]);
+    props.forEach(([, prop, n, unit]) => {
+      assert.ok(moving.includes(prop), m[1].trim() + ' transitions ' + prop);
+      const sec = unit === 'ms' ? Number(n) / 1000 : Number(n);
+      assert.ok(sec < (/\.js-reveal/.test(m[1]) ? 0.61 : 0.3), m[1].trim() + ': ' + prop + ' ' + n + unit);
+    });
+  }
+  for (const m of css.matchAll(/@keyframes ([a-z]+)\{((?:[a-z0-9%]+\{[^}]*\})+)\}/g)) {
+    for (const d of m[2].matchAll(/([a-z-]+):/g)) assert.ok(['opacity', 'transform'].includes(d[1]), '@keyframes ' + m[1] + ' animates ' + d[1]);
+  }
+  for (const m of css.matchAll(/animation:([a-z]+) ([\d.]+)s/g)) assert.ok(Number(m[2]) <= 0.6, 'animation ' + m[1]);
+  // Hover belongs to a mouse or a trackpad: a tap would leave it on.
+  const hoverBlock = css.match(/@media \(hover:hover\) and \(pointer:fine\)\{\n[\s\S]*?\n\}/)[0];
+  assert.ok(!/:hover/.test(css.replace(hoverBlock, '')), 'every :hover is inside (hover:hover) and (pointer:fine)');
+  // Pressed with a finger or a mouse a control gives a little; from the keyboard it just acts, and a menu or an
+  // answer opened from the keyboard is simply there.
+  for (const m of css.matchAll(/([^{}]*:active[^{}]*)\{/g)) assert.match(m[1], /:active:not\(:focus-visible\)/, m[1].trim());
+  assert.match(css, /\.lang:has\(>summary:focus-visible\) div,\.lang summary:focus-visible::after\{transition:none\}/);
+  assert.match(css, /\.faq details:has\(>summary:focus-visible\)>p,\.faq summary:focus-visible::after\{transition:none\}/);
+  assert.match(css, /\.reel-play:focus-visible\{transition:none\}/);
+  // Items arriving together follow one another within 30 to 80 ms.
+  assert.match(js, /Math\.min\(k\+\+, 5\) \* 60 \+ 'ms'/);
+  // Reduced motion: no movement at all, short fades instead.
+  const reduceBlock = css.match(/@media\(prefers-reduced-motion:reduce\)\{html\{scroll-behavior:auto\}[\s\S]*?\n\}/)[0];
+  assert.match(reduceBlock, /\.hero \.lead,\.hero \.actions,\.hero \.fine,\.hero \.what\{animation:fade \.3s ease both\}/);
+  assert.match(css, /@media \(prefers-reduced-motion:no-preference\)\{\n  \.btn:active:not\(:focus-visible\)\{transform:scale\(\.97\)\}/, 'press feedback only when motion is welcome');
 });
 
 test('tapping the hero film, or its play button, pauses and plays it on every homepage', () => {
