@@ -50,6 +50,7 @@
 
 import { hmacHex, timingSafeEqual } from '../_shared/verify.js';
 import { createClient, envGetter, eq, SupabaseError } from '../_shared/supabase.js';
+import { readCapped, createLimiter } from '../_shared/http.js';
 
 export const MAX_BODY = 64 * 1024;
 export const RATE_LIMIT = { max: 120, windowMs: 60 * 1000 };
@@ -100,22 +101,8 @@ export const ADAPTERS = { fake: fakeAdapter, whish: whishAdapter };
 
 /* ------------------------------------------------------------------ helpers */
 
-export function createLimiter({ max = RATE_LIMIT.max, windowMs = RATE_LIMIT.windowMs } = {}) {
-  const hits = new Map();
-  return {
-    take(key, at) {
-      const t = at instanceof Date ? at.getTime() : Number(at);
-      let h = hits.get(key);
-      if (!h || t - h.start >= windowMs) {
-        if (hits.size > 10000) hits.clear();
-        h = { start: t, n: 0 };
-        hits.set(key, h);
-      }
-      h.n += 1;
-      return h.n <= max;
-    },
-  };
-}
+/* readCapped and createLimiter live in _shared/http.js since T15; re-exported for the tests. */
+export { readCapped, createLimiter } from '../_shared/http.js';
 
 function reply(status, body, headers) {
   return new Response(JSON.stringify(body), { status, headers: Object.assign({ 'Content-Type': 'application/json' }, headers || {}) });
@@ -126,29 +113,6 @@ export function providerFrom(pathname) {
   const parts = String(pathname || '').split('/').filter(Boolean);
   const i = parts.lastIndexOf('payment-webhook');
   return (i >= 0 ? parts[i + 1] || '' : '').toLowerCase();
-}
-
-/* Reads at most max bytes. {tooLarge} past the cap (by Content-Length or by counting),
-   {invalid} for a body that is not UTF-8, else {text}. */
-export async function readCapped(request, max) {
-  const declared = Number(request.headers.get('content-length'));
-  if (Number.isFinite(declared) && declared > max) return { tooLarge: true };
-  const chunks = [];
-  let total = 0;
-  if (request.body) {
-    const reader = request.body.getReader();
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      total += value.byteLength;
-      if (total > max) { try { await reader.cancel(); } catch (_) { /* already closed */ } return { tooLarge: true }; }
-      chunks.push(value);
-    }
-  }
-  const all = new Uint8Array(total);
-  let at = 0;
-  for (const c of chunks) { all.set(c, at); at += c.byteLength; }
-  try { return { text: new TextDecoder('utf-8', { fatal: true }).decode(all) }; } catch (_) { return { invalid: true }; }
 }
 
 const str = (v, n) => typeof v === 'string' && v.trim() !== '' && v.length <= n;

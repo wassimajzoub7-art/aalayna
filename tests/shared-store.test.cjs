@@ -34,5 +34,6 @@ test('a foreign record is never queued under the active restaurant',async()=>{
 test('guest cannot queue raw payment or contact writes or manufacture payment-completed events',async()=>{
  const b=await boot({role:'guest',key:'chk_bbbbbbbbbbbb'});
  b.write('aal.settle',[{id:'fake',venueId:'A',status:'confirmed'}]);b.write('aal.guests',[{id:'fake',venueId:'A'}]);b.write('aal.events',[{eventId:'fake',restaurantId:'A',eventType:'payment_completed'}]);await flush();assert.equal(b.posts.length,0);
- await assert.rejects(b.A.requestPayment({rail:'card'}),/not connected/);assert.throws(()=>b.A.confirmPayment('fake',{}),/verified provider/);
+ // T15: a digital payment is reserved on the server (requestPayment) and completed only by the provider's callback; nothing on the device settles or confirms it
+ await assert.rejects(b.A.settle({rail:'card'}),/provider's page/);assert.throws(()=>b.A.confirmPayment('fake',{}),/verified provider/);
 });
