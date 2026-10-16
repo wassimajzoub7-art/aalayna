@@ -20,7 +20,11 @@ screens read the film's evening and the controls are visible and disabled.
 | --- | --- | --- |
 | The menu | the language (EN, FR, AR) and the currency (USD, LBP) in the app's own two pickers; a dish tapped on or off the bill | English, dollars, the film's twelve dishes: $152.50 (the bar reads Open the bill and the total, as the real app) |
 | The split | How many of you? 2 to 6 | 4: $38.13, and $38.13, $38.13, $38.11 for the others |
-| The payment | No tip, 5, 10 or 15% | 10%: $3.81, $41.94 |
+| The payment | No tip, 5, 10 or 15%; Whish, Card or Cash | 10%: $3.81, $41.94; Whish |
+
+The way to pay carries on like the rest: the button reads as the real app's (Pay $41.94 for Whish and card,
+Request cash collection for cash), and the thank-you screen says Paid via Whish Money, Card or Cash; for cash it adds
+the real app's confirmed line (Cash collection confirmed by your server) and the Paid chip reads Paid $41.94 · cash.
 
 On a wide screen a control acts only while its phone is in its hold (complete and centred: 50% to 32% of the
 window, to 10% for the menu, which nothing moves after). On the phone stage it acts for as long as its phone is the
@@ -42,6 +46,14 @@ If the receipt gains or loses a line the engine measures again (the receipt's tr
 The arithmetic is the real app's: LBP at 89,500 (`Aalayna.rate()`'s default) rounded to the nearest LL 1,000; each
 share is the bill over the guests rounded to the cent, the last share takes the remainder (three of you on $152.50:
 $50.83, $50.83, $50.84; six: five of $25.42 and $25.40); the tip is the share times the rate, rounded to the cent.
+
+## The stage's unit, and ?debug=1
+
+On the phone stage every stretch is measured in the stage's own height (100svh and the header), never in
+innerHeight, which Safari changes as its toolbars come and go; the gate asks which stretch the scroll is in and how far
+through it, from that timeline. A re-measure (window or visualViewport resize) keeps the reader at the same point of
+the same stretch. `?debug=1` adds a read-out at the foot of the window: the stretch and its progress, which phone
+takes taps, innerHeight, visualViewport.height and the stage's unit, the tip and the way to pay.
 
 ## The captions on the phone stage
 
@@ -85,6 +97,10 @@ which these follow in spirit); back-translations in brackets.
 | offers | أرسلوا لي عروض Mayda | Send me Mayda's offers |
 | rateQ | كيف كانت السهرة في Mayda؟ | How was the evening at Mayda? |
 | paid | مدفوع {مبلغ} | Paid {amount} |
+| railCard / railCash | بطاقة / نقداً | Card / Cash |
+| reqCash | اطلبوا استلام المبلغ نقداً | Ask for the cash to be collected |
+| paidCash | مدفوع {مبلغ} · نقداً | Paid {amount} · cash |
+| cashOk | استلم النادل المبلغ نقداً وأكّده. | The server collected the cash and confirmed it. |
 | onBill / offBill (labels) | {عدد} على الفاتورة / ليس على الفاتورة | {n} on the bill / not on the bill |
 
 The page's own new words (the hints beside the phones on a wide screen, the caption controls on a phone):
@@ -93,7 +109,8 @@ The page's own new words (the hints beside the phones on a wide screen, the capt
 | --- | --- | --- |
 | Try it: change the language or the currency, or tap a dish. | جرّبها: غيّر اللغة أو العملة، أو اضغط على طبق. | Try it: change the language or the currency, or press a dish. |
 | Try it: change how many of you there are. | جرّبها: غيّر عدد الأشخاص. | Try it: change the number of people. |
-| Try it: choose the tip. | جرّبها: اختر الإكرامية. | Try it: choose the tip. |
+| Try it: choose the tip, or how to pay. | جرّبها: اختر الإكرامية، أو طريقة الدفع. | Try it: choose the tip, or the way to pay. |
+| Pay with: Whish, Card, Cash | الدفع عبر: Whish، بطاقة، نقداً | Payment via: Whish, card, cash |
 | Guests | الضيوف | The guests |
 | USD / LBP | دولار / ليرة | Dollar / Lira |
 | No tip | بلا | Without |
