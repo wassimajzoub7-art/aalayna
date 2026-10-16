@@ -64,7 +64,9 @@
       tipFor: 'Something for {server}?', noTip: 'No tip', whishDesc: 'Opens with the amount filled in', card: 'Card', cash: 'Paying cash',
       cashDesc: 'Staff confirm after collection', cashMark: 'CASH', pay: 'Pay {pay}', thanks: 'Shukran.', paidVia: 'Paid via', tableL: 'Table',
       mailPh: 'WhatsApp (+code) or email', send: 'Send my receipt', offers: 'Send me offers from Mayda', rateQ: 'How was Mayda tonight?',
-      paid: 'Paid {pay}', onBill: '{q} on the bill', offBill: 'not on the bill', tipOf: '{p} tip, {amt}' },
+      paid: 'Paid {pay}', onBill: '{q} on the bill', offBill: 'not on the bill', tipOf: '{p} tip, {amt}',
+      railWhish: 'Whish Money', railCard: 'Card', railCash: 'Cash', reqCash: 'Request cash collection', paidCash: 'Paid {pay} · cash',
+      cashOk: 'Cash collection confirmed by your server.' },
     fr: { back: 'Retour', table: 'Table 12', sub: 'Table 12 · Grillades libanaises', lang: 'Langue', ccy: 'Devise', usd: 'USD $', lbp: 'LBP LL',
       filters: 'Filtres alimentaires', openBill: 'Voir l’addition', splitTitle: 'On partage comment ?', splitSub: 'Personne n’a besoin de faire le calcul',
       even: 'À parts égales', mine: 'Mes plats', custom: 'Montant libre', all: 'Tout', howMany: 'Combien êtes-vous ?', fewer: 'Un de moins', more: 'Un de plus',
@@ -73,7 +75,9 @@
       tipFor: 'Un pourboire pour {server} ?', noTip: 'Aucun', whishDesc: 'S’ouvre avec le montant déjà saisi', card: 'Carte', cash: 'Payer en espèces',
       cashDesc: 'Le personnel confirme à l’encaissement', cashMark: 'ESP.', pay: 'Payer {pay}', thanks: 'Merci.', paidVia: 'Payé par', tableL: 'Table',
       mailPh: 'WhatsApp (+indicatif) ou e-mail', send: 'Recevoir mon reçu', offers: 'Recevoir les offres de Mayda', rateQ: 'Comment était Mayda ce soir ?',
-      paid: 'Payé {pay}', onBill: '{q} sur l’addition', offBill: 'pas sur l’addition', tipOf: 'Pourboire de {p}, {amt}' },
+      paid: 'Payé {pay}', onBill: '{q} sur l’addition', offBill: 'pas sur l’addition', tipOf: 'Pourboire de {p}, {amt}',
+      railWhish: 'Whish Money', railCard: 'Carte', railCash: 'Espèces', reqCash: 'Demander l’encaissement', paidCash: 'Payé {pay} · espèces',
+      cashOk: 'Encaissement confirmé par votre serveur.' },
     ar: { back: 'رجوع', table: 'طاولة 12', sub: 'طاولة 12 · مشاوي لبنانية', lang: 'اللغة', ccy: 'العملة', usd: 'دولار $', lbp: 'ليرة ل.ل.',
       filters: 'فلاتر الحمية', openBill: 'افتح الفاتورة', splitTitle: 'كيف نتقاسم الفاتورة؟', splitSub: 'ولا أحد يحسب شيئاً',
       even: 'بالتساوي', mine: 'ما طلبتُه', custom: 'مبلغ آخر', all: 'كلّها عليّ', howMany: 'كم شخصاً على الطاولة؟', fewer: 'شخص أقل', more: 'شخص أكثر',
@@ -82,7 +86,9 @@
       tipFor: 'شي لـ{server}؟', noTip: 'بلا إكرامية', whishDesc: 'يفتح والمبلغ معبّأ', card: 'بطاقة', cash: 'الدفع نقداً',
       cashDesc: 'يؤكّده الفريق عند الاستلام', cashMark: 'نقد', pay: 'ادفع {pay}', thanks: 'شكراً.', paidVia: 'دُفعت عبر', tableL: 'الطاولة',
       mailPh: 'واتساب أو بريد إلكتروني', send: 'أرسلوا الإيصال', offers: 'أرسلوا لي عروض Mayda', rateQ: 'كيف كانت السهرة في Mayda؟',
-      paid: 'مدفوع {pay}', onBill: '{q} على الفاتورة', offBill: 'ليس على الفاتورة', tipOf: 'إكرامية {p}، {amt}' }
+      paid: 'مدفوع {pay}', onBill: '{q} على الفاتورة', offBill: 'ليس على الفاتورة', tipOf: 'إكرامية {p}، {amt}',
+      railWhish: 'Whish Money', railCard: 'بطاقة', railCash: 'نقداً', reqCash: 'اطلبوا استلام المبلغ نقداً', paidCash: 'مدفوع {pay} · نقداً',
+      cashOk: 'استلم النادل المبلغ نقداً وأكّده.' }
   };
   // The printed receipt on the brass tray speaks the page's language (it is the restaurant's paper, not the app).
   var RC = {
@@ -104,7 +110,7 @@
   /* ---------- The state, and everything that follows from it ---------- */
   var initial = function (page) {
     var q = {}; SET.forEach(function (l) { q[l[0]] = l[1]; });
-    return { lang: page === 'ar' ? 'ar' : 'en', ccy: 'usd', q: q, people: 4, tip: 0.10 };
+    return { lang: page === 'ar' ? 'ar' : 'en', ccy: 'usd', q: q, people: 4, tip: 0.10, method: 'whish' };
   };
   // The quantity a dish comes back with when it is tapped on again: the film's, or one.
   var usual = function (id) { for (var i = 0; i < SET.length; i++) if (SET[i][0] === id) return SET[i][1]; return 1; };
@@ -136,6 +142,10 @@
       rest: money(c.rest, s), people: String(s.people), tip: money(c.tip, s), pay: money(c.pay, s), payLL: other(c.pay, s),
       t5: money(c.tipOf(0.05), s), t10: money(c.tipOf(0.10), s), t15: money(c.tipOf(0.15), s),
       p5: pct(5, L), p10: pct(10, L), p15: pct(15, L), server: SERVER[L],
+      // How it is paid: the button at the foot of the screen, the thank-you screen's "Paid via" and its cash line.
+      payBtn: s.method === 'cash' ? T[L].reqCash : fill(T[L].pay, { pay: money(c.pay, s) }),
+      rail: T[L][s.method === 'cash' ? 'railCash' : s.method === 'card' ? 'railCard' : 'railWhish'],
+      cashNote: s.method === 'cash' ? T[L].cashOk : '',
       others: c.others.map(function (v) { return money(v, s); }), othersLL: c.others.map(function (v) { return other(v, s); }) };
   };
   var text = function (key, s, v) { return fill(T[s.lang][key], v || vars(s)); };
@@ -167,7 +177,7 @@
     return { h: H, svg: out.join('') };
   };
   // The Paid chip's words (the app's language and currency), isolated so the amount keeps its side in Arabic.
-  var paidLine = function (s) { var t = text('paid', s); return s.lang === 'ar' ? RLI + t + PDI : t; };
+  var paidLine = function (s) { var t = text(s.method === 'cash' ? 'paidCash' : 'paid', s); return s.lang === 'ar' ? RLI + t + PDI : t; };
 
   return { RATE: RATE, TABLE: TABLE, D: D, SET: SET, SECTIONS: SECTIONS, CAT_ORDER: CAT_ORDER, T: T, initial: initial, usual: usual,
     calc: calc, vars: vars, text: text, name: name, alt: alt, cat: cat, price: price, receipt: receipt, paidLine: paidLine, fill: fill };
@@ -194,11 +204,31 @@
     for (var k in HERO) if (el.closest(HERO[k])) return k;
     return null;
   };
-  var inHold = function (k, y) { var r = UI.ranges[k]; return !r || (y >= r[0] && y <= r[1]); };
+  var inHold = function (k, y) {
+    if (UI.where && UI.span && UI.span.hi[k] != null) {
+      // The phone stage: hero hi is current from the moment it is complete (late in the stretch before it) until its
+      // own hand-off begins (early in its stretch's hand-off).
+      var w = UI.where(y), hi = UI.span.hi[k];
+      return (w.k === hi && w.f <= UI.span.e[k]) || (w.k === hi - 1 && w.f >= UI.span.a);
+    }
+    var r = UI.ranges[k]; return !r || (y >= r[0] && y <= r[1]);
+  };
   UI.ok = function (el) { return !root.classList.contains('gate') || inHold(whose(el), window.scrollY || window.pageYOffset || 0); };
   // Called by the engine on every frame: the phone in its hold (and its caption's controls) take taps; the others do not.
   var liveNow = {};
+  // ?debug=1: a small read-out of what the gate sees (for a screenshot from a real phone). Hidden otherwise.
+  var dbg = /[?&]debug=1\b/.test(location.search) ? document.createElement('div') : null;
+  if (dbg) { dbg.className = 'dbg'; dbg.setAttribute('aria-hidden', 'true'); document.body.appendChild(dbg); }
+  var debug = function (y) {
+    var w = UI.where ? UI.where(y) : null, vv = window.visualViewport;
+    dbg.textContent = (w ? 'stretch ' + w.k + ' · ' + w.f.toFixed(2) : 'desktop') + ' · y ' + Math.round(y) +
+      ' | ' + Object.keys(HERO).map(function (k) { return k + (inHold(k, y) ? ' ON' : ' off'); }).join(' ') +
+      ' | inner ' + window.innerHeight + ' vv ' + (vv ? Math.round(vv.height) : '-') + ' unit ' + (UI.span ? Math.round(UI.span.unit) : '-') +
+      ' | tip ' + S.tip + ' ' + S.method;
+  };
+  if (dbg && window.visualViewport) window.visualViewport.addEventListener('resize', function () { debug(window.scrollY); });
   UI.gate = function (y) {
+    if (dbg) debug(y);
     for (var k in HERO) {
       var on = inHold(k, y);
       if (liveNow[k] === on) continue;
@@ -237,6 +267,7 @@
     each('select[data-act]', function (s) { var want = S[s.getAttribute('data-act')]; if (s.value !== want) s.value = want; }, table);
     each('[data-act="lang"][data-v], [data-act="ccy"][data-v]', function (b) { b.setAttribute('aria-pressed', S[b.getAttribute('data-act')] === b.getAttribute('data-v') ? 'true' : 'false'); }, table);
     each('[data-act="tip"]', function (b) { var on = +b.getAttribute('data-r') === S.tip; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }, table);
+    each('[data-act="method"]', function (b) { var on = b.getAttribute('data-v') === S.method; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }, table);
     each('[data-act="ppl"]', function (b) { var d = +b.getAttribute('data-d'), off = d < 0 ? S.people <= 2 : S.people >= 6; b.setAttribute('aria-disabled', off ? 'true' : 'false'); }, table);
     // The shares that leave for the other guests: one for each of them, each with its own amount.
     each('.share-o', function (el) { el.classList.toggle('off', +el.getAttribute('data-k') >= S.people - 1); }, table);
@@ -264,6 +295,7 @@
     else if (a === 'lang' || a === 'ccy') S[a] = b.getAttribute('data-v');
     else if (a === 'ppl') S.people = Math.max(2, Math.min(6, S.people + (+b.getAttribute('data-d'))));
     else if (a === 'tip') S.tip = +b.getAttribute('data-r');
+    else if (a === 'method') S.method = b.getAttribute('data-v');
     changed();
   });
   table.addEventListener('change', function (e) {
@@ -413,6 +445,12 @@
     each('.table .board', function (bd) { bd.style.transform = ''; bd._t = null; bd.style.removeProperty('--lp'); });
     each('.table .note', function (n) { n.style.transform = ''; n.style.opacity = ''; n._t = n._o = null; });
     var heroEls = Array.prototype.filter.call(document.querySelectorAll('.table .ob.hero'), function (el) { return el.offsetWidth; });
+    // On the stage the timeline's unit is the stage's own height (the small viewport: 100svh and the header), never
+    // innerHeight. Safari's toolbars change innerHeight (and 100vh, 100dvh) while the reader scrolls; a unit that moved
+    // with them would slide every stretch under the reader's thumb on each re-measure, the farther down the table the
+    // more (k stretches of 1.2 units each: the payment, fifth, moved most). The stage's height does not move.
+    var was = PIN && stage ? (window.scrollY - stage.T0) / stage.STEP : null;
+    if (PIN) { var hd = document.querySelector('.top'); vh = pin.offsetHeight + (hd ? hd.offsetHeight : 0); }
     var HOLD = .35 * vh, HAND = .85 * vh, STEP = HOLD + HAND, T0 = 0, pinH = 0;
     var holdAt = function (k) { return T0 + k * STEP; };
     var hand = function (k) { return [T0 + k * STEP + HOLD, T0 + (k + 1) * STEP]; };
@@ -424,6 +462,12 @@
       pinH = pin.offsetHeight;
       T0 = box(table).top - (head0 ? head0.offsetHeight : 0);
       table.style.height = Math.round((heroEls.length - 1) * STEP + .45 * vh + pinH) + 'px';
+      // If the stage itself was resized (rotation, a new window size), keep the reader at the same point of the
+      // same stretch rather than at the same pixel.
+      if (was != null && was > -.5 && was < heroEls.length && (stage.T0 !== T0 || stage.STEP !== STEP)) {
+        var keep = Math.round(T0 + was * STEP);
+        if (Math.abs(keep - window.scrollY) > 1) { window.scrollTo({ top: keep, behavior: 'instant' }); cur = keep; }
+      }
       var cap = (parseFloat(getComputedStyle(pin).getPropertyValue('--cap')) || 40) / 100, stageC = pinH * (cap + (1 - cap) / 2);
       var tys = heroEls.map(function (h) { return stageC - rel(h).cy; });
       var boards = Array.prototype.slice.call(pin.querySelectorAll('.board'));
@@ -648,12 +692,16 @@
         UI.mids[nm] = Math.round(PIN ? holdAt(hi) + .5 * HOLD : C[hi] - .41 * vh);
       }
       root.setAttribute('data-live', JSON.stringify(UI.ranges));
+      // On the stage the gate asks which stretch the scroll is in, and how far through it, from the timeline itself.
+      UI.where = PIN ? function (y) { var t = (y - T0) / STEP, k = Math.floor(t); return { k: k, f: t - k }; } : null;
+      UI.span = { a: (HOLD + .8 * HAND) / STEP, e: { menu: (HOLD + .28 * HAND) / STEP, split: (HOLD + .06 * HAND) / STEP, pay: (HOLD + .06 * HAND) / STEP }, hi: hk, unit: vh };
       UI.gate(window.scrollY || window.pageYOffset || 0);
     }
     for (var dn in done) done[dn] = Math.round(done[dn]);
     root.setAttribute('data-done', JSON.stringify(done));
     root.setAttribute('data-hold', JSON.stringify(hold));
     root.setAttribute('data-ranges', JSON.stringify(ranges));
+    stage = PIN ? { T0: T0, STEP: STEP } : null;
     tracks.forEach(function (t) { t.p = -1; });
     apply(cur);
   };
@@ -668,7 +716,7 @@
   };
 
   /* ---------- The loop: follow the scroll, smoothly, only while it is moving ---------- */
-  var cur = window.scrollY || window.pageYOffset || 0, running = false;
+  var cur = window.scrollY || window.pageYOffset || 0, running = false, stage = null;
   var frame = function () {
     var target = window.scrollY || window.pageYOffset || 0, d = target - cur;
     if (UI) UI.gate(target);
@@ -679,7 +727,10 @@
   var go = function () { if (!running) { running = true; requestAnimationFrame(frame); } };
   window.addEventListener('scroll', go, { passive: true });
   var t;
-  window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(measure, 120); });
+  var again = function () { clearTimeout(t); t = setTimeout(measure, 120); };
+  window.addEventListener('resize', again);
+  // The visual viewport is the one Safari changes as its toolbars come and go.
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', again);
   window.addEventListener('load', measure);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   if (UI) UI.remeasure = measure;

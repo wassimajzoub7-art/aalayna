@@ -20,12 +20,12 @@ const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 // Words that belong to the page (its own language), not to the app: the hints beside the phones and the controls
 // the caption carries on a phone.
 const PAGE = {
-  en: { tryMenu: 'Try it: change the language or the currency, or tap a dish.', trySplit: 'Try it: change how many of you there are.', tryPay: 'Try it: choose the tip.',
+  en: { tryMenu: 'Try it: change the language or the currency, or tap a dish.', trySplit: 'Try it: change how many of you there are.', tryPay: 'Try it: choose the tip, or how to pay.',
     menuG: 'Try the menu', langG: 'Language', ccyG: 'Currency', usd: 'USD', lbp: 'LBP', guests: 'Guests', fewer: 'One fewer', more: 'One more',
-    noTip: 'No tip', tipG: 'Tip', menuL: 'The guest app: the menu', splitL: 'The guest app: the split', payL: 'The guest app: the payment' },
-  ar: { tryMenu: 'جرّبها: غيّر اللغة أو العملة، أو اضغط على طبق.', trySplit: 'جرّبها: غيّر عدد الأشخاص.', tryPay: 'جرّبها: اختر الإكرامية.',
+    noTip: 'No tip', tipG: 'Tip', wayG: 'Pay with', ways: ['Whish', 'Card', 'Cash'], menuL: 'The guest app: the menu', splitL: 'The guest app: the split', payL: 'The guest app: the payment' },
+  ar: { tryMenu: 'جرّبها: غيّر اللغة أو العملة، أو اضغط على طبق.', trySplit: 'جرّبها: غيّر عدد الأشخاص.', tryPay: 'جرّبها: اختر الإكرامية، أو طريقة الدفع.',
     menuG: 'جرّب القائمة', langG: 'اللغة', ccyG: 'العملة', usd: 'دولار', lbp: 'ليرة', guests: 'الضيوف', fewer: 'شخص أقل', more: 'شخص أكثر',
-    noTip: 'بلا', tipG: 'الإكرامية', menuL: 'تطبيق الضيف: القائمة', splitL: 'تطبيق الضيف: التقسيم', payL: 'تطبيق الضيف: الدفع' }
+    noTip: 'بلا', tipG: 'الإكرامية', wayG: 'الدفع عبر', ways: ['Whish', 'بطاقة', 'نقداً'], menuL: 'تطبيق الضيف: القائمة', splitL: 'تطبيق الضيف: التقسيم', payL: 'تطبيق الضيف: الدفع' }
 };
 
 function screens(page) {
@@ -84,10 +84,10 @@ function screens(page) {
 
   /* ---------- The payment, and the thank-you screen under it ---------- */
   const tipB = (r, tp, tv) => `<button type="button" class="g-tipb${r === S.tip ? ' on' : ''}" data-act="tip" data-r="${r}" aria-pressed="${r === S.tip ? 'true' : 'false'}" disabled>${tp}${tv}</button>`;
-  const pm = (on, mark, markCls, name, desc) => `<span class="g-pm${on ? ' on' : ''}"><span class="g-mark ${markCls}">${mark}</span><span class="g-pmt"><span class="g-pn">${name}</span><span class="g-pd">${desc}</span></span><span class="g-radio"></span></span>`;
+  const pm = (v, mark, markCls, name, desc) => `<button type="button" class="g-pm${v === S.method ? ' on' : ''}" data-act="method" data-v="${v}" aria-pressed="${v === S.method ? 'true' : 'false'}" disabled><span class="g-mark ${markCls}">${mark}</span><span class="g-pmt"><span class="g-pn">${name}</span><span class="g-pd">${desc}</span></span><span class="g-radio"></span></button>`;
   const done = app('g-done') + bar + `<span class="g-band">${[2, 5, 0, 4, 1, 3].map(k => tile(k)).join('')}</span>` +
     `<span class="g-seal">✓</span><span class="g-shk" data-t="thanks">${t('thanks')}</span>` +
-    `<span class="g-rcpt"><span class="g-rca" data-f="{pay}">${f('{pay}')}</span><span class="g-rcr"><span data-t="paidVia">${t('paidVia')}</span><b>Whish Money</b></span><span class="g-rcr"><span data-t="tableL">${t('tableL')}</span><b>12</b></span></span>` +
+    `<span class="g-rcpt"><span class="g-rca" data-f="{pay}">${f('{pay}')}</span><span class="g-rcr"><span data-t="paidVia">${t('paidVia')}</span><b data-f="{rail}">${f('{rail}')}</b></span><span class="g-rcr"><span data-t="tableL">${t('tableL')}</span><b>12</b></span><span class="g-rcn" data-f="{cashNote}">${f('{cashNote}')}</span></span>` +
     `<span class="g-mail"><span class="g-in" data-t="mailPh">${t('mailPh')}</span><span class="g-mb" data-t="send">${t('send')}</span></span>` +
     `<span class="g-cons"><span class="g-cb"></span><span data-t="offers">${t('offers')}</span></span>` +
     `<span class="g-rq" data-t="rateQ">${t('rateQ')}</span><span class="g-stars">★★★★★</span>${powered(' dk')}</span>`;
@@ -99,9 +99,9 @@ function screens(page) {
     tipB(0.05, `<span class="g-tp" data-f="{p5}">${f('{p5}')}</span>`, `<span class="g-tv" data-f="{t5}">${f('{t5}')}</span>`) +
     tipB(0.1, `<span class="g-tp" data-f="{p10}">${f('{p10}')}</span>`, `<span class="g-tv" data-f="{t10}">${f('{t10}')}</span>`) +
     tipB(0.15, `<span class="g-tp" data-f="{p15}">${f('{p15}')}</span>`, `<span class="g-tv" data-f="{t15}">${f('{t15}')}</span>`) + '</span></span>' +
-    `<span class="pay-row g-pays" data-k="2" aria-hidden="true">${pm(true, 'whish', 'g-wh', 'Whish Money', `<span data-t="whishDesc">${t('whishDesc')}</span>`)}${pm(false, 'VISA', 'g-visa', `<span data-t="card">${t('card')}</span>`, 'Visa, Mastercard, Amex')}${pm(false, `<span data-t="cashMark">${t('cashMark')}</span>`, 'g-cash', `<span data-t="cash">${t('cash')}</span>`, `<span data-t="cashDesc">${t('cashDesc')}</span>`)}</span>` +
+    `<span class="pay-row g-pays" data-k="2">${pm('whish', 'whish', 'g-wh', 'Whish Money', `<span data-t="whishDesc">${t('whishDesc')}</span>`)}${pm('card', 'VISA', 'g-visa', `<span data-t="card">${t('card')}</span>`, 'Visa, Mastercard, Amex')}${pm('cash', `<span data-t="cashMark">${t('cashMark')}</span>`, 'g-cash', `<span data-t="cash">${t('cash')}</span>`, `<span data-t="cashDesc">${t('cashDesc')}</span>`)}</span>` +
     `<span class="pay-row g-pww" data-k="3">${powered()}</span>` +
-    `<span class="pay-row pay-btn g-cta" data-k="4" data-t="pay">${t('pay')}</span>` +
+    `<span class="pay-row pay-btn g-cta" data-k="4" data-f="{payBtn}">${f('{payBtn}')}</span>` +
     `<span class="ly pay-thanks" aria-hidden="true">${done}</span>` +
     '</span></span>';
   const tick = L === 'ar' ? 'M190 20l6 6 12-12' : 'M96 20l6 6 12-12';
@@ -120,8 +120,10 @@ function screens(page) {
   const trySplit = `<p class="try">${esc(P.trySplit)}</p><div class="ctl" data-for="split"><span class="ctl-l">${esc(P.guests)}</span><span class="ctl-g">` +
     `<button type="button" class="ctl-b" data-act="ppl" data-d="-1" aria-label="${esc(P.fewer)}" aria-disabled="false" disabled>−</button><span class="ctl-n" data-f="{people}" aria-live="polite">${S.people}</span>` +
     `<button type="button" class="ctl-b" data-act="ppl" data-d="1" aria-label="${esc(P.more)}" aria-disabled="false" disabled>+</button></span></div>`;
-  const tryPay = `<p class="try">${esc(P.tryPay)}</p><div class="ctl" data-for="pay" role="group" aria-label="${esc(P.tipG)}">` +
-    [[0, P.noTip], [0.05, '5%'], [0.1, '10%'], [0.15, '15%']].map(([r, l]) => `<button type="button" class="ctl-b" data-act="tip" data-r="${r}" aria-pressed="${r === S.tip ? 'true' : 'false'}" disabled>${esc(l)}</button>`).join('') + '</div>';
+  const tryPay = `<p class="try">${esc(P.tryPay)}</p><div class="ctl" data-for="pay"><span class="ctl-g" role="group" aria-label="${esc(P.tipG)}">` +
+    [[0, P.noTip], [0.05, '5%'], [0.1, '10%'], [0.15, '15%']].map(([r, l]) => `<button type="button" class="ctl-b" data-act="tip" data-r="${r}" aria-pressed="${r === S.tip ? 'true' : 'false'}" disabled>${esc(l)}</button>`).join('') +
+    `</span><span class="ctl-g" role="group" aria-label="${esc(P.wayG)}">` +
+    ['whish', 'card', 'cash'].map((v, i) => `<button type="button" class="ctl-b" data-act="method" data-v="${v}" aria-pressed="${v === S.method ? 'true' : 'false'}" disabled>${esc(P.ways[i])}</button>`).join('') + '</span></div>';
 
 
   return { menu, split, 'split-free': splitFree, pay, 'pay-free': payFree, receipt, 'rv-paid': rvPaid,
