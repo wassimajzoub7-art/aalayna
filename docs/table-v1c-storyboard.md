@@ -60,14 +60,14 @@ breath it gave is kept as air: generous space between stretches.
 
 ## 03 The bill (the receipt on a brass tray)
 
-- **Point:** the bill reaches the guest's phone the moment they ask; 10 minutes saved per table.
+- **Point:** the bill is on the guest's phone from the moment they order; 10 minutes saved per table.
 - **Carrier:** the receipt, on a brass tray. The receipt is the thing that will travel.
 - **Eye lands on:** the receipt's total. **Second:** "10 min".
 - **Recedes:** an arak carafe and a glass to one side, one used plate pushed aside. Four used plates of style B cut.
 - **Motion:** the tray is set down. Then, over at least half a screen, the receipt lifts off the tray (rotation,
   shadow lengthening), travels down the table and lands in the split phone, where the screen takes it.
   **Left out:** anything else moving at the same time.
-- **Caption:** "The bill." / "On their phone the moment they ask." / 10 min.
+- **Caption:** "The bill." / "On their phone from the moment they order." / 10 min.
 
 ## 04 Split
 

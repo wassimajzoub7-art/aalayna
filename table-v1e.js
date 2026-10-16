@@ -717,15 +717,29 @@
 
   /* ---------- The loop: follow the scroll, smoothly, only while it is moving ---------- */
   var cur = window.scrollY || window.pageYOffset || 0, running = false, stage = null;
+  // The loop must never stay switched off: a frame the browser drops (a page frozen in the back/forward cache as the
+  // reader leaves it, a tab sent to the background mid-scroll) would leave `running` set with no frame to clear it,
+  // the table frozen and every phone's controls stuck in their last gate. So a scroll that finds the loop silent for
+  // a quarter of a second starts it again, and coming back to the page (pageshow, visibility) always does. The gate
+  // is also set straight from each scroll event, so whether a phone takes taps depends on the scroll position alone.
+  var last = 0;
   var frame = function () {
+    last = Date.now();
     var target = window.scrollY || window.pageYOffset || 0, d = target - cur;
     if (UI) UI.gate(target);
     cur = Math.abs(d) < .5 ? target : cur + d * .16;
     apply(cur);
     if (cur !== target) requestAnimationFrame(frame); else running = false;
   };
-  var go = function () { if (!running) { running = true; requestAnimationFrame(frame); } };
+  var go = function () {
+    if (UI) UI.gate(window.scrollY || window.pageYOffset || 0);
+    if (running && Date.now() - last > 250) running = false;
+    if (!running) { running = true; last = Date.now(); requestAnimationFrame(frame); }
+  };
+  var wake = function () { running = false; go(); };
   window.addEventListener('scroll', go, { passive: true });
+  window.addEventListener('pageshow', function (e) { if (e.persisted) measure(); wake(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) wake(); });
   var t;
   var again = function () { clearTimeout(t); t = setTimeout(measure, 120); };
   window.addEventListener('resize', again);

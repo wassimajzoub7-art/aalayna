@@ -55,6 +55,14 @@ through it, from that timeline. A re-measure (window or visualViewport resize) k
 the same stretch. `?debug=1` adds a read-out at the foot of the window: the stretch and its progress, which phone
 takes taps, innerHeight, visualViewport.height and the stage's unit, the tip and the way to pay.
 
+## Editable from anywhere
+
+Whether a phone takes taps is a function of the scroll position alone: the gate is set on every scroll event as
+well as on every frame, and nothing is remembered from the way down. The animation loop restarts itself if a frame
+is ever dropped (a page frozen in the back/forward cache as the reader leaves it, a tab sent to the background
+mid-scroll) and on pageshow and visibilitychange; before this, a dropped frame left the loop switched off and every
+phone's controls stuck in their last gate.
+
 ## The captions on the phone stage
 
 During a hand-off the outgoing caption steps back (55%, a quarter of a rem up) and stays until the incoming caption
@@ -118,3 +126,6 @@ The page's own new words (the hints beside the phones on a wide screen, the capt
 The receipt on the tray speaks the page's language: طاولة 12 · {n} ضيوف · 21:40 (ضيفان for two), المجموع, شكراً، إلى اللقاء (Table 12 ·
 {n} guests · 21:40, Total, Thank you, goodbye), with short dish names (شيش طاووق، لحم بعجين، عرايس كفتة ...). The
 founder approves all copy before launch.
+
+The bill stretch's line (17 October): "On their phone from the moment they order." / «على هاتف الضيف منذ لحظة
+الطلب.» (On the guest's phone from the moment of ordering.)
