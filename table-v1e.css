@@ -269,7 +269,7 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
 .g .g-end{display:flex;align-items:center;gap:calc(8 * var(--p));flex-shrink:0}
 .g-qn{font-size:var(--fs-small);font-weight:600}
 .g-mp{padding:calc(4 * var(--p)) calc(8 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk);font-size:var(--fs-body);font-weight:600;white-space:nowrap;transition:background-color .16s var(--ease-out),color .16s var(--ease-out)}
-.g-mi.on .g-mp{background:var(--gk);color:var(--gb)}
+.g .g-qn{display:none}
 .g .g-barw{position:absolute;inset:auto 0 0;padding:calc(12 * var(--p)) calc(18 * var(--p)) calc(24 * var(--p));background:var(--gb);box-shadow:0 calc(-1.5 * var(--p)) 0 var(--gk)}
 .g .g-bar{display:flex;align-items:center;justify-content:space-between;gap:calc(12 * var(--p));padding:calc(15 * var(--p)) calc(18 * var(--p));background:var(--gk);color:var(--gb);font-size:var(--fs-body);font-weight:600}
 .g-bar-a{font-variant-numeric:tabular-nums;white-space:nowrap}
