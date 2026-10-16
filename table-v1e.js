@@ -4,7 +4,7 @@
    HTML replicas of the real guest app (guest.html with ?theme=balat, the Beirut cement-tile menu, as the film shows
    it), styled from its CSS, in English, French or Arabic, in dollars or lira. Three things can be tried, each only
    while its phone is held complete in the middle of the window, and each carries on down the table:
-   - the menu: the language and the currency, and a dish tapped on or off the bill (the bill bar's count and total);
+   - the menu: the language and the currency, and a dish tapped on or off the bill (the bill bar's total);
    - the split: how many of you, 2 to 6; the shares are the real app's (each share is the bill divided by the number
      of guests, rounded to the cent, and the last share takes the remainder, so they add up exactly to the bill);
    - the tip: none, 5, 10 or 15 percent of your share, rounded to the cent as the real app rounds it.
@@ -100,12 +100,6 @@
   var other = function (v, s) { return '≈ ' + (s.ccy === 'lbp' ? fmtUSD(v, s.lang) : fmtLL(Math.round(v * RATE), s.lang)); };
   var pct = function (n, lang) { return lang === 'fr' ? n + ' %' : n + '%'; };
   var fill = function (str, v) { return str.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? String(v[k]) : m; }); };
-  // How many dishes are on the bill, in words: "26 items", "26 articles", and the Arabic counted noun.
-  var items = function (n, lang) {
-    if (lang === 'fr') return n + (n > 1 ? ' articles' : ' article');
-    if (lang === 'ar') return n === 1 ? 'صنف واحد' : n === 2 ? 'صنفان' : n <= 10 ? n + ' أصناف' : n + ' صنفاً';
-    return n + (n === 1 ? ' item' : ' items');
-  };
 
   /* ---------- The state, and everything that follows from it ---------- */
   var initial = function (page) {
@@ -118,11 +112,11 @@
     // The bill's lines, in the order the check was rung up (the film's twelve, then anything added).
     var order = SET.map(function (l) { return l[0]; });
     Object.keys(D).forEach(function (id) { if (order.indexOf(id) < 0) order.push(id); });
-    var lines = [], cents = 0, count = 0;
+    var lines = [], cents = 0;
     order.forEach(function (id) {
       var q = s.q[id] || 0; if (!q) return;
       var c = Math.round(D[id][6] * 100) * q;
-      lines.push({ id: id, q: q, cents: c }); cents += c; count += q;
+      lines.push({ id: id, q: q, cents: c }); cents += c;
     });
     // The real app's even split (guest.html, evenShareCents): each share is the bill over the guests, rounded to the
     // cent; the last share takes what is left, so the shares add up to the bill exactly.
@@ -131,14 +125,14 @@
     shares.push(cents - even * (n - 1));
     var share = even / 100, tipOf = function (r) { return Math.round(share * r * 100) / 100; };
     var tip = tipOf(s.tip), pay = share + tip;
-    return { lines: lines, cents: cents, total: cents / 100, count: count, shares: shares, share: share, rest: (cents - even) / 100,
+    return { lines: lines, cents: cents, total: cents / 100, shares: shares, share: share, rest: (cents - even) / 100,
       others: shares.slice(1).map(function (c) { return c / 100; }), tip: tip, pay: pay, tipOf: tipOf };
   };
   // Every value a screen prints, formatted for the app's language and currency.
   var vars = function (s, c) {
     c = c || calc(s);
     var L = s.lang;
-    return { total: money(c.total, s), count: String(c.count), items: items(c.count, L), share: money(c.share, s), shareLL: other(c.share, s),
+    return { total: money(c.total, s), share: money(c.share, s), shareLL: other(c.share, s),
       rest: money(c.rest, s), people: String(s.people), tip: money(c.tip, s), pay: money(c.pay, s), payLL: other(c.pay, s),
       t5: money(c.tipOf(0.05), s), t10: money(c.tipOf(0.10), s), t15: money(c.tipOf(0.15), s),
       p5: pct(5, L), p10: pct(10, L), p15: pct(15, L), server: SERVER[L],
@@ -612,6 +606,9 @@
         var d = more ? INOUT(seg(y, hand(k)[0] + .28 * HAND, hand(k)[0] + .4 * HAND)) : 0;
         var o = more ? OUT(seg(y, hand(k)[0] + .86 * HAND, hand(k)[0] + .94 * HAND)) : 0;
         put(note, 0, .9 * rem * (1 - i) - .25 * rem * d - .65 * rem * o, 0, 1, i * (1 - .45 * d) * (1 - o));
+        // Its controls take a tap only once it is in view (an arriving or leaving caption never catches one).
+        var up = i > .6 && o < .4;
+        if (note._up !== up) { note._up = up; note.classList.toggle('up', up); }
       });
     });
     // The captions beside the table: line by line as their note arrives; they leave as their stretch's hold ends.
@@ -644,7 +641,10 @@
       var hk = { menu: 1, split: 3, pay: 4 };
       for (var nm in hk) {
         var hi = hk[nm]; if (!heroEls[hi]) continue;
-        UI.ranges[nm] = PIN ? [hand(hi - 1)[0] + .96 * HAND, hand(hi)[0] + .06 * HAND] : [C[hi] - .5 * vh, C[hi] - (nm === 'menu' ? .1 : .32) * vh];
+        // On the stage a phone takes taps for as long as it is the current one: from the moment it is complete (its
+        // reveal ends at .8 of the hand-off that brings it) until its own hand-off begins (the menu's table starts
+        // to move at .28 of its hand-off; your share and the Pay press leave at .06). Beside the table, its hold.
+        UI.ranges[nm] = PIN ? [hand(hi - 1)[0] + .8 * HAND, hand(hi)[0] + (nm === 'menu' ? .28 : .06) * HAND] : [C[hi] - .5 * vh, C[hi] - (nm === 'menu' ? .1 : .32) * vh];
         UI.mids[nm] = Math.round(PIN ? holdAt(hi) + .5 * HOLD : C[hi] - .41 * vh);
       }
       root.setAttribute('data-live', JSON.stringify(UI.ranges));
