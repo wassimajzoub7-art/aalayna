@@ -1,0 +1,619 @@
+/* Aalayna homepage, prototype V1 (table-v1e.html, ar/table-v1e.html): down the length of the table, style D, the
+   photographic version.
+
+   A typographic poster that sells the outcome, then one long table seen from above that runs down the page, and the
+   evening unfolds from its head to its foot: the QR card, the menu on the guest's phone, the bill on a brass tray,
+   the split, the payment, the review card, the regulars, and at the foot the restaurant's own bill and a card that
+   says Reserved. Each stretch has one point and one hero object (docs/table-v1c-storyboard.md); a few quiet plates
+   are the only other things on the cloth. Each stretch carries its note: beside the table on the cream ground on a
+   wide screen (on alternate sides, a clay hairline pointing across), on a soft cream panel lying on the linen just
+   under its hero on a phone.
+
+   Photographic: the table is a photograph of natural linen; the plates, the brass tray and the phone are cut-outs of
+   real photographs (docs/table-v1d-assets.md); the cards and receipts are real paper textures with their words set
+   in type, and the phones show the real app, live: HTML replicas of its screens (version E, below). One light, from the top left: every object casts a soft
+   shadow down and to the right, drawn here as a separate layer so it can lag behind the object when it moves.
+
+   Motion is written by table-v1e.js from the scroll position, the same in every browser (docs/table-v1c-motion.md):
+   one chain carries the evening (the receipt becomes the bill on the phone, your share becomes the payment, Paid
+   becomes the head of the review card) and every object is set down as the reader reaches it. The cloth never moves.
+   This sheet only lays the table; with reduced motion or without JavaScript the table is simply laid and nothing is
+   hidden.
+
+   Type: Instrument Sans for every headline and line, semibold and a little tight; Aalayna Block only for the name and
+   the receipts' print. Six type sizes only. Cream, linen, brass and ink, the logo's red as the accent (--brand fills
+   under white, --brand-text for red text). Square corners for every control and card; only the phone is round. */
+@font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-weight:100 900;font-style:normal;font-display:swap}
+
+:root{
+  /* Palette: cream ground, natural linen, warm paper, ink. Text pairs (all at least 4.5:1): ink, --sub, --brand-text,
+     --clay and --olive on --floor and --paper; --paper on --clay and --olive. */
+  --floor:#F7F2EA;        /* the cream page ground around the table */
+  --linen:#E2D9CA;        /* the cloth's own tone, under its photograph */
+  --paper:#FFFBF4;        /* panels, the skip link */
+  --clay:#AD4F2D;         /* terracotta: the figures, the price strip */
+  --olive:#5A632C;        /* olive: the pilot, the two free months */
+  --ink:#211B16;
+  --sub:#5F5348;
+  --line:#E3D6C3;
+  --brand:#C9414B;--brand-hover:#AC303B;--brand-text:#B3363F;
+  --paid:#0B3A2D;         /* the app's paid green */
+  --gold:#B07D27;         /* the review stars */
+  --shade:46,32,18;       /* the colour of every cast shadow, as r,g,b */
+  /* Six type sizes: 14 / 16 / 19 / 30 / 54 / 67 px. */
+  --fs-small:.875rem;--fs-body:1rem;--fs-lead:1.1875rem;--fs-heading:1.875rem;--fs-display:3.375rem;--fs-hero:4.1875rem;
+  --font-text:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --font-name:'Aalayna Block',ui-monospace,monospace;
+  /* Motion: one curve for things arriving, one for things moving while on screen. */
+  --ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1);
+  --header-h:4rem;--gut:1rem;--dir:1;
+  /* The table: --tw is the width of its boards, one unit (--u) is a 400th of it. On a phone the boards are wider than
+     the window, so the linen runs edge to edge and the plates at the sides are cropped by the window, as in a
+     photograph. */
+  --tw:min(125vw,36rem);--u:calc(var(--tw) / 400);
+}
+[dir="rtl"]{--dir:-1}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;color:var(--ink);font-family:var(--font-text);font-size:var(--fs-body);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background:var(--floor)}
+a{color:inherit}
+a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+a:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
+h1,h2,h3,p{margin:0}
+p{text-wrap:pretty}
+.wrap{width:min(120rem,calc(100% - 2 * var(--gut)));margin-inline:auto}
+section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
+.skip{position:absolute;top:-6rem;inset-inline-start:1rem;z-index:100;padding:.75rem 1rem;background:var(--paper);font-weight:600}
+.skip:focus{top:.5rem}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.eyebrow,.step{font-size:var(--fs-small);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-text)}
+/* Headlines: Instrument Sans, semibold, a little tight, as the live site sets them. The name keeps the logo's capitals. */
+.poster-title,.poster-sub,.poster-price,.head,.ask-title{font-family:var(--font-text);font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+.name{font-family:var(--font-name);font-weight:400;font-synthesis:none;letter-spacing:0}
+
+/* ---------- Header: the logo, two anchors, the other language and the ask ---------- */
+.top{position:sticky;top:0;z-index:20;background:var(--floor);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:1rem;height:calc(var(--header-h) - 1px)}
+.logo{display:inline-flex;align-items:center;min-height:44px;flex-shrink:0;color:var(--ink);text-decoration:none}
+.logo svg{display:block;height:2.375rem;width:auto}
+.logo .logo-ink{fill:currentColor}.logo .logo-red{fill:var(--brand)}
+.top-links{display:flex;gap:.25rem;margin-inline-start:auto}
+.top-links a,.lang{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;text-decoration:none;white-space:nowrap;transition:color .15s ease}
+.lang{flex-shrink:0}
+
+/* ---------- Buttons: square, the red one is the ask ---------- */
+.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.75rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;font-size:var(--fs-body);font-weight:600;line-height:1.35;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .16s var(--ease-out)}
+.btn.outline{background:transparent;border-color:var(--ink);color:var(--ink)}
+.btn.compact{min-height:44px;padding:.5rem 1rem;font-size:var(--fs-small);white-space:nowrap}
+.actions{display:flex;flex-wrap:wrap;gap:.75rem}
+
+/* ---------- The poster: what the owner gets, then the name's price and the asks ---------- */
+/* The name in the logo's capitals; the outcome in big Instrument Sans; the three results beneath; the price with the
+   two free months; the asks; what it is, in three words. The head of the table peeks in at the foot of the window
+   (--peek: the head chair and the cloth's first edge) so the reader knows where to go. */
+.poster{--peek:calc(var(--u) * 40);display:flex;align-items:center;min-height:calc(100vh - var(--header-h) - var(--peek));min-height:calc(100svh - var(--header-h) - var(--peek));padding-block:2rem 3rem}
+.poster-in{display:flex;flex-direction:column;align-items:flex-start}
+.poster-title{margin-top:1rem;font-size:var(--fs-display);line-height:1.02;letter-spacing:-.03em}
+.poster-title .name,.poster-title .tag{display:block}
+.poster-title .name{margin-bottom:.625rem;font-size:var(--fs-heading);line-height:1.1}
+.poster-title em{font-style:normal;color:var(--brand-text)}
+.poster-sub{max-width:36rem;margin-top:1rem;font-size:var(--fs-lead);line-height:1.4;letter-spacing:-.01em;color:var(--sub);text-wrap:pretty}
+.poster-offer{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .875rem;margin-top:1.5rem}
+.poster-price{padding:.375rem .875rem .5rem;background:var(--clay);color:var(--paper);line-height:1.2;white-space:nowrap}
+.poster-price .amt{font-size:var(--fs-heading)}
+.poster-price .unit{font-size:var(--fs-lead);letter-spacing:0}
+.poster-free{font-size:var(--fs-body);font-weight:600;color:var(--olive)}
+.poster .actions{margin-top:1.5rem}
+.poster-does{margin-top:1.25rem;font-size:var(--fs-small);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--sub)}
+@media (min-width:768px){
+  .poster-title{font-size:var(--fs-hero);line-height:1.02}
+  .poster-title .name{font-size:var(--fs-display);margin-bottom:.75rem}
+  .poster-sub{max-width:44rem;margin-top:1.25rem;font-size:var(--fs-heading);line-height:1.25}
+  .poster-offer{margin-top:2rem;gap:.75rem 1.25rem}
+  .poster-price{padding:.5rem 1rem .625rem}
+  .poster-price .amt{font-size:var(--fs-display);line-height:1.1}
+  .poster-price .unit{font-size:var(--fs-heading)}
+  .poster-free{font-size:var(--fs-lead)}
+  .poster .actions{margin-top:2rem}
+}
+
+
+/* ---------- The table ---------- */
+.table{position:relative;isolation:isolate;overflow:hidden;overflow:clip;--tl:calc((100% - var(--tw)) / 2)}
+/* The cloth: one photograph of natural linen, tiled (a second, larger pass of the same weave breaks the repeat), the
+   width of the boards, from the head of the table to its foot. No outline: the light falls off a little at its two
+   long edges, where the cloth drops over the table's sides, and the table casts a soft shadow on the cream ground. */
+.linen{position:absolute;z-index:-1;top:0;bottom:0;inset-inline-start:var(--tl);width:var(--tw);pointer-events:none;
+  background:var(--linen) url(images/table/linen.webp) 0 0 / 31.25rem auto repeat;
+  box-shadow:.5rem 1.5rem 3rem -1.25rem rgba(var(--shade),.22),0 .25rem .75rem -.25rem rgba(var(--shade),.12)}
+.linen::before,.linen::after{content:"";position:absolute;inset:0}
+.linen::before{background:url(images/table/linen.webp) 9.5rem 4.25rem / 43rem auto repeat;opacity:.28}
+.linen::after{background:linear-gradient(90deg,rgba(var(--shade),.1),rgba(var(--shade),0) 1.75rem,rgba(var(--shade),0) calc(100% - 1.75rem),rgba(var(--shade),.12)),
+  linear-gradient(180deg,rgba(var(--shade),.08),rgba(var(--shade),0) 1.5rem,rgba(var(--shade),0) calc(100% - 1.5rem),rgba(var(--shade),.1))}
+.stretch{position:relative;display:flex;flex-direction:column}
+/* The receipt, your share and the paid chip travel over what follows them. */
+.s-bill{z-index:4}.s-split{z-index:3}.s-pay{z-index:2}
+.s-bill>.board,.s-split>.board,.s-pay>.board{z-index:6}
+/* A board: one stretch of the table, 400 units wide and --h tall. Every object on it is an element of its own (.ob),
+   placed in table units: its cast shadow (.osh), then the piece (.pc) and the layers laid on it. */
+.board{position:relative;width:var(--tw);margin-inline:calc((100% - var(--tw)) / 2);aspect-ratio:400 / var(--h)}
+.board-end{margin-inline:0;margin-inline-start:var(--tl)}
+.ob{position:absolute;display:block;inset-inline-start:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:calc(var(--w) * 1%)}
+.pc{position:relative;display:block}
+.pc picture{display:block}
+.pz,.frame{display:block;width:100%;height:auto}
+.ob svg{display:block;overflow:visible}
+.ly,.rc,.spot,.scan,.strip,.free,.screen,.glass{position:absolute;display:block}
+/* The cast shadows: a soft shadow the shape of the object, filled and blurred (so it can slide out from under the
+   object without a hole), lying down and to the right; a tight contact shadow sits on the piece itself. */
+.osh,.rc-sh,.go-sh{position:absolute;inset:0;pointer-events:none;background:rgba(var(--shade),.3);filter:blur(.55rem);translate:.3rem .65rem}
+.osh.round{inset:2%;border-radius:50%;opacity:.95}
+.osh.phone{border-radius:16.7% / 8%;background:rgba(var(--shade),.4);filter:blur(.8rem);translate:.45rem .9rem}
+.osh.card{background:rgba(var(--shade),.22);filter:blur(.45rem);translate:.2rem .45rem}
+.osh.tent{background:rgba(var(--shade),.26);filter:blur(.6rem);translate:.3rem 1rem}
+.pz,.frame{filter:drop-shadow(0 .05rem .08rem rgba(var(--shade),.35))}
+/* Paper: a cotton card, and the smoother receipt paper, both photographed; the light from the top left lies on them. */
+.paper,.receipt{position:relative;display:block;aspect-ratio:var(--ar);background:#F8F4EB url(images/table/paper.webp) center / cover;box-shadow:0 .04rem .12rem rgba(var(--shade),.22)}
+.receipt{background:#FAF9F5 url(images/table/receipt.webp) center / cover}
+.paper::after,.receipt::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.4),rgba(255,255,255,0) 45%,rgba(var(--shade),.05));box-shadow:inset 0 0 0 .5px rgba(var(--shade),.08)}
+.print,.rc-ink{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:multiply}
+/* The receipt on the tray, and its own shadow (it lengthens as the receipt is lifted). */
+.rc{display:block}
+.rc-go{position:relative;display:block}
+.rc-pz{position:relative}
+.rc-sh{background:rgba(var(--shade),.24);filter:blur(.35rem);translate:.12rem .3rem}
+/* The phone: the screen under the frame, cut to the frame's rounded corners; the real app's screen in slices that
+   can arrive one after another (version E builds them in HTML, below); a faint reflection on the glass. What travels off the screen lies in .free, which has
+   the screen's place but does not clip. */
+.screen,.free,.glass{left:4.007%;top:1.929%;width:91.985%;height:96.142%}
+.screen{overflow:hidden;border-radius:13.6% / 6.25%;background:#F4EDE1}
+.glass{border-radius:13.6% / 6.25%;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.14),rgba(255,255,255,0) 34%,rgba(255,255,255,0) 70%,rgba(255,255,255,.06))}
+.pc>picture{position:relative;pointer-events:none}
+/* Nothing that travels takes a tap: the receipt, your share and the Paid chip pass over the phones and rest, unseen,
+   on them once they have landed. */
+.free,.rc,.go{pointer-events:none}
+.sv{position:absolute;inset:0;overflow:hidden;display:block}
+.share{overflow:visible;transform-origin:50% 50%}
+.share.off{visibility:hidden}
+.go-sh{opacity:0;translate:.25rem .6rem}
+.share .sv{z-index:1}
+.pay-thanks{inset:0;overflow:hidden;pointer-events:none}
+.rv-paid{display:block;width:100%;height:auto}
+#land-bill{inset:0}
+#land-paid,.rv-paid{left:12%;top:9%;width:76%}
+#land-paid{height:9.7%}
+
+/* ---------- Version E: the guest app, live, on the phones ----------
+   Each screen is the real guest app (guest.html, ?theme=balat: the Beirut cement-tile menu, as in the film) rebuilt
+   in HTML from its CSS: bone paper, ink rules, square corners, Fraunces for names and figures, Instrument Sans for the
+   rest, Reem Kufi and IBM Plex Sans Arabic in Arabic. It is laid out in the app's own points, 390 to the screen's
+   width (one point is --p, a 390th of the screen), and its six type sizes are the site's six tokens, 14 / 16 / 19 /
+   30 / 54 / 67, in those points: the same rule as the lettering on the other objects, in the object's own units. The
+   words and every amount come from table-v1e.js (the state S). */
+.screen,.free{container-type:inline-size;--p:calc(100cqw / 390);
+  --fs-small:calc(14 * var(--p));--fs-body:calc(16 * var(--p));--fs-lead:calc(19 * var(--p));--fs-heading:calc(30 * var(--p));--fs-display:calc(54 * var(--p));--fs-hero:calc(67 * var(--p));
+  --gb:#F4EDE1;--gk:#1D1A16;--gl:#CDBFAA;--gd:#C9BCA9;--gs:#58655E;--gm:#6B6158;--gn:#24366B;--gdeep:#19264B;--gpick:#EAE0CE;
+  --tile-t:#B5502C;--tile-o:#D39B2A;--tile-s:#6F9A83;--tile-i:#24366B}
+.g{position:absolute;inset:0;display:block;overflow:hidden;background:var(--gb);color:var(--gk);font-family:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  font-size:var(--fs-small);font-weight:400;line-height:1.4;text-align:start;font-feature-settings:'tnum';-webkit-font-smoothing:antialiased}
+.g[lang="ar"],.share[lang="ar"],.paid-go[lang="ar"]{font-family:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif}
+.g span,.g b{display:block}
+.g b{font-weight:700}
+.g button{all:unset;box-sizing:border-box;position:relative;display:flex;cursor:default;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+/* Fraunces for the names and the figures, soft, as the app sets it; Arabic falls to Reem Kufi. */
+.g-vn,.g-sect,.g-mn,.g-title,.g-v,.g-big,.g-shk,.g-rca{font-family:'Fraunces','Reem Kufi',Georgia,serif;font-weight:520;font-variation-settings:'SOFT' 100,'WONK' 0;letter-spacing:0}
+/* The four pigments of the tiles, each pattern drawn in CSS (guest.html, .theme-balat .tile.k0 to k5). */
+.g-tile{flex-shrink:0}
+.g-tile.k0{background:radial-gradient(circle at 50% 0,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 50% 100%,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 0 50%,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 100% 50%,var(--tile-s) 0 25%,transparent 25.6%),radial-gradient(circle at 50% 50%,var(--tile-t) 0 12%,transparent 12.6%),var(--gb)}
+.g-tile.k1{background:radial-gradient(circle at 50% 50%,var(--tile-o) 0 13%,transparent 13.6%),radial-gradient(circle at 0 0,var(--gb) 0 30%,transparent 30.6%),radial-gradient(circle at 100% 0,var(--gb) 0 30%,transparent 30.6%),radial-gradient(circle at 0 100%,var(--gb) 0 30%,transparent 30.6%),radial-gradient(circle at 100% 100%,var(--gb) 0 30%,transparent 30.6%),var(--tile-i)}
+.g-tile.k2{background:radial-gradient(circle at 0 0,var(--gb) 0 35%,transparent 35.6%),radial-gradient(circle at 100% 100%,var(--gb) 0 35%,transparent 35.6%),radial-gradient(circle at 100% 0,var(--tile-i) 0 15%,transparent 15.6%),radial-gradient(circle at 0 100%,var(--tile-i) 0 15%,transparent 15.6%),var(--tile-o)}
+.g-tile.k3{background:radial-gradient(circle at 50% 50%,var(--gb) 0 11%,transparent 11.6%),radial-gradient(circle at 50% 50%,transparent 0 46%,var(--tile-t) 46.6%),conic-gradient(from 22.5deg at 50% 50%,var(--tile-o) 0 45deg,var(--tile-t) 0 90deg,var(--tile-o) 0 135deg,var(--tile-t) 0 180deg,var(--tile-o) 0 225deg,var(--tile-t) 0 270deg,var(--tile-o) 0 315deg,var(--tile-t) 0 360deg)}
+.g-tile.k4{background:radial-gradient(circle at 50% 50%,var(--tile-i) 0 10%,transparent 10.6%),linear-gradient(135deg,var(--gb) 0 25%,transparent 25.2%),linear-gradient(225deg,var(--gb) 0 25%,transparent 25.2%),linear-gradient(315deg,var(--gb) 0 25%,transparent 25.2%),linear-gradient(45deg,var(--gb) 0 25%,transparent 25.2%),var(--tile-t)}
+.g-tile.k5{background:radial-gradient(circle at 50% 50%,var(--tile-i) 0 10%,transparent 10.6%),conic-gradient(from 0deg at 50% 50%,var(--gb) 0 25%,var(--tile-s) 0 50%,var(--gb) 0 75%,var(--tile-s) 0 100%)}
+/* The status bar, either side of the island; the back arrow; "powered by" and the line logo; the app's button. */
+.g .g-sb{position:absolute;top:0;inset-inline:0;height:calc(54 * var(--p));display:flex;align-items:center;justify-content:space-between;padding-inline:calc(48 * var(--p)) calc(30 * var(--p));padding-top:calc(4 * var(--p));direction:ltr}
+.g-time{font-size:var(--fs-body);font-weight:600;letter-spacing:-.01em}
+.g-sbi{display:block;width:calc(68 * var(--p));height:auto;fill:var(--gk)}
+.g-sbi .g-bat{fill:none;stroke:var(--gk);stroke-width:1.2;opacity:.45}
+.g-done .g-sbi{fill:#fff}
+.g-done .g-sbi .g-bat{stroke:#fff}
+.g .g-back{position:absolute;top:calc(60 * var(--p));inset-inline-start:calc(14 * var(--p));width:calc(44 * var(--p));height:calc(44 * var(--p));display:flex;align-items:center;justify-content:center;border:calc(1.5 * var(--p)) solid var(--gk);font-size:var(--fs-lead);line-height:1}
+.g[dir="rtl"] .g-back{transform:scaleX(-1)}
+.g .g-pw{display:flex;align-items:center;justify-content:center;gap:calc(5 * var(--p));color:#66736B;font-size:var(--fs-small)}
+.g .g-pw span{display:inline}
+.g-logo{display:block;width:calc(70 * var(--p));height:calc(10 * var(--p))}
+.g-logo .logo-ink{fill:var(--gk)}
+.g-logo .logo-red{fill:#C9414B}
+.g .g-pw.dk{color:rgba(244,237,225,.5)}
+.g .g-cta{position:absolute;inset-inline:calc(20 * var(--p));display:flex;align-items:center;justify-content:center;height:calc(50 * var(--p));background:var(--gn);color:#fff;font-size:var(--fs-body);font-weight:600;white-space:nowrap}
+
+/* The menu: the restaurant's name and the pickers, the dietary filters and a tile for each section, then the dishes
+   (a tile, the name, its Arabic name, the price in a ruled box) and, docked at the foot, the bill. A dish on the
+   bill is filled in ink, its quantity beside it: the app's way of showing a choice once made. */
+.g .g-hd{position:relative;height:calc(120 * var(--p))}
+.g .g-mh{position:absolute;top:calc(56 * var(--p));inset-inline:calc(70 * var(--p)) calc(160 * var(--p))}
+.g-vn{font-size:var(--fs-heading);line-height:1.15}
+.g .g-vs{margin-top:calc(2 * var(--p));font-size:var(--fs-small);color:var(--gs);white-space:nowrap}
+.g .g-sels{position:absolute;top:calc(60 * var(--p));inset-inline-end:calc(14 * var(--p));display:flex;gap:calc(6 * var(--p))}
+.g .g-sel{position:relative;height:calc(44 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk);display:flex;align-items:center;padding-inline:calc(10 * var(--p)) calc(22 * var(--p));font-size:var(--fs-small);font-weight:600;white-space:nowrap}
+.g-sel::after{content:'\25BE';position:absolute;inset-inline-end:calc(8 * var(--p));top:50%;translate:0 -50%;font-size:var(--fs-small);scale:.7;color:var(--gs)}
+/* The real <select> lies over its box, invisible, at least 44 px each way, so the system's own picker opens at full
+   size; the two meet half way between their boxes. */
+.g-pick{position:absolute;top:50%;translate:0 -50%;height:max(100%,44px);margin:0;padding:0;border:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;--fs-body:1rem;font-size:var(--fs-body);font-family:inherit}
+.g-sel-l .g-pick{inset-inline-end:calc(-3 * var(--p));width:max(calc(100% + 3 * var(--p)),44px)}
+.g-sel-c .g-pick{inset-inline-start:calc(-3 * var(--p));width:max(calc(100% + 3 * var(--p)),44px)}
+.g-pick:disabled{cursor:default}
+.g .g-fc{position:relative}
+.g .g-fbtn{display:inline-flex;align-items:center;gap:calc(8 * var(--p));height:calc(40 * var(--p));margin:calc(12 * var(--p)) calc(20 * var(--p)) 0;padding-inline:calc(12 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk);font-size:var(--fs-small);font-weight:600}
+.g .g-fbtn span{display:inline}
+.g-fi{color:var(--gs)}
+.g .g-cats{display:flex;gap:calc(12 * var(--p));padding:calc(14 * var(--p)) calc(20 * var(--p)) calc(8 * var(--p));border-bottom:1px solid var(--gl);overflow:hidden}
+.g .g-cat{display:flex;flex-direction:column;align-items:center;gap:calc(7 * var(--p));flex:0 0 auto;width:calc(78 * var(--p));padding:calc(4 * var(--p)) 0 calc(6 * var(--p));font-size:var(--fs-small);line-height:1.25;text-align:center;color:var(--gs)}
+.g .g-cat .g-tile{width:calc(44 * var(--p));height:calc(44 * var(--p))}
+.g .g-cat.on{color:var(--gk)}
+.g .g-cat.on .g-tile{box-shadow:0 0 0 calc(3 * var(--p)) var(--gb),0 0 0 calc(5 * var(--p)) var(--gk)}
+.g .g-sect{display:flex;justify-content:space-between;align-items:baseline;margin:0 calc(20 * var(--p));padding:calc(20 * var(--p)) 0 calc(6 * var(--p));border-bottom:calc(1.5 * var(--p)) solid var(--gk);font-size:var(--fs-heading);line-height:1.15}
+.g-sect-ar{font-family:'Reem Kufi','IBM Plex Sans Arabic',sans-serif;font-size:var(--fs-lead);color:var(--gs)}
+.g[lang="ar"] .g-sect-ar{display:none}
+.g .g-mi{display:flex;align-items:center;gap:calc(14 * var(--p));margin:0 calc(20 * var(--p));padding:calc(14 * var(--p)) 0;border-bottom:1px dashed var(--gd);width:calc(100% - 40 * var(--p))}
+/* Each dish is a button the height of its row; its target is at least 44 px tall. */
+.g-mi::after{content:"";position:absolute;inset-inline:0;top:50%;height:max(100%,44px);translate:0 -50%}
+.g .g-dt{width:calc(40 * var(--p));height:calc(40 * var(--p))}
+.g .g-tx{flex:1;min-width:0}
+.g-mn{font-size:var(--fs-lead);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g .g-mar{margin-top:calc(3 * var(--p));font-size:var(--fs-small);line-height:1.3;color:var(--gm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-mar:lang(ar){font-family:'Reem Kufi','IBM Plex Sans Arabic',sans-serif}
+.g .g-end{display:flex;align-items:center;gap:calc(8 * var(--p));flex-shrink:0}
+.g-qn{font-size:var(--fs-small);font-weight:600}
+.g-mp{padding:calc(4 * var(--p)) calc(8 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk);font-size:var(--fs-body);font-weight:600;white-space:nowrap;transition:background-color .16s var(--ease-out),color .16s var(--ease-out)}
+.g-mi.on .g-mp{background:var(--gk);color:var(--gb)}
+.g .g-barw{position:absolute;inset:auto 0 0;padding:calc(12 * var(--p)) calc(18 * var(--p)) calc(24 * var(--p));background:var(--gb);box-shadow:0 calc(-1.5 * var(--p)) 0 var(--gk)}
+.g .g-bar{display:flex;align-items:center;justify-content:space-between;gap:calc(12 * var(--p));padding:calc(15 * var(--p)) calc(18 * var(--p));background:var(--gk);color:var(--gb);font-size:var(--fs-body);font-weight:600}
+.g .g-bar-l{display:flex;align-items:center;gap:calc(10 * var(--p))}
+.g-count{min-width:calc(30 * var(--p));padding:calc(1 * var(--p)) calc(5 * var(--p));border:calc(1.5 * var(--p)) solid var(--gb);font-size:var(--fs-small);text-align:center}
+.g-bar-a{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* The split: the question, the four ways (evenly, chosen), how many of you, your share, what is left for the others,
+   Continue. Laid out in place, as the app draws it, so the shares that travel start exactly where yours is. */
+.g .g-top{position:absolute;inset:0 0 auto;height:calc(110 * var(--p))}
+.g .g-q{position:absolute;top:calc(108 * var(--p));inset-inline:calc(20 * var(--p));text-align:center}
+.g-title{font-size:var(--fs-heading);line-height:1.2}
+.g .g-subt{margin-top:calc(4 * var(--p));font-size:var(--fs-small);color:var(--gs)}
+.g .g-seg{position:absolute;top:calc(186 * var(--p));inset-inline:calc(18 * var(--p));height:calc(56 * var(--p));display:flex;border:calc(1.5 * var(--p)) solid var(--gk)}
+.g .g-seg span{flex:1;display:flex;align-items:center;justify-content:center;padding:0 calc(4 * var(--p));font-size:var(--fs-small);line-height:1.25;text-align:center;color:var(--gs)}
+.g .g-seg .on{background:var(--gk);color:var(--gb);font-weight:600}
+.g .g-ppl{position:absolute;top:calc(256 * var(--p));inset-inline:calc(18 * var(--p));height:calc(72 * var(--p));display:flex;align-items:center;justify-content:space-between;padding-inline:calc(22 * var(--p)) calc(13 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk)}
+.g-lab{font-size:var(--fs-body);font-weight:600}
+.g .g-stp{display:flex;align-items:center;gap:calc(14 * var(--p))}
+.g .g-stp button{width:calc(44 * var(--p));height:calc(44 * var(--p));align-items:center;justify-content:center;border:calc(1.5 * var(--p)) solid var(--gk);font-size:var(--fs-lead);line-height:1;transition:opacity .16s var(--ease-out)}
+.g .g-stp button[aria-disabled="true"]{opacity:.35}
+/* The stepper's two targets are each at least 44 px, and meet half way across the number between them. */
+.g-stp button::after{content:"";position:absolute;top:50%;height:max(100%,44px);translate:0 -50%}
+.g-sbm::after{inset-inline-end:calc(-29 * var(--p));width:max(calc(100% + 29 * var(--p)),44px)}
+.g-sbp::after{inset-inline-start:calc(-29 * var(--p));width:max(calc(100% + 29 * var(--p)),44px)}
+.g .g-n{min-width:calc(30 * var(--p));font-size:var(--fs-body);font-weight:600;text-align:center}
+.g .g-rest{position:absolute;top:calc(478 * var(--p));inset-inline:calc(20 * var(--p));font-size:var(--fs-small);line-height:1.55;text-align:center;color:var(--gs)}
+.g .g-dock{position:absolute;inset:auto 0 0;height:calc(130 * var(--p))}
+.g .g-dock .g-cta,.g .pay-btn{bottom:calc(70 * var(--p))}
+.g .g-dock .g-pw,.g .g-pww{position:absolute;inset-inline:0;bottom:calc(34 * var(--p))}
+/* Your share, and the other guests' (they lie under yours, in .free, until they leave): YOUR SHARE, the amount, the
+   other currency. Bone paper under the ink rule, so they cover what they pass over. */
+.share-o,.share-me{position:absolute;top:calc(342 * var(--p));inset-inline:calc(18 * var(--p));height:calc(124 * var(--p))}
+.g-share{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(4 * var(--p));background:var(--gb);color:var(--gk);border:calc(1.5 * var(--p)) solid var(--gk);text-align:center;font-family:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;line-height:1.3}
+[lang="ar"] .g-share{font-family:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif}
+.g-share span{display:block}
+.g-k{font-size:var(--fs-small);font-weight:600;letter-spacing:.08em}
+[lang="ar"] .g-k{letter-spacing:0}
+.g-v{font-size:var(--fs-heading);line-height:1.15}
+.g-ll{font-size:var(--fs-small)}
+
+/* The payment: the total, the bill share and the tip, Something for Abou Karim? and the tips, the three ways to pay,
+   Pay. Under it, waiting, the thank-you screen. */
+.g .g-who{position:absolute;top:calc(118 * var(--p));inset-inline:0;text-align:center;font-size:var(--fs-small);font-weight:600;color:var(--gn)}
+.g .g-big{position:absolute;top:calc(138 * var(--p));inset-inline:0;text-align:center;font-size:var(--fs-display);line-height:1.15;white-space:nowrap}
+.g .g-bll{position:absolute;top:calc(206 * var(--p));inset-inline:0;text-align:center;font-size:var(--fs-small);color:var(--gs)}
+.g .g-bd{position:absolute;top:calc(238 * var(--p));inset-inline:calc(20 * var(--p));height:calc(70 * var(--p));display:flex;justify-content:space-between;align-items:center;padding-inline:calc(18 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk);font-size:var(--fs-small);color:var(--gs)}
+.g .g-bd>span{display:flex;flex-direction:column;gap:calc(3 * var(--p))}
+.g .g-bd>span+span{text-align:end}
+.g .g-bd b{color:var(--gk);font-size:var(--fs-body)}
+.g .g-tipw{position:absolute;top:calc(326 * var(--p));inset-inline:calc(20 * var(--p))}
+.g .g-tiph{margin-bottom:calc(9 * var(--p));font-size:var(--fs-body);font-weight:600}
+.g .g-tips{display:grid;grid-template-columns:repeat(4,1fr);gap:calc(6 * var(--p))}
+.g .g-tipb{flex-direction:column;align-items:center;justify-content:center;height:calc(60 * var(--p));border:calc(1.5 * var(--p)) solid var(--gl);text-align:center;transition:background-color .16s var(--ease-out),border-color .16s var(--ease-out),color .16s var(--ease-out)}
+.g-tipb::after{content:"";position:absolute;inset-inline:0;top:50%;height:max(100%,44px);translate:0 -50%}
+.g-tp{font-size:var(--fs-body);font-weight:600;line-height:1.2}
+.g .g-tv{margin-top:calc(2 * var(--p));font-size:var(--fs-small);color:var(--gs);line-height:1.2;min-height:1.2em;transition:color .16s var(--ease-out)}
+.g .g-tipb.on{background:var(--gk);border-color:var(--gk);color:var(--gb)}
+.g .g-tipb.on .g-tv{color:var(--gb)}
+.g .g-pays{position:absolute;top:calc(428 * var(--p));inset-inline:calc(20 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk)}
+.g .g-pm{display:flex;align-items:center;gap:calc(12 * var(--p));height:calc(72 * var(--p));padding-inline:calc(13 * var(--p));border-bottom:1px solid var(--gl)}
+.g .g-pm:last-child{border-bottom:0}
+.g .g-pm.on{background:var(--gpick)}
+.g .g-mark{width:calc(46 * var(--p));height:calc(28 * var(--p));display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:var(--fs-small);font-weight:700;letter-spacing:.02em}
+.g-wh{background:#E4002B}.g-visa{background:#1A1F71}.g-cash{background:#3F8F6B}
+.g .g-mark span{display:inline}
+.g .g-pmt{flex:1;min-width:0}
+.g-pn{font-size:var(--fs-body);font-weight:600}
+.g .g-pd{margin-top:calc(2 * var(--p));font-size:var(--fs-small);color:var(--gs);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g .g-radio{width:calc(17 * var(--p));height:calc(17 * var(--p));flex-shrink:0;border:calc(1.5 * var(--p)) solid var(--gl);border-radius:50%}
+.g .g-pm.on .g-radio{border-color:var(--gk);background:var(--gk);box-shadow:inset 0 0 0 calc(3 * var(--p)) var(--gb)}
+/* The thank-you screen: the restaurant's deepest shade, its tiles along the top, Shukran, what was paid, the
+   receipt and the offers, the stars. */
+.g.g-done{background:var(--gdeep);color:var(--gb);text-align:center}
+.g .g-band{margin-top:calc(54 * var(--p));display:grid;grid-template-columns:repeat(6,1fr);gap:calc(2 * var(--p))}
+.g .g-band .g-tile{aspect-ratio:1/1}
+.g .g-seal{width:calc(38 * var(--p));height:calc(38 * var(--p));margin:calc(104 * var(--p)) auto 0;border-radius:50%;background:#fff;color:var(--gdeep);display:flex;align-items:center;justify-content:center;font-size:var(--fs-lead)}
+.g-shk{margin-top:calc(6 * var(--p));font-size:var(--fs-display);line-height:1.15;color:#fff}
+.g .g-rcpt{margin:calc(10 * var(--p)) calc(35 * var(--p)) 0;padding:calc(10 * var(--p)) calc(14 * var(--p));border:1px solid rgba(244,237,225,.22);background:rgba(244,237,225,.06)}
+.g-rca{padding-bottom:calc(8 * var(--p));border-bottom:1px solid rgba(244,237,225,.16);font-size:var(--fs-heading);line-height:1.2;color:#fff}
+.g .g-rcr{display:flex;justify-content:space-between;padding:calc(5 * var(--p)) 0;font-size:var(--fs-small);color:rgba(244,237,225,.78)}
+.g .g-rcr b{color:#fff;font-weight:600}
+.g .g-mail{display:flex;gap:calc(8 * var(--p));margin:calc(12 * var(--p)) calc(35 * var(--p)) 0;height:calc(44 * var(--p))}
+.g .g-in{flex:1;min-width:0;display:flex;align-items:center;padding-inline:calc(10 * var(--p));border:1px solid rgba(244,237,225,.4);background:rgba(244,237,225,.08);font-size:var(--fs-small);color:rgba(244,237,225,.6);white-space:nowrap;overflow:hidden}
+.g .g-mb{width:calc(96 * var(--p));display:flex;align-items:center;justify-content:center;border:1px solid rgba(244,237,225,.4);font-size:var(--fs-small);font-weight:600;line-height:1.2;color:#fff}
+.g .g-cons{display:flex;align-items:center;gap:calc(9 * var(--p));margin:calc(10 * var(--p)) calc(35 * var(--p)) 0;font-size:var(--fs-small);color:rgba(244,237,225,.78);text-align:start}
+.g .g-cb{width:calc(18 * var(--p));height:calc(18 * var(--p));flex-shrink:0;background:#fff}
+.g .g-rq{margin-top:calc(16 * var(--p));font-size:var(--fs-small);font-weight:600;color:#fff}
+.g .g-stars{margin-top:calc(4 * var(--p));font-size:var(--fs-heading);letter-spacing:calc(12 * var(--p));color:rgba(244,237,225,.32);padding-inline-start:calc(12 * var(--p))}
+.g-done .g-pw{position:absolute;inset-inline:0;bottom:calc(18 * var(--p))}
+.g-done .g-logo .logo-ink{fill:rgba(244,237,225,.85)}
+.g-done .g-logo .logo-red{fill:#F6C39F}
+/* The Paid chip: the button, pressed, becomes the app's paid green; it is what lands on the review card. */
+.paid-go{position:absolute;inset-inline:calc(20 * var(--p));bottom:calc(70 * var(--p));height:calc(50 * var(--p))}
+.g-chip{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:calc(8 * var(--p));height:100%;background:var(--paid);color:#fff;font-family:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;font-size:var(--fs-body);font-weight:600}
+[lang="ar"] .g-chip{font-family:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif}
+.g-chip svg{width:calc(20 * var(--p));height:calc(20 * var(--p));fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:square}
+/* Focus is drawn at the page's size, whatever the phone's. */
+.g button:focus-visible{outline:2px solid var(--brand);outline-offset:2px;z-index:2}
+.g-sel:has(.g-pick:focus-visible){outline:2px solid var(--brand);outline-offset:2px}
+html.gate .ob-phone.live [data-act]{cursor:pointer}
+html.gate .ob-phone:not(.live) [data-act]{pointer-events:none}
+@media (hover:hover) and (pointer:fine){
+  html.gate .ob-phone.live .g-mi:not(.on):hover .g-mp,html:not(.gate) .g-mi:not(.on):hover .g-mp{background:var(--gpick)}
+  html.gate .ob-phone.live .g-tipb:not(.on):hover,html:not(.gate) .g-tipb:not(.on):hover{border-color:var(--gk)}
+  html.gate .ob-phone.live .g-stp button:hover,html:not(.gate) .g-stp button:hover{background:var(--gpick)}
+  .ctl-b:not([aria-pressed="true"]):hover{background:var(--line)}
+}
+
+/* The captions of the three phones: a hint on a wide screen (only once the script can act on a tap); on a phone the
+   controls themselves, at full size, under the caption. */
+.try{display:none;max-width:24rem;margin-top:.75rem;font-size:var(--fs-small);line-height:1.5;color:var(--sub)}
+html.ui .try{display:block}
+.ctl{display:none}
+.ctl-g{display:flex;gap:.25rem}
+.ctl-b{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0 .625rem;border:1.5px solid var(--ink);border-radius:0;background:transparent;color:var(--ink);font:inherit;font-size:var(--fs-small);font-weight:600;line-height:1;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:background-color .16s var(--ease-out),color .16s var(--ease-out)}
+.ctl-b[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.ctl-b[aria-disabled="true"]{opacity:.35}
+.ctl-b:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.ctl-l{font-size:var(--fs-small);font-weight:600;color:var(--sub)}
+.ctl-n{min-width:2.25rem;font-size:var(--fs-body);font-weight:600;text-align:center}
+html.gate .ctl:not(.live){pointer-events:none}
+/* Under 1024 px the phones are too small for their pickers, stepper and tips to make 44 px targets: the caption
+   carries them instead (the dishes, a row each, stay on the screen). */
+@media (max-width:1023px){
+  html.ui .try{display:none}
+  html.ui .ctl{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .75rem;margin-top:.75rem}
+  html.ui .ctl-g{align-items:center}
+  html.ui .ob-phone .screen [data-act]:not([data-act="dish"]){pointer-events:none}
+}
+@media (max-width:767px){
+  html.pin .stretch>.note{pointer-events:none}
+  html.pin .stretch>.note .ctl.live{pointer-events:auto}
+  html.pin.ui .note .ctl{margin-top:.625rem}
+  /* The payment's caption is the longest (its figure has two lines): on the stage it gives up its small numbered
+     label to make room for the tips, and on the smallest phones its line too (the screen under it says the same). */
+  html.pin.ui .note:has(.ctl[data-for="pay"]) .step{display:none}
+  html.pin.ui .note:has(.ctl[data-for="pay"]) .head{margin-top:0}
+}
+@media (max-width:359px) and (max-height:700px),(max-width:767px) and (max-height:600px){
+  html.pin.ui .note:has(.ctl[data-for="pay"]) .say{display:none}
+}
+
+/* The scan: a red line passing down the QR code as the card scrolls by. */
+.scan{display:none;overflow:hidden}
+.scan i{display:block;width:100%;height:2.4%;background:var(--brand);opacity:.85}
+/* The tent card at the foot: the far face in a little shade, the crease, the near face in the light. */
+.fold{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(var(--shade),.09),rgba(var(--shade),.05) 47%,rgba(var(--shade),.14) 49.5%,rgba(255,255,255,.55) 50.5%,rgba(255,255,255,0) 60%)}
+/* The lettering on the objects: Instrument Sans at the size tokens, in the object's own units, so it scales with it.
+   The receipts print in Aalayna Block. */
+.table svg{direction:ltr}
+.table text{font-family:var(--font-text);letter-spacing:0}
+.table .blk{font-family:var(--font-name);font-weight:400}
+.table .tn{font-variant-numeric:tabular-nums;font-weight:500}
+.table .arb{font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:500}
+.table .caps{text-transform:uppercase;letter-spacing:.14em}
+.table .wide{letter-spacing:.32em}
+[lang="ar"] .table .caps,[lang="ar"] .table .wide{letter-spacing:0}
+.table .z-s{font-size:var(--fs-small)}.table .z-b{font-size:var(--fs-body)}.table .z-l{font-size:var(--fs-lead)}
+.table .w5{font-weight:500}.table .w6{font-weight:600}
+.table .k{fill:var(--ink)}.table .su{fill:var(--sub)}.table .rt{fill:var(--brand-text)}.table .r{fill:var(--brand)}
+.table .cl{fill:var(--clay)}.table .ol{fill:var(--olive)}.table .av{fill:var(--clay)}.table .wt{fill:#fff}
+.table .rule{fill:none;stroke:var(--ink);stroke-opacity:.3;stroke-width:1;stroke-dasharray:3 3}
+.table .paid{fill:var(--paid)}
+.table .tick{fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:square}
+.table .st{fill:var(--gold)}
+.star{transform-origin:50% 60%}
+
+/* The notes: what each stretch of the table means. On a phone, a soft cream panel lying on the linen under its
+   object, with a soft shadow. */
+.note{position:relative;z-index:5;width:calc(var(--u) * 300 - 1rem);max-width:34rem;margin:.25rem auto 3.5rem;padding:1.25rem 1.25rem 1.5rem}
+.note::before,.note::after{content:"";position:absolute;z-index:-1;inset:0}
+.note::before{box-shadow:0 .5rem 1.5rem rgba(var(--shade),.12),0 .05rem .15rem rgba(var(--shade),.08)}
+.note::after{background:rgba(250,246,239,.95)}
+.head{margin-top:.625rem;font-size:var(--fs-display);line-height:1.04}
+.say{max-width:24rem;margin-top:.875rem;font-size:var(--fs-lead);line-height:1.5}
+.fig{margin-top:1.5rem}
+.fig::before{content:"";display:block;width:2.5rem;height:.1875rem;margin-bottom:1rem;background:var(--clay)}
+.num{font-size:var(--fs-hero);font-weight:500;letter-spacing:-.03em;line-height:1;color:var(--clay)}
+.src{max-width:19rem;margin-top:.5rem;font-size:var(--fs-small);line-height:1.5;color:var(--sub)}
+.cta{margin-top:1.5rem}
+/* The price at the foot of the table: $150 large, the rest in words. */
+.s-price .head .amt{font-size:var(--fs-hero);font-weight:500;line-height:1}
+.s-price .head .unit{display:block;margin-top:.5rem;font-size:var(--fs-lead);line-height:1.3;letter-spacing:0}
+.s-price .say strong{font-weight:600}
+.pilot{max-width:24rem;margin-top:1.25rem;font-size:var(--fs-body);line-height:1.55;color:var(--sub)}
+.pill{display:inline-block;margin-inline-end:.375rem;padding:.125rem .5rem;background:var(--olive);color:var(--paper);font-size:var(--fs-small);font-weight:600}
+.more a{display:inline-block;padding-block:.75rem;font-size:var(--fs-small);font-weight:600;text-underline-offset:.2rem;transition:color .15s ease}
+
+/* ---------- The ask, under the foot of the table ---------- */
+.ask{padding-block:clamp(3.5rem,10vh,6.5rem) clamp(4rem,12vh,7.5rem);text-align:center}
+.ask-in{display:flex;flex-direction:column;align-items:center}
+.ask-title{max-width:14ch;margin-top:1rem;font-size:var(--fs-display);line-height:1.04}
+.ask .say{max-width:30rem;margin:1.25rem auto 0;color:var(--sub);text-wrap:balance}
+.ask .actions{justify-content:center;margin-top:2rem}
+.film a{display:inline-block;margin-top:1.25rem;padding-block:.75rem;font-size:var(--fs-small);color:var(--sub);text-underline-offset:.2rem;transition:color .15s ease}
+@media (min-width:768px){.ask-title{font-size:var(--fs-hero);line-height:1.02}}
+
+/* ---------- Footer ---------- */
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1.5rem;padding-block:2rem;border-top:1px solid var(--line)}
+.foot .logo svg{height:2.25rem}
+.foot p,.foot-wa,.foot-lang{font-size:var(--fs-small)}
+.foot p{color:var(--sub)}
+.foot-wa,.foot-lang{display:inline-flex;align-items:center;min-height:44px;min-width:44px;font-weight:600;text-underline-offset:.2rem}
+
+/* ---------- Wide screens: the table on the side, the notes beside it on the floor ---------- */
+@media (min-width:768px){
+  :root{--gut:clamp(1.5rem,4vw,4rem);--tw:min(52vw,40rem)}
+  /* Beside the notes, the cloth is the edge of the table: what lies on it is cropped there, as in a photograph. */
+  .board{overflow-x:clip}
+  .table{--tl:calc(100% - var(--tw) - var(--gut));--gap:clamp(1.5rem,3.5vw,4rem)}
+  .stretch{display:grid;grid-template-columns:minmax(0,1fr) var(--tw);align-items:center;padding-inline-end:var(--gut);padding-block:max(1.5rem,calc((70vh - var(--h) * var(--u)) / 2))}
+  /* The chain's stretches are longer: each hand-off starts only once its hero has held, centred, and lands early
+     enough for the next hero to be complete when it is centred, which needs more than one stretch of 70vh. */
+  .s-bill,.s-split,.s-pay,.s-review{padding-block:max(1.5rem,calc((94vh - var(--h) * var(--u)) / 2))}
+  /* The last stretch leaves room for the close to arrive in its own time. */
+  .s-price{padding-bottom:calc(max(1.5rem,calc((70vh - var(--h) * var(--u)) / 2)) + 22vh)}
+  .stretch>.board{grid-column:2;grid-row:1;width:auto;margin:0}
+  /* Each note hugs the table and is centred on its hero's line; a clay hairline points from it across to the table. */
+  .note{grid-column:1;grid-row:1;justify-self:end;width:calc(100% - var(--gut) - var(--gap));max-width:25rem;margin:0;margin-inline:var(--gut) var(--gap);padding:2.5rem 0}
+  .note::before{display:none}
+  .note::after{inset:auto;top:50%;inset-inline-start:calc(100% + .5rem);width:calc(var(--gap) - 1rem);height:1px;background:var(--clay);opacity:.55}
+}
+/* From 1280 px the table runs down the middle and the notes take alternate sides, as the guests sit. Each note keeps
+   to the table; its outer edge never comes closer to the window than the page's gutter. */
+@media (min-width:1280px){
+  :root{--tw:clamp(32rem,40vw,48rem)}
+  .table{--tl:calc((100% - var(--tw)) / 2)}
+  .stretch{grid-template-columns:minmax(0,1fr) var(--tw) minmax(0,1fr);padding-inline-end:0}
+  .side-b .note{grid-column:3;justify-self:start;margin-inline:var(--gap) var(--gut)}
+  .side-b .note::after{inset-inline-start:auto;inset-inline-end:calc(100% + .5rem)}
+}
+
+/* ---------- Phones (under 768 px) ---------- */
+/* On a phone the table is a bounded tabletop, never a full-bleed cloth behind everything: each board carries its own
+   linen, finer and softer than on a wide screen, the full width of the window, and each hero is sized by --kw (its
+   width in vw over its share of the board) to about 55% of the window, the phone at most 58%, so it reads as an
+   object on a table and not as the reader's own screen. The plates at the sides and the buttons inside the stretches
+   are left out (the header's Book a demo is always there; the close has the asks).
+   Without JavaScript or with reduced motion each stretch is a compact block: its caption on the cream, then its
+   object at rest on its piece of table. With JavaScript (html.pin, set by table-v1e.js) the table becomes a pinned
+   stage: below. */
+@media (max-width:767px){
+  .linen{display:none}
+  .ob.xw,.note .cta,.note .more{display:none}
+  .board-end{--kw:100}.s-qr{--kw:137}.s-menu,.s-split,.s-pay{--kw:119}.s-bill{--kw:112}.s-review,.s-again{--kw:116}.s-price{--kw:124}.board-foot{--kw:130}
+  .board{--tw:min(calc(var(--kw) * 1vw),34rem);isolation:isolate;margin-inline:calc((100% - var(--tw)) / 2)}
+  .board::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:50%;width:100vw;translate:-50% 0;
+    background:linear-gradient(rgba(226,217,202,.42),rgba(226,217,202,.42)),var(--linen) url(images/table/linen.webp) 0 var(--lp,0) / 20rem auto repeat}
+  .board::after{content:"";position:absolute;z-index:-1;top:0;left:50%;width:100vw;height:1.25rem;translate:-50% 0;pointer-events:none;background:linear-gradient(rgba(var(--shade),.14),rgba(var(--shade),0))}
+  .stretch{display:flex;flex-direction:column}
+  .stretch>.note{order:-1;width:auto;max-width:34rem;margin:0;padding:2.25rem 1.25rem 1.25rem}
+  .note::before,.note::after{display:none}
+  .note .head{font-size:var(--fs-heading);line-height:1.1}
+  .note .say{margin-top:.5rem;font-size:var(--fs-body)}
+  .note .fig{display:flex;align-items:baseline;gap:.75rem;margin-top:.75rem}
+  .note .fig::before{display:none}
+  .note .num{flex-shrink:0;font-size:var(--fs-heading);font-weight:500}
+  .note .src{margin-top:0}
+  .s-price .note .head .amt{font-size:var(--fs-heading)}
+  .s-price .note .head .unit{display:inline;font-size:var(--fs-body)}
+  .s-price .note .say{display:none}
+  .s-price .note .pilot{margin-top:.5rem}
+
+  /* The pinned stage: the cream page above (the caption of the stretch in view), the tabletop below, its top edge in
+     a soft shade like the edge of a table. The boards are stacked on one strip that table-v1e.js moves under the
+     stage, holding each hero in the middle of the tabletop while its caption is read, so every hand-off plays in
+     place. The scroll length is set by the script (about 115vh a stretch). */
+  html.pin .table{overflow:visible}
+  html.pin .pin{position:sticky;top:var(--header-h);height:calc(100vh - var(--header-h));height:calc(100svh - var(--header-h));overflow:hidden;
+    --cap:40%;--stageH:calc((100svh - var(--header-h)) * .6)}
+  html.pin .pin::before{content:"";position:absolute;z-index:20;inset:0 0 auto;height:var(--cap);background:var(--floor)}
+  html.pin .pin::after{content:"";position:absolute;z-index:20;inset:var(--cap) 0 auto;height:1.5rem;pointer-events:none;background:linear-gradient(rgba(var(--shade),.18),rgba(var(--shade),0))}
+  html.pin .board{--tw:min(calc(var(--kw) * 1vw),calc(var(--kh) * var(--stageH)))}
+  html.pin .board::after{display:none}
+  html.pin .s-qr{--kh:1.5}html.pin .s-menu,html.pin .s-split,html.pin .s-pay{--kh:.9}html.pin .s-bill{--kh:1.3}html.pin .s-review{--kh:1.6}html.pin .s-again{--kh:1.65}html.pin .s-price{--kh:1.45}html.pin .board-end{--kh:3}
+  html.pin .stretch{position:static;display:block;padding:0}
+  html.pin .s-bill .board{z-index:9}html.pin .s-split .board{z-index:8}html.pin .s-pay .board{z-index:7}
+  html.pin .stretch>.note{position:absolute;z-index:21;inset:0 0 auto;height:var(--cap);max-width:none;display:flex;flex-direction:column;justify-content:flex-end;padding:0 1.25rem 1.25rem;opacity:0}
+  html.pin .stretch>.note .step{margin-top:0}
+}
+@media (max-width:767px) and (max-height:700px){
+  html.pin .pin{--cap:38%;--stageH:calc((100svh - var(--header-h)) * .62)}
+  html.pin .note .src{font-size:var(--fs-small);line-height:1.35}
+}
+
+/* ---------- Motion ---------- */
+/* The table's motion is written by table-v1e.js, frame by frame from the scroll position (html.js), the same in every
+   browser: it sets transforms and opacity on the layers below and nothing else. Without JavaScript, or with reduced
+   motion, nothing here applies and the table is simply laid. The two duplicates that only exist for the travel (the
+   paid chip on the phone, its thanks underneath) are hidden until the script runs. */
+.paid-go,.pay-thanks,.scan{opacity:0}
+html.js .ob>.pc,html.js .ob>.osh,html.js .go,html.js .rc-sh,html.js .ly,html.js .share,html.js .sv,html.js .go-sh,html.js .note>*,html.js .scan i,html.js .scr-head,html.js .dish,html.js .sp-row,html.js .pay-row,html.js .pay-amt{will-change:transform,opacity}
+html.js .scan{opacity:1}
+.scan i{transform:translateY(-100%)}
+/* Without scroll position (no requestAnimationFrame), table-v1e.js falls back to an IntersectionObserver (html.io) and
+   each object is set down in .7 s as it comes into view. */
+@media (prefers-reduced-motion:no-preference){
+  html.io .ob>.pc{transition:opacity .6s var(--ease-out),transform .7s var(--ease-out)}
+  html.io .ob:not(.is-in)>.pc{opacity:0;transform:translateY(2.5rem) scale(.94)}
+  /* The poster: its lines rise in one after another on load. */
+  @keyframes rise{from{opacity:0;transform:translateY(1rem)}}
+  .poster-in>*,.poster-title>.name,.poster-title>.tag{animation:rise .7s var(--ease-out) both}
+  .poster-in>.eyebrow{animation-delay:0ms}.poster-title>.name{animation-delay:70ms}.poster-title>.tag{animation-delay:140ms}
+  .poster-in>.poster-title{animation:none}
+  .poster-in>.poster-sub{animation-delay:240ms}.poster-in>.poster-offer{animation-delay:330ms}.poster-in>.actions{animation-delay:420ms}.poster-in>.poster-does{animation-delay:510ms}
+  .btn:active:not(:focus-visible){transform:scale(.97)}
+}
+/* Reduced motion: the table is simply laid; the poster fades in. */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .btn{transition-property:background-color,border-color,color}
+  @keyframes fade{from{opacity:0}}
+  .poster-in{animation:fade .4s ease both}
+}
+
+/* Hover, only with a real pointer: the asks lift a little. */
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{background:var(--brand-hover);transform:translateY(-2px)}
+  .btn.outline:hover{background:transparent;border-color:var(--brand);color:var(--brand-text)}
+  .top-links a:hover,.lang:hover,.more a:hover,.film a:hover,.foot-wa:hover,.foot-lang:hover{color:var(--brand-text)}
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+
+/* ---------- Arabic (ar/table-v1e.html) ---------- */
+/* Right to left; IBM Plex Sans Arabic for every headline and line, semibold for the headlines; Noto Kufi Arabic, the
+   Kufi of the mark, for the name alone. Arabic is never tracked or set in capitals. */
+[lang="ar"]{--font-text:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif}
+[lang="ar"] body{line-height:1.85}
+[lang="ar"] :is(.eyebrow,.step,.head,.poster-title,.poster-sub,.poster-price,.poster-does,.ask-title,.num,.btn){letter-spacing:0;text-transform:none}
+[lang="ar"] :is(.head,.poster-title,.ask-title){line-height:1.3}
+[lang="ar"] .poster-sub{line-height:1.5}
+[lang="ar"] .num{line-height:1.2}
+[lang="ar"] .poster-title .name{font-family:'Noto Kufi Arabic','IBM Plex Sans Arabic',sans-serif;font-weight:700;line-height:1.35}
+[lang="ar"] .top .logo svg{height:2.75rem}
+
+/* ---------- Small phones ---------- */
+@media (max-width:767px){
+  .top-links{display:none}
+  .lang{margin-inline-start:auto}
+}
+@media (max-width:399px){
+  .top-in{gap:.5rem}
+  .top .btn.compact{padding-inline:.625rem}
+}
+
+/* Printed, everything shows and nothing sticks. */
+@media print{.top{position:static}.ob *,.note *{animation:none!important;opacity:1!important;transform:none!important}.scan,.paid-go,.pay-thanks{display:none}}
