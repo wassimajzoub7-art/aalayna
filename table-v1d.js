@@ -109,54 +109,120 @@
     tracks = []; ranges = {};
     var vh = window.innerHeight, rem = parseFloat(getComputedStyle(root).fontSize) || 16, D = 2.5 * rem, wide = mm('(min-width: 768px)'), LIFT = wide ? .42 : .36;
 
+    // On a phone the table is a pinned stage (html.pin): the boards lie on one strip that moves under it, each hero
+    // held in the middle of the tabletop while its caption is read, and every hand-off plays inside the stage. The
+    // scroll is a timeline of stretches: each hero holds for HOLD, then hands off to the next over HAND (about
+    // 115vh a stretch in all). Every range below is taken from this timeline instead of from where things lie.
+    var table = document.getElementById('table'), pin = table && table.querySelector('.pin');
+    var PIN = !wide && !!pin;
+    root.classList.toggle('pin', PIN);
+    if (table) table.style.height = '';
+    each('.table .board', function (bd) { bd.style.transform = ''; bd._t = null; bd.style.removeProperty('--lp'); });
+    each('.table .note', function (n) { n.style.transform = ''; n.style.opacity = ''; n._t = n._o = null; });
+    var heroEls = Array.prototype.filter.call(document.querySelectorAll('.table .ob.hero'), function (el) { return el.offsetWidth; });
+    var HOLD = .35 * vh, HAND = .85 * vh, STEP = HOLD + HAND, T0 = 0, pinH = 0;
+    var holdAt = function (k) { return T0 + k * STEP; };
+    var hand = function (k) { return [T0 + k * STEP + HOLD, T0 + (k + 1) * STEP]; };
+    var heroOf = function (el) { var ob = el.closest('.ob'); if (!ob.classList.contains('hero')) ob = ob.closest('.board').querySelector('.ob.hero'); return heroEls.indexOf(ob); };
+    // Where an element lies inside the pinned stage (the stage itself moves when stuck, so offsets stop there).
+    var rel = function (el) { var y = 0, h = el.offsetHeight; for (var n = el; n && n !== pin; n = n.offsetParent) y += n.offsetTop; return { cy: y + h / 2, top: y }; };
+    if (PIN) {
+      var head0 = document.querySelector('.top');
+      pinH = pin.offsetHeight;
+      T0 = box(table).top - (head0 ? head0.offsetHeight : 0);
+      table.style.height = Math.round((heroEls.length - 1) * STEP + .45 * vh + pinH) + 'px';
+      var cap = (parseFloat(getComputedStyle(pin).getPropertyValue('--cap')) || 40) / 100, stageC = pinH * (cap + (1 - cap) / 2);
+      var tys = heroEls.map(function (h) { return stageC - rel(h).cy; });
+      var boards = Array.prototype.slice.call(pin.querySelectorAll('.board'));
+      boards.forEach(function (bd) { bd.style.setProperty('--lp', (-rel(bd).top) + 'px'); });
+      // Where the chain travels (the bill, your share, the Paid chip), the table moves under the traveller at the
+      // traveller's pace, so it stays in the stage from lift to landing.
+      var PAN = { 2: [.06, .62], 3: [.06, .62], 4: [.16, .62] };
+      var last = heroEls.length - 1, endY = hand(last - 1)[1] + vh;
+      add(T0 - vh, endY, function (p) {
+        var y = T0 - vh + p * (endY - T0 + vh), ty = tys[0];
+        for (var k = 0; k < last; k++) {
+          var h = hand(k);
+          if (y >= h[1]) ty = tys[k + 1];
+          else if (y > h[0]) { var pw = PAN[k] || [.28, .84]; ty = mix(tys[k], tys[k + 1], MOVE(seg(y, h[0] + pw[0] * HAND, h[0] + pw[1] * HAND))); break; }
+          else break;
+        }
+        for (var i = 0; i < boards.length; i++) put(boards[i], 0, ty, 0, 1, 1);
+      });
+    }
+
+    // The timing rule (founder, 16 October): every hero is complete when it is centred. It arrives and every part of it
+    // comes up while its centre climbs from the foot of the window to 50% (its shadow may follow through a moment
+    // longer); from 50% to 32% nothing on it moves, so its caption is read beside a finished object; only then does the
+    // next travel begin, and it lands early enough that the next hero is complete, in turn, when that one is centred.
+    // On the phone stage the same rule runs on the timeline: a hero arrives and completes inside the hand-off that
+    // brings it, holds complete for the whole hold, and leaves only once the hold is over.
+    var NAMES = ['qr', 'menu', 'bill', 'split', 'pay', 'review', 'again', 'price', 'reserved'];
+    var C = heroEls.map(function (h) { return box(h).cy; });
+    var done = {};
+    var mark = function (k, y) { var n = NAMES[k]; if (n) done[n] = Math.max(done[n] == null ? -1e9 : done[n], y); };
+    // When hero k is set down.
+    var arrive = function (k) {
+      if (PIN) { if (!k) return [T0 - .8 * vh, T0 - .3 * vh]; var h = hand(k - 1); return [h[0] + .2 * HAND, h[0] + .58 * HAND]; }
+      return [C[k] - .92 * vh, C[k] - .68 * vh];
+    };
+    // When the parts of hero k come up (from: the landing that starts them).
+    var reveal = function (k, from) {
+      var z = PIN ? (k ? hand(k - 1)[0] + .8 * HAND : T0 - .04 * vh) : C[k] - .51 * vh;
+      var a = from != null ? from : (PIN ? (k ? hand(k - 1)[0] + .62 * HAND : T0 - .32 * vh) : C[k] - .76 * vh);
+      return [a, z];
+    };
+    // Part j of n inside a window: an even stagger, each part over a share f of the window.
+    var part = function (w, n, j, f) { var d = (w[1] - w[0]) * (f || .4), a = w[0] + (n > 1 ? j * (w[1] - w[0] - d) / (n - 1) : 0); return [a, a + d]; };
+    // When hero k may start to leave (its hold is over), and when a travel into hero k must land, leaving R of the
+    // window (vh) for the parts that the landing starts.
+    var leave = function (k) { return PIN ? hand(k)[0] + .06 * HAND : C[k] - .32 * vh; };
+    var land = function (k, R) { return PIN ? hand(k - 1)[0] + .62 * HAND : C[k] - .51 * vh - R * vh; };
+
     // Setting down: every object on the table, hero or quiet.
     each('.table .ob', function (ob) {
       if (!ob.offsetWidth) return;
-      var b = box(ob), pc = ob.querySelector('.pc'), sh = ob.querySelector(':scope > .osh');
+      var pc = ob.querySelector('.pc'), sh = ob.querySelector(':scope > .osh'), k = heroOf(ob);
       var fx = (parseFloat(ob.getAttribute('data-fx')) || 0) * D * dir, fy = (parseFloat(ob.getAttribute('data-fy')) || 0) * D;
       if (!fx && !fy) fy = D;
-      var range = vh + b.h, i = parseFloat(ob.getAttribute('data-i')) || 0;
-      var a = b.top - vh + range * .04 + i * range * .06;
-      add(a, a + range * .4, function (p) {
+      var i = parseFloat(ob.getAttribute('data-i')) || 0, w = arrive(k), a = w[0] + i * .08 * (w[1] - w[0]), z = w[1];
+      mark(k, a + .75 * (z - a));   // the piece is in place; its shadow follows through to z
+      add(a, z, function (p) {
         var e = OUT(p);
         put(pc, fx * (1 - e), fy * (1 - e), 0, .94 + .06 * e, cl(p / .22));   // a real object is opaque: it arrives, it does not materialise
         if (sh) { var q = OUT(seg(p, .18, 1)); put(sh, (fx + .5 * rem) * (1 - q), (fy + rem) * (1 - q), 0, 1, cl((p - .18) / .5)); }
       });
     });
 
-    // Layers that come up in turn on a hero once it is down: the menu's dishes, the regulars, the price's rows.
+    // Layers that come up in turn on a hero once it is down: the menu's slices, the regulars, the price's rows.
     each('.ob-menu, .ob-again, .ob-price', function (ob) {
-      var b = box(ob);
-      each('.scr-head, .dish, .reg-row, .pr-row', function (el, j) {
-        var a = b.cy - .92 * vh + j * .035 * vh;
-        add(a, a + .1 * vh, function (p) { var e = OUT(p); put(el, 0, .5 * rem * (1 - e), 0, 1, e); });
-      }, ob);
+      var k = heroOf(ob), w = reveal(k), els = ob.querySelectorAll('.scr-head, .dish, .reg-row, .pr-row');
+      Array.prototype.forEach.call(els, function (el, j) {
+        var r = part(w, els.length, j, .35); mark(k, r[1]);
+        add(r[0], r[1], function (p) { var e = OUT(p); put(el, 0, .5 * rem * (1 - e), 0, 1, e); });
+      });
     });
-    // The QR card: one red line passes down its code as the card reaches the middle of the window.
+    // The QR card: one red line passes down its code as the card comes up to the middle.
     each('.ob-qr .scan i', function (el) {
-      var b = box(el.parentNode.parentNode.parentNode), hh = el.parentNode.offsetHeight;
-      add(b.cy - .66 * vh, b.cy - .44 * vh, function (p) { put(el, 0, mix(-.03, 1, p) * hh, 0, 1, p <= 0 || p >= 1 ? 0 : 1 - seg(p, .85, 1) * 1); });
+      var w = reveal(0), hh = el.parentNode.offsetHeight; mark(0, w[1]);
+      add(w[0], w[1], function (p) { put(el, 0, mix(-.03, 1, p) * hh, 0, 1, p <= 0 || p >= 1 ? 0 : 1 - seg(p, .85, 1) * 1); });
     });
 
-    // The chain. Each link starts once the hero it leaves has passed the middle of the window (its stretch has been
-    // read) and lands while the hero it goes to is still in the lower part of the window, so that hero's own reveal
-    // and a still moment both fit before the next link; never shorter than about half a window, and never before the
-    // link before it has finished.
-    var link = function (key, el, from, to, min, after) {
-      var land = document.getElementById(el.getAttribute('data-go'));
-      if (!land || !el.offsetWidth) return null;
-      var a = box(el), b = box(land), s0 = box(el.closest('.ob')).cy - from * vh, s1 = box(land.closest('.ob')).cy - to * vh;
-      if (after != null) s0 = Math.max(s0, after);
-      if (s1 - s0 < min * vh) { if (after != null) s1 = s0 + min * vh; else s0 = s1 - min * vh; }
-      s0 = Math.max(0, s0);
+    // The chain. A link starts once the hero it leaves has held (leave) and lands so that the hero it reaches can come
+    // up whole before it is centred (land).
+    var link = function (key, el, s0, R) {
+      var goal = document.getElementById(el.getAttribute('data-go'));
+      if (!goal || !el.offsetWidth) return null;
+      var a = box(el), b = box(goal), k = heroOf(goal), s1 = land(k, R);
+      if (s1 - s0 < .3 * vh) s1 = s0 + .3 * vh;   // never a snap; the stretch should be long enough for this not to happen
       ranges[key] = [Math.round(s0), Math.round(s1)];
-      return { a: s0, b: s1, dx: b.cx - a.cx, dy: b.cy - a.cy, sw: b.w / a.w, sh: b.h / a.h };
+      mark(k, s1);
+      return { a: s0, b: s1, k: k, dx: b.cx - a.cx, dy: b.cy - a.cy, sw: b.w / a.w, sh: b.h / a.h };
     };
-    var hide = function (el) { return function () { put(el, 0, 0, 0, 1, 0); }; };
 
     // 1. The receipt becomes the bill on the split phone.
     var rc = document.querySelector('.rc-go'), split = document.querySelector('.ob-split');
-    var L1 = rc && link('bill', rc, LIFT, .72, .48, null);
+    var L1 = rc && link('bill', rc, leave(heroOf(rc)), .22);
     if (L1) {
       var rsh = rc.querySelector('.rc-sh'), head = split.querySelector('.scr-head'), sc1 = Math.min(L1.sw, L1.sh);
       add(L1.a, L1.b, function (p) {
@@ -167,18 +233,18 @@
       // The split screen comes up in slices, the way the app draws it: the question, the ways to split, how many of
       // you, your share (and, under it, the three shares that are about to leave), the rest held for the others, the
       // button.
-      var t1 = L1.b, rows = [];
+      var rows = [];
       each('.sp-row', function (el) { rows.push([el]); }, split);
       rows.splice(3, 0, Array.prototype.slice.call(split.querySelectorAll('.share > .sv')));
-      rows.forEach(function (els, k) {
-        var a = t1 + .02 * vh + k * .035 * vh;
-        els.forEach(function (el) { add(a, a + .09 * vh, function (p) { var e = OUT(p); put(el, 0, .6 * rem * (1 - e), 0, .985 + .015 * e, e); }); });
+      var w1 = reveal(L1.k, L1.b);
+      rows.forEach(function (els, j) {
+        var r = part(w1, rows.length, j, .35); mark(L1.k, r[1]);
+        els.forEach(function (el) { add(r[0], r[1], function (p) { var e = OUT(p); put(el, 0, .6 * rem * (1 - e), 0, .985 + .015 * e, e); }); });
       });
-      var splitDone = t1 + .02 * vh + (rows.length - 1) * .035 * vh + .09 * vh;
 
       // 2. Three shares leave for the other guests; yours becomes the payment.
       var mine = split.querySelector('.share-3'), pay = document.querySelector('.ob-pay');
-      var L2 = mine && link('share', mine, LIFT, .72, .48, splitDone);
+      var L2 = mine && link('share', mine, leave(L1.k), .2);
       if (L2) {
         var w = mine.offsetWidth, amt = pay.querySelector('.pay-amt'), msh = mine.querySelector('.go-sh');
         // Three shares slide out from under yours, each toward its own guest's seat, turning, and fade as they go.
@@ -195,19 +261,23 @@
           put(mine, m.x, m.y, m.r, m.s, m.o); if (msh) put(msh, 0, 0, 0, 1, m.h * m.o);
           var e = OUT(seg(p, .9, 1)); put(amt, 0, .2 * rem * (1 - e), 0, 1, e);
         });
-        // The tip, the ways to pay and the button come up in turn.
-        var t2 = L2.b;
-        each('.pay-row', function (el) { var k = +el.getAttribute('data-k'), a = t2 + .01 * vh + k * .035 * vh; add(a, a + .1 * vh, function (p) { var e = OUT(p); put(el, 0, .5 * rem * (1 - e), 0, 1, e); }); }, pay);
-        var payDone = t2 + .01 * vh + 4 * .035 * vh + .1 * vh;
+        // The total, the tip, the ways to pay and the button come up in turn.
+        var w2 = reveal(L2.k, L2.b), prs = pay.querySelectorAll('.pay-row');
+        Array.prototype.forEach.call(prs, function (el) {
+          var r = part(w2, prs.length, +el.getAttribute('data-k'), .35); mark(L2.k, r[1]);
+          add(r[0], r[1], function (p) { var e = OUT(p); put(el, 0, .5 * rem * (1 - e), 0, 1, e); });
+        });
 
-        // 3. Pay is pressed and becomes Paid; the chip lifts off and becomes the head of the review card.
+        // 3. Once the payment has held, Pay is pressed and becomes Paid; the chip lifts off and becomes the head of
+        // the review card.
         var chip = pay.querySelector('.paid-go'), btn = pay.querySelector('.pay-btn'), thanks = pay.querySelector('.pay-thanks'), review = document.querySelector('.ob-review');
-        var L3 = chip && link('paid', chip, LIFT, .72, .48, payDone);
+        var pa = leave(L2.k), pz = pa + (PIN ? .1 * HAND : .1 * vh);
+        var L3 = chip && link('paid', chip, pz, .22);
         if (L3) {
-          var landed = review.querySelector(".rv-paid"), k3 = Math.min(L3.sw, L3.sh), csh = chip.querySelector('.go-sh');
-          // The press: the button sinks a little and turns olive (Paid) just before the travel's lift.
-          var pa = L3.a - .12 * vh;
-          add(pa, L3.a, function (p) {
+          var landed = review.querySelector('.rv-paid'), k3 = Math.min(L3.sw, L3.sh), csh = chip.querySelector('.go-sh');
+          ranges.paid[0] = Math.round(pa);
+          // The press: the button sinks a little and turns into the green Paid chip.
+          add(pa, pz, function (p) {
             var dn = Math.sin(Math.PI * seg(p, 0, .6)) * .03;
             if (p < 1) { put(chip, 0, 0, 0, 1 - dn, OUT(seg(p, .35, .8))); }
             if (p > 0) put(btn, 0, 0, 0, 1 - dn, 1 - seg(p, .35, .8));   // at 0 the button is the reveal's
@@ -218,16 +288,32 @@
             var f = OUT(seg(p, .14, .34)); put(thanks, 0, .5 * rem * (1 - f), 0, 1, f);
             var e = OUT(seg(p, .9, 1)); put(landed, 0, 0, 0, 1, e);
           });
-          // 4. The five stars, one by one.
-          var t3 = L3.b;
-          each('.star', function (el, k) { var a = t3 + .03 * vh + k * .055 * vh; add(a, a + .1 * vh, function (p) { var e = OUT(p); put(el, 0, .3 * rem * (1 - e), 0, .55 + .45 * e, cl(p / .6)); }); }, review);
-          ranges.stars = [Math.round(t3 + .03 * vh), Math.round(t3 + .03 * vh + 4 * .055 * vh + .1 * vh)];
+          // 4. The five stars, one by one, all in before the card is centred.
+          var w3 = reveal(L3.k, L3.b), sts = review.querySelectorAll('.star');
+          Array.prototype.forEach.call(sts, function (el, j) {
+            var r = part(w3, sts.length, j, .32); mark(L3.k, r[1]);
+            add(r[0], r[1], function (p) { var e = OUT(p); put(el, 0, .3 * rem * (1 - e), 0, .55 + .45 * e, cl(p / .6)); });
+          });
+          ranges.stars = [Math.round(w3[0]), Math.round(w3[1])];
         }
       }
     }
 
-    // The captions: line by line as their note arrives; beside the table they leave as their stretch goes.
-    each('.note', function (note) {
+    // On the pinned stage the caption of the stretch in view stands alone above the tabletop. It is there, still, for
+    // the whole hold; it stays while its hero's travel begins (the travel is its point) and leaves upward before the
+    // table moves on; the next arrives from below only once its hero is in place and complete.
+    var notes = PIN ? Array.prototype.slice.call(pin.querySelectorAll('.stretch > .note')) : [];
+    notes.forEach(function (note, k) {
+      var a = k ? hand(k - 1)[0] : T0 - vh, z = k < notes.length - 1 ? hand(k)[1] : T0 + 99 * vh;
+      add(a, z, function (p) {
+        var y = a + p * (z - a);
+        var i = k ? OUT(seg(y, hand(k - 1)[0] + .84 * HAND, hand(k - 1)[0] + .96 * HAND)) : 1;
+        var o = k < notes.length - 1 ? INOUT(seg(y, hand(k)[0] + .28 * HAND, hand(k)[0] + .4 * HAND)) : 0;
+        put(note, 0, .9 * rem * (1 - i) - .9 * rem * o, 0, 1, i * (1 - o));
+      });
+    });
+    // The captions beside the table: line by line as their note arrives; they leave as their stretch's hold ends.
+    if (!PIN) each('.note', function (note) {
       var b = box(note), kids = note.children;
       Array.prototype.forEach.call(kids, function (el, j) {
         var a = b.top - .9 * vh + j * .035 * vh;
@@ -239,19 +325,21 @@
       });
     });
 
-    // Every hand-off, chain or not, by the same rule (from the hero of one step passing LIFT of the window to the hero
-    // of the next at 72%), so the stills can be shot at the same points of each; the chain's own ranges win.
-    var heroes = Array.prototype.filter.call(document.querySelectorAll('.table .ob.hero'), function (el) { return el.offsetWidth; }).map(box);
-    var names = ['poster-qr', 'qr-menu', 'menu-bill', 'bill-split', 'split-pay', 'pay-review', 'review-again', 'again-price', 'price-close'];
+    // Every hand-off, chain or not, by the same rule, so the stills can be shot at the same points of each; the
+    // chain's own ranges win. The moments each hero is complete (done) and centred (hold) are published for the shots.
+    var hn = ['poster-qr', 'qr-menu', 'menu-bill', 'bill-split', 'split-pay', 'pay-review', 'review-again', 'again-price', 'price-close'];
     var chain = { 'bill-split': 'bill', 'split-pay': 'share', 'pay-review': 'paid' };
-    names.forEach(function (n, i) {
+    var hold = {};
+    hn.forEach(function (n, i) {
+      if (!heroEls[i]) return;
+      hold[NAMES[i]] = Math.round(PIN ? holdAt(i) + .2 * HOLD : C[i] - .5 * vh);
       if (chain[n] && ranges[chain[n]]) { ranges[n] = ranges[chain[n]]; return; }
-      var to = heroes[i], from = heroes[i - 1];
-      if (!to) return;
-      var a = from ? from.cy - LIFT * vh : 0, z = to.cy - .72 * vh;
-      if (!from) z = Math.max(z, to.cy - .5 * vh);
+      var a = i ? leave(i - 1) : (PIN ? T0 - vh : 0), z = PIN ? (i ? hand(i - 1)[1] : T0) : C[i] - .5 * vh;
       ranges[n] = [Math.round(Math.max(0, a)), Math.round(Math.max(a + 1, z))];
     });
+    for (var dn in done) done[dn] = Math.round(done[dn]);
+    root.setAttribute('data-done', JSON.stringify(done));
+    root.setAttribute('data-hold', JSON.stringify(hold));
     root.setAttribute('data-ranges', JSON.stringify(ranges));
     tracks.forEach(function (t) { t.p = -1; });
     apply(cur);
