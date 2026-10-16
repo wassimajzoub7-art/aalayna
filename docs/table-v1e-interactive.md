@@ -18,20 +18,22 @@ screens read the film's evening and the controls are visible and disabled.
 
 | Stretch | What can be tried | Default (the film) |
 | --- | --- | --- |
-| The menu | the language (EN, FR, AR) and the currency (USD, LBP) in the app's own two pickers; a dish tapped on or off the bill | English, dollars, the film's twelve dishes: 28 items, $152.50 |
+| The menu | the language (EN, FR, AR) and the currency (USD, LBP) in the app's own two pickers; a dish tapped on or off the bill | English, dollars, the film's twelve dishes: $152.50 (the bar reads Open the bill and the total, as the real app) |
 | The split | How many of you? 2 to 6 | 4: $38.13, and $38.13, $38.13, $38.11 for the others |
 | The payment | No tip, 5, 10 or 15% | 10%: $3.81, $41.94 |
 
-A control acts only while its phone is in its hold (complete and centred: 50% to 32% of the window on a wide screen,
-to 10% for the menu, which nothing moves after; the stage's hold on a phone). Tabbing to a control first brings its
-phone to the middle of its hold. Nothing is dragged and nothing scrolls inside a phone. On a phone the screens are
-too small to tap, so the caption above the stage carries the language and currency, the guests and the tips at full
-size (44 px and more); the dishes stay on the screen.
+On a wide screen a control acts only while its phone is in its hold (complete and centred: 50% to 32% of the
+window, to 10% for the menu, which nothing moves after). On the phone stage it acts for as long as its phone is the
+current one: from the moment the phone is complete until its own hand-off begins (the menu until its table starts to
+move; the split and the payment until your share or the Pay press leaves); outside that, the caption's controls
+dim to 40%. Tabbing to a control first brings its phone there. Nothing is dragged and nothing scrolls inside a phone.
+Under 1024 px the caption also carries the language and currency, the guests and the tips at full size (44 px and
+more); the screen's own controls still answer a tap, and keyboard focus goes to the caption's.
 
 ## How the state flows
 
 One object, `S` in `table-v1.js` (`lang`, `ccy`, `q` the quantity of each dish, `people`, `tip`), and one function of
-it, `calc`, give every amount: the bill bar's count and total, the receipt on the brass tray (its lines, its height
+it, `calc`, give every amount: the bill bar's total, the receipt on the brass tray (its lines, its height
 and the number of guests), your share and each of the other guests' shares (the ones that fly off), the rest for the
 others, the payment's bill share, tip and total, the Pay button, the Paid chip, the thank-you screen and the review
 card's Paid line. Each tap changes `S` and repaints text only, so the elements the scroll engine moves stay the same.
@@ -58,7 +60,6 @@ which these follow in spirit); back-translations in brackets.
 | usd / lbp | دولار $ / ليرة ل.ل. | Dollar $ / Lira LL |
 | filters | فلاتر الحمية | Diet filters |
 | openBill | افتح الفاتورة | Open the bill |
-| items | صنف واحد، صنفان، 3 أصناف، 28 صنفاً | one item, two items, 3 items, 28 items |
 | splitTitle | كيف نتقاسم الفاتورة؟ | How do we share the bill? |
 | splitSub | ولا أحد يحسب شيئاً | And nobody works anything out |
 | even / mine / custom / all | بالتساوي / ما طلبتُه / مبلغ آخر / كلّها عليّ | Equally / What I ordered / Another amount / All of it on me |

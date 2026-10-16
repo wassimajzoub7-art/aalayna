@@ -239,10 +239,10 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
 .g .g-vs{margin-top:calc(2 * var(--p));font-size:var(--fs-small);color:var(--gs);white-space:nowrap}
 .g .g-sels{position:absolute;top:calc(60 * var(--p));inset-inline-end:calc(14 * var(--p));display:flex;gap:calc(6 * var(--p))}
 .g .g-sel{position:relative;height:calc(44 * var(--p));border:calc(1.5 * var(--p)) solid var(--gk);display:flex;align-items:center;padding-inline:calc(10 * var(--p)) calc(22 * var(--p));font-size:var(--fs-small);font-weight:600;white-space:nowrap}
-.g-sel::after{content:'\25BE';position:absolute;inset-inline-end:calc(8 * var(--p));top:50%;translate:0 -50%;font-size:var(--fs-small);scale:.7;color:var(--gs)}
+.g-sel::after{content:'\25BE';position:absolute;inset-inline-end:calc(8 * var(--p));top:50%;translate:0 -50%;font-size:var(--fs-small);scale:.7;color:var(--gs);pointer-events:none}
 /* The real <select> lies over its box, invisible, at least 44 px each way, so the system's own picker opens at full
    size; the two meet half way between their boxes. */
-.g-pick{position:absolute;top:50%;translate:0 -50%;height:max(100%,44px);margin:0;padding:0;border:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;--fs-body:1rem;font-size:var(--fs-body);font-family:inherit}
+.g-pick{position:absolute;z-index:1;top:50%;translate:0 -50%;height:max(100%,44px);margin:0;padding:0;border:0;opacity:0;cursor:pointer;-webkit-appearance:none;appearance:none;--fs-body:1rem;font-size:var(--fs-body);font-family:inherit}
 .g-sel-l .g-pick{inset-inline-end:calc(-3 * var(--p));width:max(calc(100% + 3 * var(--p)),44px)}
 .g-sel-c .g-pick{inset-inline-start:calc(-3 * var(--p));width:max(calc(100% + 3 * var(--p)),44px)}
 .g-pick:disabled{cursor:default}
@@ -272,8 +272,6 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
 .g-mi.on .g-mp{background:var(--gk);color:var(--gb)}
 .g .g-barw{position:absolute;inset:auto 0 0;padding:calc(12 * var(--p)) calc(18 * var(--p)) calc(24 * var(--p));background:var(--gb);box-shadow:0 calc(-1.5 * var(--p)) 0 var(--gk)}
 .g .g-bar{display:flex;align-items:center;justify-content:space-between;gap:calc(12 * var(--p));padding:calc(15 * var(--p)) calc(18 * var(--p));background:var(--gk);color:var(--gb);font-size:var(--fs-body);font-weight:600}
-.g .g-bar-l{display:flex;align-items:center;gap:calc(10 * var(--p))}
-.g-count{min-width:calc(30 * var(--p));padding:calc(1 * var(--p)) calc(5 * var(--p));border:calc(1.5 * var(--p)) solid var(--gb);font-size:var(--fs-small);text-align:center}
 .g-bar-a{font-variant-numeric:tabular-nums;white-space:nowrap}
 
 /* The split: the question, the four ways (evenly, chosen), how many of you, your share, what is left for the others,
@@ -390,18 +388,19 @@ html.ui .try{display:block}
 .ctl-b:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
 .ctl-l{font-size:var(--fs-small);font-weight:600;color:var(--sub)}
 .ctl-n{min-width:2.25rem;font-size:var(--fs-body);font-weight:600;text-align:center}
-html.gate .ctl:not(.live){pointer-events:none}
+html.gate .ctl{transition:opacity .2s var(--ease-out)}
+html.gate .ctl:not(.live){pointer-events:none;opacity:.4}
 /* Under 1024 px the phones are too small for their pickers, stepper and tips to make 44 px targets: the caption
-   carries them instead (the dishes, a row each, stay on the screen). */
+   carries them as well, at full size. The screen's own controls still answer a tap (a reader taps what looks like
+   the app), but keyboard focus goes to the caption's. */
 @media (max-width:1023px){
   html.ui .try{display:none}
   html.ui .ctl{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .75rem;margin-top:.75rem}
   html.ui .ctl-g{align-items:center}
-  html.ui .ob-phone .screen [data-act]:not([data-act="dish"]){pointer-events:none}
 }
 @media (max-width:767px){
   html.pin .stretch>.note{pointer-events:none}
-  html.pin .stretch>.note .ctl.live{pointer-events:auto}
+  html.pin .stretch>.note.up .ctl.live{pointer-events:auto}
   html.pin.ui .note .ctl{margin-top:.625rem}
   /* The payment's caption is the longest (its figure has two lines): on the stage it gives up its small numbered
      label to make room for the tips, and on the smallest phones its line too (the screen under it says the same). */

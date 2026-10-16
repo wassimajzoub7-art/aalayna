@@ -62,7 +62,7 @@ function screens(page) {
     `<span class="dish g-blk">${row(sal[1][1])}</span>` +
     `<span class="dish g-blk">${row(sal[1][2])}</span>` +
     `<span class="dish g-blk">${sect(appz[0])}${appz[1].map(row).join('')}</span>` +
-    `<span class="dish g-barw"><span class="g-bar"><span class="g-bar-l"><span class="g-count" data-f="{count}" aria-hidden="true">${f('{count}')}</span>${tt('openBill')}</span><span class="g-bar-a" data-f="{total}" aria-live="polite">${f('{total}')}</span></span></span>` +
+    `<span class="dish g-barw"><span class="g-bar">${tt('openBill')}<span class="g-bar-a" data-f="{total}" aria-live="polite">${f('{total}')}</span></span></span>` +
     '</span></span>';
 
   /* ---------- The split ---------- */
