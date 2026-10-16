@@ -230,7 +230,7 @@
     each('[data-dish]', function (b) {
       var id = b.getAttribute('data-dish'), q = S.q[id] || 0, nm = APP.name(id, L), pr = APP.price(id, S), a = b.querySelector('.g-mar');
       set(b.querySelector('.g-mn'), nm); set(a, APP.alt(id, L)); a.setAttribute('lang', L === 'ar' ? 'en' : 'ar');
-      set(b.querySelector('.g-mp'), pr); set(b.querySelector('.g-qn'), q ? '×' + q : '');
+      set(b.querySelector('.g-mp'), pr); set(b.querySelector('.g-qn'), '');
       b.classList.toggle('on', !!q); b.setAttribute('aria-pressed', q ? 'true' : 'false');
       b.setAttribute('aria-label', nm + ', ' + pr + ', ' + (q ? APP.fill(T.onBill, { q: q }) : T.offBill));
     }, table);
