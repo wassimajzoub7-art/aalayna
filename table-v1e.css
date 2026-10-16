@@ -106,7 +106,7 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
 .poster-price .amt{font-size:var(--fs-heading)}
 .poster-price .unit{font-size:var(--fs-lead);letter-spacing:0}
 .poster-free{font-size:var(--fs-body);font-weight:600;color:var(--olive)}
-.poster .actions{margin-top:1.5rem}
+.poster .actions{margin-top:1.25rem}
 .poster-does{margin-top:1.25rem;font-size:var(--fs-small);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--sub)}
 @media (min-width:768px){
   .poster-title{font-size:var(--fs-hero);line-height:1.02}
@@ -117,7 +117,7 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
   .poster-price .amt{font-size:var(--fs-display);line-height:1.1}
   .poster-price .unit{font-size:var(--fs-heading)}
   .poster-free{font-size:var(--fs-lead)}
-  .poster .actions{margin-top:2rem}
+  .poster .actions{margin-top:1.5rem}
 }
 
 

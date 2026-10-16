@@ -279,8 +279,17 @@
     }
     // The Paid chip and the review card's Paid line say the same words: the chip lands there.
     var pl = APP.paidLine(S);
-    each('.paid-line', function (t) { set(t, pl); t.setAttribute('x', L === 'ar' ? 132 : 162); }, table);
-    each('.paid-tick', function (t) { t.setAttribute('d', L === 'ar' ? 'M190 20l6 6 12-12' : 'M96 20l6 6 12-12'); }, table);
+    // The tick sits beside the words, however long they are: measure the text, centre the pair at 150.
+    each('.paid-line', function (t) {
+      set(t, pl);
+      if (!t.getComputedTextLength) return;
+      var w = 0; try { w = t.getComputedTextLength(); } catch (e) { w = 0; }
+      if (!w) w = pl.length * 7.2;
+      var tx = L === 'ar' ? 150 - 12 : 150 + 12, x0 = L === 'ar' ? tx + w / 2 + 6 : tx - w / 2 - 24;
+      t.setAttribute('x', tx);
+      var tick = t.parentNode && t.parentNode.querySelector('.paid-tick');
+      if (tick) tick.setAttribute('d', 'M' + x0.toFixed(1) + ' 20l6 6 12-12');
+    }, table);
     var grew = c.lines.length !== rcLines && rcLines >= 0;
     rcLines = c.lines.length;
     return grew;
