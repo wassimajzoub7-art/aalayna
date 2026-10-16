@@ -1,0 +1,257 @@
+/* Aalayna homepage, prototype V1 (table-v1.html, ar/table-v1.html): down the length of the table.
+
+   A typographic poster in the logo's capitals, then one long table seen from above that runs down the page, and the
+   evening unfolds from its head to its foot: the QR card at the first place setting, the menu, the mezze, the empty
+   plates and the bill, the phone that splits it four ways, the payment, the review card, the table set again, and at
+   the foot the restaurant's own bill. Each stretch of the table carries its line of copy: beside the table on a wide
+   screen (on alternate sides, like the guests), printed on the cloth on a phone. The page is a plain vertical scroll.
+
+   The cloth is one element (.table::before), so the table never breaks between stretches; each stretch is a board
+   400 units wide whose objects are drawn as inline SVG in the logo's square language (table units, see the boards).
+   Objects arrive as they scroll into view with CSS scroll-driven animations (animation-timeline: view()), transform
+   and opacity only; where those are missing, table-v1.js does the same with an IntersectionObserver; with reduced
+   motion, or without either, the table is simply laid. Nothing is hidden without JavaScript.
+
+   Terracotta and olive, in daylight: a limestone floor, a sand cloth hemmed in clay, olive chairs, ink text, and the
+   logo's red as the accent (--brand fills under white, --brand-text for red text). Six type sizes only. Square
+   corners everywhere except the drawn phones. */
+@font-face{font-family:'Aalayna Block';src:url(brand/fonts/aalayna-block.woff) format('woff');font-weight:100 900;font-style:normal;font-display:swap}
+
+:root{
+  /* Palette: terracotta and olive, daytime. Text pairs (all at least 4.5:1): ink, --sub, --brand-text, --clay and
+     --olive on --floor, --sand and --paper; --paper on --clay and --olive. */
+  --floor:#F7F2EA;        /* the floor around the table: limestone in daylight; the page ground */
+  --floor-line:#EFE7DA;   /* the joints of its tiles */
+  --sand:#F0E1C7;         /* the tablecloth */
+  --sand-deep:#E2CBA5;    /* shade on the cloth: hard shadows, rims, lines */
+  --paper:#FFFBF4;        /* plates, cards, receipts, the phone's screen */
+  --paper-2:#F3E8D7;      /* a plate's well, a card's quiet lines */
+  --wheat:#E8CB98;        /* hummus, bread, the card's chip */
+  --clay:#AD4F2D;         /* terracotta: the cloth's hem, trays, the figures */
+  --clay-light:#CF7A52;
+  --clay-pale:#E9B293;
+  --olive:#5A632C;        /* olive: the chairs, the pilot */
+  --olive-deep:#3E4520;
+  --olive-light:#8A9147;
+  --olive-pale:#C9C796;
+  --runner:#EBD6B3;        /* the linen runner down the middle of the table */
+  --ink:#211B16;
+  --sub:#5F5348;
+  --line:#E3D6C3;
+  --brand:#C9414B;--brand-hover:#AC303B;--brand-text:#B3363F;
+  /* Six type sizes: 14 / 16 / 19 / 30 / 54 / 67 px. */
+  --fs-small:.875rem;--fs-body:1rem;--fs-lead:1.1875rem;--fs-heading:1.875rem;--fs-display:3.375rem;--fs-hero:4.1875rem;
+  --font-text:'Instrument Sans','IBM Plex Sans Arabic',system-ui,sans-serif;
+  --font-display:'Aalayna Block',ui-monospace,monospace;
+  /* Motion: one curve for things arriving, one for things moving while on screen. */
+  --ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1);
+  --header-h:4rem;--gut:1rem;--dir:1;--zoom:1;
+  /* The table: --tw is its width with the chairs, one unit (--u) is a 400th of it. On a phone it is wider than the
+     window, so the cloth runs almost edge to edge and only the chairs' backs show. */
+  --tw:min(116vw,34rem);--u:calc(var(--tw) / 400);
+}
+[dir="rtl"]{--dir:-1}
+
+/* ---------- Base ---------- */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;color:var(--ink);font-family:var(--font-text);font-size:var(--fs-body);line-height:1.6;-webkit-font-smoothing:antialiased;
+  background:var(--floor);background-image:linear-gradient(var(--floor-line) 1px,transparent 1px),linear-gradient(90deg,var(--floor-line) 1px,transparent 1px);background-size:4rem 4rem;background-position:center top}
+a{color:inherit}
+a,button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+a:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
+h1,h2,h3,p{margin:0}
+p{text-wrap:pretty}
+.wrap{width:min(120rem,calc(100% - 2 * var(--gut)));margin-inline:auto}
+section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
+.skip{position:absolute;top:-6rem;inset-inline-start:1rem;z-index:100;padding:.75rem 1rem;background:var(--paper);font-weight:600}
+.skip:focus{top:.5rem}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.eyebrow,.step{font-size:var(--fs-small);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-text)}
+
+/* ---------- Header: the logo, two anchors, the other language and the ask ---------- */
+.top{position:sticky;top:0;z-index:20;background:var(--floor);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:1rem;height:calc(var(--header-h) - 1px)}
+.logo{display:inline-flex;align-items:center;min-height:44px;flex-shrink:0;color:var(--ink);text-decoration:none}
+.logo svg{display:block;height:2.375rem;width:auto}
+.logo .logo-ink{fill:currentColor}.logo .logo-red{fill:var(--brand)}
+.top-links{display:flex;gap:.25rem;margin-inline-start:auto}
+.top-links a,.lang{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;text-decoration:none;white-space:nowrap;transition:color .15s ease}
+.lang{flex-shrink:0}
+
+/* ---------- Buttons: square, the red one is the ask ---------- */
+.btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.75rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;font-size:var(--fs-body);font-weight:600;line-height:1.35;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .16s var(--ease-out)}
+.btn.outline{background:transparent;border-color:var(--ink);color:var(--ink)}
+.btn.compact{min-height:44px;padding:.5rem 1rem;font-size:var(--fs-small);white-space:nowrap}
+.actions{display:flex;flex-wrap:wrap;gap:.75rem}
+
+/* ---------- The poster ---------- */
+/* The name, what it does and what it costs, in the logo's capitals; the head of the table peeks in at the foot of
+   the window (--peek: the head chair and the cloth's first edge) so the reader knows where the scroll goes. */
+.poster{--peek:calc(var(--u) * 66);display:flex;align-items:center;min-height:calc(100vh / var(--zoom) - var(--header-h) - var(--peek));min-height:calc(100svh / var(--zoom) - var(--header-h) - var(--peek));padding-block:2.5rem 2rem}
+.poster-in{display:flex;flex-direction:column;align-items:flex-start}
+.poster-title{margin-top:1.5rem;font-family:var(--font-display);font-weight:400;font-size:var(--fs-display);line-height:1.18;letter-spacing:0;font-synthesis:none}
+.poster-title .name,.poster-title .tag{display:block}
+.poster-title em{font-style:normal;color:var(--brand-text)}
+.poster-price{margin-top:1.75rem;padding:.75rem 1rem .6rem;background:var(--clay);color:var(--paper);font-family:var(--font-display);font-size:var(--fs-display);line-height:1.15}
+.poster-price .unit{display:block;margin-top:.125rem;font-family:var(--font-text);font-size:var(--fs-lead);font-weight:600;line-height:1.3;white-space:nowrap}
+.poster .lead{max-width:34rem;margin-top:1.75rem;font-size:var(--fs-lead);line-height:1.5;color:var(--sub)}
+.poster .actions{margin-top:1.75rem}
+@media (min-width:768px){
+  .poster-title{font-size:var(--fs-hero);line-height:1.16}
+  .poster .lead{margin-top:2rem}
+}
+/* From 1024 px the whole price fits on one line in the capitals. */
+@media (min-width:1024px){
+  .poster-price .unit{display:inline;margin:0;font-family:var(--font-display);font-size:var(--fs-display);font-weight:400;line-height:1.15}
+}
+
+/* ---------- The table ---------- */
+.table{position:relative;isolation:isolate;overflow:hidden;overflow:clip}
+/* The cloth, from the head chair to the foot chair: sand, a clay hem, an olive thread just inside it. One element, so
+   it is one cloth however the stretches above it grow. --tl is where the table starts (the chairs included). */
+.table{--tl:calc((100% - var(--tw)) / 2)}
+.table::before{content:"";position:absolute;z-index:-1;top:calc(var(--u) * 44);bottom:calc(var(--u) * 44);inset-inline-start:calc(var(--tl) + var(--u) * 44);width:calc(var(--u) * 312);
+  background:var(--sand);border:calc(var(--u) * 4) solid var(--clay);outline:calc(var(--u) * 2) solid var(--olive);outline-offset:calc(var(--u) * -8)}
+.stretch{position:relative;display:flex;flex-direction:column}
+/* A board: one stretch of the table, 400 units wide and --h tall; the chairs and the tableware lie in its base layer,
+   the objects that carry the story each in their own layer (.ob), placed in table units. */
+.board{position:relative;width:var(--tw);margin-inline:calc((100% - var(--tw)) / 2);aspect-ratio:400 / var(--h)}
+.board-end{margin-inline:0;margin-inline-start:var(--tl)}
+.base{position:absolute;inset:0;width:100%;height:100%;display:block}
+[dir="rtl"] .base{transform:scaleX(-1)}
+.ob{position:absolute;display:block;inset-inline-start:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:calc(var(--w) * 1%);height:auto}
+.ob>svg:not(.ov){display:block;width:100%;height:auto}
+.ov{position:absolute;display:block;left:calc(var(--ox) * 1%);top:calc(var(--oy) * 1%);width:calc(var(--ow) * 1%);height:auto}
+/* The scan: a red line passing down the QR code as the card scrolls by (only where scroll-driven motion runs). */
+.scan{position:absolute;display:none;left:calc(var(--ox) * 1%);top:calc(var(--oy) * 1%);width:calc(var(--ow) * 1%);height:calc(var(--oh) * 1%);overflow:hidden}
+.scan i{display:block;width:100%;height:100%;transform:translateY(-100%);background:linear-gradient(to bottom,transparent 62%,rgba(201,65,75,.16) 94%,var(--brand) 94%)}
+/* The drawing's colours, all from the palette. */
+.board path.k{fill:var(--ink)}.board path.p{fill:var(--paper)}.board path.p2{fill:var(--paper-2)}.board path.sd{fill:var(--sand-deep)}
+.board path.hm{fill:var(--wheat)}.board path.c{fill:var(--clay)}.board path.cl{fill:var(--clay-light)}.board path.cp{fill:var(--clay-pale)}
+.board path.o{fill:var(--olive)}.board path.od{fill:var(--olive-deep)}.board path.ol{fill:var(--olive-light)}.board path.op{fill:var(--olive-pale)}
+.board path.r{fill:var(--brand)}
+
+/* The notes: what each stretch of the table means. On a phone they are printed on the cloth, under their objects. */
+.note{width:min(calc(var(--u) * 296 - 2.5rem),34rem);margin-inline:auto;padding-block:.25rem 3.5rem}
+.head{margin-top:.75rem;font-family:var(--font-display);font-weight:400;font-size:var(--fs-display);line-height:1.12;letter-spacing:0;font-synthesis:none;text-wrap:balance}
+.say{max-width:24rem;margin-top:1rem;font-size:var(--fs-lead);line-height:1.5}
+.fig{margin-top:1.75rem}
+.fig::before{content:"";display:block;width:2.5rem;height:.25rem;margin-bottom:1.25rem;background:var(--clay)}
+.num{font-family:var(--font-display);font-size:var(--fs-hero);line-height:1.08;color:var(--clay)}
+.src{max-width:19rem;margin-top:.625rem;font-size:var(--fs-small);line-height:1.5;color:var(--sub)}
+.cta{margin-top:1.75rem}
+/* The price at the foot of the table: $150 in the capitals, the rest in words. */
+.s-price .head .amt{font-size:var(--fs-hero);line-height:1.08}
+.s-price .head .unit{display:block;margin-top:.5rem;font-family:var(--font-text);font-size:var(--fs-lead);font-weight:600;line-height:1.3}
+.s-price .say strong{font-weight:600}
+.pilot{max-width:24rem;margin-top:1.25rem;font-size:var(--fs-body);line-height:1.55;color:var(--sub)}
+.pill{display:inline-block;margin-inline-end:.375rem;padding:.125rem .5rem;background:var(--olive);color:var(--paper);font-size:var(--fs-small);font-weight:600}
+.more a{display:inline-block;padding-block:.75rem;font-size:var(--fs-small);font-weight:600;text-underline-offset:.2rem;transition:color .15s ease}
+
+/* ---------- The ask, under the foot of the table ---------- */
+.ask{padding-block:clamp(3.5rem,10vh,6.5rem) clamp(4rem,12vh,7.5rem);text-align:center}
+.ask-in{display:flex;flex-direction:column;align-items:center}
+.ask-title{margin-top:1rem;font-family:var(--font-display);font-weight:400;font-size:var(--fs-display);line-height:1.15;letter-spacing:0;font-synthesis:none;text-wrap:balance;max-width:14ch}
+.ask .say{max-width:30rem;margin:1.25rem auto 0;color:var(--sub);text-wrap:balance}
+.ask .actions{justify-content:center;margin-top:2rem}
+.film a{display:inline-block;margin-top:1.25rem;padding-block:.75rem;font-size:var(--fs-small);color:var(--sub);text-underline-offset:.2rem;transition:color .15s ease}
+@media (min-width:768px){.ask-title{font-size:var(--fs-hero)}}
+
+/* ---------- Footer ---------- */
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem 1.5rem;padding-block:2rem;border-top:1px solid var(--line)}
+.foot .logo svg{height:2.25rem}
+.foot p,.foot-wa,.foot-lang{font-size:var(--fs-small)}
+.foot p{color:var(--sub)}
+.foot-wa,.foot-lang{display:inline-flex;align-items:center;min-height:44px;min-width:44px;font-weight:600;text-underline-offset:.2rem}
+
+/* ---------- Wide screens: the table on the side, the notes beside it ---------- */
+/* From 768 px the notes leave the cloth and stand beside the table, and a linen runner shows down its length. */
+@media (min-width:768px){
+  :root{--gut:clamp(1.5rem,4vw,4rem);--tw:min(48vw,38rem)}
+  .table{--tl:calc(100% - var(--tw) - var(--gut));--gap:clamp(1.5rem,3.5vw,4rem)}
+  .table::before{background:linear-gradient(90deg,transparent calc(var(--u) * 100),var(--sand-deep) 0 calc(var(--u) * 102),var(--runner) 0 calc(var(--u) * 202),var(--sand-deep) 0 calc(var(--u) * 204),transparent 0),var(--sand)}
+  .stretch{display:grid;grid-template-columns:minmax(0,1fr) var(--tw);align-items:center;padding-inline-end:var(--gut)}
+  .stretch>.board{grid-column:2;grid-row:1;width:auto;margin:0}
+  .note{grid-column:1;grid-row:1;width:calc(100% - var(--gut) - var(--gap));margin-inline:var(--gut) var(--gap);padding-block:2.5rem}
+}
+/* From 1280 px the table runs down the middle and the notes take alternate sides, as the guests sit. Each note keeps
+   to the table; its outer edge never comes closer to the window than the page's gutter. */
+@media (min-width:1280px){
+  :root{--tw:clamp(30rem,38vw,46rem)}
+  .table{--tl:calc((100% - var(--tw)) / 2)}
+  .stretch{grid-template-columns:minmax(0,1fr) var(--tw) minmax(0,1fr);padding-inline-end:0}
+  .stretch:nth-of-type(even) .note{grid-column:3;margin-inline:var(--gap) var(--gut)}
+}
+
+/* ---------- Motion ---------- */
+/* Scroll-driven: each object arrives as it scrolls into view (its own view timeline), the shares on the phone and the
+   stars on the card follow one another, and a red line passes down the QR code. Transform and opacity only. */
+@media (prefers-reduced-motion:no-preference){
+  @supports (animation-timeline:view()){
+    html:not(.io) .ob{animation:arrive var(--ease-out) both;animation-timeline:view();animation-range:cover 0% cover 32%}
+    html:not(.io) .ov{animation:pop var(--ease-out) both;animation-timeline:view();animation-range:cover calc(12% + var(--k) * 4%) cover calc(24% + var(--k) * 4%)}
+    html:not(.io) .scan{display:block}
+    html:not(.io) .scan i{animation:scan linear both;animation-timeline:view();animation-range:cover 22% cover 58%}
+  }
+  @keyframes arrive{0%{opacity:0;transform:translate3d(calc(var(--fx,0rem) * var(--dir)),var(--fy,2rem),0)}50%{opacity:1}100%{opacity:1;transform:none}}
+  @keyframes pop{0%{opacity:0;transform:translateY(.5rem)}100%{opacity:1;transform:none}}
+  @keyframes scan{0%{opacity:0;transform:translateY(-100%)}12%{opacity:1}88%{opacity:1}100%{opacity:0;transform:translateY(0)}}
+  /* Without scroll-driven animations, table-v1.js marks each object as it comes into view and it arrives in .6 s. */
+  html.io .ob{transition:opacity .6s var(--ease-out),transform .6s var(--ease-out);transition-delay:calc(var(--i,0) * 80ms)}
+  html.io .ob:not(.is-in){opacity:0;transform:translate3d(calc(var(--fx,0rem) * var(--dir)),var(--fy,2rem),0)}
+  html.io .ov{transition:opacity .4s var(--ease-out),transform .4s var(--ease-out);transition-delay:calc(260ms + var(--k) * 80ms)}
+  html.io .ob:not(.is-in) .ov{opacity:0;transform:translateY(.5rem)}
+  /* The poster: the name and the lines are there at once; what follows rises in, 60 ms apart. */
+  @keyframes rise{from{opacity:0;transform:translateY(.75rem)}}
+  .poster-price,.poster .lead,.poster .actions{animation:rise .6s var(--ease-out) both}
+  .poster-price{animation-delay:60ms}.poster .lead{animation-delay:120ms}.poster .actions{animation-delay:180ms}
+  .btn:active:not(:focus-visible){transform:scale(.97)}
+}
+/* Reduced motion: the table is simply laid; the poster's lines fade in. */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .btn{transition-property:background-color,border-color,color}
+  @keyframes fade{from{opacity:0}}
+  .poster-price,.poster .lead,.poster .actions{animation:fade .3s ease both}
+}
+
+/* Hover, only with a real pointer. */
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{background:var(--brand-hover)}
+  .btn.outline:hover{background:transparent;border-color:var(--brand);color:var(--brand-text)}
+  .top-links a:hover,.lang:hover,.more a:hover,.film a:hover,.foot-wa:hover,.foot-lang:hover{color:var(--brand-text)}
+}
+
+/* ---------- Arabic (ar/table-v1.html) ---------- */
+/* Right to left; IBM Plex Sans Arabic for reading, Noto Kufi Arabic, the Kufi of the mark, for the headlines (Latin
+   figures and the dollar sign stay in the logo's capitals). Arabic is never tracked or set in capitals. */
+[lang="ar"]{--font-text:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif;--font-display:'Aalayna Block','Noto Kufi Arabic','IBM Plex Sans Arabic',sans-serif}
+[lang="ar"] body{line-height:1.85}
+[lang="ar"] :is(.eyebrow,.step,.head,.poster-title,.ask-title,.btn){letter-spacing:0;text-transform:none}
+[lang="ar"] :is(.head,.poster-title,.ask-title,.num){font-weight:700;line-height:1.5}
+[lang="ar"] .poster-title .name{font-family:'Noto Kufi Arabic','IBM Plex Sans Arabic',sans-serif}
+[lang="ar"] .site-nav .logo svg,[lang="ar"] .top .logo svg{height:2.75rem}
+
+/* ---------- Small phones ---------- */
+@media (max-width:767px){
+  .top-links{display:none}
+  .lang{margin-inline-start:auto}
+  [lang="ar"] .num{font-size:var(--fs-display);white-space:nowrap}   /* 10 دقائق stays on one line on the cloth */
+}
+@media (max-width:399px){
+  .top-in{gap:.5rem}
+  .top .btn.compact{padding-inline:.625rem}
+}
+/* Below 360 px the widest words (SETTLE., BROWSE.) no longer fit the cloth at the display size; the poster's still do. */
+@media (max-width:359px){
+  .head,.ask-title{font-size:var(--fs-heading);line-height:1.2}
+  .num,.s-price .head .amt{font-size:var(--fs-display)}
+  [lang="ar"] .num{white-space:normal}
+}
+
+/* Large monitors: the whole page scales, as on the live site, so the type keeps its ratios and the poster its weight. */
+@media (min-width:1680px){html{zoom:1.15}:root{--zoom:1.15}}
+@media (min-width:2200px){html{zoom:1.4}:root{--zoom:1.4}}
+/* Printed, everything shows and nothing sticks. */
+@media print{.top{position:static}.ob,.ov{animation:none;opacity:1;transform:none}.scan{display:none}}
