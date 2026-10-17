@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Book a demo · Aalayna</title>
-<meta name="description" content="Book a 15-minute conversation about your restaurant’s needs, POS compatibility and a free two-month Aalayna pilot.">
+<meta name="description" content="Book a 15-minute conversation about your restaurant’s needs, POS compatibility and a free two-month Aalayna pilot. How the pilot runs, and the questions owners ask.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Aalayna">
 <meta property="og:title" content="Book a demo · Aalayna">
@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preload" href="brand/fonts/aalayna-block.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="website.css?v=26">
+<link rel="stylesheet" href="website.css?v=27">
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
@@ -33,8 +33,14 @@
   /* Sizes come from the tokens in website.css. */
   .back{margin-left:auto;padding:.6875rem .5rem;font-size:var(--fs-small);color:var(--sub);text-decoration:none;white-space:nowrap}
   .back:hover{color:var(--ink)}
-  /* The page is the booking calendar, nothing else. */
-  .book{padding-block:24px 56px}
+  /* The calendar first; beside it on a computer (under it on a phone), how the pilot runs and the owners' questions,
+     moved here from the homepage (book.html#pilot, book.html#faq). */
+  .book{display:grid;gap:3rem;padding-block:24px 56px}
+  .owners{display:grid;gap:3rem}
+  .owners h2{max-width:22rem}
+  .owners .pill{margin:1.25rem 0 0}
+  .owners .pilot-steps{margin-top:1.75rem}
+  .owners .faq{margin-top:1.5rem}
   .sched{background:var(--surface);border:1px solid var(--line);overflow:hidden}
   /* The calendar is as tall as Google's page at that width (a full day of slots), so only the page scrolls.
      Measured: about 2,220 px below 600 px wide, 1,760 px at 600 px, 1,600 px from 640 px. */
@@ -42,6 +48,15 @@
   /* The column is the viewport less the 16 px gutters below 768 px, so 600 and 640 px of column start at 632 and 672 px. */
   @media(min-width:632px){.sched iframe{height:1780px}}
   @media(min-width:672px){.sched iframe{height:1620px}}
+  /* On a computer the calendar takes the wider column, so it is as tall as Google's page at that width again:
+     about 620 px wide at 1024 px, 640 px and more from 1056 px. */
+  @media(min-width:1024px){
+    .book{grid-template-columns:minmax(0,4fr) minmax(0,8fr);column-gap:3rem;align-items:start}
+    .booking{grid-column:2;grid-row:1}
+    .owners{grid-column:1;grid-row:1}
+    .sched iframe{height:1780px}
+  }
+  @media(min-width:1056px){.sched iframe{height:1620px}}
   .alt{margin-top:8px;color:var(--sub)}
   .alt a{display:inline-block;padding-block:.5625rem;color:var(--brand-text);font-weight:600;text-underline-offset:.2rem}
   @media(prefers-reduced-motion:reduce){body{animation:none}}
@@ -56,8 +71,30 @@
 </header>
 <main class="wrap book" id="main">
   <h1 class="sr-only">Book a demo</h1>
-  <div class="sched"><iframe src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0NcKYhJRRyuGvsjV48HQc_7BVPT30Nr5x0XZIil-GsI7Jr2tBJ76mSKIwhDx-IPQwv7fRqAIGi?gv=true" title="Book a demo with Aalayna" loading="lazy"></iframe></div>
-  <p class="alt">Prefer WhatsApp? <a data-track="whatsapp_click" data-placement="booking_fallback" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20an%20Aalayna%20pilot.%20A%20good%20time%20for%20me%20is%3A%20">Message us</a>.</p>
+  <div class="booking">
+    <div class="sched"><iframe src="https://calendar.google.com/calendar/appointments/schedules/AcZssZ0NcKYhJRRyuGvsjV48HQc_7BVPT30Nr5x0XZIil-GsI7Jr2tBJ76mSKIwhDx-IPQwv7fRqAIGi?gv=true" title="Book a demo with Aalayna" loading="lazy"></iframe></div>
+    <p class="alt">Prefer WhatsApp? <a data-track="whatsapp_click" data-placement="booking_fallback" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20an%20Aalayna%20pilot.%20A%20good%20time%20for%20me%20is%3A%20">Message us</a>.</p>
+  </div>
+  <div class="owners">
+    <section id="pilot" aria-labelledby="pilot-title">
+      <p class="eyebrow">How the pilot runs</p>
+      <h2 id="pilot-title">Two months to see what changes.</h2>
+      <span class="pill">Free two-month pilot</span>
+      <ol class="pilot-steps"><li><span class="number">01 · Check the fit</span> Share your menu, POS and payment setup.</li><li><span class="number">02 · Prepare your floor</span> Menu setup, table QR cards and staff training, included.</li><li class="go-live"><span class="number">Go-live</span> Your two free months start.</li><li><span class="number">03 · Look at the evidence</span> Usage, settlement time, tips and cash, reviewed together.</li></ol>
+    </section>
+    <section id="faq" aria-labelledby="faq-title">
+      <p class="eyebrow">The questions owners ask</p>
+      <h2 id="faq-title">Practical questions. <span class="soft">Clear answers.</span></h2>
+      <div class="faq">
+        <details><summary>Will it work with my POS?</summary><p>Tell us the name and version of your POS. We need to check access to your live bills and how confirmed payments return to your records. Your POS remains the system of record; we confirm compatibility before agreeing a pilot.</p></details>
+        <details><summary>What if a guest wants to pay cash?</summary><p>They can request cash collection and tell the floor which note they will hand over. The request remains pending until staff confirm collection. Guests can also ask their server for help as usual.</p></details>
+        <details><summary>Does every guest need an app or an account?</summary><p>No Aalayna download or account is needed to browse the menu or explore the guest flow. Paying with a wallet may require that provider’s app and account. Receipt and marketing sign-ups are optional and separate.</p></details>
+        <details><summary>Where do payments and tips go?</summary><p>The intended setup uses the restaurant’s own supported merchant accounts. Settlement timing and processing charges depend on the provider and agreement. The restaurant manages tip distribution under its own policy; Aalayna records attribution and payout acknowledgements.</p></details>
+        <details><summary>Is this ready to take real payments?</summary><p>Cash, yes: a guest requests cash from the table, and the payment counts only once a staff member confirms they collected it. Card and Whish are not live yet. They need your payment provider connected first, and we set that up and test it with you before any guest can pay that way.</p></details>
+        <details><summary>What is included in the price?</summary><p>The subscription is per location and includes the listed software features, menu setup and staff onboarding. The first ten founding restaurants receive the $100 monthly rate; the standard rate is $150. No commission on your sales; payment-provider fees are separate. We agree integration scope and any additional setup costs in advance.</p></details>
+      </div>
+    </section>
+  </div>
 </main>
 </body>
 </html>
