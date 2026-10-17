@@ -780,7 +780,10 @@
   var settleOn = (function () {
     var q = (location.search.match(/[?&]settle=([01])\b/) || [])[1];
     try { if (q) sessionStorage.setItem('aal.table.settle', q); else q = sessionStorage.getItem('aal.table.settle'); } catch (e) {}
-    return q === '1';
+    if (q) return q === '1';
+    // No choice made: on where there is a mouse or trackpad (the founder liked it on the laptop), off on phones, where
+    // the stage is already still inside its hold and the settle only re-aligns where the next hand-off starts.
+    return !!(window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches);
   })();
   root.setAttribute('data-settle', settleOn ? 'idle' : 'off');
   if (settleOn) {
