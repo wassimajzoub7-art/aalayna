@@ -130,4 +130,4 @@ breath it gave is kept as air: generous space between stretches.
 
 Revised after the founder saw style B live: the runner no longer unfolds (a moving cloth distracts). The stage is
 static; the continuous thread is the chain of hero objects (receipt, share, Paid), set out in
-`table-v1c-motion.md`.
+`home-motion.md`.

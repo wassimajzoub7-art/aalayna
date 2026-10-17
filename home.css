@@ -1,20 +1,20 @@
-/* Aalayna homepage, prototype V1 (table-v1e.html, ar/table-v1e.html): down the length of the table, style D, the
+/* Aalayna homepage (index.html, fr/index.html, ar/index.html), version E of the table: down the length of the table, style D, the
    photographic version.
 
    A typographic poster that sells the outcome, then one long table seen from above that runs down the page, and the
    evening unfolds from its head to its foot: the QR card, the menu on the guest's phone, the bill on a brass tray,
    the split, the payment, the review card, the regulars, and at the foot the restaurant's own bill and a card that
-   says Reserved. Each stretch has one point and one hero object (docs/table-v1c-storyboard.md); a few quiet plates
+   says Reserved. Each stretch has one point and one hero object (docs/home-storyboard.md); a few quiet plates
    are the only other things on the cloth. Each stretch carries its note: beside the table on the cream ground on a
    wide screen (on alternate sides, a clay hairline pointing across), on a soft cream panel lying on the linen just
    under its hero on a phone.
 
    Photographic: the table is a photograph of natural linen; the plates, the brass tray and the phone are cut-outs of
-   real photographs (docs/table-v1d-assets.md); the cards and receipts are real paper textures with their words set
+   real photographs (docs/home-assets.md); the cards and receipts are real paper textures with their words set
    in type, and the phones show the real app, live: HTML replicas of its screens (version E, below). One light, from the top left: every object casts a soft
    shadow down and to the right, drawn here as a separate layer so it can lag behind the object when it moves.
 
-   Motion is written by table-v1e.js from the scroll position, the same in every browser (docs/table-v1c-motion.md):
+   Motion is written by home.js from the scroll position, the same in every browser (docs/home-motion.md):
    one chain carries the evening (the receipt becomes the bill on the phone, your share becomes the payment, Paid
    becomes the head of the review card) and every object is set down as the reader reaches it. The cloth never moves.
    This sheet only lays the table; with reduced motion or without JavaScript the table is simply laid and nothing is
@@ -74,7 +74,7 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
 .poster-title,.poster-sub,.poster-price,.head,.ask-title{font-family:var(--font-text);font-weight:600;letter-spacing:-.02em;text-wrap:balance}
 .name{font-family:var(--font-name);font-weight:400;font-synthesis:none;letter-spacing:0}
 
-/* ---------- Header: the logo, two anchors, the other language and the ask ---------- */
+/* ---------- Header: the logo, two anchors, the other two languages and the ask ---------- */
 .top{position:sticky;top:0;z-index:20;background:var(--floor);border-bottom:1px solid var(--line)}
 .top-in{display:flex;align-items:center;gap:1rem;height:calc(var(--header-h) - 1px)}
 .logo{display:inline-flex;align-items:center;min-height:44px;flex-shrink:0;color:var(--ink);text-decoration:none}
@@ -82,7 +82,7 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
 .logo .logo-ink{fill:currentColor}.logo .logo-red{fill:var(--brand)}
 .top-links{display:flex;gap:.25rem;margin-inline-start:auto}
 .top-links a,.lang{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding-inline:.5rem;font-size:var(--fs-small);font-weight:600;text-decoration:none;white-space:nowrap;transition:color .15s ease}
-.lang{flex-shrink:0}
+.langs{display:flex;flex-shrink:0}
 
 /* ---------- Buttons: square, the red one is the ask ---------- */
 .btn{display:inline-flex;justify-content:center;align-items:center;min-height:48px;padding:.75rem 1.25rem;background:var(--brand);color:#fff;border:1px solid transparent;border-radius:0;font-size:var(--fs-body);font-weight:600;line-height:1.35;text-align:center;text-decoration:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .16s var(--ease-out)}
@@ -192,7 +192,7 @@ section[id],article[id],main[id]{scroll-margin-top:var(--header-h)}
    rest, Reem Kufi and IBM Plex Sans Arabic in Arabic. It is laid out in the app's own points, 390 to the screen's
    width (one point is --p, a 390th of the screen), and its six type sizes are the site's six tokens, 14 / 16 / 19 /
    30 / 54 / 67, in those points: the same rule as the lettering on the other objects, in the object's own units. The
-   words and every amount come from table-v1e.js (the state S). */
+   words and every amount come from home.js (the state S). */
 .screen,.free{container-type:inline-size;--p:calc(100cqw / 390);
   --fs-small:calc(14 * var(--p));--fs-body:calc(16 * var(--p));--fs-lead:calc(19 * var(--p));--fs-heading:calc(30 * var(--p));--fs-display:calc(54 * var(--p));--fs-hero:calc(67 * var(--p));
   --gb:#F4EDE1;--gk:#1D1A16;--gl:#CDBFAA;--gd:#C9BCA9;--gs:#58655E;--gm:#6B6158;--gn:#24366B;--gdeep:#19264B;--gpick:#EAE0CE;
@@ -518,7 +518,7 @@ html.gate .ctl:not(.live){pointer-events:none;opacity:.4}
    object on a table and not as the reader's own screen. The plates at the sides and the buttons inside the stretches
    are left out (the header's Book a demo is always there; the close has the asks).
    Without JavaScript or with reduced motion each stretch is a compact block: its caption on the cream, then its
-   object at rest on its piece of table. With JavaScript (html.pin, set by table-v1e.js) the table becomes a pinned
+   object at rest on its piece of table. With JavaScript (html.pin, set by home.js) the table becomes a pinned
    stage: below. */
 @media (max-width:767px){
   .linen{display:none}
@@ -543,7 +543,7 @@ html.gate .ctl:not(.live){pointer-events:none;opacity:.4}
   .s-price .note .pilot{margin-top:.5rem}
 
   /* The pinned stage: the cream page above (the caption of the stretch in view), the tabletop below, its top edge in
-     a soft shade like the edge of a table. The boards are stacked on one strip that table-v1e.js moves under the
+     a soft shade like the edge of a table. The boards are stacked on one strip that home.js moves under the
      stage, holding each hero in the middle of the tabletop while its caption is read, so every hand-off plays in
      place. The scroll length is set by the script (about 115vh a stretch). */
   html.pin .table{overflow:visible}
@@ -565,7 +565,7 @@ html.gate .ctl:not(.live){pointer-events:none;opacity:.4}
 }
 
 /* ---------- Motion ---------- */
-/* The table's motion is written by table-v1e.js, frame by frame from the scroll position (html.js), the same in every
+/* The table's motion is written by home.js, frame by frame from the scroll position (html.js), the same in every
    browser: it sets transforms and opacity on the layers below and nothing else. Without JavaScript, or with reduced
    motion, nothing here applies and the table is simply laid. The two duplicates that only exist for the travel (the
    paid chip on the phone, its thanks underneath) are hidden until the script runs. */
@@ -573,7 +573,7 @@ html.gate .ctl:not(.live){pointer-events:none;opacity:.4}
 html.js .ob>.pc,html.js .ob>.osh,html.js .go,html.js .rc-sh,html.js .ly,html.js .share,html.js .sv,html.js .go-sh,html.js .note>*,html.js .scan i,html.js .scr-head,html.js .dish,html.js .sp-row,html.js .pay-row,html.js .pay-amt{will-change:transform,opacity}
 html.js .scan{opacity:1}
 .scan i{transform:translateY(-100%)}
-/* Without scroll position (no requestAnimationFrame), table-v1e.js falls back to an IntersectionObserver (html.io) and
+/* Without scroll position (no requestAnimationFrame), home.js falls back to an IntersectionObserver (html.io) and
    each object is set down in .7 s as it comes into view. */
 @media (prefers-reduced-motion:no-preference){
   html.io .ob>.pc{transition:opacity .6s var(--ease-out),transform .7s var(--ease-out)}
@@ -602,7 +602,7 @@ html.js .scan{opacity:1}
 }
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:reduce){.btn:hover{transform:none}}
 
-/* ---------- Arabic (ar/table-v1e.html) ---------- */
+/* ---------- Arabic (ar/index.html) ---------- */
 /* Right to left; IBM Plex Sans Arabic for every headline and line, semibold for the headlines; Noto Kufi Arabic, the
    Kufi of the mark, for the name alone. Arabic is never tracked or set in capitals. */
 [lang="ar"]{--font-text:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif}
@@ -617,11 +617,12 @@ html.js .scan{opacity:1}
 /* ---------- Small phones ---------- */
 @media (max-width:767px){
   .top-links{display:none}
-  .lang{margin-inline-start:auto}
+  .langs{margin-inline-start:auto}
 }
 @media (max-width:399px){
   .top-in{gap:.5rem}
-  .top .btn.compact{padding-inline:.625rem}
+  /* A long ask (the French one) wraps to two lines inside the bar when it must. */
+  .top .btn.compact{padding-inline:.625rem;white-space:normal;line-height:1.2;text-align:center}
 }
 
 /* Printed, everything shows and nothing sticks. */

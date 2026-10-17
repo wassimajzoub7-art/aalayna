@@ -19,7 +19,9 @@
 !qr-lib.js
 !pitch.html
 !website.css
-!site.js
+# the homepage (version E of the table): its sheet, its script, and the photographs on the table
+!home.css
+!home.js
 !analytics-config.js
 !analytics.js
 !README.md
@@ -60,6 +62,8 @@ onboarding/
 # marketing screenshots and the share image (W3a)
 !images/
 !images/*
+!images/table/
+!images/table/*
 # the 45-second film: live page (reel.html), web cuts and posters in images/, tools/render-reel.js and tools/reel-audio.js
 !reel.html
 # the French homepage (W4)
