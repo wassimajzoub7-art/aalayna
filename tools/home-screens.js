@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-/* Writes the guest app's screens into the table's phones (table-v1e.html, ar/table-v1e.html), version E.
+/* Writes the guest app's screens into the table's phones on the three homepages (index.html, fr/index.html,
+   ar/index.html), version E of the table.
 
    The screens are HTML replicas of the real guest app (guest.html, ?theme=balat), drawn at the film's evening: the
-   film's twelve dishes ($152.50), four guests, $38.13 each, a 10% tip, $41.94. table-v1e.js repaints them from its
+   film's twelve dishes ($152.50), four guests, $38.13 each, a 10% tip, $41.94. home.js repaints them from its
    state when the reader changes something; this writes what the page shows before any script runs (and without
-   one), from the same data and the same words (table-v1e.js exports them under Node).
+   one), from the same data and the same words (home.js exports them under Node). Each page's phones speak its
+   language: English, the real app's French, or the Arabic written for the page.
 
-   Each region sits between <!--g:name--> and <!--/g:name--> in the two pages. Run: node tools/table-v1e-screens.js */
+   Each region sits between <!--g:name--> and <!--/g:name--> in the three pages. Run: node tools/home-screens.js */
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const APP = require('../table-v1e.js');
+const APP = require('../home.js');
 const ROOT = path.join(__dirname, '..');
 
 // The line logo of "powered by", as brand/svg/3layna/line.svg draws it (its two paths, byte for byte).
@@ -23,6 +25,9 @@ const PAGE = {
   en: { tryMenu: 'Try it: change the language or the currency, or tap a dish.', trySplit: 'Try it: change how many of you there are.', tryPay: 'Try it: choose the tip, or how to pay.',
     menuG: 'Try the menu', langG: 'Language', ccyG: 'Currency', usd: 'USD', lbp: 'LBP', guests: 'Guests', fewer: 'One fewer', more: 'One more',
     noTip: 'No tip', tipG: 'Tip', wayG: 'Pay with', ways: ['Whish', 'Card', 'Cash'], menuL: 'The guest app: the menu', splitL: 'The guest app: the split', payL: 'The guest app: the payment' },
+  fr: { tryMenu: 'Essayez\u202f: changez la langue ou la devise, ou touchez un plat.', trySplit: 'Essayez\u202f: changez le nombre de convives.', tryPay: 'Essayez\u202f: choisissez le pourboire, ou le moyen de paiement.',
+    menuG: 'Essayer le menu', langG: 'Langue', ccyG: 'Devise', usd: 'USD', lbp: 'LBP', guests: 'Convives', fewer: 'Un de moins', more: 'Un de plus',
+    noTip: 'Aucun', tipG: 'Pourboire', wayG: 'Payer par', ways: ['Whish', 'Carte', 'Espèces'], menuL: 'L’appli client\u202f: le menu', splitL: 'L’appli client\u202f: le partage', payL: 'L’appli client\u202f: le paiement' },
   ar: { tryMenu: 'جرّبها: غيّر اللغة أو العملة، أو اضغط على طبق.', trySplit: 'جرّبها: غيّر عدد الأشخاص.', tryPay: 'جرّبها: اختر الإكرامية، أو طريقة الدفع.',
     menuG: 'جرّب القائمة', langG: 'اللغة', ccyG: 'العملة', usd: 'دولار', lbp: 'ليرة', guests: 'الضيوف', fewer: 'شخص أقل', more: 'شخص أكثر',
     noTip: 'بلا', tipG: 'الإكرامية', wayG: 'الدفع عبر', ways: ['Whish', 'بطاقة', 'نقداً'], menuL: 'تطبيق الضيف: القائمة', splitL: 'تطبيق الضيف: التقسيم', payL: 'تطبيق الضيف: الدفع' }
@@ -31,7 +36,7 @@ const PAGE = {
 function screens(page) {
   const S = APP.initial(page), L = S.lang, T = APP.T[L], c = APP.calc(S), v = APP.vars(S, c), P = PAGE[page];
   v.langName = L.toUpperCase(); v.ccyName = T[S.ccy];
-  c.others.forEach((x, i) => { v['o' + i] = v.others[i]; v['l' + i] = v.othersLL[i]; });
+  for (let i = 0; i < 5; i++) { v['o' + i] = i < c.others.length ? v.others[i] : ''; v['l' + i] = i < c.others.length ? v.othersLL[i] : ''; }
   const dir = L === 'ar' ? 'rtl' : 'ltr';
   const t = key => esc(APP.fill(T[key], v));
   const tt = key => `<span data-t="${key}">${t(key)}</span>`;
@@ -121,7 +126,7 @@ function screens(page) {
     `<button type="button" class="ctl-b" data-act="ppl" data-d="-1" aria-label="${esc(P.fewer)}" aria-disabled="false" disabled>−</button><span class="ctl-n" data-f="{people}" aria-live="polite">${S.people}</span>` +
     `<button type="button" class="ctl-b" data-act="ppl" data-d="1" aria-label="${esc(P.more)}" aria-disabled="false" disabled>+</button></span></div>`;
   const tryPay = `<p class="try">${esc(P.tryPay)}</p><div class="ctl" data-for="pay"><span class="ctl-g" role="group" aria-label="${esc(P.tipG)}">` +
-    [[0, P.noTip], [0.05, '5%'], [0.1, '10%'], [0.15, '15%']].map(([r, l]) => `<button type="button" class="ctl-b" data-act="tip" data-r="${r}" aria-pressed="${r === S.tip ? 'true' : 'false'}" disabled>${esc(l)}</button>`).join('') +
+    [[0, P.noTip], [0.05, v.p5], [0.1, v.p10], [0.15, v.p15]].map(([r, l]) => `<button type="button" class="ctl-b" data-act="tip" data-r="${r}" aria-pressed="${r === S.tip ? 'true' : 'false'}" disabled>${esc(l)}</button>`).join('') +
     `</span><span class="ctl-g" role="group" aria-label="${esc(P.wayG)}">` +
     ['whish', 'card', 'cash'].map((v, i) => `<button type="button" class="ctl-b" data-act="method" data-v="${v}" aria-pressed="${v === S.method ? 'true' : 'false'}" disabled>${esc(P.ways[i])}</button>`).join('') + '</span></div>';
 
@@ -130,15 +135,21 @@ function screens(page) {
     'try-menu': tryMenu, 'try-split': trySplit, 'try-pay': tryPay };
 }
 
-for (const [file, page] of [['table-v1e.html', 'en'], ['ar/table-v1e.html', 'ar']]) {
-  const p = path.join(ROOT, file);
-  let s = fs.readFileSync(p, 'utf8');
-  const parts = screens(page);
-  for (const [name, html] of Object.entries(parts)) {
+const PAGES = [['index.html', 'en'], ['fr/index.html', 'fr'], ['ar/index.html', 'ar']];
+// A page with its regions filled from the state (tests/website.test.cjs checks the pages hold what this writes).
+function fillPage(file, page) {
+  let s = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  for (const [name, html] of Object.entries(screens(page))) {
     const re = new RegExp('<!--g:' + name + '-->[\\s\\S]*?<!--/g:' + name + '-->');
     if (!re.test(s)) throw new Error(file + ': no region ' + name);
     s = s.replace(re, () => '<!--g:' + name + '-->' + html + '<!--/g:' + name + '-->');
   }
-  fs.writeFileSync(p, s);
-  console.log('wrote', file);
+  return s;
+}
+module.exports = { screens, fillPage, PAGES };
+if (require.main === module) {
+  for (const [file, page] of PAGES) {
+    fs.writeFileSync(path.join(ROOT, file), fillPage(file, page));
+    console.log('wrote', file);
+  }
 }

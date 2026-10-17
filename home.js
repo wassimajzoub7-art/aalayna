@@ -1,4 +1,5 @@
-/* Aalayna homepage, prototype V1, version E (the interactive version): the guest app on the table's phones, live.
+/* Aalayna homepage (index.html, fr/index.html, ar/index.html), version E of the table: the guest app on the table's
+   phones, live.
 
    Built on style D (the photographic table). The three phones on the table no longer show screenshots: they show
    HTML replicas of the real guest app (guest.html with ?theme=balat, the Beirut cement-tile menu, as the film shows
@@ -13,8 +14,8 @@
    payment, the Paid chip, the thank-you screen and the review card's Paid line. A reader who taps nothing sees the
    film's evening: the twelve dishes of the film's bill, $152.50, four guests, $38.13 each, a 10% tip, $41.94 paid.
 
-   The data and the strings below are also read by tools/table-v1e-screens.js, which writes the screens' default HTML
-   into table-v1e.html and ar/table-v1e.html, so the page reads complete without JavaScript (the controls are then
+   The data and the strings below are also read by tools/home-screens.js, which writes the screens' default HTML
+   into index.html, fr/index.html and ar/index.html, so the page reads complete without JavaScript (the controls are then
    visible and inert). */
 (function (root, factory) {
   var APP = factory();
@@ -54,7 +55,7 @@
   var LI = { en: 0, fr: 1, ar: 2 };
 
   /* The app's own words. English and French are the real app's (guest.html); the Arabic is written for this page
-     (docs/table-v1e-interactive.md lists it with back-translations). {x} is filled from the state. */
+     (docs/home-interactive.md lists it with back-translations). {x} is filled from the state. */
   var T = {
     en: { back: 'Back', table: 'Table 12', sub: 'Table 12 · Lebanese Grill', lang: 'Language', ccy: 'Currency', usd: 'USD $', lbp: 'LBP LL',
       filters: 'Dietary filters', openBill: 'Open the bill', splitTitle: 'How are we doing this?', splitSub: 'Nobody has to work out the maths',
@@ -67,14 +68,14 @@
       paid: 'Paid {pay}', onBill: '{q} on the bill', offBill: 'not on the bill', tipOf: '{p} tip, {amt}',
       railWhish: 'Whish Money', railCard: 'Card', railCash: 'Cash', reqCash: 'Request cash collection', paidCash: 'Paid {pay} · cash',
       cashOk: 'Cash collection confirmed by your server.' },
-    fr: { back: 'Retour', table: 'Table 12', sub: 'Table 12 · Grillades libanaises', lang: 'Langue', ccy: 'Devise', usd: 'USD $', lbp: 'LBP LL',
-      filters: 'Filtres alimentaires', openBill: 'Voir l’addition', splitTitle: 'On partage comment ?', splitSub: 'Personne n’a besoin de faire le calcul',
-      even: 'À parts égales', mine: 'Mes plats', custom: 'Montant libre', all: 'Tout', howMany: 'Combien êtes-vous ?', fewer: 'Un de moins', more: 'Un de plus',
+    fr: { back: 'Retour', table: 'Table 12', sub: 'Table 12 · Lebanese Grill', lang: 'Langue', ccy: 'Devise', usd: 'USD $', lbp: 'LBP LL',
+      filters: 'Filtres alimentaires', openBill: 'Voir l’addition', splitTitle: 'On partage comment ?', splitSub: 'Personne n’a besoin de faire le calcul',
+      even: 'À parts égales', mine: 'Mes plats', custom: 'Montant libre', all: 'Tout', howMany: 'Combien êtes-vous ?', fewer: 'Un de moins', more: 'Un de plus',
       yourShare: 'VOTRE PART', rest: '{rest} disponibles pour les autres convives. Les espèces en attente restent réservées jusqu’à ce que le personnel les confirme ou les annule.',
       cont: 'Continuer · {share}', powered: 'propulsé par', toPay: 'Total à payer · Table 12', billShare: 'Part de l’addition', tip: 'Pourboire',
-      tipFor: 'Un pourboire pour {server} ?', noTip: 'Aucun', whishDesc: 'S’ouvre avec le montant déjà saisi', card: 'Carte', cash: 'Payer en espèces',
+      tipFor: 'Un pourboire pour {server} ?', noTip: 'Aucun', whishDesc: 'S’ouvre avec le montant déjà saisi', card: 'Carte', cash: 'Payer en espèces',
       cashDesc: 'Le personnel confirme à l’encaissement', cashMark: 'ESP.', pay: 'Payer {pay}', thanks: 'Merci.', paidVia: 'Payé par', tableL: 'Table',
-      mailPh: 'WhatsApp (+indicatif) ou e-mail', send: 'Recevoir mon reçu', offers: 'Recevoir les offres de Mayda', rateQ: 'Comment était Mayda ce soir ?',
+      mailPh: 'WhatsApp (+indicatif) ou e-mail', send: 'Recevoir mon reçu', offers: 'Recevoir les offres de Mayda', rateQ: 'Comment était Mayda ce soir ?',
       paid: 'Payé {pay}', onBill: '{q} sur l’addition', offBill: 'pas sur l’addition', tipOf: 'Pourboire de {p}, {amt}',
       railWhish: 'Whish Money', railCard: 'Carte', railCash: 'Espèces', reqCash: 'Demander l’encaissement', paidCash: 'Payé {pay} · espèces',
       cashOk: 'Encaissement confirmé par votre serveur.' },
@@ -93,8 +94,14 @@
   // The printed receipt on the brass tray speaks the page's language (it is the restaurant's paper, not the app).
   var RC = {
     en: { head: 'Table 12 · {n} guests · 21:40', total: 'Total', foot: 'Shukran, see you soon' },
+    fr: { head: 'Table 12 · {n} convives · 21:40', total: 'Total', foot: 'Shukran, à bientôt' },
     ar: { head: 'طاولة 12 · {n} ضيوف · 21:40', total: 'المجموع', foot: 'شكراً، إلى اللقاء' }
   };
+
+  // The French receipt's short names (the English and Arabic ones are in D).
+  var RCFR = { i07: 'Chiche taouk', i03: 'Lahm bi ajine', i08: 'Arayes kafta', i05: 'Fattouche', i06: 'Houmous', i04: 'Batata kezbara',
+    i09: 'Warak enab', i10: 'Moutabal', i11: 'Mouhammara', i14: 'Ayran', i15: 'Citronnade', i16: 'Sodas', k02: 'Taboulé',
+    k03: 'Salade raheb', k05: 'Houmous viande' };
 
   /* ---------- Money, as the real app writes it (guest.html: fmtUSD, fmtLL, usd, ll, pct) ---------- */
   var LRI = '⁦', RLI = '⁧', PDI = '⁩';
@@ -104,13 +111,13 @@
   var toLL = function (v) { return Math.round(v * RATE / 1000) * 1000; };   // lira to the nearest LL 1,000, as printed menus are
   var money = function (v, s) { return s.ccy === 'lbp' ? fmtLL(toLL(v), s.lang) : fmtUSD(v, s.lang); };
   var other = function (v, s) { return '≈ ' + (s.ccy === 'lbp' ? fmtUSD(v, s.lang) : fmtLL(Math.round(v * RATE), s.lang)); };
-  var pct = function (n, lang) { return lang === 'fr' ? n + ' %' : n + '%'; };
+  var pct = function (n, lang) { return lang === 'fr' ? n + '\u202F%' : n + '%'; };
   var fill = function (str, v) { return str.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? String(v[k]) : m; }); };
 
   /* ---------- The state, and everything that follows from it ---------- */
   var initial = function (page) {
     var q = {}; SET.forEach(function (l) { q[l[0]] = l[1]; });
-    return { lang: page === 'ar' ? 'ar' : 'en', ccy: 'usd', q: q, people: 4, tip: 0.10, method: 'whish' };
+    return { lang: page === 'ar' || page === 'fr' ? page : 'en', ccy: 'usd', q: q, people: 4, tip: 0.10, method: 'whish' };
   };
   // The quantity a dish comes back with when it is tapped on again: the film's, or one.
   var usual = function (id) { for (var i = 0; i < SET.length; i++) if (SET[i][0] === id) return SET[i][1]; return 1; };
@@ -157,7 +164,7 @@
 
   /* The printed receipt (SVG, 200 units wide; its height follows its lines), in the page's language, in dollars. */
   var receipt = function (s, page) {
-    var c = calc(s), ar = page === 'ar', R = RC[ar ? 'ar' : 'en'], esc = function (t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    var c = calc(s), ar = page === 'ar', fr = page === 'fr', R = RC[ar ? 'ar' : fr ? 'fr' : 'en'], esc = function (t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
     var y0 = 90, step = 21, n = c.lines.length, yr = y0 + (n - 1) * step + 11, H = yr + 80, out = [];
     var iso = function (t) { return ar ? RLI + t + PDI : t; };
     out.push('<text class="z-s w6 k caps" x="100" y="34" text-anchor="middle">Mayda</text>');
@@ -165,7 +172,7 @@
     out.push('<text class="z-s ' + (ar ? 'arb' : 'w5') + ' su" x="100" y="54" text-anchor="middle">' + esc(iso(head)) + '</text>');
     out.push('<path class="rule" d="M16 68h168"/>');
     c.lines.forEach(function (l, i) {
-      var y = y0 + i * step, nm = D[l.id][ar ? 5 : 4], amt = fmtUSD(l.cents / 100, 'en');
+      var y = y0 + i * step, nm = fr ? RCFR[l.id] : D[l.id][ar ? 5 : 4], amt = fmtUSD(l.cents / 100, 'en');
       if (ar) out.push('<text class="z-s arb k" x="184" y="' + y + '" text-anchor="end">' + esc(RLI + RLI + nm + PDI + ' ×' + l.q + PDI) + '</text><text class="z-s tn k" x="16" y="' + y + '">' + amt + '</text>');
       else out.push('<text class="z-s w5 k" x="16" y="' + y + '">' + esc(l.q + '× ' + nm) + '</text><text class="z-s tn k" x="184" y="' + y + '" text-anchor="end">' + amt + '</text>');
     });
@@ -188,7 +195,7 @@
   'use strict';
   if (typeof document === 'undefined') return;
   var APP = window.AalaynaTableApp, root = document.documentElement;
-  var page = root.lang === 'ar' ? 'ar' : 'en';
+  var page = root.lang === 'ar' || root.lang === 'fr' ? root.lang : 'en';
   var S = APP.initial(page);
   var each = function (sel, fn, ctx) { Array.prototype.forEach.call((ctx || document).querySelectorAll(sel), fn); };
   var set = function (el, t) { if (el && el.textContent !== t) el.textContent = t; };
@@ -327,7 +334,7 @@
   root.classList.add('ui');
 })();
 
-/* Aalayna homepage, prototype V1 (style D, photographic): the table's motion, written frame by frame from the scroll.
+/* Aalayna homepage (style D, photographic): the table's motion, written frame by frame from the scroll.
 
    One engine, the same in every browser. Once per frame it reads the scroll position, lets its own position follow it
    with a light smoothing (0.16 of the gap per frame, so wheel steps glide but never trail the finger), and for every
@@ -335,7 +342,7 @@
    Nothing else is touched, so it all stays on the compositor. Ranges come from where things lie on the page (offsets,
    which transforms do not change), measured again when the window or the fonts change.
 
-   What moves, and only where it serves the stretch's point (docs/table-v1c-storyboard.md):
+   What moves, and only where it serves the stretch's point (docs/home-storyboard.md):
    - Every object is set down as the reader reaches it: from 2.5rem away (the side of the chair it belongs to, the
      table's edge for the bill's tray), from scale .94, settling with the ease-out curve over 40% of its view range,
      staggered; its cast shadow catches up a beat later.
