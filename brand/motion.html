@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aalayna logo motion</title>
 <meta name="robots" content="noindex">
-<style>@font-face{font-family:'Aalayna Block';src:url(fonts/aalayna-block.woff) format('woff');font-display:block}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@600&display=block" rel="stylesheet">
 <style>
 /* One logo reveal, full window. ?piece=block|kufi, &word=AALAYNA for the other spelling (3LAYNA by default),
    &w=&h= for a fixed stage (the renderer uses 1920 x 1080, 1080 x 1080 and 1080 x 1920), &ground=ink|petrol
-   for a dark ground, &notag to leave out the tagline. Click or press Space to replay. */
+   for a dark ground, &notag to leave out the tagline. Click or press Space to replay. The name is drawn from logo.js;
+   the tagline is canvas text in Instrument Sans 600, which canvas does not load by itself, so it plays once that is in. */
 html,body{margin:0;height:100%;background:#FAF6F1;overflow:hidden}
 #stage{position:absolute;left:50%;top:50%;transform-origin:50% 50%;display:block}
 body.capture #stage{left:0;top:0;transform:none}
@@ -39,7 +42,7 @@ body.capture #stage{left:0;top:0;transform:none}
   var t0 = null, raf = 0;
   function tick(now) { if (t0 === null) t0 = now; var t = Math.min(piece.duration, (now - t0) / 1000); piece.render(g, t, W, H); if (t < piece.duration) raf = requestAnimationFrame(tick); }
   function play() { cancelAnimationFrame(raf); t0 = null; raf = requestAnimationFrame(tick); }
-  document.fonts.load("40px 'Aalayna Block'").then(play, play);
+  document.fonts.load("600 40px 'Instrument Sans'").then(play, play);
   addEventListener('click', play);
   addEventListener('keydown', function (e) { if (e.code === 'Space') { e.preventDefault(); play(); } });
 })();
