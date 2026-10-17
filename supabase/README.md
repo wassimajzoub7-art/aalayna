@@ -232,6 +232,82 @@ what happened: `select * from payment_callbacks order by received_at desc limit 
 After the rehearsal, `supabase secrets unset FAKE_WEBHOOK_SECRET`: the fake route then
 answers 404. The rehearsal leaves a confirmed $12 digital payment on that demo bill.
 
+## Hosted payment pages (October 14)
+
+The leg between a guest's reserve and the provider's callback: one Edge Function,
+`functions/payment-start/` (`handler.js` the logic, `index.ts` the Deno wrapper; it imports
+`functions/_shared/supabase.js`, `verify.js` and `http.js`), and `payment-start-2026-10-14.sql`
+(run it after `payments-2026-09-30.sql`; it replaces no earlier function). A digital payment is
+now three steps on three sides: the guest page reserves (`aal_mutate` `reserve`, status
+`initiated`, ten minutes), this function hands the guest to a page the provider hosts, and the
+provider's signed callback to `payment-webhook` confirms. Coming back to the guest page proves
+nothing: it shows "Confirming" until the snapshot carries the row the webhook confirmed, and a
+declined or expired payment sends the guest back to the bill with the balance free.
+
+**payment-start.** `GET /functions/v1/payment-start` with the bill key in `x-aalayna-key`
+answers which rails that bill may pay and by which provider, `{rails: {card: 'fake', whish:
+'fake'}}`; the guest page offers only those (cash is always there). `POST` with the bill key,
+the payer token in `x-aalayna-payer` (the one the reserve was made with; its SHA-256 is in
+`payment_secrets`) and `{paymentId, returnUrl}` checks that the payment is this bill's, a
+digital rail, `initiated` and not expired, asks the provider adapter for its page, writes a
+`payment_sessions` row and answers `{url, provider, expiresAt}`. `returnUrl` must be on an
+origin in `PAYMENT_RETURN_ORIGINS` (default aalayna.com and the local dev ports); `k`, `s`,
+`reset` and `pay` are stripped from it and `pay=<paymentId>` added, so no credential travels
+through the provider. Answers: 400 bad request, 401 wrong payer token, 404 bill or payment
+unavailable, 409 the payment is not `initiated` (the status is in the answer) or no provider
+is connected for the rail, 501 adapter not built yet (whish), 502 provider unreachable.
+The function answers CORS for the allowed origins and limits each key to 60 calls a minute.
+
+**Which provider.** `payment_providers` has one row per (venue, rail): `provider` (an adapter
+name), `config` (non-secret settings, e.g. a merchant id) and `secret_name` (a Supabase Vault
+secret holding the venue's own credentials; `aal_payment_provider`, service role only, is the
+one place it is decrypted). A venue with no row for a rail and demo payments on in admin.html
+gets the fake provider while `FAKE_WEBHOOK_SECRET` is set; with demo payments off and no row,
+the rail is not offered. When a venue's provider account is ready:
+
+```sql
+select vault.create_secret('<the credentials, as the adapter documents them>', 'whish_<slug>');
+insert into payment_providers (restaurant_id, rail, provider, config, secret_name)
+  values ('["<venue name>","<place>"]', 'whish', 'whish', '{"merchant": "<id>"}', 'whish_<slug>');
+```
+
+**The fake provider.** A stand-in for Whish or a card gateway, for rehearsals only (it refuses
+venues with demo payments off, on both legs). Its page is served by this function at
+`/payment-start/fake/checkout?s=<token>`: the amount, the venue, Pay and Decline, and the
+sentence that no money moves. The token is HMAC-signed with `FAKE_WEBHOOK_SECRET` and
+carries the payment, the amount, the return URL and the reservation's expiry. Pay posts a
+callback to `payment-webhook/fake` signed with the same secret, exactly as a provider would,
+then sends the browser back; Decline posts `failed` (the payment is released). Every handoff
+is in `payment_sessions`, every callback in `payment_callbacks`: a session with no callback is
+a guest who left the provider's page.
+
+**Adding a real provider.** One adapter in `payment-start/handler.js` (`create`: their
+request, our payment id as the merchant reference, the return URL) and one in
+`payment-webhook/handler.js` (`verify` and `parse`: their callback), a `payment_providers`
+row per venue, and the acceptance tests in INTEGRATIONS.md. `whish` exists in both files and
+answers 501 naming what is unknown until Whish shares its merchant API.
+
+**Set up (in this order).**
+1. Run `payment-start-2026-10-14.sql`.
+2. Deploy with JWT verification off:
+   `supabase functions deploy payment-start --no-verify-jwt --project-ref xeqbkamwucqplvoavhyd`.
+3. Function secrets: `FAKE_WEBHOOK_SECRET` (the same value as for payment-webhook; unset it
+   after rehearsals, and the fake provider disappears from both functions), optionally
+   `PAYMENT_RETURN_ORIGINS` (comma-separated origins; the default is
+   `https://aalayna.com,https://www.aalayna.com,http://127.0.0.1:8787,http://localhost:8787`).
+4. Rehearse on a venue whose demo payments are on, from a phone: scan the table card or open
+   the bill link, split, pay by card, press Pay on the demo provider's page, read "Shukran.
+   Confirmed by the demo provider · no money moved."; the dashboard shows the payment
+   confirmed by card. Press Decline on a second payment: back to the bill, nothing charged.
+   `select * from payment_sessions order by created_at desc limit 5;` and the
+   `payment_callbacks` rows are the trail.
+
+**On one computer, without Supabase.** `node tools/rehearse-payments.js` serves the pages
+and, in the same process, a stand-in for the parts of the shared store a guest touches plus
+the two real function handlers against an in-memory PostgREST. It prints a guest link for
+this computer and for a phone on the same Wi-Fi. The store's rules are approximated there,
+not run; the SQL is tested by `tests/payment-start-sql.test.cjs` with PGLITE_MODULE.
+
 ## POS bridge (September 30)
 
 A point-of-sale system pushes each table's bill into Aalayna and hears back when it is paid and
@@ -338,8 +414,9 @@ jobname = 'aalayna-pos-webhooks') order by start_time desc limit 5;`.
   callback references are validated there. Digital reservations expire after
   ten minutes; confirmation after expiry requires reconciliation, not blindly
   increasing a bill balance. Cash is reserved until confirmed or cancelled.
-- Shared digital payment buttons are disabled because no provider is connected.
-  They cannot manufacture confirmation. `confirm_digital` requires a trusted
+- Shared card and Whish buttons appear only for rails the venue has a provider for
+  (the fake one at demo venues), and they only reserve and hand over: nothing on a
+  guest device can manufacture confirmation. `confirm_digital` requires a trusted
   service-role callback with a matching amount, currency and provider reference.
   The provider adapter must verify the provider's signature first. Never put a
   service-role secret in any HTML/JS file or in an owner browser.

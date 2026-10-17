@@ -10,7 +10,7 @@ The public homepage and booking page contain no interactive demos or app preview
 
 ## Demo limits
 
-Payments, receipts and feedback delivery are simulated. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider or POS is connected. Without a configured bill/owner key the pages share only local demo data. Shared mode requires the Supabase migrations below. Staff sign in to the dashboard and editor with a one-time email code and a role (owner, manager, waiter); the owner key remains a bearer fallback and guests use per-bill and table keys. Do not use the demo to collect real payments, real card details, or guest contact data.
+Payments, receipts and feedback delivery are simulated in the no-key demo. In shared mode a card or Whish payment goes to the venue's payment provider's own page and is confirmed only by that provider's callback; until a real provider is connected, venues with demo payments on get a fake provider whose page says that no money moves. Campaigns are saved as drafts and approved for audience export; they are never marked delivered without an imported delivery report. Weekly recommendations and the customer section use recorded activity; the separate Reviews and Team sample views still contain illustrative data. No payment provider or POS is connected. Without a configured bill/owner key the pages share only local demo data. Shared mode requires the Supabase migrations below. Staff sign in to the dashboard and editor with a one-time email code and a role (owner, manager, waiter); the owner key remains a bearer fallback and guests use per-bill and table keys. Do not use the demo to collect real payments, real card details, or guest contact data.
 
 **Staff login.** Run `supabase/auth-2026-09-24.sql` after the sessions file, with Supabase Auth set up
 as its header says (email provider on, **Confirm email kept on**, `{{ .Token }}` in the
@@ -60,10 +60,13 @@ bill-link workflow, key rotation and acceptance tests.
 
 Guest keys now identify one bill. Staff open the bill and generate its guest link
 from Live floor. Guests can request cash; only the owner credential can confirm
-collection. Digital reservations are validated on the server, but shared card and
-Whish payment actions remain disabled until a verified provider is connected.
-The local no-key demo still simulates payments. Shared mode never uploads demo
-history or falls back to simulated payment confirmation.
+collection. A card or Whish payment is reserved on the server, then the guest is
+sent to the provider's hosted page (`supabase/functions/payment-start`) and only
+the provider's signed callback (`payment-webhook`) confirms it; a rail with no
+provider at the venue is not offered. The fake provider stands in at venues with
+demo payments on; `node tools/rehearse-payments.js` runs the whole flow on one
+computer. The local no-key demo still simulates payments. Shared mode never
+uploads demo history or falls back to simulated payment confirmation.
 
 ### Bills
 
