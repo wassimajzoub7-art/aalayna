@@ -63,6 +63,23 @@ is ever dropped (a page frozen in the back/forward cache as the reader leaves it
 mid-scroll) and on pageshow and visibilitychange; before this, a dropped frame left the loop switched off and every
 phone's controls stuck in their last gate.
 
+## The soft settle (behind a flag)
+
+`?settle=1` turns it on (remembered for the session, so it survives the language switch); `?settle=0` turns it off;
+off by default. When the reader stops within 15% of a window's height of a hero's settle target, the page eases the
+last pixels over 400 ms with the site's ease-out so the hero sits centred and complete, its caption aligned. Targets:
+beside the table, the hero's centre at 50% of the window (the start of its hold); on the phone stage, the middle of its
+stretch's hold (from the stage's own timeline). It starts only after 120 ms without a scroll event (on a touch screen,
+after the finger has lifted), never inside a travel (the chain's links on a wide screen, every hand-off on the
+stage), never after keyboard scrolling or while a tapped control holds focus, and never with reduced motion. Any
+wheel, touch, key or pointer input, or a scroll it did not write, cancels it at once. It writes the scroll position
+each frame (requestAnimationFrame and an instant scrollTo), so the chain renders every frame like any other scroll.
+
+The native path (CSS `scroll-snap-type: y proximity` with markers at the targets) was tried and dropped: Chromium
+snapped from 45% of a window away (its proximity is its own, not 15%) and pulled a PageDown onto the next target,
+while WebKit did not snap from a wheel at all; neither can be kept out of the hand-offs. The script path runs
+everywhere.
+
 ## The captions on the phone stage
 
 During a hand-off the outgoing caption steps back (55%, a quarter of a rem up) and stays until the incoming caption

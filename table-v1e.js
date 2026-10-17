@@ -279,8 +279,17 @@
     }
     // The Paid chip and the review card's Paid line say the same words: the chip lands there.
     var pl = APP.paidLine(S);
-    each('.paid-line', function (t) { set(t, pl); t.setAttribute('x', L === 'ar' ? 132 : 162); }, table);
-    each('.paid-tick', function (t) { t.setAttribute('d', L === 'ar' ? 'M190 20l6 6 12-12' : 'M96 20l6 6 12-12'); }, table);
+    // The tick sits beside the words, however long they are: measure the text, centre the pair at 150.
+    each('.paid-line', function (t) {
+      set(t, pl);
+      if (!t.getComputedTextLength) return;
+      var w = 0; try { w = t.getComputedTextLength(); } catch (e) { w = 0; }
+      if (!w) w = pl.length * 7.2;
+      var tx = L === 'ar' ? 150 - 12 : 150 + 12, x0 = L === 'ar' ? tx + w / 2 + 6 : tx - w / 2 - 24;
+      t.setAttribute('x', tx);
+      var tick = t.parentNode && t.parentNode.querySelector('.paid-tick');
+      if (tick) tick.setAttribute('d', 'M' + x0.toFixed(1) + ' 20l6 6 12-12');
+    }, table);
     var grew = c.lines.length !== rcLines && rcLines >= 0;
     rcLines = c.lines.length;
     return grew;
@@ -702,6 +711,13 @@
     root.setAttribute('data-hold', JSON.stringify(hold));
     root.setAttribute('data-ranges', JSON.stringify(ranges));
     stage = PIN ? { T0: T0, STEP: STEP } : null;
+    // The soft settle's targets (?settle=1): where each hero sits centred and complete; beside the table its centre at
+    // 50% of the window (the start of its hold), on the stage the middle of its hold. A settle never starts inside a
+    // span where something travels: the chain's links on a wide screen, every hand-off on the stage.
+    SET.unit = vh;
+    SET.targets = heroEls.map(function (h, i) { return Math.round(PIN ? holdAt(i) + .5 * HOLD : C[i] - .5 * vh); });
+    SET.busy = PIN ? heroEls.slice(0, -1).map(function (h, i) { return hand(i); }) : ['bill', 'share', 'paid'].map(function (k) { return ranges[k]; }).filter(Boolean);
+    root.setAttribute('data-settle-targets', JSON.stringify(SET.targets));
     tracks.forEach(function (t) { t.p = -1; });
     apply(cur);
   };
@@ -716,7 +732,7 @@
   };
 
   /* ---------- The loop: follow the scroll, smoothly, only while it is moving ---------- */
-  var cur = window.scrollY || window.pageYOffset || 0, running = false, stage = null;
+  var cur = window.scrollY || window.pageYOffset || 0, running = false, stage = null, SET = { targets: [], busy: [], unit: 0 };
   // The loop must never stay switched off: a frame the browser drops (a page frozen in the back/forward cache as the
   // reader leaves it, a tab sent to the background mid-scroll) would leave `running` set with no frame to clear it,
   // the table frozen and every phone's controls stuck in their last gate. So a scroll that finds the loop silent for
@@ -753,5 +769,61 @@
     var n = e.target.closest ? e.target.closest('.note') : null;
     if (n && !n._shown) { n._shown = true; Array.prototype.forEach.call(n.children, function (el) { put(el, 0, 0, 0, 1, 1); }); }
   });
+
+  /* ---------- The soft settle (?settle=1, remembered for the session; ?settle=0 turns it off) ----------
+     When the reader stops within 15% of a window's height of a hero's settle target, the last few pixels are eased
+     (400 ms, the site's ease-out) so the hero sits centred and complete, its caption aligned with it. It waits for
+     the scroll to be quiet for 120 ms (on a touch screen, after the finger has lifted), never starts inside a travel,
+     never after keyboard scrolling or while a tapped control holds focus, and any wheel, touch, key or pointer input
+     cancels it at once. It writes the position each frame like any other scroll, so the chain renders every frame.
+     Off by default, and with reduced motion (this whole engine is). */
+  var settleOn = (function () {
+    var q = (location.search.match(/[?&]settle=([01])\b/) || [])[1];
+    try { if (q) sessionStorage.setItem('aal.table.settle', q); else q = sessionStorage.getItem('aal.table.settle'); } catch (e) {}
+    return q === '1';
+  })();
+  root.setAttribute('data-settle', settleOn ? 'idle' : 'off');
+  if (settleOn) {
+    var quiet = 0, touching = false, byKeys = false, glide = null, wrote = null;
+    var stopGlide = function () { wrote = null; if (glide) { cancelAnimationFrame(glide.raf); glide = null; root.setAttribute('data-settle', 'idle'); } };
+    var inBusy = function (y) { for (var i = 0; i < SET.busy.length; i++) { var r = SET.busy[i]; if (y > r[0] && y < r[1]) return true; } return false; };
+    var tapFocus = function () { var a = document.activeElement; return !!(a && a.matches && a.matches('[data-act]')); };
+    var consider = function () {
+      quiet = 0;
+      if (touching || byKeys || glide || tapFocus()) return;
+      var y = window.scrollY || window.pageYOffset || 0, best = null;
+      SET.targets.forEach(function (t) { if (best == null || Math.abs(t - y) < Math.abs(best - y)) best = t; });
+      if (best == null || Math.abs(best - y) < 1 || Math.abs(best - y) > .15 * SET.unit) return;
+      if (inBusy(y) || inBusy(best)) return;
+      var from = y, to = best, t0 = null;
+      root.setAttribute('data-settle', 'moving');
+      glide = { raf: 0 };
+      var step = function (now) {
+        if (!glide) return;
+        // A scroll the settle did not write (a scrollbar drag) hands the page back at once.
+        if (wrote != null && Math.abs((window.scrollY || 0) - wrote) > 2) { stopGlide(); return; }
+        if (t0 == null) t0 = now;
+        var k = Math.min(1, (now - t0) / 400), yy = Math.round(from + (to - from) * OUT(k));
+        wrote = yy; window.scrollTo({ top: yy, behavior: 'instant' });
+        if (k < 1) glide.raf = requestAnimationFrame(step); else { wrote = null; stopGlide(); }
+      };
+      glide.raf = requestAnimationFrame(step);
+    };
+    window.addEventListener('scroll', function () {
+      if (glide) return;   // the settle's own writes
+      clearTimeout(quiet); quiet = setTimeout(consider, 120);
+    }, { passive: true });
+    var hand0 = function () { byKeys = false; stopGlide(); };
+    window.addEventListener('wheel', hand0, { passive: true, capture: true });
+    window.addEventListener('pointerdown', hand0, { passive: true, capture: true });
+    window.addEventListener('touchstart', function () { touching = true; hand0(); }, { passive: true, capture: true });
+    var lift = function () { touching = false; clearTimeout(quiet); quiet = setTimeout(consider, 120); };
+    window.addEventListener('touchend', lift, { passive: true, capture: true });
+    window.addEventListener('touchcancel', lift, { passive: true, capture: true });
+    window.addEventListener('keydown', function (e) {
+      stopGlide();
+      if (/^(ArrowUp|ArrowDown|PageUp|PageDown|Home|End| |Spacebar)$/.test(e.key)) byKeys = true;
+    }, { capture: true });
+  }
   measure();
 })();
