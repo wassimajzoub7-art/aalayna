@@ -1,7 +1,7 @@
-# Table V1, version E: the interactive version (17 October 2026)
+# The homepage: version E of the table, the interactive version (17 October 2026)
 
-Amendment 10 of `table-brief.md`, built on style D after its mobile rebuild (amendments 9 and 11 kept). The page is
-`table-v1.html` and `ar/table-v1.html`, with `table-v1.css` and `table-v1.js`.
+Amendment 10 of `table-brief.md`, built on style D after its mobile rebuild (amendments 9 and 11 kept). Launched as the homepage on
+17 October (amendment 13): `index.html`, `fr/index.html` and `ar/index.html`, with `home.css` and `home.js`.
 
 ## What is live
 
@@ -12,8 +12,8 @@ the rest), with the real menu pack (`venues/mayda.json`) and the real sample che
 screen is laid out in the app's own points (390 to the screen's width, one point is `--p`) and its type uses the
 site's six size tokens in those points, as the lettering on the other objects does in theirs.
 
-`tools/table-v1e-screens.js` writes each screen's default HTML into both pages (between `<!--g:name-->` markers),
-from the data and words that `table-v1.js` exports under Node; run it after changing either. Without JavaScript the
+`tools/home-screens.js` writes each screen's default HTML into the three pages (between `<!--g:name-->` markers),
+from the data and words that `home.js` exports under Node; run it after changing either. Without JavaScript the
 screens read the film's evening and the controls are visible and disabled.
 
 | Stretch | What can be tried | Default (the film) |
@@ -36,7 +36,7 @@ more); the screen's own controls still answer a tap, and keyboard focus goes to 
 
 ## How the state flows
 
-One object, `S` in `table-v1.js` (`lang`, `ccy`, `q` the quantity of each dish, `people`, `tip`), and one function of
+One object, `S` in `home.js` (`lang`, `ccy`, `q` the quantity of each dish, `people`, `tip`), and one function of
 it, `calc`, give every amount: the bill bar's total, the receipt on the brass tray (its lines, its height
 and the number of guests), your share and each of the other guests' shares (the ones that fly off), the rest for the
 others, the payment's bill share, tip and total, the Pay button, the Paid chip, the thank-you screen and the review
@@ -146,3 +146,24 @@ founder approves all copy before launch.
 
 The bill stretch's line (17 October): "On their phone from the moment they order." / «على هاتف الضيف منذ لحظة
 الطلب.» (On the guest's phone from the moment of ordering.)
+
+## The French page (fr/index.html)
+
+The French homepage's phones speak the real app's French (`guest.html`'s own strings, with its narrow no-break space
+before ? and %, its `10 %`, and dollars and lira written as the app writes them: `$41.94`, `LL 3,412,635`). The
+venue's own line stays as the venue wrote it (Table 12 · Lebanese Grill), as in the app. The page's own words beside
+the phones, and the receipt on the tray, are French:
+
+| English | French |
+| --- | --- |
+| Try it: change the language or the currency, or tap a dish. | Essayez : changez la langue ou la devise, ou touchez un plat. |
+| Try it: change how many of you there are. | Essayez : changez le nombre de convives. |
+| Try it: choose the tip, or how to pay. | Essayez : choisissez le pourboire, ou le moyen de paiement. |
+| Try the menu / Language / Currency | Essayer le menu / Langue / Devise |
+| Guests / One fewer / One more | Convives / Un de moins / Un de plus |
+| No tip / Tip / Pay with: Whish, Card, Cash | Aucun / Pourboire / Payer par : Whish, Carte, Espèces |
+| The guest app: the menu, the split, the payment | L’appli client : le menu, le partage, le paiement |
+| Table 12 · {n} guests · 21:40 / Total / Shukran, see you soon | Table 12 · {n} convives · 21:40 / Total / Shukran, à bientôt |
+
+The receipt's French short names: Chiche taouk, Lahm bi ajine, Arayes kafta, Fattouche, Houmous, Batata kezbara, Warak
+enab, Moutabal, Mouhammara, Ayran, Citronnade, Sodas (Taboulé, Salade raheb, Houmous viande when added).

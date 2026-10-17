@@ -2,11 +2,11 @@
 
 The progression from one step to the next is the core design problem of this version. This file sets out, for each
 hand-off, what carries the reader across, where the eye goes, the beats, the curves, what holds still and the feeling
-it should give. It goes with `table-v1c-storyboard.md` (the point of each stretch) and is built in `table-v1.js`.
+it should give. It goes with `home-storyboard.md` (the point of each stretch) and is built in `home.js`.
 
 ## The engine and the conventions
 
-- **Driven from the scroll, in JavaScript, the same in every browser.** Once per frame `table-v1.js` reads the
+- **Driven from the scroll, in JavaScript, the same in every browser.** Once per frame `home.js` reads the
   scroll position; its own position follows with 0.16 of the gap per frame (wheel steps glide, a finger never feels
   a trail), and every track writes `transform` and `opacity` to its layer. Reversible and interruptible by
   construction: stop scrolling and everything stops where it is.

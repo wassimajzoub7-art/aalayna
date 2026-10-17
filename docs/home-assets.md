@@ -1,6 +1,6 @@
 # Table V1, style D: the photographs (16 October 2026)
 
-Every photograph on `table-v1.html` and `ar/table-v1.html` (style D, the photographic version). All are free for
+Every photograph on `index.html` and `ar/index.html` (style D, the photographic version). All are free for
 commercial use without attribution under the license named; the source page of each was checked for that license on
 16 October 2026 (no Unsplash+ or other paid image is used, and no image was generated). Credit is recorded here all
 the same.
