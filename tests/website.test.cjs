@@ -1,5 +1,5 @@
-// Marketing site (index.html, book.html, numbers.html): copy rules, CTA labels, contact links,
-// and the calculator's on-screen arithmetic. Runs the numbers.html script against a tiny DOM stub.
+// Marketing site (index.html, fr/, ar/, book.html, numbers.html): the homepage (version E of the table, docs/table-brief.md),
+// copy rules, CTA labels, the funnel, contact links, and the calculator's on-screen arithmetic (numbers.html in a DOM stub).
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -167,40 +167,69 @@ test('calculator: no headline is rounded up (or down) through an intermediate st
   }
 });
 
+
+/* ---------- The homepages: index.html, fr/index.html, ar/index.html (version E of the table, docs/table-brief.md) ---------- */
+const HOMES = ['index.html', 'fr/index.html', 'ar/index.html'];
+const FR = 'fr/index.html', AR = 'ar/index.html';
+const LABELS = {
+  'index.html': { book: 'Book a demo', wa: 'WhatsApp us', hello: /^Hi, / },
+  'fr/index.html': { book: 'Réserver une démo', wa: 'Écrivez-nous sur WhatsApp', hello: /^Bonjour, / },
+  'ar/index.html': { book: 'احجز عرضاً توضيحياً', wa: 'راسلنا على واتساب', hello: /^مرحباً، / },
+};
+const up = f => (f.includes('/') ? '../' : '');
+const all = (s, re) => [...s.matchAll(re)].map(m => m[1]);
+const decode = s => s.replace(/&#8239;/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+const meta = (s, k) => { const m = s.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
+const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
+// The language links differ from page to page by design; everything else in the body is the same markup.
+const LANG_LINKS = /<a class="(?:lang|foot-lang)" href="[^"]*" hreflang="[a-z]+" lang="[a-z]+" aria-label="[^"]*">[^<]*<\/a>/g;
+// The printed receipt on the tray is drawn per language (its lines set right to left in Arabic): compared apart.
+const noLang = s => s.replace(LANG_LINKS, '').replace(/<!--g:receipt-->[\s\S]*?<!--\/g:receipt-->/, '');
+// What a reader or a screen reader gets: text between tags in the body, alt and aria-label, and the head's title and meta contents.
+function visible(s) {
+  const body = s.slice(s.indexOf('<body'));
+  const text = body.replace(/<script[\s\S]*?<\/script>|<!--[\s\S]*?-->/g, '').split(/<[^>]*>/).map(t => t.trim()).filter(Boolean);
+  const attrs = all(s, /\b(?:alt|aria-label)="([^"]*)"/g);
+  const head = all(s, /<meta (?:property|name)="(?:description|og:[a-z:_]+|twitter:[a-z]+)" content="([^"]*)">/g).filter(v => /[a-z] [a-z]/i.test(v));
+  return text.concat(attrs, head, all(s, /<title>([^<]*)<\/title>/g)).map(decode);
+}
+
 test('homepage figures: what the restaurant gets, none of them from the calculator, their sources noted in the page source', () => {
-  // The calculator estimates one restaurant from its own inputs; the homepage says what the restaurant gets. Where each
-  // figure comes from is kept in a comment inside the band, for meetings and for whoever edits the page next.
-  for (const f of ['index.html', 'fr/index.html', 'ar/index.html']) {
-    const band = read(f).match(/<section[^>]*id="outcomes"[\s\S]*?<\/section>/)[0];
-    assert.deepEqual(all(band, /<p class="outcome-figure">([^<]+)<\/p><p class="outcome-source">[^<]+<\/p><h3>/g), f.startsWith('ar') ? ['10 دقائق', '22%', '83%', '50%'] : ['10 min', '22%', '83%', '50%'], f);
-    const note = band.match(/<!-- Where the figures come from \(for meetings; not shown\): ([^>]*) -->/);
+  // The four figures sit on the table beside the stretch they prove; where each comes from is kept in a comment.
+  for (const f of HOMES) {
+    const s = read(f);
+    const figs = [...s.matchAll(/<article class="stretch (s-[a-z]+)[^"]*"[^>]*>([\s\S]*?)<\/article>/g)]
+      .map(m => [m[1], m[2].match(/<div class="fig"><p class="num" data-count>([^<]+)<\/p><p class="src">[^<]+<\/p><\/div>/)]).filter(x => x[1]).map(x => x[0] + ' ' + x[1][1]);
+    assert.deepEqual(figs, f === AR ? ['s-bill 10 دقائق', 's-pay 22%', 's-review 83%', 's-again 50%'] : ['s-bill 10 min', 's-pay 22%', 's-review 83%', 's-again 50%'], f);
+    const note = s.match(/<!-- Where the figures come from \(for meetings; not shown\): ([^>]*) -->/);
     assert.ok(note, f + ': the sources, noted');
     ['Barclaycard', 'The New York Times', 'BrightLocal', 'Toast Regulars Report'].forEach(src => assert.ok(note[1].includes(src), f + ': ' + src));
-    assert.ok(!/<cite>|outcome-note|illustrative|indicatif|توضيحي\)/.test(band), f + ': no source lines, calculator defaults or illustrative figures on the page');
+    assert.ok(!/<cite>|illustrative|\(indicatif\)|توضيحي\)/.test(s), f + ': no calculator defaults or illustrative figures on the page');
   }
-  assert.ok(!/Fourteen minutes|13 min/i.test(read('index.html')));
-  assert.ok(!/outcome-source cite/.test(read('website.css')));
+  const en = read('index.html');
+  assert.deepEqual(all(en, /<p class="src">([^<]+)<\/p>/g), ['Saved per table: nobody waits for the bill.', 'Average tip per table once it is suggested at payment, up from 10%.',
+    'Of customers asked for a review leave one. Aalayna asks every table.', 'Of orders can come from the few guests who return. Aalayna tells you who they are.']);
 });
 
 test('contact links: one WhatsApp number and at most one email address across every page', () => {
-  const files = rootFiles('.html').concat(rootFiles('.js'));
+  const files = rootFiles('.html').concat(rootFiles('.js'), ['fr/index.html', 'ar/index.html']);
   const numbers = [], mails = [];
   files.forEach(f => {
     const s = read(f);
     (s.match(/wa\.me\/[^?"'\s]*/g) || []).forEach(m => numbers.push(m));
     (s.match(/mailto:[^?"'\s]*/g) || []).forEach(m => mails.push(m));
   });
-  assert.ok(numbers.length >= 5, 'WhatsApp links found: ' + numbers.length);
+  assert.ok(numbers.length >= 9, 'WhatsApp links found: ' + numbers.length);
   assert.equal(new Set(numbers).size, 1, 'different WhatsApp numbers: ' + [...new Set(numbers)].join(', '));
   assert.ok(new Set(mails).size <= 1, 'different email addresses: ' + [...new Set(mails)].join(', '));
 });
 
-test('copy: no "a Aalayna", no em dashes on the marketing pages', () => {
+test('copy: no "a Aalayna", no em dashes on the marketing pages and the homepage sheet and script', () => {
   rootFiles('.html').concat(rootFiles('.js')).forEach(f => assert.ok(!/\ba Aalayna|\ba%20Aalayna/.test(read(f)), f));
-  SITE.concat(['website.css']).forEach(f => assert.ok(!/—|&mdash;|\\2014/.test(read(f)), f + ' has an em dash'));
+  SITE.concat([FR, AR, 'website.css', 'home.css', 'home.js', 'tools/home-screens.js']).forEach(f => assert.ok(!/—|&mdash;|&#8212;|\\2014/.test(read(f)), f + ' has an em dash'));
 });
 
-test('CTAs: two labels site-wide, booking goes to book.html, WhatsApp goes to wa.me', () => {
+test('CTAs: two labels per language, booking goes to book.html, WhatsApp goes to wa.me with a message in the page\'s language', () => {
   const retired = ['Let’s talk', 'Let\'s talk', 'Discuss a pilot', 'Book a conversation', 'Check compatibility with us', 'Discuss repeat visits',
     'Contact us on WhatsApp', 'Book via WhatsApp', 'Book by email', 'Open booking calendar', 'Check this number on a call'];
   SITE.forEach(f => {
@@ -216,473 +245,391 @@ test('CTAs: two labels site-wide, booking goes to book.html, WhatsApp goes to wa
       }
     }
   });
+  const number = read('index.html').match(/wa\.me\/(\d+)/)[1];
+  for (const f of HOMES) {
+    const s = read(f), L = LABELS[f], used = new Set();
+    for (const m of s.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)) {
+      const attrs = m[1], text = decode(strip(m[2]));
+      if (/class="btn\b/.test(attrs)) { assert.ok([L.book, L.wa].includes(text), f + ': button "' + text + '"'); used.add(text); }
+      if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, L.book, f); assert.match(attrs, new RegExp('href="' + up(f) + 'book\\.html"'), f); }
+      if (/data-track="whatsapp_click"/.test(attrs)) {
+        assert.equal(text, L.wa, f);
+        const href = attrs.match(/href="https:\/\/wa\.me\/(\d+)\?text=([^"]*)"/);
+        assert.ok(href, f + ': WhatsApp with a prefilled message');
+        assert.equal(href[1], number, f + ': the same number');
+        assert.match(decodeURIComponent(href[2]), L.hello, f + ': the message is in the page\'s language');
+      }
+    }
+    assert.deepEqual([...used].sort(), [L.book, L.wa].sort(), f + ': both labels, and only them');
+    const actions = s.slice(s.indexOf('class="poster"')).match(/<div class="actions">([\s\S]*?)<\/div>/)[1];
+    assert.match(actions, /^<a class="btn" data-track="booking_click" data-placement="hero"[^>]*>[^<]+<\/a><a class="btn outline" data-track="whatsapp_click" data-placement="hero"[^>]*>[^<]+<\/a>$/, f + ': the poster carries both asks');
+  }
   runNumbers('?focus=all').forEach(o => o.buttons.forEach(b => {
     assert.equal(b.text, 'Book a demo'); assert.equal(b.href, 'book.html');
     assert.equal(b.track, 'booking_click'); assert.equal(b.placement, 'numbers_' + o.key);
   }));
-  const book = read('book.html');
-  assert.match(book, /<p class="alt">Prefer WhatsApp\? <a [^>]*data-track="whatsapp_click"[^>]*>Message us<\/a>\.<\/p>/);
+  assert.match(read('book.html'), /<p class="alt">Prefer WhatsApp\? <a [^>]*data-track="whatsapp_click"[^>]*>Message us<\/a>\.<\/p>/);
 });
 
-test('funnel: tracked placements keep their names and every event is one analytics.js accepts', () => {
+test('funnel: six booking placements on every homepage, the names the funnel already knows, and every event one analytics.js accepts', () => {
   const allowed = JSON.parse(read('analytics.js').match(/var allowed = (\[[^\]]*\])/)[1].replace(/'/g, '"'));
-  const pairs = f => [...read(f).matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
-  const index = pairs('index.html');
-  // Every section ends on Book a demo, each with its own placement, so the funnel shows which section converts.
-  assert.deepEqual(index.filter(p => p.startsWith('booking_click')),
-    ['booking_click:navigation', 'booking_click:hero', 'booking_click:how', 'booking_click:outcomes', 'booking_click:pricing', 'booking_click:faq', 'booking_click:footer']);
-  ['whatsapp_click:hero', 'whatsapp_click:footer', 'whatsapp_click:footer_contact', 'numbers_click:outcomes']
-    .forEach(p => assert.ok(index.includes(p), 'index.html lost ' + p));
-  assert.deepEqual(pairs('book.html'), ['whatsapp_click:booking_fallback']);
-  assert.deepEqual(pairs('numbers.html').sort(), ['booking_click:numbers_nav', 'whatsapp_click:numbers_footer']);
-  SITE.forEach(f => pairs(f).forEach(p => assert.ok(allowed.includes(p.split(':')[0]), f + ' ' + p)));
-  assert.equal(index.filter(p => p.startsWith('numbers_click')).length, 1);
-  assert.equal((read('index.html').match(/href="numbers\.html/g) || []).length, 1);
+  // The table's placements map onto the old homepage's: the split's ask is "how", the regulars' is "outcomes".
+  for (const f of HOMES) {
+    const p = pairs(read(f));
+    assert.deepEqual(p.filter(x => x.startsWith('booking_click')),
+      ['booking_click:navigation', 'booking_click:hero', 'booking_click:how', 'booking_click:outcomes', 'booking_click:pricing', 'booking_click:footer'], f);
+    assert.deepEqual(p.filter(x => x.startsWith('whatsapp_click')), ['whatsapp_click:hero', 'whatsapp_click:footer', 'whatsapp_click:footer_contact'], f);
+    p.forEach(x => assert.ok(allowed.includes(x.split(':')[0]), f + ' ' + x));
+    const s = read(f);
+    assert.match(s.match(/<article class="stretch s-split[\s\S]*?<\/article>/)[0], /data-placement="how"/, f + ': the split ends on the "how" ask');
+    assert.match(s.match(/<article class="stretch s-again[\s\S]*?<\/article>/)[0], /data-placement="outcomes"/, f + ': the regulars end on the "outcomes" ask');
+    assert.match(s.match(/<article class="stretch s-price[\s\S]*?<\/article>/)[0], /data-placement="pricing"/, f + ': the price ends on the "pricing" ask');
+    assert.match(s.match(/<section class="ask"[\s\S]*?<\/section>/)[0], /data-track="booking_click" data-placement="footer"/, f + ': the close');
+    assert.match(s.match(/<header[\s\S]*?<\/header>/)[0], /data-track="booking_click" data-placement="navigation"/, f + ': the header');
+  }
+  assert.deepEqual(pairs(read('book.html')), ['whatsapp_click:booking_fallback']);
+  assert.deepEqual(pairs(read('numbers.html')).sort(), ['booking_click:numbers_nav', 'whatsapp_click:numbers_footer']);
+  SITE.forEach(f => pairs(read(f)).forEach(p => assert.ok(allowed.includes(p.split(':')[0]), f + ' ' + p)));
 });
 
-test('homepage structure: four sections that each end on Book a demo, six questions, nothing that is not shipped', () => {
-  const s = read('index.html');
-  // Under the headline: what the product is, in a sentence and four chips.
-  assert.ok(s.includes('<p class="lead">A QR code on every table. Guests open your menu, split the bill and pay from their phone. No app to download.</p>'));
-  assert.deepEqual(all(s, /<ul class="what">([\s\S]*?)<\/ul>/g).map(u => all(u, /<\/svg>([^<]+)<\/li>/g))[0], ['Web app, nothing to download', 'Live dashboard for your team', 'EN · FR · عربي, USD or LBP', 'Whish, card or cash']);
-  assert.deepEqual(all(s, /<section[^>]*\bid="([^"]+)"/g), ['how', 'outcomes', 'pricing', 'faq', 'contact'], 'the sections, in order');
-  assert.ok(!/id="experience"|id="return-visits"|Coming next|Bring guests back/.test(s), 'no both-sides or coming-next section');
-  assert.equal(s.match(/<div class="nav-links">([\s\S]*?)<\/div>/)[1], '<a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">Questions</a>');
-  ['hero-copy', 'id="contact"'].forEach(anchor => {
-    const block = s.slice(s.indexOf(anchor)), actions = block.match(/<div class="actions">([\s\S]*?)<\/div>/)[1].trim();
-    assert.match(actions, /^<a class="btn" data-track="booking_click"[^>]*>Book a demo<\/a>\s*<a class="btn outline" data-track="whatsapp_click"[^>]*>WhatsApp us<\/a>$/, anchor);
+test('launch head: indexable, real titles and descriptions, analytics and config scripts as before, the homepage sheet and script by version', () => {
+  const versions = { css: new Set(), js: new Set() };
+  for (const f of HOMES) {
+    const s = read(f), head = s.slice(0, s.indexOf('</head>')), p = up(f);
+    assert.ok(!/name="robots"|noindex/.test(s), f + ': indexable');
+    assert.ok(!/table-v1|V1|النسخة 1|prototype|Prototype|التجريبية/.test(head), f + ': no prototype words or addresses');
+    const order = all(head, /<script src="([^"]+)"/g);
+    assert.deepEqual(order.map(u => u.replace(/\?v=\d+$/, '')), [p + 'aalayna-config.js', p + 'analytics-config.js', p + 'analytics.js', p + 'home.js'], f + ': the scripts, in order');
+    assert.ok(head.includes('<script src="' + p + 'aalayna-config.js"></script>'), f + ': the config first, not deferred');
+    assert.ok(head.includes('<script src="' + p + 'analytics-config.js" defer></script>\n<script src="' + p + 'analytics.js" defer></script>'), f + ': analytics deferred, as before');
+    const css = head.match(new RegExp('<link rel="stylesheet" href="' + p.replace(/\./g, '\\.') + 'home\\.css\\?v=(\\d+)">'));
+    const js = head.match(new RegExp('<script src="' + p.replace(/\./g, '\\.') + 'home\\.js\\?v=(\\d+)" defer></script>'));
+    assert.ok(css && js, f + ': home.css and home.js with a version');
+    versions.css.add(css[1]); versions.js.add(js[1]);
+    assert.ok(!/website\.css|site\.js/.test(head), f + ': not the old sheet or script');
+    assert.ok(meta(s, 'description').length >= 120, f + ': a real description');
+  }
+  assert.equal(versions.css.size, 1, 'one home.css version on all three'); assert.equal(versions.js.size, 1, 'one home.js version on all three');
+  const en = read('index.html');
+  assert.equal(en.match(/<title>([^<]*)<\/title>/)[1], 'Aalayna: scan, split, settle.');
+  assert.match(meta(en, 'description'), /^Nobody waits for the bill: tables turn faster, tips go up, reviews come in\./, 'the outcome line leads the description');
+  assert.match(meta(read(FR), 'description'), /^Personne n’attend l’addition : les tables tournent plus vite/);
+  assert.match(meta(read(AR), 'description'), /^لا أحد ينتظر الفاتورة: الطاولات تدور أسرع/);
+  assert.ok(!fs.existsSync(path.join(ROOT, 'site.js')), 'site.js served only the old homepage');
+  ['home.css', 'home.js', 'images/table/'].forEach(x => assert.match(read('.gitignore'), new RegExp('^!' + x.replace(/\./g, '\\.') + '$', 'm'), '.gitignore lets ' + x + ' in'));
+});
+
+test('share previews: og and twitter tags on every marketing page, the image at an absolute URL, the hreflang trio on every homepage', () => {
+  const urls = { 'index.html': 'https://aalayna.com/', 'fr/index.html': 'https://aalayna.com/fr/', 'ar/index.html': 'https://aalayna.com/ar/', 'numbers.html': 'https://aalayna.com/numbers.html', 'book.html': 'https://aalayna.com/book.html' };
+  const locale = { 'index.html': 'en_GB', 'fr/index.html': 'fr_FR', 'ar/index.html': 'ar_LB' };
+  Object.keys(urls).forEach(f => {
+    const s = read(f);
+    assert.equal(meta(s, 'og:image'), 'https://aalayna.com/images/og-image.png', f);
+    assert.equal(meta(s, 'og:url'), urls[f], f);
+    assert.ok(meta(s, 'og:title') && meta(s, 'og:description') && meta(s, 'og:image:alt'), f + ' og:title, og:description, og:image:alt');
+    assert.equal(meta(s, 'twitter:card'), 'summary_large_image', f);
+    if (!locale[f]) return;
+    assert.equal(meta(s, 'og:locale'), locale[f], f);
+    assert.deepEqual(all(s, /<meta property="og:locale:alternate" content="([^"]+)">/g).sort(), Object.values(locale).filter(l => l !== locale[f]).sort(), f + ': the other two locales');
+    assert.deepEqual(all(s, /<link rel="alternate" hreflang="([^"]+)" href="[^"]+">/g), ['en', 'fr', 'ar', 'x-default'], f);
+    ['<link rel="alternate" hreflang="en" href="https://aalayna.com/">', '<link rel="alternate" hreflang="fr" href="https://aalayna.com/fr/">',
+      '<link rel="alternate" hreflang="ar" href="https://aalayna.com/ar/">', '<link rel="alternate" hreflang="x-default" href="https://aalayna.com/">'].forEach(l => assert.ok(s.includes(l), f + ': ' + l));
   });
-  ['how', 'outcomes', 'faq'].forEach(id => assert.match(s.match(new RegExp('<section[^>]*id="' + id + '"[\\s\\S]*?</section>'))[0], /<div class="section-cta"><a class="btn(?: light)?" data-track="booking_click" data-placement="[a-z]+" href="book\.html">Book a demo<\/a><\/div>/, id + ' ends on Book a demo'));
-  assert.match(s, /<a class="btn light full" data-track="booking_click" data-placement="pricing" href="book\.html">Book a demo<\/a>/);
-  const faq = [...s.matchAll(/<summary>([^<]*)<\/summary>/g)].map(m => m[1]);
-  assert.deepEqual(faq, ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?', 'Where do payments and tips go?', 'Is this ready to take real payments?', 'What is included in the price?']);
-  const numbers = [...s.matchAll(/<span class="number">([^<]*)<\/span>/g)].map(m => m[1]);
-  assert.equal(numbers.length, 8, 'four steps, and the pilot timeline: three steps and go-live');
-  assert.match(s, /<li class="go-live"><span class="number">[^<]+<\/span> [^<]+<\/li><li><span class="number">03 · /, 'go-live sits before the review');
-  assert.ok(!/commission/i.test(s.match(/<div class="price-card">[\s\S]*?<\/div>/)[0]), 'no commission line on the price card');
-  assert.match(s, /<summary>What is included in the price\?<\/summary><p>[^<]*No commission on your sales/, 'it lives in the price answer');
-  numbers.filter(n => n !== 'Go-live').forEach(n => assert.match(n, /^\d{2} · \S/));
-  assert.ok(!/<ol(?![^>]*pilot-steps)/.test(s), 'every numbered list uses the 01 · Label pattern');
-  // Each figure says what the restaurant gets, in one plain line; no internal labels (Assumption, Product) on the page.
-  const cards = [...s.matchAll(/<p class="outcome-figure">([^<]*)<\/p><p class="outcome-source">([^<]+)<\/p><h3>([^<]+)<\/h3>/g)];
-  assert.deepEqual(cards.map(m => m[1]), ['10 min', '22%', '83%', '50%']);
-  assert.deepEqual(cards.map(m => m[2]), ['Saved per table: nobody waits for the bill.', 'Average tip per table once it is suggested at payment, up from 10%.',
-    'Of customers asked for a review leave one. Aalayna asks every table.', 'Of orders can come from the few guests who return. Aalayna tells you who they are.']);
-  assert.deepEqual(cards.map(m => m[3]), ['Tables turn faster', 'Servers earn more tips', 'More Google reviews', 'A guest list you own'], 'time, tips, reviews, and the guest data for marketing');
-  assert.match(s, /<p class="eyebrow">What your restaurant gets<\/p><h2 id="benefits-title">Four things owners can measure\.<\/h2>/);
-  assert.ok(!/automatic renewal/i.test(s), 'no line that promises nothing');
-  assert.ok(!/source-tag|>(?:Assumption|Product|Benchmark)</.test(s), 'no source tags');
-  assert.equal(all(s, /<ul>([\s\S]*?)<\/ul>/g).map(u => (u.match(/<li>/g) || []).length)[0], 5, 'the price card lists what ships today');
+  ['description', 'og:title', 'og:description', 'og:image:alt'].forEach(k => assert.equal(new Set(HOMES.map(f => meta(read(f), k))).size, 3, k + ' translated on every homepage'));
+  assert.ok(fs.existsSync(path.join(ROOT, 'images', 'og-image.png')));
 });
 
-test('book.html: site colour token, one calendar that needs no script, one WhatsApp line', () => {
+test('the poster sells the outcome: the benefit first, the name, the two asks, what it does under them, no price', () => {
+  const want = {
+    'index.html': ['Nobody waits for the bill.', 'Tables turn faster. Tips go up. Reviews come in.', 'Scan. Split. Settle.', 'For restaurants in Lebanon'],
+    'fr/index.html': ['Personne n’attend l’addition.', 'Les tables tournent plus vite. Les pourboires montent. Les avis arrivent.', 'Scannez. Partagez. Réglez.', 'Pour les restaurants au Liban'],
+    'ar/index.html': ['لا أحد ينتظر الفاتورة.', 'الطاولات تدور أسرع. الإكرامية تكبر. والمراجعات تتوالى.', 'امسح. قسّم. ادفع.', 'للمطاعم في لبنان'],
+  };
+  for (const f of HOMES) {
+    const s = read(f), poster = s.match(/<section class="poster"[\s\S]*?<\/section>/)[0], [tag, sub, does, eyebrow] = want[f];
+    const name = f === AR ? '<span class="sr-only">علينا.</span><span class="name" aria-hidden="true"><em>علينا.</em></span>' : '<span class="sr-only">Aalayna.</span><span class="name" aria-hidden="true"><em>3</em>layna.</span>';
+    assert.ok(poster.includes('<p class="eyebrow">' + eyebrow + '</p>'), f + ': eyebrow');
+    assert.ok(poster.includes('<h1 class="poster-title" id="poster-title">' + name + '<span class="tag">' + tag + '</span></h1>'), f + ': the name, then the benefit, in the one h1');
+    assert.ok(poster.includes('<p class="poster-sub">' + sub + '</p>'), f + ': the outcomes, in poster language');
+    assert.ok(poster.includes('<p class="poster-does">' + does + '</p>'), f + ': what it does, under the asks');
+    assert.ok(poster.indexOf('class="actions"') < poster.indexOf('poster-does'), f + ': the asks before the line');
+    assert.ok(!/\$\d/.test(poster), f + ': no price on the poster');
+    assert.equal((s.match(/<h1\b/g) || []).length, 1, f + ': one h1');
+  }
+  assert.ok(!/<video|film-en\.mp4|reel-play/.test(read('index.html')), 'the film is off the homepage');
+  assert.match(read('index.html'), /<p class="film"><a href="reel\.html">Or watch the 96-second film<\/a><\/p>/, 'and reachable from the close');
+});
+
+test('the table: one point per stretch, in order, each with its hero object and its line', () => {
+  const ORDER = ['s-qr', 's-menu', 's-bill', 's-split', 's-pay', 's-review', 's-again', 's-price'];
+  const HERO = ['ob-qr', 'ob-menu', 'ob-tray', 'ob-split', 'ob-pay', 'ob-review', 'ob-again', 'ob-price'];
+  const HEADS = { 'index.html': ['Scan.', 'Browse.', 'The bill.', 'Split.', 'Settle.', 'Rate.', 'Again.'],
+    'fr/index.html': ['Scannez.', 'Parcourez.', 'L’addition.', 'Partagez.', 'Réglez.', 'Notez.', 'Ils reviennent.'] };
+  for (const f of HOMES) {
+    const s = read(f), table = s.match(/<section class="table" id="table"[\s\S]*?\n  <\/section>/)[0];
+    const stretches = [...table.matchAll(/<article class="stretch (s-[a-z]+)[^"]*"[^>]*>([\s\S]*?)<\/article>/g)];
+    assert.deepEqual(stretches.map(m => m[1]), ORDER, f + ': the stretches, in order');
+    stretches.forEach((m, i) => {
+      assert.equal((m[2].match(/class="ob hero /g) || []).length, 1, f + ' ' + m[1] + ': one hero');
+      assert.match(m[2], new RegExp('class="ob hero [^"]*\\b' + HERO[i] + '\\b'), f + ' ' + m[1] + ': ' + HERO[i]);
+      assert.match(m[2], /<div class="note"><p class="step">[^<]+<\/p><h3 class="head" id="[^"]+">/, f + ' ' + m[1] + ': its note, a label then the point');
+    });
+    const steps = all(table, /<p class="step">([^<]+)<\/p>/g);
+    assert.equal(steps.length, 8);
+    steps.slice(0, 7).forEach((t, i) => assert.match(t, new RegExp('^0' + (i + 1) + ' · \\S'), f + ': ' + t));
+    if (HEADS[f]) assert.deepEqual(all(table, /<h3 class="head" id="s-[a-z]+">([^<]+)<\/h3>/g), HEADS[f], f + ': the seven points');
+    // The foot of the table: the restaurant's own bill, then a card that says Reserved; the close asks once more.
+    assert.match(table, /<div class="board board-end board-foot"[^>]*><div class="ob hero ob-reserved"/);
+    assert.match(s, /<section class="ask" id="ask" aria-labelledby="ask-title">/);
+    // The price, with the two free months and the founders' rate, and the way to the pilot and the questions.
+    const price = stretches[7][2];
+    assert.match(price, /<span class="amt">\$150<\/span>/);
+    assert.match(price, /<strong>\$100/);
+    assert.match(price, /<span class="pill">[^<]+<\/span>/);
+    assert.match(price, new RegExp('<p class="more"><a href="' + up(f) + 'book\\.html#pilot">[^<]+</a></p>'), f + ': the pilot and the questions, on book.html');
+    assert.ok(!/<details|class="faq|pilot-steps/.test(s), f + ': the questions and the pilot timeline live on book.html');
+    // No JavaScript needed to read it: the board describes the table, and every object that is only a picture is hidden.
+    assert.match(table, /<div class="board" style="--h:380" role="img" aria-label="[^"]{200,}">/, f + ': the table, described once');
+  }
+  assert.deepEqual(all(read('index.html'), /<h3 class="head" id="(s-[a-z]+|price-title)">/g), ['s-scan', 's-menu', 's-bill', 's-split', 's-pay', 's-review', 's-again', 'price-title']);
+});
+
+test('live screens: the guest app on the phones, written by tools/home-screens.js, at the film\'s evening', () => {
+  const tool = require('../tools/home-screens.js');
+  for (const [f, lang] of tool.PAGES) {
+    assert.equal(read(f), tool.fillPage(f, lang), f + ' holds what tools/home-screens.js writes (run node tools/home-screens.js)');
+    const s = read(f), text = sel => { const m = s.match(sel); assert.ok(m, f + ': ' + sel); return m[1].replace(/[⁦-⁩]/g, ''); };
+    // Every phone speaks the page's language and direction.
+    const apps = [...s.matchAll(/<span class="g [a-z-]+" data-app dir="(ltr|rtl)" lang="([a-z]+)"/g)];
+    assert.ok(apps.length >= 3, f + ': three app screens');
+    apps.forEach(m => { assert.equal(m[2], lang, f + ': app lang'); assert.equal(m[1], lang === 'ar' ? 'rtl' : 'ltr', f + ': app dir'); });
+    // The film's evening, before any tap: twelve dishes, $152.50, four of you at $38.13, a 10% tip, $41.94.
+    assert.equal(text(/<span class="g-bar-a" data-f="\{total\}" aria-live="polite">([^<]+)<\/span>/), '$152.50', f + ': the bill');
+    assert.equal(text(/<span class="g-n" data-f="\{people\}" aria-live="polite">([^<]+)<\/span>/), '4', f + ': four guests');
+    assert.equal(text(/<span class="share share-me go"[^>]*><span class="sv g-share"><span class="g-k" data-t="yourShare">[^<]+<\/span><span class="g-v" data-f="\{share\}" aria-live="polite">([^<]+)<\/span>/), '$38.13', f + ': your share');
+    assert.equal(text(/<span class="g-big" data-f="\{pay\}" aria-live="polite">([^<]+)<\/span>/), '$41.94', f + ': the total to pay');
+    assert.equal(text(/<span class="g-rca" data-f="\{pay\}">([^<]+)<\/span>/), '$41.94', f + ': paid');
+    assert.match(s, /<button type="button" class="g-tipb on" data-act="tip" data-r="0\.1" aria-pressed="true" disabled>/, f + ': 10% chosen');
+    assert.equal((s.match(/class="g-mi on"/g) || []).length, 2, f + ': the two dishes of the film\'s bill on the menu screen');
+    assert.match(s, /<span class="rc-pz receipt" style="--ar:200\/\d+"><svg class="rc-ink"/, f + ': the receipt on the tray');
+    // The controls are in the page and inert until home.js runs; the caption carries them at full size on a phone.
+    ['menu', 'split', 'pay'].forEach(k => assert.match(s, new RegExp('<div class="ctl" data-for="' + k + '"'), f + ': the ' + k + ' controls'));
+    all(s, /<button ([^>]*data-act[^>]*)>/g).forEach(a => assert.match(a, /\bdisabled$/, f + ': ' + a.slice(0, 60)));
+  }
+  const APP = require('../home.js');
+  const S = APP.initial('fr'), c = APP.calc(S), v = APP.vars(S, c);
+  assert.deepEqual([S.lang, v.total, v.share, v.pay, v.p10], ['fr', '$152.50', '$38.13', '$41.94', '10 %'], 'French: the app\'s own formats');
+  assert.equal(APP.T.fr.howMany, 'Combien êtes-vous ?', 'the real app\'s French, with its narrow space');
+  S.people = 3; assert.equal(APP.vars(S).share, '$50.83');
+  S.people = 4; S.tip = 0.15; assert.equal(APP.vars(S).pay, '$43.85');
+  S.tip = 0.1; S.q.i05 = 0; assert.equal(APP.vars(S).total, '$139.50');
+  assert.match(APP.receipt(APP.initial('fr'), 'fr').svg, /Table 12 · 4 convives · 21:40[\s\S]*Total[\s\S]*Shukran, à bientôt/, 'the French receipt');
+});
+
+test('photographs: every picture on the table exists in WebP and PNG, sized, described and lazy; the cloth and the paper come from the sheet', () => {
+  for (const f of HOMES) {
+    const s = read(f), p = up(f);
+    const pics = [...s.matchAll(/<picture(?: aria-hidden="true")?><source srcset="([^"]+)\.webp" type="image\/webp"><img ([^>]*)><\/picture>/g)];
+    assert.equal(pics.length, (s.match(/<img\b/g) || []).length, f + ': every img sits in a picture with a WebP source');
+    const names = new Set(pics.map(m => m[1].replace(p, '')));
+    assert.deepEqual([...names].sort(), ['images/table/phone', 'images/table/plate', 'images/table/tray'], f + ': the phone, the plate, the tray');
+    pics.forEach(([, base, attrs]) => {
+      assert.ok(attrs.includes('src="' + base + '.png"'), base);
+      ['webp', 'png'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, path.dirname(f), base + '.' + x)), base + '.' + x));
+      assert.match(attrs, /width="\d+" height="\d+"/);
+      assert.match(attrs, /alt="[^"]{12,}"/);
+      assert.match(attrs, /loading="lazy" decoding="async"/);
+    });
+  }
+  const css = read('home.css');
+  ['linen', 'paper', 'receipt'].forEach(n => { assert.match(css, new RegExp('url\\(images/table/' + n + '\\.webp\\)'), n); assert.ok(fs.existsSync(path.join(ROOT, 'images/table/' + n + '.webp')), n); });
+});
+
+test('the French and Arabic homepages mirror the English: the same ids, classes, elements and placements; French left to right, Arabic right to left', () => {
+  const en = noLang(read('index.html'));
+  const tags = s => all(s.slice(s.indexOf('<body')), /<([a-z][a-z0-9]*)\b/g);
+  for (const f of [FR, AR]) {
+    const s = noLang(read(f));
+    assert.deepEqual(all(s, /\bid="([^"]*)"/g), all(en, /\bid="([^"]*)"/g), f + ': ids');
+    // Lettering on the paper objects takes the Arabic face (arb) where the Latin takes a weight (w5, w6) or figures (tn).
+    const cls = x => all(x, /\bclass="([^"]*)"/g).map(c => c.split(' ').filter(k => !['arb', 'w5', 'w6', 'tn'].includes(k)).join(' '));
+    assert.deepEqual(cls(s), cls(en), f + ': classes');
+    assert.deepEqual(tags(s), tags(en), f + ': the elements in the body');
+    assert.deepEqual(pairs(s), pairs(en), f + ': tracked placements, in order');
+    assert.equal((s.match(/(?:src|srcset|href)="(?:images|brand|home\.|book\.html|reel\.html|analytics|aalayna-config)/g) || []).length, 0, f + ': no path left relative to the root');
+  }
+  assert.match(read('index.html'), /^<!DOCTYPE html>\n<html lang="en">/);
+  assert.match(read(FR), /^<!DOCTYPE html>\n<html lang="fr">/, 'French: no dir, so left to right');
+  assert.match(read(AR), /^<!DOCTYPE html>\n<html lang="ar" dir="rtl">/);
+  // Every header carries the other two languages, by their own names; every footer too.
+  const langs = { 'index.html': [['fr/', 'fr', 'FR'], ['ar/', 'ar', 'عربي']], 'fr/index.html': [['../', 'en', 'EN'], ['../ar/', 'ar', 'عربي']], 'ar/index.html': [['../', 'en', 'EN'], ['../fr/', 'fr', 'FR']] };
+  for (const [f, want] of Object.entries(langs)) {
+    const s = read(f), header = s.match(/<header[\s\S]*?<\/header>/)[0], footer = s.match(/<footer[\s\S]*?<\/footer>/)[0];
+    assert.deepEqual([...header.matchAll(/<a class="lang" href="([^"]*)" hreflang="([a-z]+)" lang="\2" aria-label="[^"]+">([^<]+)<\/a>/g)].map(m => [m[1], m[2], m[3]]), want, f + ': the header');
+    assert.deepEqual([...footer.matchAll(/<a class="foot-lang" href="([^"]*)" hreflang="([a-z]+)" lang="\2" aria-label="[^"]+">([^<]+)<\/a>/g)].map(m => [m[1], m[2], m[3]]), want, f + ': the footer');
+  }
+  assert.match(read('home.css'), /\n\.top-links a,\.lang\{[^}]*min-width:44px;min-height:44px/, 'the language links are 44 px targets');
+  assert.match(read('home.css'), /\[lang="ar"\]\{--font-text:'IBM Plex Sans Arabic',/);
+  assert.match(read('home.css'), /\[lang="ar"\] \.poster-title \.name\{font-family:'Noto Kufi Arabic',/, 'the name, علينا, in the Kufi of the mark');
+  assert.match(read(FR), /<a href="\.\.\/reel\.html\?lang=fr">/, 'the French film');
+  assert.match(read(AR), /<a href="\.\.\/reel\.html\?lang=ar">/, 'the Arabic film');
+});
+
+// Names that stay as they are in every language: the venue, the greeting, the providers, the guests, the dishes'
+// own names the menu prints beside the translation, and the receipt's names that are the same in French.
+const KEEP = ['USD $', 'LBP LL', 'Whish Money', 'Ahla w sahla', 'Mayda · Table 12', 'Visa, Mastercard, Amex', 'Abou Karim', 'Arayes kafta', 'Batata kezbara', 'Warak enab', 'Table 12', 'Lebanese Grill', 'Raheb Salad', 'Hummus Meat and Almond', 'English version', 'version française', 'Lebanese Grill'];
+
+test('fr copy: written in French, nothing left in English, French spacing before : ; ? !, the same figures and terms', () => {
+  const en = read('index.html'), fr = read(FR);
+  const frText = visible(fr).join('\n');
+  const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()·]/))).map(t => t.trim()).filter(t => (t.match(/\p{Script=Latin}{2,}/gu) || []).length >= 2 && !KEEP.some(k => k.includes(t) || t.includes(k)));
+  assert.ok(phrases.length > 80, phrases.length + ' English phrases checked');
+  phrases.forEach(t => assert.ok(!frText.includes(t), 'still in English: "' + t + '"'));
+  visible(fr).forEach(t => {
+    for (const m of t.matchAll(/[:;?!]/g)) if (!/\d/.test(t[m.index - 1] || '')) assert.ok(t[m.index - 1] === ' ' || t[m.index - 1] === ' ', 'no narrow no-break space before "' + m[0] + '" in "' + t + '"');
+  });
+  // French sets a narrow space before % (the app does too): the same figures either way.
+  const figures = s => [...new Set(visible(s).join(' ').replace(/(\d)\u202F%/g, '$1%').match(/\$\d[\d,.]*\d|\b\d+%|\d+ min\b/g))].sort();
+  assert.deepEqual(figures(fr), figures(en), 'the same amounts, percentages and minutes');
+  ['<span class="amt">$150</span> <span class="unit">/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service', 'Pilote gratuit de deux mois'].forEach(t => assert.ok(fr.includes(t), t));
+  ['Aalayna', 'USD', 'LBP', 'Whish', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
+  assert.equal(fr.match(/<title>([^<]*)<\/title>/)[1], 'Aalayna&#8239;: scannez, partagez, réglez.');
+});
+
+test('ar copy: nothing left in English, the same prices and percentages', () => {
+  const en = read('index.html'), ar = read(AR);
+  const arText = visible(ar).join('\n');
+  const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()·]/))).map(t => t.trim()).filter(t => (t.match(/\p{Script=Latin}{2,}/gu) || []).length >= 2 && !KEEP.some(k => k.includes(t) || t.includes(k)));
+  assert.ok(phrases.length > 80, phrases.length + ' English phrases checked');
+  // The Arabic menu prints each dish's English name under its Arabic one, as the real app does.
+  const dishes = Object.values(require('../home.js').D).map(d => d[1]);
+  phrases.filter(t => !dishes.some(d => d.includes(t))).forEach(t => assert.ok(!arText.includes(t), 'still in English: "' + t + '"'));
+  const figures = s => [...new Set(visible(s).join(' ').replace(/[⁦-⁩]/g, '').match(/\$\d[\d,.]*\d|\d+%/g))].sort();
+  assert.deepEqual(figures(ar), figures(en), 'the same dollar amounts and percentages');
+});
+
+test('every link on the three homepages resolves to a file in the site', () => {
+  for (const f of HOMES) {
+    const dir = path.dirname(path.join(ROOT, f));
+    const refs = all(read(f), /\b(?:href|src|srcset)="([^"]*)"/g).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u));
+    assert.ok(refs.length >= 25, f + ': ' + refs.length + ' relative paths');
+    refs.forEach(u => {
+      const bare = u.split(/[?#]/)[0];
+      let p = path.resolve(dir, bare || '.');
+      if (!bare || /\/$/.test(bare) || (fs.existsSync(p) && fs.statSync(p).isDirectory())) p = path.join(p, 'index.html');
+      assert.ok(p.startsWith(ROOT + path.sep) && fs.existsSync(p), f + ': "' + u + '" does not resolve');
+      const hash = u.split('#')[1];
+      if (hash) assert.ok(new RegExp('\\bid="' + hash + '"').test(fs.readFileSync(p, 'utf8')), f + ': "' + u + '" has no #' + hash);
+    });
+  }
+  for (const gone of ['table-v1.html', 'table-v1b.html', 'table-v1c.html', 'table-v1d.html', 'table-v1e.html', 'table-v1e.css', 'table-v1e.js', 'tools/table-v1e-screens.js', 'ar/table-v1e.html'])
+    assert.ok(!fs.existsSync(path.join(ROOT, gone)), gone + ' is retired (git history keeps it)');
+});
+
+test('book.html: the calendar that needs no script, the pilot in four stops with go-live, the six questions owners ask', () => {
   const s = read('book.html');
   assert.equal(s.match(/<title>([^<]*)<\/title>/)[1], 'Book a demo · Aalayna');
   assert.ok(!/#E8555B/i.test(s) && !/--brand\s*:/.test(s), 'no local brand colour');
-  assert.match(s, /<link rel="stylesheet" href="website\.css/);
+  assert.match(s, /<link rel="stylesheet" href="website\.css\?v=\d+">/);
   assert.equal((s.match(/<iframe\b/g) || []).length, 1);
   assert.match(s, /<iframe [^>]*title="Book a demo with Aalayna"/);
   assert.equal((s.match(/wa\.me\//g) || []).length, 1);
   assert.ok(!/mailto:/.test(s));
   assert.ok(!/<script>/.test(s), 'the calendar is in the HTML, not injected');
   const main = s.match(/<main[\s\S]*?<\/main>/)[0];
-  assert.ok(!/<h2|<ul|class="lead"|class="what"/.test(main), 'the page is the booking calendar only');
   assert.match(main, /<h1 class="sr-only">Book a demo<\/h1>/);
+  assert.ok(main.indexOf('<iframe') < main.indexOf('id="pilot"'), 'the calendar first');
+  // The pilot, moved from the old homepage: three steps and go-live, before the review.
+  const pilot = main.match(/<section id="pilot" aria-labelledby="pilot-title">[\s\S]*?<\/section>/);
+  assert.ok(pilot, 'book.html#pilot');
+  const steps = [...pilot[0].matchAll(/<li(?: class="go-live")?><span class="number">([^<]+)<\/span> ([^<]+)<\/li>/g)].map(m => m[1]);
+  assert.deepEqual(steps, ['01 · Check the fit', '02 · Prepare your floor', 'Go-live', '03 · Look at the evidence']);
+  assert.match(pilot[0], /<li class="go-live"><span class="number">Go-live<\/span> Your two free months start\.<\/li>/);
+  const faq = main.match(/<section id="faq" aria-labelledby="faq-title">[\s\S]*?<\/section>/);
+  assert.ok(faq, 'book.html#faq');
+  assert.deepEqual(all(faq[0], /<summary>([^<]*)<\/summary>/g), ['Will it work with my POS?', 'What if a guest wants to pay cash?', 'Does every guest need an app or an account?', 'Where do payments and tips go?', 'Is this ready to take real payments?', 'What is included in the price?']);
+  assert.match(faq[0], /<summary>What is included in the price\?<\/summary><p>[^<]*No commission on your sales/);
+  assert.equal((faq[0].match(/<details><summary>[^<]+<\/summary><p>[^<]{80,}<\/p><\/details>/g) || []).length, 6, 'six answers');
+  assert.match(read('website.css'), /\n\.pilot-steps \.go-live::before\{/);
+  assert.match(read('website.css'), /\n\.faq summary\{[^}]*min-height:4rem/);
   assert.match(read('website.css'), /--brand:#C9414B/);
+  assert.ok(!/\.hero|#how|\.steps|\.benefits-band|\.contact|\.reel-|details\.lang|\.lang summary/.test(read('website.css')), 'the old homepage\'s rules are gone from website.css');
 });
 
 test('browser scripts on the marketing pages stay ES5', () => {
-  SITE.forEach(f => (read(f).match(/<script>([\s\S]*?)<\/script>/g) || []).forEach(code => {
+  SITE.concat([FR, AR]).forEach(f => (read(f).match(/<script>([\s\S]*?)<\/script>/g) || []).forEach(code => {
     assert.ok(!/=>|\blet\s|\bconst\s|`/.test(code), f + ' inline script uses ES2015 syntax');
   }));
+  const js = read('home.js');
+  assert.ok(!/=>|\blet\s|\bconst\s|`/.test(js.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '')), 'home.js stays ES5');
 });
 
-/* ---------- W2: design system, product screens, share previews ---------- */
+/* ---------- Design rules: type, red, corners, motion ---------- */
 const TYPE_SCALE = { small: 14, body: 16, lead: 19, heading: 30, display: 54, hero: 67 };
 const styleText = f => f.endsWith('.css') ? read(f) : (read(f).match(/<style>([\s\S]*?)<\/style>/g) || []).join('\n') + (read(f).match(/style="[^"]*"/g) || []).join('\n');
+const SHEETS = ['website.css', 'home.css'];
 
-test('type scale: six size tokens, and every font-size on the marketing pages uses one of them', () => {
-  const css = read('website.css');
-  Object.entries(TYPE_SCALE).forEach(([name, px]) => {
-    const m = css.match(new RegExp('--fs-' + name + ':([\\d.]+)rem'));
-    assert.ok(m, '--fs-' + name + ' is defined');
-    assert.equal(Number(m[1]) * 16, px, '--fs-' + name);
-  });
-  assert.equal((css.match(/--fs-[a-z]+:/g) || []).length, 6, 'exactly six size tokens');
-  ['website.css'].concat(SITE).forEach(f => {
+test('type scale: six size tokens, and every font-size on the marketing pages and the homepage uses one of them', () => {
+  for (const sheet of SHEETS) {
+    const css = read(sheet);
+    Object.entries(TYPE_SCALE).forEach(([name, px]) => {
+      const m = css.match(new RegExp('--fs-' + name + ':([\\d.]+)rem'));
+      assert.ok(m, sheet + ': --fs-' + name + ' is defined');
+      assert.equal(Number(m[1]) * 16, px, sheet + ': --fs-' + name);
+    });
+    assert.equal(new Set(css.match(/--fs-[a-z]+(?=:)/g)).size, 6, sheet + ': exactly six size tokens');
+    // The app's screens set the same six sizes in their own points (one point is --p, a 390th of the screen).
+    for (const m of css.matchAll(/--fs-([a-z]+):calc\((\d+) \* var\(--p\)\)/g)) assert.equal(Number(m[2]), TYPE_SCALE[m[1]], sheet + ': --fs-' + m[1] + ' in points');
+  }
+  SHEETS.concat(SITE, [FR, AR]).forEach(f => {
     for (const m of styleText(f).matchAll(/font-size:\s*([^;}"]+)/g)) {
       assert.match(m[1].trim(), /^var\(--fs-(small|body|lead|heading|display|hero)\)$/, f + ': font-size:' + m[1]);
     }
   });
 });
 
-test('red: text uses --brand-text (#B3363F), fills keep --brand (#C9414B), and the text red passes 4.5:1', () => {
-  const css = read('website.css');
-  assert.match(css, /--brand-text:#B3363F/);
+test('red: text uses --brand-text (#B3363F), fills keep --brand (#C9414B), and the text red passes 4.5:1 on every ground', () => {
   const lum = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)).reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i], 0);
   const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
-  const tok = n => { const h = css.match(new RegExp('--' + n + ':#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\\b'))[1]; return '#' + (h.length === 3 ? h.replace(/./g, c => c + c) : h); };
-  ['bg', 'brand-bg', 'surface'].forEach(bg => assert.ok(ratio(tok('brand-text'), tok(bg)) >= 4.5, 'red text on --' + bg));
-  assert.ok(ratio('#FFFFFF', tok('brand')) >= 4.5, 'white on the button red');
-  ['website.css'].concat(SITE).forEach(f => assert.ok(!/(^|[;{\s])color:\s*var\(--brand\)/.test(styleText(f)), f + ' sets text in the button red'));
-});
-
-test('share previews: og and twitter tags on every marketing page, image at an absolute URL', () => {
-  const urls = { 'index.html': 'https://aalayna.com/', 'numbers.html': 'https://aalayna.com/numbers.html', 'book.html': 'https://aalayna.com/book.html' };
-  SITE.forEach(f => {
-    const s = read(f), meta = k => { const m = s.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && m[1]; };
-    assert.equal(meta('og:image'), 'https://aalayna.com/images/og-image.png', f);
-    assert.equal(meta('og:url'), urls[f], f);
-    assert.ok(meta('og:title') && meta('og:description'), f + ' og:title and og:description');
-    assert.equal(meta('twitter:card'), 'summary_large_image', f);
-  });
-  assert.ok(fs.existsSync(path.join(ROOT, 'images', 'og-image.png')));
-});
-
-test('product screens: every image exists in WebP and PNG, has its size, an alt, and is lazy; the hero is the film', () => {
-  const s = read('index.html');
-  const pics = [...s.matchAll(/<picture><source srcset="images\/([\w-]+)\.webp" type="image\/webp"><img ([^>]*)><\/picture>/g)];
-  assert.equal(pics.length, (s.match(/<img\b/g) || []).length, 'every img sits in a picture with a WebP source');
-  assert.ok(pics.length >= 3, 'the three steps');
-  pics.forEach(([, name, attrs]) => {
-    assert.match(attrs, new RegExp('src="images/' + name + '\\.png"'), name);
-    ['webp', 'png'].forEach(ext => assert.ok(fs.existsSync(path.join(ROOT, 'images', name + '.' + ext)), name + '.' + ext));
-    assert.match(attrs, /width="\d+" height="\d+"/, name + ' size');
-    assert.match(attrs, /alt="[^"]{20,}"/, name + ' alt');
-    assert.match(attrs, /loading="lazy"/, name + ' is lazy');
-  });
-  const hero = s.slice(s.indexOf('class="hero wrap"'), s.indexOf('</section>'));
-  // The 16:9 cut everywhere: on phones it sits first, edge to edge. The speaker only toggles sound, in place, on every screen.
-  // The 9:16 cuts stay in images/ for social.
-  const video = hero.match(/<video ([^>]*)><source src="images\/film-en\.mp4" type="video\/mp4"><\/video>/);
-  assert.ok(video, 'the hero plays the 16:9 film');
-  ['autoplay', 'muted', 'loop', 'playsinline', 'poster="images/film-en.jpg"', 'width="1280" height="720"'].forEach(a => assert.ok(video[1].includes(a), 'film ' + a));
-  assert.match(hero, /<button class="reel-sound" id="reel-sound" type="button" aria-pressed="false" aria-label="Sound on" data-mute="Mute"><svg [^>]*aria-hidden="true"/);
-  assert.ok(!/Fullscreen|data-watch/.test(s), 'the speaker never opens full screen');
-  assert.match(video[1], /aria-label="[^"]{80,}"/, 'film description');
-  ['en', 'fr'].forEach(l => ['.mp4', '-portrait.mp4', '.jpg', '-portrait.jpg'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, 'images', 'film-' + l + x)), 'film-' + l + x)));
-  assert.ok(!fs.existsSync(path.join(ROOT, 'images', 'reel-web.mp4')), 'the 15-second cut is retired');
-  assert.ok(!/conversation-card|Tell us about your floor/.test(s), 'the mid-page booking card is gone');
-  assert.ok(!/w1-/.test(s + read('website.css')), 'W1 classes folded into the system');
-});
-
-/* ---------- W4: French homepage (fr/index.html) ---------- */
-const FR = 'fr/index.html';
-const FR_CTA = ['Réserver une démo', 'Écrivez-nous sur WhatsApp'];
-const decode = s => s.replace(/&#8239;/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
-// The language switch is the one link with hreflang; the English page has it in the header, the French page in the footer.
-const LANG_SWITCH = /\s*<a href="[^"]*" hreflang="(?:en|fr|ar)"[^>]*>(?:EN|FR|عربي|English|Français|العربية)<\/a>/g;
-const noSwitch = s => s.replace(LANG_SWITCH, '');
-const all = (s, re) => [...s.matchAll(re)].map(m => m[1]);
-// What a reader or a screen reader gets: text between tags in the body, alt and aria-label, and the head's title and meta contents.
-function visible(s) {
-  const body = s.slice(s.indexOf('<body'));
-  const text = body.replace(/<script[\s\S]*?<\/script>/g, '').split(/<[^>]*>/).map(t => t.trim()).filter(Boolean);
-  const attrs = all(s, /\b(?:alt|aria-label)="([^"]*)"/g);
-  const head = all(s, /<meta (?:property|name)="(?:description|og:[a-z:_]+|twitter:[a-z]+)" content="([^"]*)">/g).filter(v => /[a-z] [a-z]/i.test(v));
-  return text.concat(attrs, head, all(s, /<title>([^<]*)<\/title>/g)).map(decode);
-}
-
-test('fr homepage: same ids, classes, tags, images and tracked placements as index.html', () => {
-  const en = noSwitch(read('index.html')), fr = noSwitch(read(FR));
-  assert.deepEqual(all(fr, /\bid="([^"]*)"/g), all(en, /\bid="([^"]*)"/g), 'ids');
-  assert.deepEqual(all(fr, /\bclass="([^"]*)"/g), all(en, /\bclass="([^"]*)"/g), 'classes');
-  const tags = s => all(s.slice(s.indexOf('<body')), /<([a-z][a-z0-9]*)\b/g);
-  assert.deepEqual(tags(fr), tags(en), 'element sequence in the body');
-  const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
-  assert.deepEqual(pairs(fr), pairs(en), 'tracked placements, in order');
-  assert.deepEqual(all(fr, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g).map(u => u.replace('film-fr', 'film-en')), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/ (the film in French)');
-  assert.equal((fr.match(/(?:src|srcset)="images\//g) || []).length, 0, 'no image path left relative to the root');
-  const imgAttrs = s => all(s, /<img ([^>]*)>/g).map(a => a.replace(/ alt="[^"]*"/, '').replace('src="../', 'src="'));
-  assert.deepEqual(imgAttrs(fr), imgAttrs(en), 'sizes, lazy loading and fetchpriority');
-});
-
-test('fr homepage: exactly the two French CTA labels, booking to ../book.html, WhatsApp to the same number in French', () => {
-  const s = read(FR), en = read('index.html');
-  const number = en.match(/wa\.me\/(\d+)/)[1];
-  const labels = new Set();
-  for (const m of s.matchAll(/<(a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)) {
-    const attrs = m[2], text = decode(strip(m[3]));
-    if (/class="[^"]*\bbtn\b/.test(attrs)) { assert.ok(FR_CTA.includes(text), 'button "' + text + '"'); labels.add(text); }
-    if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, FR_CTA[0]); assert.match(attrs, /href="\.\.\/book\.html"/); }
-    if (/data-track="whatsapp_click"/.test(attrs)) {
-      assert.equal(text, FR_CTA[1]);
-      const href = attrs.match(/href="https:\/\/wa\.me\/(\d+)\?text=([^"]*)"/);
-      assert.ok(href, 'WhatsApp link with a prefilled message');
-      assert.equal(href[1], number, 'the same WhatsApp number as index.html');
-      assert.match(decodeURIComponent(href[2]), /^Bonjour, /, 'the prefilled message is French');
-    }
+  const grounds = { 'website.css': ['bg', 'brand-bg', 'surface'], 'home.css': ['floor', 'paper'] };
+  for (const sheet of SHEETS) {
+    const css = read(sheet);
+    assert.match(css, /--brand-text:#B3363F/, sheet);
+    assert.match(css, /--brand:#C9414B/, sheet);
+    const tok = n => { const h = css.match(new RegExp('--' + n + ':#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\\b'))[1]; return '#' + (h.length === 3 ? h.replace(/./g, c => c + c) : h); };
+    grounds[sheet].forEach(bg => assert.ok(ratio(tok('brand-text'), tok(bg)) >= 4.5, sheet + ': red text on --' + bg));
+    assert.ok(ratio('#FFFFFF', tok('brand')) >= 4.5, sheet + ': white on the button red');
   }
-  assert.deepEqual([...labels].sort(), FR_CTA.slice().sort(), 'both labels are used, and only them');
-  ['Book a 15-min call', 'WhatsApp us', 'Message us', 'Hi%2C', 'Let’s talk', 'Discuss a pilot'].forEach(t => assert.ok(!s.includes(t), 'English CTA text left: ' + t));
-  ['hero-copy', 'id="contact"'].forEach(anchor => {
-    const actions = s.slice(s.indexOf(anchor)).match(/<div class="actions">([\s\S]*?)<\/div>/)[1].trim();
-    assert.match(actions, /^<a class="btn" data-track="booking_click"[^>]*>Réserver une démo<\/a>\s*<a class="btn outline" data-track="whatsapp_click"[^>]*>Écrivez-nous sur WhatsApp<\/a>$/, anchor);
-  });
+  SHEETS.concat(SITE, [FR, AR]).forEach(f => assert.ok(!/(^|[;{\s])color:\s*var\(--brand\)/.test(styleText(f)), f + ' sets text in the button red'));
 });
 
-test('fr homepage: every relative path on both homepages resolves to a file', () => {
-  [['index.html', 12], [FR, 12]].forEach(([f, min]) => {
-    const dir = path.dirname(path.join(ROOT, f));
-    const refs = all(read(f), /\b(?:href|src|srcset)="([^"]*)"/g).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u));
-    assert.ok(refs.length >= min, f + ': ' + refs.length + ' relative paths');
-    refs.forEach(u => {
-      let p = path.resolve(dir, u.split(/[?#]/)[0] || '.');
-      if (u.split(/[?#]/)[0] === '' || /\/$/.test(u.split(/[?#]/)[0]) || (fs.existsSync(p) && fs.statSync(p).isDirectory())) p = path.join(p, 'index.html');
-      assert.ok(p.startsWith(ROOT + path.sep) && fs.existsSync(p), f + ': "' + u + '" does not resolve');
-    });
-  });
-  assert.match(read(FR), /<link rel="stylesheet" href="\.\.\/website\.css\?v=\d+">/);
-  assert.match(read('.gitignore'), /^!fr\/$/m);
-  assert.match(read('.gitignore'), /^!fr\/\*$/m);
-});
-
-test('languages: lang, hreflang on both pages, a language menu in every header, French share tags', () => {
-  const en = read('index.html'), fr = read(FR);
-  assert.match(en, /<html lang="en">/);
-  assert.match(fr, /<html lang="fr">/);
-  [en, fr].forEach((s, i) => {
-    const alt = all(s, /<link rel="alternate" hreflang="([^"]+)" href="([^"]+)">/g);
-    assert.deepEqual(alt, ['en', 'fr', 'ar', 'x-default'], ['index.html', FR][i] + ' hreflang set');
-    assert.ok(s.includes('<link rel="alternate" hreflang="en" href="https://aalayna.com/">'));
-    assert.ok(s.includes('<link rel="alternate" hreflang="fr" href="https://aalayna.com/fr/">'));
-    assert.ok(s.includes('<link rel="alternate" hreflang="ar" href="https://aalayna.com/ar/">'));
-    assert.ok(s.includes('<link rel="alternate" hreflang="x-default" href="https://aalayna.com/">'));
-  });
-  // Every homepage carries a language menu in its header: the current language, then the other two by name.
-  const menu = (s, cur, others) => {
-    const m = s.match(/<header[\s\S]*?<\/header>/)[0].match(/<details class="lang"><summary aria-label="[^"]+">([^<]+)<\/summary><div>([\s\S]*?)<\/div><\/details>/);
-    assert.ok(m, cur + ': a language menu in the header');
-    assert.equal(m[1], cur);
-    assert.deepEqual(all(m[2], /<a href="[^"]*" hreflang="([a-z]+)" lang="\1">[^<]+<\/a>/g), others);
-  };
-  menu(en, 'EN', ['fr', 'ar']); menu(fr, 'FR', ['en', 'ar']); menu(read('ar/index.html'), 'عربي', ['en', 'fr']);
-  assert.match(en, /<details class="lang">[\s\S]*?<a href="fr\/" hreflang="fr" lang="fr">Français<\/a><a href="ar\/" hreflang="ar" lang="ar">العربية<\/a>/);
-  assert.match(fr, /<details class="lang">[\s\S]*?<a href="\.\.\/" hreflang="en" lang="en">English<\/a><a href="\.\.\/ar\/" hreflang="ar" lang="ar">العربية<\/a>/);
-  assert.match(read('website.css'), /\n\.lang summary\{[^}]*min-height:44px/);
-  assert.match(read('website.css'), /\n\.lang a\{[^}]*min-height:44px/);
-  // The French footer keeps its way back too.
-  const toEn = fr.match(/<a href="\.\.\/" hreflang="en" lang="en"([^>]*)>EN<\/a>/);
-  assert.ok(toEn && /min-height:44px/.test(toEn[1]) && fr.match(/<footer[\s\S]*?<\/footer>/)[0].includes(toEn[0]), 'EN in the French footer');
-  const meta = k => { const m = fr.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
-  assert.equal(meta('og:url'), 'https://aalayna.com/fr/');
-  assert.equal(meta('og:locale'), 'fr_FR');
-  assert.match(meta('og:locale:alternate'), /^en(_[A-Z]{2})?$/);
-  assert.equal(meta('og:image'), 'https://aalayna.com/images/og-image.png');
-  assert.equal(meta('twitter:card'), 'summary_large_image');
-  assert.equal(meta('og:title'), decode(fr.match(/<title>([^<]*)<\/title>/)[1]));
-  ['description', 'og:description', 'og:image:alt'].forEach(k => assert.notEqual(meta(k), en.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">'))[1], k + ' translated'));
-});
-
-test('fr copy: no em dash, nothing left in English, French spacing before : ; ? !, the same figures and terms', () => {
-  const en = read('index.html'), fr = read(FR);
-  assert.ok(!/—|&mdash;|&#8212;|\\2014/.test(fr), 'em dash');
-  // Every English phrase of two words or more, cut at punctuation, is gone from the French page; names and the greeting stay.
-  const keep = ['English · Français · العربية', 'Whish Money', 'Ahla w sahla', 'EN · FR · عربي'];
-  const frText = visible(fr).join('\n');
-  const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()]/))).map(t => t.trim()).filter(t => (t.match(/\p{L}{2,}/gu) || []).length >= 2 && !keep.includes(t));
-  assert.ok(phrases.length > 150, phrases.length + ' English phrases checked');
-  phrases.forEach(t => assert.ok(!frText.includes(t), 'still in English: "' + t + '"'));
-  visible(fr).forEach(t => {
-    for (const m of t.matchAll(/[:;?!]/g)) assert.equal(t[m.index - 1], ' ', 'no narrow no-break space before "' + m[0] + '" in "' + t + '"');
-  });
-  // Numbers stay as in English: the same dollar amounts, percentages and minutes.
-  const figures = s => [...new Set(visible(s).join(' ').replace(/(\d)-min\b/g, '$1 min').match(/\$\d[\d,.]*\d|\d+%|\d+ min\b/g))].sort();
-  assert.deepEqual(figures(fr), figures(en));
-  assert.equal(all(fr, /<p class="outcome-source">([^<]+)<\/p>/g).length, 4, 'one line under each figure');
-  assert.ok(!/source-tag|>(?:Hypothèse|Produit|Référence)</.test(fr), 'no source tags');
-  assert.deepEqual(all(fr, /<p class="outcome-figure">([^<]*)<\/p>/g), ['10 min', '22%', '83%', '50%']);
-  ['$150 <span>/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service'].forEach(t => assert.ok(fr.includes(t), t));
-  assert.ok(!/<p class="price">\$(?!150 )/.test(fr), 'standard price');
-  ['Aalayna', 'USD', 'LBP', 'Whish', 'POS', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
-});
-
-/* ---------- Arabic homepage (ar/index.html) ---------- */
-const AR = 'ar/index.html';
-const AR_CTA = ['احجز عرضاً توضيحياً', 'راسلنا على واتساب'];
-
-test('ar homepage: right to left, same ids, classes, tags, images and tracked placements as index.html', () => {
-  const en = noSwitch(read('index.html')), ar = noSwitch(read(AR));
-  assert.match(ar, /<html lang="ar" dir="rtl">/);
-  assert.deepEqual(all(ar, /\bid="([^"]*)"/g), all(en, /\bid="([^"]*)"/g), 'ids');
-  assert.deepEqual(all(ar, /\bclass="([^"]*)"/g), all(en, /\bclass="([^"]*)"/g), 'classes');
-  const tags = s => all(s.slice(s.indexOf('<body')), /<([a-z][a-z0-9]*)\b/g);
-  assert.deepEqual(tags(ar), tags(en), 'element sequence in the body');
-  const pairs = s => [...s.matchAll(/data-track="([a-z_]+)" data-placement="([a-z_]+)"/g)].map(m => m[1] + ':' + m[2]);
-  assert.deepEqual(pairs(ar), pairs(en), 'tracked placements, in order');
-  assert.deepEqual(all(ar, /(?:src|srcset)="\.\.\/(images\/[^"]+)"/g).map(u => u.replace('film-ar', 'film-en')), all(en, /(?:src|srcset)="(images\/[^"]+)"/g), 'the same images, from ../images/ (the film in Arabic)');
-  assert.match(read(AR), /poster="\.\.\/images\/film-ar\.jpg"[^>]*><source src="\.\.\/images\/film-ar\.mp4" type="video\/mp4">/, 'the Arabic cut and its poster');
-  ['.mp4', '-portrait.mp4', '.jpg', '-portrait.jpg'].forEach(x => assert.ok(fs.existsSync(path.join(ROOT, 'images', 'film-ar' + x)), 'film-ar' + x));
-  assert.equal((ar.match(/(?:src|srcset|href)="(?:images|brand|website\.css|book\.html|numbers\.html)/g) || []).length, 0, 'no path left relative to the root');
-  const dir = path.dirname(path.join(ROOT, AR));
-  all(read(AR), /\b(?:href|src|srcset)="([^"]*)"/g).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u)).forEach(u => {
-    let p = path.resolve(dir, u.split(/[?#]/)[0] || '.');
-    if (/\/$/.test(u.split(/[?#]/)[0]) || (fs.existsSync(p) && fs.statSync(p).isDirectory())) p = path.join(p, 'index.html');
-    assert.ok(fs.existsSync(p), AR + ': "' + u + '" does not resolve');
-  });
-  assert.match(read('.gitignore'), /^!ar\/\*$/m);
-});
-
-test('ar homepage: the two Arabic CTA labels, WhatsApp to the same number in Arabic, switches to English and French', () => {
-  const s = read(AR), en = read('index.html'), fr = read(FR);
-  const number = en.match(/wa\.me\/(\d+)/)[1];
-  for (const m of s.matchAll(/<(a|button)\b([^>]*)>([\s\S]*?)<\/\1>/g)) {
-    const attrs = m[2], text = decode(strip(m[3]));
-    if (/class="[^"]*\bbtn\b/.test(attrs)) assert.ok(AR_CTA.includes(text), 'button "' + text + '"');
-    if (/data-track="booking_click"/.test(attrs)) { assert.equal(text, AR_CTA[0]); assert.match(attrs, /href="\.\.\/book\.html"/); }
-    if (/data-track="whatsapp_click"/.test(attrs)) {
-      assert.equal(text, AR_CTA[1]);
-      const href = attrs.match(/href="https:\/\/wa\.me\/(\d+)\?text=([^"]*)"/);
-      assert.equal(href[1], number, 'the same WhatsApp number');
-      assert.match(decodeURIComponent(href[2]), /^مرحباً، /, 'the prefilled message is Arabic');
-    }
+test('square corners on the homepage: only round things are round (the plates, the phone, its screen and the app\'s own dots)', () => {
+  const css = read('home.css');
+  for (const m of css.matchAll(/([^{}]*)\{[^}]*border-radius:([^;}]+)/g)) {
+    const sel = m[1].trim(), r = m[2].trim();
+    assert.ok(r === '0' || /\.osh\.(round|phone)|\.screen|\.glass|\.g-radio|\.g-seal/.test(sel), sel + ' has border-radius ' + r);
   }
-  const foot = s.match(/<footer[\s\S]*?<\/footer>/)[0];
-  assert.match(foot, /<a href="\.\.\/" hreflang="en" lang="en"[^>]*min-height:44px[^>]*>EN<\/a>/);
-  assert.match(foot, /<a href="\.\.\/fr\/" hreflang="fr" lang="fr"[^>]*min-height:44px[^>]*>FR<\/a>/);
-  assert.match(fr.match(/<footer[\s\S]*?<\/footer>/)[0], /<a href="\.\.\/ar\/" hreflang="ar" lang="ar"[^>]*min-height:44px[^>]*>عربي<\/a>/, 'and in the French footer');
-  assert.deepEqual(all(s, /<link rel="alternate" hreflang="([^"]+)"/g), ['en', 'fr', 'ar', 'x-default']);
-  const meta = k => { const m = s.match(new RegExp('<meta (?:property|name)="' + k + '" content="([^"]*)">')); return m && decode(m[1]); };
-  assert.equal(meta('og:url'), 'https://aalayna.com/ar/');
-  assert.equal(meta('og:locale'), 'ar_LB');
+  // The photographs cast soft shadows (amendment 8 of the brief), so home.css is not held to the hard-shadow rule.
 });
 
-test('ar copy: nothing left in English, the same prices and percentages, the name in the hero is علينا', () => {
-  const en = read('index.html'), ar = read(AR);
-  assert.ok(!/—|&mdash;/.test(ar), 'em dash');
-  const keep = ['English · Français · العربية', 'Whish Money', 'version française'];   // the French switch keeps its French label
-  const arText = visible(ar).join('\n');
-  const phrases = [].concat(...visible(en).map(t => t.split(/[.:;,?!()]/))).map(t => t.trim()).filter(t => (t.match(/\p{L}{2,}/gu) || []).length >= 2 && !keep.includes(t));
-  assert.ok(phrases.length > 150, phrases.length + ' English phrases checked');
-  phrases.forEach(t => assert.ok(!arText.includes(t), 'still in English: "' + t + '"'));
-  const figures = s => [...new Set(visible(s).join(' ').match(/\$\d[\d,.]*\d|\d+%/g))].sort();
-  assert.deepEqual(figures(ar), figures(en), 'the same dollar amounts and percentages');
-  assert.match(ar, /<h1 id="hero-title">الفاتورة\.<br>التقسيم\.<br><span class="sr-only">علينا\.<\/span><span class="name" aria-hidden="true"><em>علينا\.<\/em><\/span><\/h1>/);
-  assert.match(read('website.css'), /\[lang="ar"\]\{--font-text:'IBM Plex Sans Arabic',/);
-  assert.match(read('website.css'), /\[lang="ar"\] \.name\{font-family:'Noto Kufi Arabic',/, 'the name, علينا, in the Kufi of the mark');
-  assert.match(read('website.css'), /\[lang="ar"\] :is\(h1,h2,h3,\.eyebrow,\.number,\.btn,\.name\)\{letter-spacing:0;text-transform:none\}/, 'Arabic is never tracked or capitalised');
-  assert.ok(!/margin-(?:left|right)|padding-(?:left|right)/.test(read('website.css')), 'spacing is logical, so it mirrors in Arabic');
-});
-
-test('every page asks for the same stylesheet version (bump ?v= on all of them whenever website.css changes, or phones keep the old one)', () => {
-  const pages = ['index.html', 'fr/index.html', 'ar/index.html', 'book.html', 'numbers.html'];
-  const versions = pages.map(f => (read(f).match(/website\.css\?v=(\d+)"/) || [])[1]);
-  versions.forEach((v, i) => assert.ok(v, pages[i] + ' links website.css with a version'));
-  assert.equal(new Set(versions).size, 1, 'one version across pages: ' + versions.join(', '));
-  assert.ok(Number(versions[0]) >= 7, 'the version that carries the phone hero and the Arabic page');
-});
-
-test('the four steps: one stage on a computer (one phone that changes screen as each step passes), real screens read top to bottom on a phone, and motion only when it is wanted', () => {
-  const css = read('website.css'), js = read('site.js');
-  for (const f of ['index.html', 'fr/index.html', 'ar/index.html']) {
-    const s = read(f), how = s.match(/<section[^>]*id="how"[\s\S]*?<\/section>/)[0];
-    assert.equal((how.match(/<article>/g) || []).length, 4, f + ': four steps');
-    assert.match(how, /<span class="number">04 · [^<]+<\/span>/, f + ': the review is step 04');
-    assert.match(how, /images\/guest-review\.png"/, f + ': with the rating screen');
-    // Each step says what happens first, then shows the guest's own screen in its device window, with its caption.
-    const step = /<article><div class="step-text"><span class="number">0[1-4] · [^<]+<\/span><h3>[^<]+<\/h3><p>[^<]+<\/p><\/div><figure class="shot"><div class="device"><div class="phone"><picture>[\s\S]*?<\/picture><\/div><\/div><figcaption>[^<]+<\/figcaption><\/figure><\/article>/g;
-    assert.equal((how.match(step) || []).length, 4, f + ': text, then the screen, in every step');
-    assert.ok(!/steps-nav|steps-arrow|steps-dots/.test(how), f + ': no carousel controls: the page scrolls through the steps itself');
-    assert.ok(s.includes('<script src="' + (f.includes('/') ? '../' : '') + 'site.js" defer></script>'), f + ' loads site.js');
-  }
-  // Without JavaScript, and on tablets, each step is a row: its text beside its screen.
-  assert.match(css, /@media\(min-width:768px\)\{\n(?:  [^\n]*\n)*?  \.steps article\{grid-template-columns:minmax\(0,1fr\) minmax\(0,15rem\);/);
-  // Computers: once site.js runs, the rows fold into one stage. The steps scroll by on the left and one phone stays in
-  // view on the right, as tall as the window allows, showing only the screen of the step that is lit. The stage's
-  // size is the same in the stylesheet and the script.
-  const stage = css.match(/@media\(min-width:1024px\) and \(min-height:600px\)\{\n([\s\S]*?)\n\}/);
-  assert.ok(stage, 'the stage needs a wide and tall enough window');
-  assert.match(js, /stage = mm\('\(min-width: 1024px\) and \(min-height: 600px\)'\)/, 'the script lights the same stage');
-  assert.match(js, /steps\.classList\.toggle\('is-live', stage\.matches\)/);
-  assert.match(stage[1], /--ph:min\(41rem,calc\(100vh - var\(--header-h\) - [\d.]+rem\)\)/, 'the phone fits the window');
-  assert.match(stage[1], /\.steps\.is-live article\{display:contents\}/);
-  assert.match(stage[1], /\.steps\.is-live \.shot\{grid-column:2;grid-row:1\/5;position:sticky;[^}]*opacity:0;transition:opacity \.25s var\(--ease-out\)\}/, 'one phone, in view through all four steps');
-  assert.match(stage[1], /\.steps\.is-live \.is-active \.shot\{opacity:1\}/, 'showing the lit step');
-  assert.match(stage[1], /\.steps\.is-live article:not\(\.is-active\) \.step-text\{opacity:\.32\}/, 'the other steps wait, dimmed');
-  assert.ok(!/justify-content:center/.test(css.match(/\n\.steps article\{([^}]*)\}/)[1]) && !/#how[^{]*\{text-align:center/.test(css), 'left-aligned, like every other section');
-  // Phones: the steps read top to bottom, no swiping; each screen at close to its real size, cut by its card where what
-  // matters is: the menu and the split from the top, the payment and the review from the foot.
-  const phone = css.match(/@media\(max-width:767px\)\{\n  \/\*[^\n]*\*\/\n  \.shot\{container-type:inline-size\}\n  \.device\{height:calc\(\(80cqi - 1rem\) \* 2\.0923 \* \.58 \+ [\d.]+rem\)\}\n  \.device \.phone\{width:80cqi\}\n\}/);
-  assert.ok(phone, 'the window shows 58% of a phone 80% as wide as the card');
-  assert.match(css, /\n\.steps article:nth-child\(n\+3\) \.device\{align-items:flex-end\}/);
-  assert.ok(!/scroll-snap-type/.test(css), 'nothing to swipe');
-  // The script: a band just above the middle of the window lights the step crossing it, however the page got there.
-  assert.match(js, /rootMargin: '-44% 0px -54% 0px'/);
-  assert.match(css, /@media \(prefers-reduced-motion:reduce\)\{\.js-reveal\{opacity:1;transform:none;transition:none\}\}/);
-  assert.match(js, /prefers-reduced-motion: reduce/);
-  assert.match(js, /if \(reduce \|\| !io\) return;/, 'no rise-in or count-up with reduced motion');
-  assert.match(js, /el\.textContent = text;/, 'the figures end on the value in the page');
-  assert.match(js, /addEventListener\('focusin'[\s\S]*?el\.style\.transition = 'none'; el\.classList\.add\('is-in'\)/, 'tabbing into a section shows it at once');
-  assert.match(read('.gitignore'), /^!site\.js$/m);
-});
-
-test('homepage bands breathe with the window, a menu click lands under the header, and the headline and the film paint at once', () => {
-  const css = read('website.css');
-  // The homepage's bands share one measure of air that follows the window's height; numbers.html keeps its sections'.
-  assert.match(css, /--band:clamp\(4rem,11vh,7\.5rem\)/);
-  [/\n#how\{padding-block:var\(--band\)\}/, /\n\.benefits-band \.section\{padding-block:var\(--band\)\}/, /\n#pricing\{padding-block:var\(--band\)\}/,
-    /\n\.faq-section\{[^}]*padding-block:var\(--band\)/, /\n\.contact\{[^}]*padding-block:var\(--band\)/].forEach(re => assert.match(css, re));
-  assert.match(css, /\n\.section\{padding-block:clamp\(2\.5rem,7vh,5rem\)\}/, 'numbers.html sections keep their padding');
-  assert.match(css, /\nsection\[id\],main\[id\]\{scroll-margin-top:var\(--header-h\)\}/, 'a menu click puts the section right under the header');
-  assert.match(css, /\n\.hero\{display:grid;grid-template-columns:minmax\(0,1fr\);padding-block:clamp\(2rem,6vh,4\.5rem\) 0\}/);
-  // The headline and the film are the largest things painted first: neither waits for an animation. Only the copy
-  // under the headline rises in, 60 ms apart.
-  assert.ok(!/\.hero h1[^{]*\{[^}]*animation/.test(css) && !/\.hero-reel[^{]*\{[^}]*animation/.test(css) && !/\.hero \.eyebrow[^{]*\{[^}]*animation/.test(css), 'headline and film not animated');
-  assert.match(css, /\.hero \.lead,\.hero \.actions,\.hero \.fine,\.hero \.what\{animation:rise \.6s var\(--ease-out\) both\}\n  \.hero \.lead\{animation-delay:60ms\}\.hero \.actions\{animation-delay:120ms\}\.hero \.fine\{animation-delay:180ms\}\.hero \.what\{animation-delay:240ms\}/);
-  // The numbers band's two asks share a line; the price sits on one line with its unit.
-  assert.match(css, /\n\.benefits-band \.section-cta\{grid-row:4;grid-column:1;[^}]*\}\n\.benefits-band \.calc-link\{grid-row:4;grid-column:2;/);
-  assert.ok(!/\.price span\{display:block/.test(css), '$150 / month / location on one line');
-});
-
-test('motion: two curves, transform and opacity only, controls under 300 ms, hover only with a real pointer, nothing animates on a keyboard action', () => {
-  const css = read('website.css'), js = read('site.js');
+test('homepage motion: the site\'s two curves, no transition: all, nothing from nothing, hover only with a real pointer, reduced motion respected', () => {
+  const css = read('home.css'), js = read('home.js');
   assert.match(css, /--ease-out:cubic-bezier\(\.23,1,\.32,1\);--ease-in-out:cubic-bezier\(\.77,0,\.175,1\)/);
   assert.ok(!/transition:\s*all|transition-property:\s*all/.test(css), 'never transition: all');
   assert.ok(!/scale\(0\)|scale\(0,|scaleX?\(0\)/.test(css), 'nothing grows from nothing');
-  assert.ok(!/\bease-in\b(?!-out)/.test(css), 'no ease-in');
-  // What moves is transform and opacity; colours may fade. Controls answer within 300 ms; only content arriving as
-  // you scroll (the reveal and the hero's copy) takes .6s.
-  const moving = ['transform', 'opacity', 'color', 'background-color', 'border-color'];
-  for (const m of css.matchAll(/([^{}]*)\{[^}]*?transition:([^;}]+)/g)) {
-    if (m[2].trim() === 'none') continue;
-    const props = [...m[2].matchAll(/([a-z-]+) ([\d.]+)(m?s)/g)];
-    assert.ok(props.length, m[1].trim() + ': ' + m[2]);
-    props.forEach(([, prop, n, unit]) => {
-      assert.ok(moving.includes(prop), m[1].trim() + ' transitions ' + prop);
-      const sec = unit === 'ms' ? Number(n) / 1000 : Number(n);
-      assert.ok(sec < (/\.js-reveal/.test(m[1]) ? 0.61 : 0.3), m[1].trim() + ': ' + prop + ' ' + n + unit);
-    });
-  }
   for (const m of css.matchAll(/@keyframes ([a-z]+)\{((?:[a-z0-9%]+\{[^}]*\})+)\}/g)) {
     for (const d of m[2].matchAll(/([a-z-]+):/g)) assert.ok(['opacity', 'transform'].includes(d[1]), '@keyframes ' + m[1] + ' animates ' + d[1]);
   }
-  for (const m of css.matchAll(/animation:([a-z]+) ([\d.]+)s/g)) assert.ok(Number(m[2]) <= 0.6, 'animation ' + m[1]);
-  // Hover belongs to a mouse or a trackpad: a tap would leave it on.
-  const hoverBlock = css.match(/@media \(hover:hover\) and \(pointer:fine\)\{\n[\s\S]*?\n\}/)[0];
-  assert.ok(!/:hover/.test(css.replace(hoverBlock, '')), 'every :hover is inside (hover:hover) and (pointer:fine)');
-  // Pressed with a finger or a mouse a control gives a little; from the keyboard it just acts, and a menu or an
-  // answer opened from the keyboard is simply there.
+  const hover = [...css.matchAll(/@media \(hover:hover\) and \(pointer:fine\)(?: and \(prefers-reduced-motion:reduce\))?\{[\s\S]*?\n\}|@media \(hover:hover\) and \(pointer:fine\) and \(prefers-reduced-motion:reduce\)\{[^\n]*\}/g)].map(m => m[0]);
+  let rest = css; hover.forEach(h => { rest = rest.replace(h, ''); });
+  assert.ok(!/:hover/.test(rest), 'every :hover is inside (hover:hover) and (pointer:fine)');
   for (const m of css.matchAll(/([^{}]*:active[^{}]*)\{/g)) assert.match(m[1], /:active:not\(:focus-visible\)/, m[1].trim());
-  assert.match(css, /\.lang:has\(>summary:focus-visible\) div,\.lang summary:focus-visible::after\{transition:none\}/);
-  assert.match(css, /\.faq details:has\(>summary:focus-visible\)>p,\.faq summary:focus-visible::after\{transition:none\}/);
-  assert.match(css, /\.reel-play:focus-visible\{transition:none\}/);
-  // Items arriving together follow one another within 30 to 80 ms.
-  assert.match(js, /Math\.min\(k\+\+, 5\) \* 60 \+ 'ms'/);
-  // Reduced motion: no movement at all, short fades instead.
-  const reduceBlock = css.match(/@media\(prefers-reduced-motion:reduce\)\{html\{scroll-behavior:auto\}[\s\S]*?\n\}/)[0];
-  assert.match(reduceBlock, /\.hero \.lead,\.hero \.actions,\.hero \.fine,\.hero \.what\{animation:fade \.3s ease both\}/);
-  assert.match(css, /@media \(prefers-reduced-motion:no-preference\)\{\n  \.btn:active:not\(:focus-visible\)\{transform:scale\(\.97\)\}/, 'press feedback only when motion is welcome');
+  assert.match(js, /if \(mm\('\(prefers-reduced-motion: reduce\)'\)\) return;/, 'reduced motion: the table is simply laid');
+  assert.match(js, /el\.textContent = text;/, 'the figures end on the value in the page');
 });
 
-test('tapping the hero film, or its play button, pauses and plays it on every homepage', () => {
-  for (const f of ['index.html', 'fr/index.html', 'ar/index.html']) {
-    const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
-    assert.match(s, /<button class="reel-play" id="reel-play" type="button" aria-label="[^"]+" data-play="[^"]+"><svg [^>]*aria-hidden="true"/, f);
-    assert.match(s, /v\.addEventListener\('click',toggle\);p\.addEventListener\('click',toggle\);/, f);
-    assert.match(s, /b\.hidden=true;p\.hidden=true;return;/, f + ': reduced motion hands over to native controls');
-  }
-  const css = fs.readFileSync(path.join(ROOT, 'website.css'), 'utf8');
-  assert.match(css, /\.reel-play\{position:absolute;left:50%;top:50%;[^}]*width:80px;height:80px/, "one large button in the middle");
-  assert.match(css, /\.is-paused \.reel-play,\.reel-play:focus-visible\{opacity:1\}/, 'shown only while paused');
-  assert.doesNotMatch(css, /\.hero-reel(\.show|:hover) \.reel-play/, 'never over the playing film');
+test('no script, no service worker: sw.js keeps to the guest app and never mentions the homepage or the retired previews', () => {
+  const sw = read('sw.js');
+  assert.match(read('guest.html'), /navigator\.serviceWorker\.register\('sw\.js', \{ scope: 'guest\.html'/);
+  assert.ok(!/index\.html|home\.(css|js)|website\.css|site\.js|table-v1/.test(sw), 'sw.js caches nothing of the homepage');
 });
