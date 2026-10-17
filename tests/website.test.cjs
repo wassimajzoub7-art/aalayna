@@ -633,3 +633,17 @@ test('no script, no service worker: sw.js keeps to the guest app and never menti
   assert.match(read('guest.html'), /navigator\.serviceWorker\.register\('sw\.js', \{ scope: 'guest\.html'/);
   assert.ok(!/index\.html|home\.(css|js)|website\.css|site\.js|table-v1/.test(sw), 'sw.js caches nothing of the homepage');
 });
+
+test('404.html: static, absolute paths, the way home, the site CTAs and the one WhatsApp number', () => {
+  const s = read('404.html'), index = read('index.html');
+  assert.match(s, /<link rel="stylesheet" href="\/website\.css/);
+  assert.match(s, /<a [^>]*href="\/"[^>]*>Back to the homepage/);
+  assert.match(s, /href="\/fr\/"/); assert.match(s, /href="\/ar\/"/);
+  assert.match(s, /<a class="btn" href="\/book\.html">Book a demo<\/a>/);
+  assert.match(s, /<a class="btn outline" href="https:\/\/wa\.me\/[^"]*">WhatsApp us<\/a>/);
+  assert.deepEqual(new Set(s.match(/wa\.me\/[^?"'\s]*/g)), new Set(index.match(/wa\.me\/[^?"'\s]*/g)));
+  assert.ok(!/<script\b/.test(s), '404.html loads no script');
+  assert.ok(!/(?:href|src)="(?!\/|https:|#)/.test(s), '404.html uses only absolute paths');
+  assert.ok(!/—|&mdash;/.test(s), '404.html has an em dash');
+  assert.match(read('.gitignore'), /^!404\.html$/m);
+});
