@@ -48,3 +48,11 @@ shadow can stay behind and lengthen when its object is lifted.
 The page's images as loaded: linen 80 KB, phone 13 KB, plate 17 KB, tray 24 KB, paper 11 KB, receipt 2 KB, and the
 four app screens 46 + 37 + 42 + 28 KB, about 300 KB in all. The 256-colour PNG fallbacks exist only for the three
 cut-outs that need transparency, and load only where WebP is not supported.
+
+## The table variants (?table=a, b, c; 19 October 2026)
+
+No new file. The floor of variant B is a flat tone (`--ground:#F3EEE5`) with a gentle lightening toward the window's
+edges, and the place settings of variant C are the plate above (`plate.webp`, also used as its own mask) with a napkin
+cut from the paper texture (`paper.webp`), both washed 40% toward the linen. A photographic floor texture and overhead
+cutlery cut-outs from Pexels or Unsplash were not downloaded for this round; if the founder picks B or C, they can be
+sourced, recorded here and swapped in. Added weight: none (the two images are already on the page).
