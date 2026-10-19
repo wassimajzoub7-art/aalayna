@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Not on the menu · Aalayna</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="This page is not on aalayna.com. The homepage, a demo and WhatsApp are one tap away.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/website.css?v=26">
+<link rel="icon" href="/brand/icons/icon-32.png" sizes="32x32">
+<link rel="icon" href="/brand/svg/3layna/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/brand/icons/icon-180.png">
+<!-- GitHub Pages serves this file for any address it does not know, at any depth, so every path here is absolute.
+     The page is static on purpose: no script, nothing to load but the site's own stylesheet and fonts. -->
+<style>
+  .lost{padding-block:var(--band);min-height:calc(100svh - var(--header-h) - 6rem)}
+  .lost h1{max-width:12ch;font-size:var(--fs-display);line-height:1.02;letter-spacing:-.03em}
+  .lost .lead{max-width:30rem}
+  /* The way back, ruled like the lines of a bill. */
+  .back{max-width:30rem;margin-top:var(--band);padding:0;list-style:none;border-top:1px solid var(--ink)}
+  .back li{border-bottom:1px solid var(--line)}
+  .back a{display:flex;justify-content:space-between;align-items:center;gap:1rem;min-height:44px;padding-block:.75rem;text-decoration:none;color:var(--ink);transition:color .15s ease}
+  .back a span{color:var(--sub);font-size:var(--fs-small)}
+  .back li:first-child a{font-weight:600}
+  .back [lang="ar"]{font-family:'IBM Plex Sans Arabic','Instrument Sans',system-ui,sans-serif}
+  @media (hover:hover) and (pointer:fine){.back a:hover,.back a:hover span{color:var(--brand-text)}}
+  @media(min-width:768px){.lost h1{font-size:var(--fs-hero);line-height:1}}
+  @media(max-width:359px){.lost h1{font-size:var(--fs-heading);line-height:1.08}}
+  @media(prefers-reduced-motion:reduce){.back a{transition:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-nav">
+  <nav class="wrap nav-in" aria-label="Main navigation">
+    <a class="logo" href="/" aria-label="Aalayna home"><svg viewBox="0 0 170 110" aria-hidden="true" focusable="false"><path class="logo-ink" d="M60 0L70 0L70 40.8L110 40.8L110 50L60 50ZM120 0L170 0L170 50L160 50L160 29.6L130 29.6L130 50L120 50ZM130 9.2L130 20.4L160 20.4L160 9.2ZM0 60L10 60L10 80.4L40 80.4L40 60L50 60L50 89.6L30 89.6L30 110L20 110L20 89.6L0 89.6ZM60 60L70 60L70 110L60 110ZM100 60L110 60L110 110L100 110ZM60 60L72.5 60L110 110L97.5 110ZM120 60L170 60L170 110L160 110L160 89.6L130 89.6L130 110L120 110ZM130 69.2L130 80.4L160 80.4L160 69.2Z"/><path class="logo-red" d="M0 0L50 0L50 50L0 50L0 40.8L40 40.8L40 29.6L20 29.6L20 20.4L40 20.4L40 9.2L0 9.2Z"/></svg></a>
+  </nav>
+</header>
+<main id="main" class="wrap lost">
+  <p class="eyebrow">404 · Page not found</p>
+  <h1>This page is not on the menu.</h1>
+  <p class="lead">The address may have changed, or a letter slipped on the way. Everything else is where you left it.</p>
+  <div class="actions">
+    <a class="btn" href="/book.html">Book a demo</a>
+    <a class="btn outline" href="https://wa.me/33665745963?text=Hi%2C%20I%27d%20like%20to%20discuss%20Aalayna%20for%20my%20restaurant">WhatsApp us</a>
+  </div>
+  <ul class="back" aria-label="Start again">
+    <li><a href="/">Back to the homepage <span aria-hidden="true">→</span></a></li>
+    <li><a href="/fr/" hreflang="fr" lang="fr">Français <span>Accueil</span></a></li>
+    <li><a href="/ar/" hreflang="ar"><bdi lang="ar">العربية</bdi> <span lang="ar" dir="rtl">الصفحة الرئيسية</span></a></li>
+  </ul>
+</main>
+<footer class="wrap footer"><p>© 2026 Aalayna · For restaurants in Lebanon</p></footer>
+</body>
+</html>
