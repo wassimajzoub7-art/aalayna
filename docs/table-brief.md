@@ -151,3 +151,13 @@ motion rows above.
     scripts). The table's six booking placements keep the funnel's names (navigation, hero, how, outcomes, pricing,
     footer). The pilot timeline and the six questions are on book.html (#pilot, #faq), beside the calendar. The
     preview pages are retired; git history keeps them.
+14. **Three variants to make it read as a table (19 October).** "How can we make it look more like a table? Maybe the
+    main area should look elevated." Three cumulative variants behind a flag, for the founder to compare on the live
+    page: `?table=a` (elevation: the cloth hemmed over a slab, its head and foot shown, a soft ambient shadow on the
+    page, longer to the right and down; on the phone stage the tabletop stops short of the sides and foot with the
+    same hem and shadow), `?table=b` (A and a quiet warm stone floor round the table, from its head to its foot, every
+    caption still 4.5:1 on it, the captions a little further off the table), `?table=c` (B and six quiet place
+    settings, a plate and a folded napkin at 60%, one per stretch on alternate sides, peeking in at the edge on the
+    phone stage). Remembered for the session, `?table=0` clears it; without it the page is exactly as before. Set as
+    `data-table` on the html element by a one-line script in the head, before the first paint; the rules are the last
+    block of home.css.

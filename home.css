@@ -625,5 +625,83 @@ html.js .scan{opacity:1}
   .top .btn.compact{padding-inline:.625rem;white-space:normal;line-height:1.2;text-align:center}
 }
 
+/* ---------- Three variants of the table, for comparison (?table=a, b or c) ----------
+   The founder, looking at the live page: make it look more like a table. Three cumulative variants, keyed on
+   html[data-table], which a tiny script in the head sets before the first paint from ?table= (remembered for the
+   session, so the language switch keeps it; ?table=0 clears it). Without it nothing here applies and the page is
+   exactly as it was. Nothing here moves: the tabletop, the floor and the settings are laid, static, under the chain.
+   A, elevation: the tabletop stands above the page. A soft ambient shadow falls from both long edges onto the page,
+   tight and darker near the edge, wide and faint further out, a touch longer to the right and down (the one light,
+   from the top left); the cloth drapes over the edges in a narrow hem, a little darker as it turns away, with a soft
+   highlight where it folds over the slab; the head and the foot are real ends, hemmed and shadowed the same.
+   B, A and a floor: from the head of the table to its foot the ground becomes a quiet warm stone, a few percent
+   darker than the cream, lightening a little toward the window's edges (the room's light), so the table's shadow pools
+   around it. Flat, no texture: no pattern, no grid. Every text colour beside the table keeps 4.5:1 on the darkest
+   floor behind any line, the table's shadow included, measured from 1024 to 1920 px (ink 14.5, --sub 6.3,
+   --brand-text 5.1, --olive 5.5, --clay 4.5); the notes stand a little further off the table for it. The poster and
+   the close stay on the cream.
+   C, B and place settings: where a chair would be, beside the heroes that leave the side free, a plate with a folded
+   napkin of the same cotton paper as the cards, at 60%, so they recede; one per stretch, alternating sides, three on
+   each, mirrored in Arabic; never in a hero's lane. On the phone stage they peek in at the edge of the tabletop. */
+.set{display:none}
+:root{--ground:#F3EEE5;--cream:#F7F2EA;
+  /* The hem: on each edge, the cloth darker as it turns down over the slab, and a soft highlight where it folds. The
+     light from the top left lies a little more on the head and the left. */
+  --hem-l:linear-gradient(90deg,rgba(var(--shade),.11),rgba(var(--shade),.04) .45rem,rgba(255,255,255,.09) .8rem,rgba(255,255,255,0) 1.5rem);
+  --hem-r:linear-gradient(270deg,rgba(var(--shade),.18),rgba(var(--shade),.07) .45rem,rgba(255,255,255,.05) .8rem,rgba(255,255,255,0) 1.5rem);
+  --hem-t:linear-gradient(180deg,rgba(var(--shade),.09),rgba(var(--shade),.03) .45rem,rgba(255,255,255,.09) .8rem,rgba(255,255,255,0) 1.5rem);
+  --hem-b:linear-gradient(0deg,rgba(var(--shade),.18),rgba(var(--shade),.07) .45rem,rgba(255,255,255,.05) .8rem,rgba(255,255,255,0) 1.5rem);
+  --hem:var(--hem-l) 0 0 / 1.5rem 100% no-repeat,var(--hem-r) 100% 0 / 1.5rem 100% no-repeat,var(--hem-t) 0 0 / 100% 1.5rem no-repeat,var(--hem-b) 0 100% / 100% 1.5rem no-repeat;
+  /* The table's shadow on the page: a contact shadow at the edge, then wider and fainter, longer to the right and down. */
+  --lift:-.1rem .2rem .35rem rgba(var(--shade),.2),.25rem .6rem 1.1rem rgba(var(--shade),.15),.6rem 1.6rem 3rem rgba(var(--shade),.1),1.1rem 3rem 5.5rem rgba(var(--shade),.06)}
+
+/* A: the tabletop, on a wide screen. The cloth stops short of the section's ends so the head and the foot show. */
+@media (min-width:768px){
+  /* The table's own section clips only sideways here, so the shadow at the foot falls on the cream below it. */
+  html[data-table] .table{overflow-x:clip;overflow-y:visible}
+  /* The notes stand a little further off, so the shadow falls on bare floor and every line beside it keeps 4.5:1. */
+  html[data-table] .table{--gap:clamp(2.5rem,4.5vw,5rem)}
+  html[data-table] .linen{top:1.5rem;bottom:3rem;box-shadow:var(--lift)}
+  html[data-table] .linen::after{background:var(--hem)}
+}
+/* A: the phone stage. Its tabletop stops a little short of the window's sides and foot; the page shows round it (one
+   frame, over the strip of boards and under the caption), and its four edges are hemmed and shadowed as above. */
+@media (max-width:767px){
+  html.pin[data-table] .pin::after{inset:var(--cap) .75rem 1rem;height:auto;background:var(--hem);
+    box-shadow:var(--lift),0 0 0 100vmax var(--floor)}
+}
+
+/* B: the floor, from the head of the table to its foot, fading in and out of the cream above and below. */
+html[data-table="b"] .table,html[data-table="c"] .table{--floor:var(--ground);
+  background:linear-gradient(var(--cream),rgba(247,242,234,0) 6rem,rgba(247,242,234,0) calc(100% - 6rem),var(--cream)),
+    linear-gradient(90deg,#F4EFE7,var(--ground) 30%,var(--ground) 70%,#F3EEE6)}
+@media (max-width:767px){
+  html[data-table="b"] .table,html[data-table="c"] .table{background:var(--ground)}
+}
+
+/* C: the place settings. A plate (the same photograph as the others) and, toward the diner's left, a napkin folded in
+   three, lying on the cloth in the light from the top left. They never move. */
+html[data-table="c"] .set{display:block;position:absolute;inset-inline-start:calc(var(--x) * 1%);top:calc(var(--y) * 1%);width:calc(var(--w) * 1%);aspect-ratio:100 / 150;pointer-events:none;
+  filter:drop-shadow(.25rem .55rem .45rem rgba(var(--shade),.17))}
+html[data-table="c"] .set::before,html[data-table="c"] .set::after{content:"";position:absolute}
+/* 60% strength: each piece is washed 40% toward the cloth's own tone (opaque, so the weave does not show through and
+   the plate does not read as glass), and its shadow is 60% of a hero's. */
+html[data-table="c"] .set::before{left:0;width:100%;aspect-ratio:480 / 467;
+  background:linear-gradient(rgba(226,217,202,.4),rgba(226,217,202,.4)),url(images/table/plate.webp) center / 100% 100% no-repeat;
+  -webkit-mask:url(images/table/plate.webp) center / 100% 100% no-repeat;mask:url(images/table/plate.webp) center / 100% 100% no-repeat}
+html[data-table="c"] .set::after{left:7%;width:86%;height:30%;
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 44%,rgba(var(--shade),.07) 49.5%,rgba(255,255,255,.2) 51%,rgba(255,255,255,0) 68%,rgba(var(--shade),.05)),
+    linear-gradient(rgba(226,217,202,.36),rgba(226,217,202,.36)),#F8F4EB url(images/table/paper.webp) center / cover;
+  box-shadow:0 .04rem .1rem rgba(var(--shade),.14)}
+html[data-table="c"] .set.s::before{bottom:0}html[data-table="c"] .set.s::after{top:0}
+html[data-table="c"] .set.e::before{top:0}html[data-table="c"] .set.e::after{bottom:0}
+@media (max-width:767px){
+  /* On a phone only the pinned stage has room at the sides; the stacked blocks (no script, reduced motion) do not. */
+  html:not(.pin)[data-table="c"] .set{display:none}
+  /* On the stage each setting only peeks in at the tabletop's edge, well clear of the hero. */
+  html.pin[data-table="c"] .set.s{translate:calc(-34% * var(--dir)) 0}
+  html.pin[data-table="c"] .set.e{translate:calc(34% * var(--dir)) 0}
+}
+
 /* Printed, everything shows and nothing sticks. */
 @media print{.top{position:static}.ob *,.note *{animation:none!important;opacity:1!important;transform:none!important}.scan,.paid-go,.pay-thanks{display:none}}

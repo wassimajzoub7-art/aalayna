@@ -633,3 +633,36 @@ test('no script, no service worker: sw.js keeps to the guest app and never menti
   assert.match(read('guest.html'), /navigator\.serviceWorker\.register\('sw\.js', \{ scope: 'guest\.html'/);
   assert.ok(!/index\.html|home\.(css|js)|website\.css|site\.js|table-v1/.test(sw), 'sw.js caches nothing of the homepage');
 });
+
+test('the table variants (?table=a, b, c): off by default, set before paint, every rule keyed on data-table', () => {
+  const css = read('home.css');
+  for (const f of HOMES) {
+    const s = read(f), head = s.slice(0, s.indexOf('</head>'));
+    assert.ok(!/<html[^>]*data-table/.test(s), f + ': the default page carries no data-table');
+    const m = head.match(/<script>(\(function\(\)\{var d=document\.documentElement[\s\S]*?)<\/script>\n<link rel="stylesheet"/);
+    assert.ok(m, f + ': the flag script sits in the head, just before the sheet');
+    const run = (search, stored) => {
+      const attrs = {}, store = Object.assign({}, stored);
+      const ctx = { location: { search }, document: { documentElement: { setAttribute: (k, v) => { attrs[k] = v; } } },
+        window: { sessionStorage: { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } } } };
+      vm.createContext(ctx); vm.runInContext(m[1], ctx);
+      return { attr: attrs['data-table'], store };
+    };
+    assert.equal(run('', {}).attr, undefined, f + ': no flag, no attribute: the default rendering');
+    assert.equal(run('?settle=1', {}).attr, undefined, f + ': another query, no attribute');
+    assert.equal(run('?table=b', {}).attr, 'b', f + ': ?table=b');
+    assert.equal(run('?table=c', {}).store['aal.table'], 'c', f + ': remembered for the session');
+    assert.equal(run('', { 'aal.table': 'a' }).attr, 'a', f + ': kept across the language switch');
+    const z = run('?table=0', { 'aal.table': 'a' });
+    assert.ok(z.attr === undefined && !('aal.table' in z.store), f + ': ?table=0 clears it');
+    assert.equal(run('?table=x', {}).attr, undefined, f + ': only a, b or c');
+    assert.equal((s.match(/<i class="set [se]" style="--x:\d+;--y:\d+;--w:\d+" aria-hidden="true"><\/i>/g) || []).length, 6, f + ': six place settings, hidden unless c');
+  }
+  assert.match(css, /\n\.set\{display:none\}/, 'the settings are hidden by default');
+  const block = css.slice(css.indexOf('/* ---------- Three variants of the table'), css.indexOf('/* Printed'));
+  for (const m of block.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}@]+)\{[^{}]*\}/g)) {
+    const sel = m[1].trim();
+    if (sel === ':root' || sel === '.set') continue;
+    sel.split(',').forEach(x => assert.match(x.trim(), /^html(\.pin|:not\(\.pin\))?\[data-table(="[abc]")?\] /, 'keyed on data-table: ' + x.trim()));
+  }
+});
