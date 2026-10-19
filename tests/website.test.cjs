@@ -634,7 +634,7 @@ test('no script, no service worker: sw.js keeps to the guest app and never menti
   assert.ok(!/index\.html|home\.(css|js)|website\.css|site\.js|table-v1/.test(sw), 'sw.js caches nothing of the homepage');
 });
 
-test('the table variants (?table=a, b, c): off by default, set before paint, every rule keyed on data-table', () => {
+test('the table variants (?table=a, b, c): A (elevation) by default, set before paint, every rule keyed on data-table', () => {
   const css = read('home.css');
   for (const f of HOMES) {
     const s = read(f), head = s.slice(0, s.indexOf('</head>'));
@@ -648,14 +648,14 @@ test('the table variants (?table=a, b, c): off by default, set before paint, eve
       vm.createContext(ctx); vm.runInContext(m[1], ctx);
       return { attr: attrs['data-table'], store };
     };
-    assert.equal(run('', {}).attr, undefined, f + ': no flag, no attribute: the default rendering');
-    assert.equal(run('?settle=1', {}).attr, undefined, f + ': another query, no attribute');
+    assert.equal(run('', {}).attr, 'a', f + ': no flag: variant A, the elevated table, is the default rendering');
+    assert.equal(run('?settle=1', {}).attr, 'a', f + ': another query: still the default');
     assert.equal(run('?table=b', {}).attr, 'b', f + ': ?table=b');
     assert.equal(run('?table=c', {}).store['aal.table'], 'c', f + ': remembered for the session');
     assert.equal(run('', { 'aal.table': 'a' }).attr, 'a', f + ': kept across the language switch');
     const z = run('?table=0', { 'aal.table': 'a' });
-    assert.ok(z.attr === undefined && !('aal.table' in z.store), f + ': ?table=0 clears it');
-    assert.equal(run('?table=x', {}).attr, undefined, f + ': only a, b or c');
+    assert.ok(z.attr === undefined && z.store['aal.table'] === '0', f + ': ?table=0 is the flat table, remembered for the session');
+    assert.equal(run('?table=x', {}).attr, 'a', f + ': an unknown value falls back to the default');
     assert.equal((s.match(/<i class="set [se]" style="--x:\d+;--y:\d+;--w:\d+" aria-hidden="true"><\/i>/g) || []).length, 6, f + ': six place settings, hidden unless c');
   }
   assert.match(css, /\n\.set\{display:none\}/, 'the settings are hidden by default');
