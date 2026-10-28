@@ -92,6 +92,12 @@
       try{for(i=0;i<global.localStorage.length;i++){k=global.localStorage.key(i);if(k&&k.indexOf('aal.scope:')===0&&k.indexOf(mark)>0)drop.push(k);}}catch(e){}
       drop.forEach(function(k){try{global.localStorage.removeItem(k);}catch(e){}});
     }
+    /* T1: the last staff list the server gave this user, used only while the server cannot be
+       reached, so a signed-in device opened in a power cut still shows the Live floor. Every
+       change it queues is checked again by the server when it is sent. */
+    var MINE='aal.staff.mine:';
+    function keepMine(s,list){try{global.localStorage.setItem(MINE+scopeOf(s),JSON.stringify(list));}catch(e){}}
+    function lastMine(s){try{var l=JSON.parse(global.localStorage.getItem(MINE+scopeOf(s))||'null');return Object.prototype.toString.call(l)==='[object Array]'?l:null;}catch(e){return null;}}
     function clear(){try{global.localStorage.removeItem(SESSION);}catch(e){}if(timer&&hasTimers())global.clearTimeout(timer);timer=null;emit();}
     function sendCode(email){
       email=String(email||'').replace(/^\s+|\s+$/g,'').toLowerCase();
@@ -115,6 +121,7 @@
     function token(){var s=read();if(!s)return Promise.resolve(null);if(s.expires_at*1000-now()>60000)return Promise.resolve(s.access_token);return refresh().then(function(n){return n?n.access_token:null;});}
     function signOut(){
       var s=read();clear();forgetCache(s);try{global.sessionStorage.removeItem(SKIP);}catch(e){}
+      if(s){try{global.localStorage.removeItem(MINE+scopeOf(s));}catch(e){}}
       if(!s)return Promise.resolve();
       return post('/auth/v1/logout?scope=local',{},s.access_token).then(function(){},function(){});
     }
@@ -163,17 +170,23 @@
       function check(){
         show('staff-wait');
         return mine().then(function(list){
-          list=Object.prototype.toString.call(list)==='[object Array]'?list:[];ctl.memberships=list;
-          var m=list.filter(function(x){return x.restaurant_id===rid;})[0],who='Signed in as '+s.email;
+          list=Object.prototype.toString.call(list)==='[object Array]'?list:[];keepMine(s,list);return admit(list,false);
+        },function(e){
+          if(e.signin){s=null;signin();say('Your sign-in has ended. Send a new code to continue.');return ctl;}
+          // T1: no answer at all (no connection): the staff list as the server last gave it
+          var last=!e.status?lastMine(s):null;
+          if(last){ctl.offline=true;return admit(last,true);}
+          bar('Signed in as '+s.email,'Sign out',out);refuse('Could not check your staff access',e.message,[],true);return ctl;
+        });
+      }
+      function admit(list,offline){
+          ctl.memberships=list;
+          var m=list.filter(function(x){return x.restaurant_id===rid;})[0],who='Signed in as '+s.email+(offline?' (offline, as last checked)':'');
           bar(who+(m?' · '+(ROLE_LABEL[m.role]||m.role):''),'Sign out',out);
           if(!m){ctl.refused=true;refuse("You are not on this restaurant's staff list",who+'. Ask the owner to invite this email address.'+(list.length?' Your restaurants:':''),list,false);return ctl;}
           if(roles.indexOf(m.role)<0){ctl.refused=true;refuse(opts.roleTitle||'This page is not part of your role',opts.roleText||'Ask the owner or a manager.',[],false);return ctl;}
           ctl.member=m;show(null);try{d.documentElement.setAttribute('data-staff-role',m.role);}catch(e){}
           if(opts.onMember)opts.onMember(m);return ctl;
-        },function(e){
-          if(e.signin){s=null;signin();say('Your sign-in has ended. Send a new code to continue.');return ctl;}
-          bar('Signed in as '+s.email,'Sign out',out);refuse('Could not check your staff access',e.message,[],true);return ctl;
-        });
       }
       $('staff-email-form').onsubmit=function(e){
         if(e&&e.preventDefault)e.preventDefault();var btn=$('staff-send');btn.disabled=true;say('Sending a code...');
@@ -350,7 +363,8 @@
   function nextSeq(){var n=0;try{n=Number(global.localStorage.getItem('aal.outbox.seq'))||0;}catch(e){}n++;try{global.localStorage.setItem('aal.outbox.seq',String(n));}catch(e){}return n;}
   function enqueue(id,job){var old=queue[id];job.seq=old&&typeof old.seq==='number'?old.seq:nextSeq();job.at=new Date().toISOString();queue[id]=job;persist();if(ready)run();}
   function two(n){return (n<10?'0':'')+n;}
-  function clock(at){var d=new Date(at);return two(d.getHours())+':'+two(d.getMinutes());}
+  // staff read every time in Beirut time, as the dashboard's rows do
+  function clock(at){var d=new Date(at);try{return d.toLocaleTimeString('en-GB',{timeZone:'Asia/Beirut',hour:'2-digit',minute:'2-digit'});}catch(e){return two(d.getHours())+':'+two(d.getMinutes());}}
   function down(){return !ready||!online||!!(global.navigator&&global.navigator.onLine===false);}
   async function mutate(op,body,token){
     if(!ready){try{await A.sync.ready;}catch(e){}}
@@ -439,6 +453,9 @@
   A.sync.boundCheck=function(){var id=state.checkId||(key&&state.role==='guest'?lastRead().checkId:null);return id?A.serviceChecks().find(function(c){return c.id===id;}):null;};
   A.sync.onState=function(f){stateFns.push(f);f(netState());};
   A.sync.job=function(id){return queue[id]?'pending':refused[id]?'refused':null;};
+  /* T1: a queued change as the page shows it ({op, at, seq}; at is the device clock), or null. */
+  A.sync.pendingJob=function(id){var j=queue[id];return j?{op:j.op||null,at:j.at||null,seq:typeof j.seq==='number'?j.seq:null}:null;};
+  A.sync.clock=clock;
   observers.push(emitState);
   if(global.addEventListener){global.addEventListener('online',emitState);global.addEventListener('offline',emitState);}
   /* T4: fn runs once, after the first successful read, when the server has named this page's role, so an
@@ -598,7 +615,9 @@
     // T8: a refusal is shown once, until dismissed; Retry is only for changes waiting on the network
     dismiss.textContent='Dismiss';dismiss.style.marginLeft='8px';dismiss.onclick=function(){A.sync.dismiss();};
     node.append(label,retry,dismiss);global.document.body.appendChild(node);
-    A.sync.subscribe(function(s){label.textContent=statusText(s);node.title=s.lastError||'';node.hidden=s.status==='no-key';retry.hidden=s.status!=='offline';dismiss.hidden=s.status!=='error';});
+    // T1: offline is an indicator, not a footnote: a red mark and the queue it holds
+    A.sync.subscribe(function(s){var off=s.status==='offline';label.textContent=(off?'\u25cf ':'')+statusText(s);node.title=s.lastError||'';node.hidden=s.status==='no-key';retry.hidden=!off;dismiss.hidden=s.status!=='error';
+      node.setAttribute('data-status',s.status);node.style.background=off?'#fbe9e7':'#fff8e9';node.style.color=off?'#8a1c12':'#173e43';node.style.borderColor=off?'#e4b4ac':'#ddd3c0';});
   }
   if(global.document.body)mount();else global.document.addEventListener('DOMContentLoaded',mount);
   }
