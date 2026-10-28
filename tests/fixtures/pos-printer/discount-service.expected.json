@@ -1,0 +1,33 @@
+{
+  "fixture": "discount-service.bin",
+  "synthetic": true,
+  "description": "A generic guest check (read with the generic profile): CHK 2291 on TBL 14/1 with 6 guests, a month-name date, columns set with ESC D tab stops and HT, a 10% discount and a 12% service charge on the discounted subtotal, VAT included, the total in bold double height, a second total in LBP.",
+  "profile": "generic",
+  "venue": { "id": "beit-zeitoun", "system": "micros", "currency": "USD" },
+  "documents": [
+    {
+      "kind": "bill",
+      "needsReview": false,
+      "check": { "number": "2291", "table": "14", "tableNumber": 14, "covers": 6, "printedAt": "2026-10-27T21:52:00", "reprint": false },
+      "vat": null,
+      "altTotals": [{ "currency": "LBP", "cents": 739807000 }],
+      "tenders": [],
+      "bill": {
+        "externalId": "2026-10-27/2291",
+        "system": "micros",
+        "table": 14,
+        "currency": "USD",
+        "lines": [
+          { "externalId": "mixed-grill", "name": "Mixed grill", "quantity": 2, "unitPriceCents": 1800 },
+          { "externalId": "kebbeh-nayyeh", "name": "Kebbeh nayyeh", "quantity": 1, "unitPriceCents": 1400 },
+          { "externalId": "arak-glass", "name": "Arak glass", "quantity": 4, "unitPriceCents": 500 },
+          { "externalId": "tabbouleh", "name": "Tabbouleh", "quantity": 1, "unitPriceCents": 700 },
+          { "externalId": "batata-harra", "name": "Batata harra", "quantity": 1, "unitPriceCents": 500 }
+        ],
+        "totalCents": 8266,
+        "discountCents": 820,
+        "serviceCents": 886
+      }
+    }
+  ]
+}

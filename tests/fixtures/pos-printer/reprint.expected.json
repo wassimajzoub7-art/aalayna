@@ -1,0 +1,54 @@
+{
+  "fixture": "reprint.bin",
+  "synthetic": true,
+  "description": "The check of discount-service.bin printed twice more on one connection: an exact reprint marked *** REPRINT *** (a duplicate: nothing is sent), then with a Knefeh added at 22:10 (it supersedes the earlier print: same externalId, higher version). Discount and service are recomputed on the new subtotal.",
+  "profile": "generic",
+  "venue": { "id": "beit-zeitoun", "system": "micros", "currency": "USD" },
+  "after": "discount-service.bin",
+  "ledger": ["duplicate", "update"],
+  "documents": [
+    {
+      "kind": "bill",
+      "needsReview": false,
+      "check": { "number": "2291", "table": "14", "tableNumber": 14, "covers": 6, "printedAt": "2026-10-27T21:52:00", "reprint": true },
+      "bill": {
+        "externalId": "2026-10-27/2291",
+        "system": "micros",
+        "table": 14,
+        "currency": "USD",
+        "lines": [
+          { "externalId": "mixed-grill", "name": "Mixed grill", "quantity": 2, "unitPriceCents": 1800 },
+          { "externalId": "kebbeh-nayyeh", "name": "Kebbeh nayyeh", "quantity": 1, "unitPriceCents": 1400 },
+          { "externalId": "arak-glass", "name": "Arak glass", "quantity": 4, "unitPriceCents": 500 },
+          { "externalId": "tabbouleh", "name": "Tabbouleh", "quantity": 1, "unitPriceCents": 700 },
+          { "externalId": "batata-harra", "name": "Batata harra", "quantity": 1, "unitPriceCents": 500 }
+        ],
+        "totalCents": 8266,
+        "discountCents": 820,
+        "serviceCents": 886
+      }
+    },
+    {
+      "kind": "bill",
+      "needsReview": false,
+      "check": { "number": "2291", "table": "14", "tableNumber": 14, "covers": 6, "printedAt": "2026-10-27T22:10:00", "reprint": false },
+      "bill": {
+        "externalId": "2026-10-27/2291",
+        "system": "micros",
+        "table": 14,
+        "currency": "USD",
+        "lines": [
+          { "externalId": "mixed-grill", "name": "Mixed grill", "quantity": 2, "unitPriceCents": 1800 },
+          { "externalId": "kebbeh-nayyeh", "name": "Kebbeh nayyeh", "quantity": 1, "unitPriceCents": 1400 },
+          { "externalId": "arak-glass", "name": "Arak glass", "quantity": 4, "unitPriceCents": 500 },
+          { "externalId": "tabbouleh", "name": "Tabbouleh", "quantity": 1, "unitPriceCents": 700 },
+          { "externalId": "batata-harra", "name": "Batata harra", "quantity": 1, "unitPriceCents": 500 },
+          { "externalId": "knefeh", "name": "Knefeh", "quantity": 1, "unitPriceCents": 600 }
+        ],
+        "totalCents": 8870,
+        "discountCents": 880,
+        "serviceCents": 950
+      }
+    }
+  ]
+}
