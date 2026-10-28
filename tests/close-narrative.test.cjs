@@ -405,7 +405,7 @@ function fakeDb(seed) {
   db.rest = async (p, opts = {}) => {
     const i = p.indexOf('?'), table = i < 0 ? p : p.slice(0, i), params = new URLSearchParams(i < 0 ? '' : p.slice(i + 1)), method = opts.method || 'GET';
     db.paths.push(p);
-    if (!Array.isArray(db[table])) throw new Error('fake: no table ' + table);
+    if (!Array.isArray(db[table])) throw new Error('database 404: {"code":"PGRST205","message":"Could not find the table public.' + table + ' in the schema cache"}');   // as PostgREST answers for a table that is not installed
     const match = () => db[table].filter((r) => [...params].every(([k, v]) => RES.has(k) || ok(v, cell(r, k))));
     if (method === 'GET') { const off = Number(params.get('offset') || 0), lim = params.has('limit') ? Number(params.get('limit')) : 1e9; return JSON.parse(JSON.stringify(match().slice(off, off + lim))); }
     if (method === 'POST') { const out = []; for (const it of JSON.parse(opts.body)) { if (db[table].some((r) => r.restaurant_id === it.restaurant_id && r.day === it.day)) continue; const row = Object.assign({ id: 'l' + db[table].length }, it); db[table].push(row); out.push(row); } return out; }

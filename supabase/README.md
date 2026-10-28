@@ -155,6 +155,23 @@ opened or closed and no payment record is skipped too, with error `no activity`,
 `?force=1` still sends the all-zero email. Skipped and failed rows are picked up again by the next
 call, so a venue that gains a recipient, or whose late-synced activity arrives, is emailed then.
 
+**One close for an owner group.** With `groups-2026-10-28.sql` installed, each group that has venues
+also gets one email a day, to the group's owners and managers (`owner_group_staff`): subject
+`<Group>: Wednesday 30 September, on Aalayna`, the group's figures under "All venues" (every count and
+amount is the sum of its venues'; the lira line is left to each venue, whose rate may differ; the
+average rating is worked out from all the ratings; the top dishes from every venue's closed bills, by
+name), "Needs action" with each venue's items prefixed by the venue, then one section per venue with
+that venue's figures exactly as its own close has them. The attachment `close-<group-slug>-<date>.csv`
+is every venue's CSV rows with a first column `venue` (`Mayda · Hamra`). It is logged per group and day
+in `daily_close_group_log`, with the same claim, "already sent", retry, `no activity` and `?force=1`
+rules; a group with no live owner or manager is skipped (`no active group owner or manager email`).
+Each venue of a group still gets its own close, to its own owners and managers (`staff_members`), minus
+anyone who already gets the group's email; a venue with no one left is skipped as before. Single-venue
+owners see no change. `?group=<group id>` closes one group (and no venue); `?venue=` closes one venue
+(and no group); a call with neither, the cron's included, closes every venue and every group. The
+answer lists groups under `groups`, beside `results`. Without the groups migration the function reads
+no group (PostgREST answers 404 for the missing tables) and sends per-venue closes exactly as before.
+
 **Set up (in this order).**
 1. Deploy: `supabase functions deploy daily-close --no-verify-jwt --project-ref xeqbkamwucqplvoavhyd`.
    JWT verification is off because pg_net cannot present a user JWT; the function checks the

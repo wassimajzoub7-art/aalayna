@@ -30,7 +30,15 @@
                         payment; marketing opt-ins are those whose latest choice was marketing:true
    One deliberate difference: every status is evaluated as of the window's end, not "now". A
    payment refunded or a bill closed after 04:00 does not change that day's figures, so a manual
-   rerun a week later reproduces the email that went out. */
+   rerun a week later reproduces the email that went out.
+
+   Owner groups (supabase/groups-2026-10-28.sql): a group with venues also gets one email a day, to
+   its owners and managers (owner_group_staff), with the group's figures (the sum of its venues'),
+   then a section per venue exactly as that venue's own close shows it, and one CSV with a venue
+   column. It is logged in daily_close_group_log with the same claim, retry and force rules. A venue
+   of a group still gets its own close, to its own owners and managers (staff_members), minus anyone
+   who already gets the group's email. Single-venue owners see no change. Without the groups tables
+   (the migration not installed) the function sends per-venue closes exactly as before. */
 
 const TZ = 'Asia/Beirut';
 const CLOSE_HOUR = 4;
@@ -208,7 +216,8 @@ export function computeClose({ window: w, checks, settles, guests, events, docs 
     const id = String(l.id), q = Number(l.q) || 0, cur = dishes.get(id) || { name: '', qty: 0 };
     cur.qty += q; cur.name = cur.name || (l.name ? String(l.name) : '') || names[id] || id; dishes.set(id, cur);
   }
-  const topDishes = [...dishes.values()].sort((a, b) => b.qty - a.qty || a.name.localeCompare(b.name)).slice(0, 5);
+  const allDishes = [...dishes.values()].sort((a, b) => b.qty - a.qty || a.name.localeCompare(b.name));
+  const topDishes = allDishes.slice(0, 5);
 
   const validPayments = new Set(views.filter((v) => v.status === 'confirmed').map((v) => v.id));
   let receiptContacts = 0, marketingOptIns = 0;
@@ -243,6 +252,8 @@ export function computeClose({ window: w, checks, settles, guests, events, docs 
     receipts: { requested: receiptContacts, marketingOptIns },
     ratings: { count: ratings.length, average: ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length * 10) / 10 : null },
     topDishes,
+    dishes: allDishes,                               // every dish on the day's closed bills: what a group close adds up
+    ratingTotal: ratings.reduce((a, b) => a + b, 0),  // the sum of the ratings, so a group average is exact
     unconverted: views.filter((v) => !v.usd.ok && (within(v.at, start, end) || v.status === 'pending')).length,
     csvRows: windowRows
   };
@@ -391,16 +402,15 @@ const railName = (r) => (r === 'card' ? 'Card' : r === 'whish' ? 'Whish' : r ===
 const lbp = (n) => 'LL ' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const tablesText = (t) => (t.length === 1 ? 'table ' : 'tables ') + t.join(', ');
 
-export function buildEmail({ venue, figures: f, csvName, narrative }) {
-  const name = oneLine(venue.name), label = dayLabel(f.day);
-  const subject = `${name}: ${label}, on Aalayna`;
+/* The figure lines and the "Needs action" lines of one close: a venue's, or a group's sum. */
+function closeRows(f, stillOpenText) {
   const cashLine = plural(f.cash.count, 'payment') + ', ' + usdText(f.cash.usdCents) + (f.cash.lbp != null ? ' (' + lbp(f.cash.lbp) + ')' : '');
   const railKeys = Object.keys(f.digital.rails).sort();
   const tipRails = Object.keys(f.tips.byRail).sort();
   const rows = [
     ['Bills opened', String(f.bills.opened)],
     ['Bills closed', String(f.bills.closed)],
-    ['Still open at 04:00', f.bills.stillOpen ? `${f.bills.stillOpen} (${tablesText(f.bills.stillOpenTables)})` : '0'],
+    ['Still open at 04:00', f.bills.stillOpen ? `${f.bills.stillOpen} (${stillOpenText || tablesText(f.bills.stillOpenTables)})` : '0'],
     ['Cash confirmed', cashLine],
     ['Digital confirmed', plural(f.digital.count, 'payment') + ', ' + usdText(f.digital.usdCents)]
   ];
@@ -414,7 +424,9 @@ export function buildEmail({ venue, figures: f, csvName, narrative }) {
   rows.push(['Requests cancelled or expired', String(f.cancelledOrExpired) + (f.failed ? ` (and ${f.failed} failed)` : '')]);
   rows.push(['Receipts requested', `${f.receipts.requested}, of which ${f.receipts.marketingOptIns} agreed to restaurant offers`]);
   rows.push(['Guests who rated', f.ratings.count ? `${f.ratings.count}, average ${f.ratings.average.toFixed(1)} out of 5` : '0']);
-
+  return rows;
+}
+function closeActions(f) {
   const actions = [];
   if (f.pendingCash.count) {
     let t = `Cash requested and never confirmed: ${f.pendingCash.count}, ${usdText(f.pendingCash.usdCents)}, ${tablesText(f.pendingCash.tables)}`;
@@ -423,33 +435,130 @@ export function buildEmail({ venue, figures: f, csvName, narrative }) {
   }
   if (f.bills.stillOpen) actions.push(`Bills still open: ${tablesText(f.bills.stillOpenTables)}.`);
   if (f.unconverted) actions.push(`${plural(f.unconverted, 'payment')} had no USD value on record and ${f.unconverted === 1 ? 'is' : 'are'} left out of the dollar totals (the CSV lists them).`);
+  return actions;
+}
+const td = 'padding:4px 12px 4px 0;vertical-align:top';
+const padRows = (rows) => { const width = Math.max(...rows.map((r) => r[0].length)) + 2; return rows.map((r) => (r[0] + ':').padEnd(width) + r[1]); };
+const htmlTable = (rows) => `<table style="border-collapse:collapse">${rows.map((r) => `<tr><td style="${td};color:#555">${esc(r[0]).replace(/ /g, '&nbsp;')}</td><td style="${td}">${esc(r[1])}</td></tr>`).join('')}</table>`;
+const htmlActions = (actions) => (actions.length ? '<ul style="margin:0;padding-left:18px">' + actions.map((a) => `<li>${esc(a)}</li>`).join('') + '</ul>' : '<p style="margin:0">Nothing.</p>');
+const htmlDishes = (dishes) => (dishes.length ? '<ol style="margin:0;padding-left:22px">' + dishes.map((d) => `<li>${esc(d.name)}, ${d.qty}</li>`).join('') + '</ol>' : '<p style="margin:0">No closed bills with items.</p>');
+const textDishes = (dishes) => (dishes.length ? dishes.map((d, i) => `${i + 1}. ${oneLine(d.name)}, ${d.qty}`) : ['- No closed bills with items.']);
 
-  const width = Math.max(...rows.map((r) => r[0].length)) + 2;
-  const story = narrative && narrative.text ? oneLine(narrative.text) : '';
+/* The narrative paragraph (T4) above the figures: one line of text, or an HTML paragraph in the
+   narrative's language, right to left for Arabic. Empty when there is no narrative. */
+const storyText = (narrative) => (narrative && narrative.text ? oneLine(narrative.text) : '');
+const storyHtml = (narrative, margin) => {
+  const story = storyText(narrative);
+  if (!story) return '';
+  const lang = narrative.lang === 'fr' || narrative.lang === 'ar' ? narrative.lang : 'en';
+  return `<p dir="${lang === 'ar' ? 'rtl' : 'ltr'}" lang="${lang}" style="margin:${margin || '0 0 16px'};line-height:1.5${lang === 'ar' ? ';text-align:right' : ''}">${esc(story)}</p>`;
+};
+
+export function buildEmail({ venue, figures: f, csvName, narrative }) {
+  const name = oneLine(venue.name), label = dayLabel(f.day);
+  const subject = `${name}: ${label}, on Aalayna`;
+  const rows = closeRows(f), actions = closeActions(f), story = storyText(narrative);
   const textParts = [
     ...(story ? [story, ''] : []),
     `${name}, ${label}, 04:00 to 04:00 Beirut time.`,
     'Amounts are USD and include tips.', '',
-    ...rows.map((r) => (r[0] + ':').padEnd(width) + r[1]), '',
+    ...padRows(rows), '',
     'Needs action', ...(actions.length ? actions.map((a) => '- ' + a) : ['- Nothing.']), '',
-    'Top dishes (quantity on closed bills)', ...(f.topDishes.length ? f.topDishes.map((d, i) => `${i + 1}. ${oneLine(d.name)}, ${d.qty}`) : ['- No closed bills with items.']), '',
+    'Top dishes (quantity on closed bills)', ...textDishes(f.topDishes), '',
     `Attached: ${csvName}, one row per payment record of the day.`
   ];
-
-  const td = 'padding:4px 12px 4px 0;vertical-align:top';
-  const htmlRows = rows.map((r) => `<tr><td style="${td};color:#555">${esc(r[0]).replace(/ /g, '&nbsp;')}</td><td style="${td}">${esc(r[1])}</td></tr>`).join('');
-  const storyLang = narrative && (narrative.lang === 'fr' || narrative.lang === 'ar') ? narrative.lang : 'en';
   const html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;max-width:560px">'
-    + (story ? `<p dir="${storyLang === 'ar' ? 'rtl' : 'ltr'}" lang="${storyLang}" style="margin:0 0 16px;line-height:1.5${storyLang === 'ar' ? ';text-align:right' : ''}">${esc(story)}</p>` : '')
+    + storyHtml(narrative)
     + `<p style="margin:0 0 4px"><strong>${esc(name)}</strong>, ${esc(label)}</p>`
     + '<p style="margin:0 0 12px;color:#555">04:00 to 04:00 Beirut time. Amounts are USD and include tips.</p>'
-    + `<table style="border-collapse:collapse">${htmlRows}</table>`
+    + htmlTable(rows)
     + '<h3 style="margin:20px 0 6px;font-size:15px">Needs action</h3>'
-    + (actions.length ? '<ul style="margin:0;padding-left:18px">' + actions.map((a) => `<li>${esc(a)}</li>`).join('') + '</ul>' : '<p style="margin:0">Nothing.</p>')
+    + htmlActions(actions)
     + '<h3 style="margin:20px 0 6px;font-size:15px">Top dishes (quantity on closed bills)</h3>'
-    + (f.topDishes.length ? '<ol style="margin:0;padding-left:22px">' + f.topDishes.map((d) => `<li>${esc(d.name)}, ${d.qty}</li>`).join('') + '</ol>' : '<p style="margin:0">No closed bills with items.</p>')
+    + htmlDishes(f.topDishes)
     + `<p style="margin:20px 0 0;color:#555">Attached: ${esc(csvName)}, one row per payment record of the day.</p></div>`;
   return { subject, text: textParts.join('\n'), html };
+}
+
+/* ------------------------------------------------------------- groups */
+
+export const venueLabel = (v) => oneLine(v.name || v.restaurant_id) + (v.place ? ' · ' + oneLine(v.place) : '');
+const addCount = (into, from) => { for (const k of Object.keys(from)) { const r = into[k] || (into[k] = { count: 0, usdCents: 0 }); r.count += from[k].count; r.usdCents += from[k].usdCents; } return into; };
+const addCents = (into, from) => { for (const k of Object.keys(from)) into[k] = (into[k] || 0) + from[k]; return into; };
+/* A group's figures: every count and amount is the sum of its venues'. The lira line is left out
+   (each venue has its own rate; its section shows it), the average rating is worked out from the
+   summed ratings, and the top dishes from every dish of every venue, by name. */
+export function sumCloses(day, list) {
+  const sum = (f) => list.reduce((n, x) => n + f(x), 0);
+  const dishes = new Map();
+  for (const f of list) for (const d of f.dishes || f.topDishes) { const cur = dishes.get(d.name) || { name: d.name, qty: 0 }; cur.qty += d.qty; dishes.set(d.name, cur); }
+  const ranked = [...dishes.values()].sort((a, b) => b.qty - a.qty || a.name.localeCompare(b.name));
+  const ratingCount = sum((f) => f.ratings.count), ratingTotal = sum((f) => f.ratingTotal || 0);
+  return {
+    day, rate: null,
+    bills: { opened: sum((f) => f.bills.opened), closed: sum((f) => f.bills.closed), stillOpen: sum((f) => f.bills.stillOpen), stillOpenTables: [] },
+    cash: { count: sum((f) => f.cash.count), usdCents: sum((f) => f.cash.usdCents), lbp: null },
+    till: { count: sum((f) => f.till.count), usdCents: sum((f) => f.till.usdCents), methods: list.reduce((m, f) => addCount(m, f.till.methods), {}) },
+    digital: { count: sum((f) => f.digital.count), usdCents: sum((f) => f.digital.usdCents), rails: list.reduce((m, f) => addCount(m, f.digital.rails), {}) },
+    tips: { usdCents: sum((f) => f.tips.usdCents), byRail: list.reduce((m, f) => addCents(m, f.tips.byRail), {}) },
+    pendingCash: { count: sum((f) => f.pendingCash.count), usdCents: sum((f) => f.pendingCash.usdCents), tables: [], older: sum((f) => f.pendingCash.older), oldest: null },
+    cancelledOrExpired: sum((f) => f.cancelledOrExpired),
+    failed: sum((f) => f.failed),
+    refunds: { count: sum((f) => f.refunds.count), usdCents: sum((f) => f.refunds.usdCents) },
+    receipts: { requested: sum((f) => f.receipts.requested), marketingOptIns: sum((f) => f.receipts.marketingOptIns) },
+    ratings: { count: ratingCount, average: ratingCount ? Math.round(ratingTotal / ratingCount * 10) / 10 : null },
+    ratingTotal,
+    dishes: ranked,
+    topDishes: ranked.slice(0, 5),
+    unconverted: sum((f) => f.unconverted),
+    csvRows: list.reduce((all, f) => all.concat(f.csvRows), [])
+  };
+}
+export const GROUP_CSV_HEADER = ['venue', ...CSV_HEADER];
+/* One CSV for the group: each venue's rows exactly as its own CSV has them, with the venue in front. */
+export function buildGroupCsv(sections) {
+  const lines = [GROUP_CSV_HEADER.join(',')];
+  for (const { venue, figures } of sections) {
+    const label = csvText(venueLabel(venue));
+    for (const row of buildCsv(figures.csvRows).split('\r\n').slice(1)) if (row) lines.push(label + ',' + row);
+  }
+  return lines.join('\r\n') + '\r\n';
+}
+export function buildGroupEmail({ group, sections, csvName }) {
+  const name = oneLine(group.name), day = sections[0].figures.day, label = dayLabel(day);
+  const total = sumCloses(day, sections.map((x) => x.figures));
+  const subject = `${name}: ${label}, on Aalayna`;
+  const open = sections.filter((x) => x.figures.bills.stillOpen).map((x) => venueLabel(x.venue) + ' ' + tablesText(x.figures.bills.stillOpenTables));
+  const rows = closeRows(total, open.join('; '));
+  const actions = [];
+  for (const x of sections) for (const a of closeActions(x.figures)) actions.push(venueLabel(x.venue) + ': ' + a);
+  const names = sections.map((x) => venueLabel(x.venue));
+  const textParts = [
+    `${name}, ${label}, 04:00 to 04:00 Beirut time.`,
+    `${plural(sections.length, 'venue')}: ${names.join(', ')}.`,
+    'Amounts are USD and include tips.', '',
+    'All venues', ...padRows(rows), '',
+    'Needs action', ...(actions.length ? actions.map((a) => '- ' + a) : ['- Nothing.']), '',
+    'Top dishes across the venues (quantity on closed bills)', ...textDishes(total.topDishes)
+  ];
+  let html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;max-width:560px">'
+    + `<p style="margin:0 0 4px"><strong>${esc(name)}</strong>, ${esc(label)}</p>`
+    + `<p style="margin:0 0 12px;color:#555">04:00 to 04:00 Beirut time. ${esc(plural(sections.length, 'venue'))}: ${esc(names.join(', '))}. Amounts are USD and include tips.</p>`
+    + '<h2 style="margin:16px 0 6px;font-size:16px">All venues</h2>' + htmlTable(rows)
+    + '<h3 style="margin:20px 0 6px;font-size:15px">Needs action</h3>' + htmlActions(actions)
+    + '<h3 style="margin:20px 0 6px;font-size:15px">Top dishes across the venues (quantity on closed bills)</h3>' + htmlDishes(total.topDishes);
+  for (const x of sections) {
+    const vrows = closeRows(x.figures), vact = closeActions(x.figures), vname = venueLabel(x.venue), vstory = storyText(x.narrative);
+    // each venue's section opens with that venue's narrative (T4), as its own close would
+    textParts.push('', vname, ...(vstory ? [vstory, ''] : []), ...padRows(vrows), 'Needs action: ' + (vact.length ? vact.join(' ') : 'nothing.'),
+      'Top dishes: ' + (x.figures.topDishes.length ? x.figures.topDishes.map((d) => `${oneLine(d.name)} ${d.qty}`).join(', ') : 'no closed bills with items') + '.');
+    html += `<h2 style="margin:28px 0 6px;font-size:16px;border-top:1px solid #ddd;padding-top:16px">${esc(vname)}</h2>` + storyHtml(x.narrative, '0 0 12px') + htmlTable(vrows)
+      + '<h3 style="margin:16px 0 6px;font-size:15px">Needs action</h3>' + htmlActions(vact)
+      + '<h3 style="margin:16px 0 6px;font-size:15px">Top dishes</h3>' + htmlDishes(x.figures.topDishes);
+  }
+  textParts.push('', `Attached: ${csvName}, one row per payment record of the day at every venue, with its venue.`);
+  html += `<p style="margin:20px 0 0;color:#555">Attached: ${esc(csvName)}, one row per payment record of the day at every venue, with its venue.</p></div>`;
+  return { subject, text: textParts.join('\n'), html, total };
 }
 
 /* ------------------------------------------------------------- handler */
@@ -519,83 +628,133 @@ export function createHandler(deps) {
     try { const n = await deps.narrate(narrativeInput({ venue, window: w, data })); return n && n.text ? n : null; } catch (_) { return null; }
   }
 
-  async function recipientsOf(rid) {
-    const staff = await all(`staff_members?select=email,role,revoked_at&restaurant_id=eq.${enc(rid)}&role=in.(owner,manager)&revoked_at=is.null&order=email.asc`);
+  const cleanEmails = (rows) => {
     const seen = new Set(), out = [];
-    for (const m of staff) {
+    for (const m of rows) {
       const email = String(m.email || '').trim().toLowerCase();
       if (m.revoked_at || (m.role !== 'owner' && m.role !== 'manager') || !EMAIL_RE.test(email) || seen.has(email)) continue;
       seen.add(email); out.push(email);
     }
     return out;
+  };
+  async function recipientsOf(rid, skip) {
+    const staff = await all(`staff_members?select=email,role,revoked_at&restaurant_id=eq.${enc(rid)}&role=in.(owner,manager)&revoked_at=is.null&order=email.asc`);
+    return cleanEmails(staff).filter((e) => !(skip && skip.has(e)));
   }
 
-  const logPath = (rid, day) => `daily_close_log?restaurant_id=eq.${enc(rid)}&day=eq.${day}`;
-  async function readLog(rid, day) {
-    const r = await call(`${logPath(rid, day)}&select=*`);
+  /* Owner groups, read once per call. Without the groups migration the tables are missing: PostgREST
+     answers 404 (PGRST205) or the relation does not exist, and the close carries on with venues only. */
+  const MISSING = /database 404|PGRST205|PGRST200|42P01|does not exist|Could not find the table/i;
+  async function loadGroups() {
+    try {
+      const [groups, links, staff] = await Promise.all([
+        all('owner_groups?select=id,name&order=id.asc'),
+        all('owner_group_venues?select=group_id,restaurant_id&order=restaurant_id.asc'),
+        all('owner_group_staff?select=group_id,email,role,revoked_at&role=in.(owner,manager)&revoked_at=is.null&order=email.asc')
+      ]);
+      const byId = new Map(groups.map((g) => [g.id, { id: g.id, name: g.name, venues: [], staff: [] }]));
+      for (const l of links) if (byId.has(l.group_id)) byId.get(l.group_id).venues.push(l.restaurant_id);
+      for (const m of staff) if (byId.has(m.group_id)) byId.get(m.group_id).staff.push(m);
+      const list = [...byId.values()].map((g) => Object.assign(g, { recipients: cleanEmails(g.staff) }));
+      const ofVenue = new Map();
+      for (const g of list) for (const rid of g.venues) ofVenue.set(rid, g);
+      return { installed: true, list, ofVenue };
+    } catch (e) {
+      if (MISSING.test(String(e && e.message || e))) return { installed: false, list: [], ofVenue: new Map() };
+      throw e;
+    }
+  }
+
+  const logs = {
+    venue: { table: 'daily_close_log', col: 'restaurant_id', key: 'restaurantId' },
+    group: { table: 'daily_close_group_log', col: 'group_id', key: 'groupId' }
+  };
+  const logPath = (kind, id, day) => `${logs[kind].table}?${logs[kind].col}=eq.${enc(id)}&day=eq.${day}`;
+  async function readLog(kind, id, day) {
+    const r = await call(`${logPath(kind, id, day)}&select=*`);
     return r && r[0] ? r[0] : null;
   }
-  const writeLog = (rid, day, patch) => call(logPath(rid, day), { method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(patch) });
+  const writeLog = (kind, id, day, patch) => call(logPath(kind, id, day), { method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(patch) });
 
-  async function closeVenue(venue, w, { force }) {
-    const rid = venue.restaurant_id, day = w.day, at = clock();
-    let existing = await readLog(rid, day);
+  /* One close, a venue's or a group's: the claim on the log, then prepare() (recipients, figures and the
+     email, or a reason to skip), then one message per recipient, then the log. */
+  async function closeOne(kind, id, name, w, { force }, prepare) {
+    const day = w.day, at = clock(), L = logs[kind], who = { [L.key]: id, name };
+    let existing = await readLog(kind, id, day);
     if (existing && !force) {
-      if (existing.status === 'sent') return { restaurantId: rid, name: venue.name, status: 'already sent' };
-      if (existing.error === IN_PROGRESS && at - Date.parse(existing.created_at) < IN_PROGRESS_MS) return { restaurantId: rid, name: venue.name, status: 'in progress' };
+      if (existing.status === 'sent') return Object.assign(who, { status: 'already sent' });
+      if (existing.error === IN_PROGRESS && at - Date.parse(existing.created_at) < IN_PROGRESS_MS) return Object.assign(who, { status: 'in progress' });
     }
     const nowIso = new Date(at).toISOString();
     if (!existing) {
       // Claim the day before sending, so two calls at once cannot both send.
-      const claimed = await call('daily_close_log?on_conflict=restaurant_id,day', {
+      const claimed = await call(`${L.table}?on_conflict=${L.col},day`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Prefer: 'resolution=ignore-duplicates,return=representation' },
-        body: JSON.stringify([{ restaurant_id: rid, day, recipients: 0, status: 'failed', error: IN_PROGRESS, created_at: nowIso }])
+        body: JSON.stringify([{ [L.col]: id, day, recipients: 0, status: 'failed', error: IN_PROGRESS, created_at: nowIso }])
       });
-      if (!claimed || !claimed.length) return { restaurantId: rid, name: venue.name, status: 'in progress' };
+      if (!claimed || !claimed.length) return Object.assign(who, { status: 'in progress' });
     } else if (existing.status !== 'sent') {
-      await writeLog(rid, day, { status: 'failed', error: IN_PROGRESS, recipients: 0, provider_id: null, created_at: nowIso });
+      await writeLog(kind, id, day, { status: 'failed', error: IN_PROGRESS, recipients: 0, provider_id: null, created_at: nowIso });
     }
     const prior = existing && existing.status === 'sent';       // a forced rerun keeps the record of the send that worked
-    const finish = async (patch) => { if (prior && patch.status !== 'sent') patch = { error: 'rerun failed: ' + (patch.error || patch.status) }; await writeLog(rid, day, patch); return patch; };
+    const finish = async (patch) => { if (prior && patch.status !== 'sent') patch = { error: 'rerun failed: ' + (patch.error || patch.status) }; await writeLog(kind, id, day, patch); return patch; };
 
     try {
-      const recipients = await recipientsOf(rid);
-      if (!recipients.length) {
-        await finish({ status: 'skipped', recipients: 0, provider_id: null, error: 'no active owner or manager email' });
-        return { restaurantId: rid, name: venue.name, status: 'skipped', reason: 'no active owner or manager email' };
+      const job = await prepare();
+      if (job.skip) {
+        await finish({ status: 'skipped', recipients: 0, provider_id: null, error: job.skip });
+        return Object.assign(who, { status: 'skipped', reason: job.skip });
       }
-      const data = await loadVenue(venue, w, deps.narrate ? windowFor(addDays(day, -7 * COMPARE_WEEKS)).start : w.start);
-      const figures = computeClose({ window: w, ...data });
-      // A window with no bill opened or closed and no payment record is not worth an email; force sends it anyway.
-      if (!force && !figures.bills.opened && !figures.bills.closed && !figures.csvRows.length) {
-        await finish({ status: 'skipped', recipients: 0, provider_id: null, error: 'no activity' });
-        return { restaurantId: rid, name: venue.name, status: 'skipped', reason: 'no activity' };
-      }
-      const csvName = `close-${slugOf(venue.slug)}-${day}.csv`;
-      const narrative = await narrativeFor(venue, w, data);
-      const mail = buildEmail({ venue, figures, csvName, narrative });
-      const attachments = [{ filename: csvName, content: toBase64(buildCsv(figures.csvRows)) }];
       const from = env('DAILY_CLOSE_FROM');
       const ids = [], failures = [];
-      for (const to of recipients) {
+      for (const to of job.recipients) {
         try {
-          const r = await send(Object.assign({ to, subject: mail.subject, text: mail.text, html: mail.html, attachments }, from ? { from } : {}));
+          const r = await send(Object.assign({ to, subject: job.mail.subject, text: job.mail.text, html: job.mail.html, attachments: job.attachments }, from ? { from } : {}));
           ids.push(r && r.id ? String(r.id) : '');
         } catch (e) { failures.push(String(e && e.message || e).slice(0, 200)); }
       }
       if (!ids.length) {
-        const error = `send failed for all ${recipients.length}: ${failures[0]}`;
+        const error = `send failed for all ${job.recipients.length}: ${failures[0]}`;
         await finish({ status: 'failed', recipients: 0, provider_id: null, error });
-        return { restaurantId: rid, name: venue.name, status: 'failed', reason: error };
+        return Object.assign(who, { status: 'failed', reason: error });
       }
-      const error = failures.length ? `${failures.length} of ${recipients.length} sends failed: ${failures[0]}` : null;
+      const error = failures.length ? `${failures.length} of ${job.recipients.length} sends failed: ${failures[0]}` : null;
       await finish({ status: 'sent', recipients: ids.length, provider_id: ids.filter(Boolean).join(',') || null, error, created_at: new Date(clock()).toISOString() });
-      return { restaurantId: rid, name: venue.name, status: 'sent', recipients: ids.length, ...(error ? { warning: error } : {}) };
+      return Object.assign(who, { status: 'sent', recipients: ids.length }, error ? { warning: error } : {});
     } catch (e) {
       const error = String(e && e.message || e).slice(0, 500);
       try { await finish({ status: 'failed', recipients: 0, provider_id: null, error }); } catch (_) { /* the log itself is down; the response still says failed */ }
-      return { restaurantId: rid, name: venue.name, status: 'failed', reason: error };
+      return Object.assign(who, { status: 'failed', reason: error });
     }
+  }
+
+  const quiet = (f) => !f.bills.opened && !f.bills.closed && !f.csvRows.length;
+  function closeVenue(venue, w, opts, ctx) {
+    const rid = venue.restaurant_id, g = ctx.groups.ofVenue.get(rid);
+    return closeOne('venue', rid, venue.name, w, opts, async () => {
+      // the group's owners and managers have the group email; the venue's own close goes to the others
+      const recipients = await recipientsOf(rid, g ? new Set(g.recipients) : null);
+      if (!recipients.length) return { skip: 'no active owner or manager email' };
+      const figures = await ctx.figures(venue);
+      // A window with no bill opened or closed and no payment record is not worth an email; force sends it anyway.
+      if (!opts.force && quiet(figures)) return { skip: 'no activity' };
+      const csvName = `close-${slugOf(venue.slug)}-${w.day}.csv`;
+      const narrative = await ctx.narrative(venue);
+      return { recipients, mail: buildEmail({ venue, figures, csvName, narrative }), attachments: [{ filename: csvName, content: toBase64(buildCsv(figures.csvRows)) }] };
+    });
+  }
+  function closeGroup(group, w, opts, ctx) {
+    return closeOne('group', group.id, group.name, w, opts, async () => {
+      if (!group.recipients.length) return { skip: 'no active group owner or manager email' };
+      const venues = group.venues.map((rid) => ctx.venueById.get(rid) || { restaurant_id: rid, name: rid, place: '', slug: '' });
+      if (!venues.length) return { skip: 'no venues in the group' };
+      const sections = [];
+      for (const venue of venues) sections.push({ venue, figures: await ctx.figures(venue) });
+      if (!opts.force && sections.every((x) => quiet(x.figures))) return { skip: 'no activity' };
+      for (const x of sections) x.narrative = await ctx.narrative(x.venue);   // T4: each venue's paragraph, read once per call
+      const csvName = `close-${slugOf(group.name)}-${w.day}.csv`;
+      return { recipients: group.recipients, mail: buildGroupEmail({ group, sections, csvName }), attachments: [{ filename: csvName, content: toBase64(buildGroupCsv(sections)) }] };
+    });
   }
 
   return async function handle(req) {
@@ -604,10 +763,11 @@ export function createHandler(deps) {
     if (req.method !== 'GET' && req.method !== 'POST') return json(405, { error: 'method not allowed' });
 
     const url = new URL(req.url), venueParam = url.searchParams.get('venue'), dateParam = url.searchParams.get('date');
+    const groupParam = url.searchParams.get('group');
     const force = ['1', 'true'].includes(url.searchParams.get('force') || '');
     const at = clock();
     let day;
-    if (venueParam == null && dateParam == null) {
+    if (venueParam == null && dateParam == null && groupParam == null) {
       day = cronDecision(at).day;                                 // the pg_cron call
     } else if (dateParam != null) {
       if (!parseDay(dateParam)) return json(400, { error: 'date must be YYYY-MM-DD' });
@@ -618,16 +778,40 @@ export function createHandler(deps) {
     const w = windowFor(day);
     if (w.end > at) return json(400, { error: `${day} has not ended yet (its window closes at ${new Date(w.end).toISOString()})` });
 
-    let venues;
+    let venues, groups;
     try {
       venues = await all(`venue_profiles?select=*${venueParam != null ? `&restaurant_id=eq.${enc(venueParam)}` : ''}&order=restaurant_id.asc`);
     } catch (e) { return json(500, { error: 'could not read venues: ' + String(e && e.message || e).slice(0, 200) }); }
     if (venueParam != null && !venues.length) return json(404, { error: 'unknown venue' });
+    try { groups = await loadGroups(); } catch (e) { return json(500, { error: 'could not read owner groups: ' + String(e && e.message || e).slice(0, 200) }); }
+    let groupList = venueParam != null ? [] : groups.list.filter((g) => g.venues.length);
+    if (groupParam != null) {
+      groupList = groups.list.filter((g) => g.id === groupParam);
+      if (!groupList.length) return json(404, { error: 'unknown group' });
+      venues = [];                                                // ?group= closes the group only
+    }
+    let venueById = new Map(venues.map((v) => [v.restaurant_id, v]));
+    if (groupList.length && (venueParam != null || groupParam != null)) {
+      const allVenues = await all('venue_profiles?select=*&order=restaurant_id.asc');
+      venueById = new Map(allVenues.map((v) => [v.restaurant_id, v]));
+    }
+    /* A venue's rows are read once per call, for its own close and its group's: the figures, and the
+       narrative (T4) when a narrator is given, from the same load (28 days back for the comparable days). */
+    const since = deps.narrate ? windowFor(addDays(day, -7 * COMPARE_WEEKS)).start : w.start;
+    const memo = new Map(), stories = new Map();
+    const loaded = (v) => { if (!memo.has(v.restaurant_id)) memo.set(v.restaurant_id, loadVenue(v, w, since).then((data) => ({ data, figures: computeClose({ window: w, ...data }) }))); return memo.get(v.restaurant_id); };
+    const ctx = {
+      groups, venueById,
+      figures: (v) => loaded(v).then((x) => x.figures),
+      narrative: (v) => { if (!stories.has(v.restaurant_id)) stories.set(v.restaurant_id, loaded(v).then((x) => narrativeFor(v, w, x.data))); return stories.get(v.restaurant_id); }
+    };
 
-    const results = [];
-    for (const v of venues) results.push(await closeVenue(v, w, { force }));
-    const failed = results.some((r) => r.status === 'failed');
-    const allDone = results.length > 0 && results.every((r) => r.status === 'already sent');
-    return json(failed ? 500 : 200, { ok: !failed, day, window: { start: new Date(w.start).toISOString(), end: new Date(w.end).toISOString() }, ...(allDone ? { message: 'already sent' } : {}), results });
+    const results = [], groupResults = [];
+    for (const v of venues) results.push(await closeVenue(v, w, { force }, ctx));
+    for (const g of groupList) groupResults.push(await closeGroup(g, w, { force }, ctx));
+    const every = results.concat(groupResults);
+    const failed = every.some((r) => r.status === 'failed');
+    const allDone = every.length > 0 && every.every((r) => r.status === 'already sent');
+    return json(failed ? 500 : 200, { ok: !failed, day, window: { start: new Date(w.start).toISOString(), end: new Date(w.end).toISOString() }, ...(allDone ? { message: 'already sent' } : {}), results, groups: groupResults });
   };
 }
