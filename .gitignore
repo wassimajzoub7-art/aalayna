@@ -69,6 +69,8 @@ tools/pos-printer/config.json
 tools/pos-printer/state/
 tools/pos-printer/out/
 tools/pos-printer/review/
+tools/pos-printer/captures/
+tools/pos-printer/captures-in/
 # never shipped: onboarding/<slug>.json holds the owner key, the card sheet the table codes
 onboarding/
 # marketing screenshots and the share image (W3a)

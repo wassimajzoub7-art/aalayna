@@ -1,0 +1,46 @@
+{
+  "_readme": "Copy to config.json (never committed) and edit. Relative paths are relative to this file. Keys are read from the environment variables named by integrationKeyEnv, never from this file. Start with dryRun true; see docs/pos-integration.md, 'The printer-stream path'.",
+  "endpoint": "https://xeqbkamwucqplvoavhyd.supabase.co/functions/v1/pos-bill",
+  "dryRun": true,
+  "stateDir": "state",
+  "outDir": "out",
+  "reviewDir": "review",
+  "captureDir": "captures",
+  "timeoutMs": 10000,
+  "maxAttempts": 6,
+  "retryEveryMs": 60000,
+  "windowHours": 14,
+  "venues": {
+    "mayda-hamra": {
+      "integrationKeyEnv": "AALAYNA_POS_KEY_MAYDA_HAMRA",
+      "system": "foodics",
+      "currency": "USD",
+      "checkPrefix": "",
+      "tables": { "T1": 1, "T2": 2, "B1": 101, "B2": 102 },
+      "numericTables": true,
+      "minConfidence": 0.8,
+      "sendTenders": false
+    }
+  },
+  "printers": [
+    {
+      "name": "front-till",
+      "venue": "mayda-hamra",
+      "profile": "foodics",
+      "source": { "tcp": { "host": "0.0.0.0", "port": 9100 } },
+      "forward": { "host": "192.168.1.50", "port": 9100 }
+    },
+    {
+      "name": "terrace",
+      "venue": "mayda-hamra",
+      "profile": "generic",
+      "source": { "serial": { "path": "/dev/ttyUSB0", "idleMs": 1500 } }
+    },
+    {
+      "name": "office-pc",
+      "venue": "mayda-hamra",
+      "profile": "omega",
+      "source": { "folder": { "path": "captures-in", "pollMs": 1000, "moveProcessed": true } }
+    }
+  ]
+}

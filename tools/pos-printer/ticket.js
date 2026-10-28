@@ -412,7 +412,8 @@ function finish(result, venue) {
     const tables = venue.tables || {};
     const label = result.check.table;
     let n = null;
-    if (label && Object.prototype.hasOwnProperty.call(tables, label)) n = tables[label];
+    const mapped = label ? Object.keys(tables).find((k) => k.trim().toUpperCase() === label) : undefined;
+    if (mapped !== undefined) n = tables[mapped];
     else if (label && /^\d{1,4}$/.test(label) && venue.numericTables !== false) n = Number(label);
     if (label && !(Number.isInteger(n) && n >= 1 && n <= 9999)) result.issues.push({ row: null, text: label, reason: 'table "' + label + '" is not in the venue\'s table mapping', blocking: true, penalty: 0 });
     result.check.tableNumber = Number.isInteger(n) ? n : null;
