@@ -61,7 +61,7 @@ export function buildRequest({ narrative, input, model }) {
 export function rejectRewrite(original, rewrite, lang) {
   const t = String(rewrite || '').trim();
   if (!t) return 'empty answer';
-  if (/[—]/.test(t)) return 'em dash';
+  if (/[\u2014]/.test(t)) return 'em dash';
   if (/https?:\/\/|www\.|@/i.test(t)) return 'link or address';
   if (/^\s*([-*#]|\d+\.)\s/m.test(t) || /\n\s*\n/.test(t)) return 'not plain prose';
   const ratio = t.length / Math.max(1, original.length);
