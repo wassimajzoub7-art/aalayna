@@ -347,6 +347,7 @@ class StreamParser {
       case 0x2A: { // ESC * m nL nH d: bit image
         if (!this.need(b, i, 5)) return -1;
         const m = b[i + 2], n = b[i + 3] + b[i + 4] * 256;
+        if (![0, 1, 32, 33].includes(m)) { this.warn('bad_command', { command: 'ESC *' }); return 1; }
         const len = (m === 32 || m === 33) ? 3 * n : n;
         const r = this.skip(b, i, 5, len, 'ESC *');
         if (r > 1) this.event('image', { command: 'ESC *', bytes: len });
@@ -410,6 +411,12 @@ class StreamParser {
       case 0x28: { // GS ( fn pL pH data: 2D codes (k), graphics (L), others
         if (!this.need(b, i, 5)) return -1;
         const fn = b[i + 2], len = b[i + 3] + b[i + 4] * 256;
+        if (fn === 0x6B) {
+          // a 2D-code function names its symbol (cn 48 to 53) and function (65 to 90); anything
+          // else is not one, and its "length" must not swallow the ticket
+          if (!this.need(b, i, 7)) return -1;
+          if (len < 2 || b[i + 5] < 48 || b[i + 5] > 53 || b[i + 6] < 65 || b[i + 6] > 90) { this.warn('bad_command', { command: 'GS ( k' }); return 1; }
+        }
         const r = this.skip(b, i, 5, len, 'GS (');
         if (r <= 1) return r;
         if (fn === 0x6B && len >= 3) {
@@ -430,6 +437,7 @@ class StreamParser {
       }
       case 0x76: { // GS v 0 m xL xH yL yH d: raster image
         if (!this.need(b, i, 8)) return -1;
+        if (b[i + 2] !== 0x30 || ![0, 1, 2, 3, 48, 49, 50, 51].includes(b[i + 3])) { this.warn('bad_command', { command: 'GS v' }); return 1; }
         const len = (b[i + 4] + b[i + 5] * 256) * (b[i + 6] + b[i + 7] * 256);
         const r = this.skip(b, i, 8, len, 'GS v 0');
         if (r > 1) this.event('image', { command: 'GS v 0', bytes: len, widthBytes: b[i + 4] + b[i + 5] * 256, heightDots: b[i + 6] + b[i + 7] * 256 });
