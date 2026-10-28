@@ -5,12 +5,13 @@
 import { createHandler } from './handler.js';
 import { rest } from '../_shared/supabase.js';
 import { send } from '../_shared/resend.js';
-import { closeNarrative } from '../_shared/close-narrative.js';
+import { createNarrator } from '../_shared/close-narrative-model.js';
 
+const env = (name: string) => Deno.env.get(name);
 Deno.serve(createHandler({
   rest,
   send,
   now: () => Date.now(),
-  env: (name: string) => Deno.env.get(name),
-  narrate: async (input: any) => closeNarrative(input),
+  env,
+  narrate: createNarrator({ env, log: (m: string) => console.warn(m) }),
 }));

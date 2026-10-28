@@ -164,6 +164,17 @@ fails, without the narrative.
 Mayda activity; `--fixture rows.json --date YYYY-MM-DD` from rows in the shape of the tables.
 Nothing is sent.
 
+**Optional: a model rewrite (off by default).** With the function secret
+`CLOSE_NARRATIVE_MODEL_KEY` (an Anthropic API key) set, the rules' narrative and the day's figures
+(no venue name, dishes or contacts) go to the Claude API (`claude-sonnet-5-5`; another model with
+`CLOSE_NARRATIVE_MODEL`) to be reworded more naturally in the venue's language, under strict
+instructions: keep every number, add nothing, same length. The rewrite is used only if its numbers
+are exactly the rules' numbers (checked numerically, Arabic-Indic digits included) and it passes
+the other checks in `docs/close-narrative.md`; on any error, refusal, timeout (20 s) or doubt the
+rules' text goes out, and the function log says why. Unset the secret to turn it off. Cost: one
+short request per venue per day. `node tools/close-preview.js --demo good --model` tries it locally
+with the key in the environment.
+
 ## Payment callbacks and receipt emails (September 30)
 
 Two Edge Functions and `payments-2026-09-30.sql` (run it after `auth-2026-09-24.sql`; it
