@@ -59,7 +59,7 @@
       });
       return {netCents:net,tipCents:tips,grossCents:net+tips,rails:rails,paymentCount:payments.length,
         bills:billIds.size,identifiedBills:identified.size,captureRate:ratio(identified.size,billIds.size),
-        completedBills:completed.length,averageBillCents:completed.length?Math.round(completed.reduce(function(n,c){return n+c.totalCents;},0)/completed.length):null,
+        completedBills:completed.length,completedTotalCents:completed.reduce(function(n,c){return n+c.totalCents;},0),averageBillCents:completed.length?Math.round(completed.reduce(function(n,c){return n+c.totalCents;},0)/completed.length):null,
         receiptContacts:contacts,marketingContacts:optedIn,optInRate:ratio(optedIn,contacts),withdrawals:withdrawals,
         cohort:cohort,eligibleReturners:eligible,returners:returners,returnRate:ratio(returners,eligible)};
     }
@@ -187,6 +187,63 @@
     return report;
   };
   A.healthReports=function(){ return A.util.read('aal.health_reports',[]); };
+  /* ---- owner groups (T2): one floor for several venues ----
+     A group figure is the sum of its venues' figures, each computed exactly as that venue's own
+     dashboard computes it (A.ownerReport under util.withVenue), so a venue's numbers never change
+     because it belongs to a group. Rates are recomputed from the summed counts, never averaged.
+     venues: [{name, place, ...}] (default A.groupVenues(), the demo group of owner-group.js). */
+  var SUMMED=['netCents','tipCents','grossCents','paymentCount','bills','identifiedBills','completedBills','completedTotalCents',
+    'receiptContacts','marketingContacts','withdrawals','eligibleReturners','returners'];
+  function sumSummaries(list){
+    var out={rails:{cash:0,card:0,whish:0,pos:0}};
+    SUMMED.forEach(function(k){out[k]=list.reduce(function(n,m){return n+(m[k]||0);},0);});
+    list.forEach(function(m){Object.keys(m.rails||{}).forEach(function(r){out.rails[r]=(out.rails[r]||0)+(m.rails[r]||0);});});
+    out.captureRate=ratio(out.identifiedBills,out.bills);out.optInRate=ratio(out.marketingContacts,out.receiptContacts);
+    out.returnRate=ratio(out.returners,out.eligibleReturners);
+    out.averageBillCents=out.completedBills?Math.round(out.completedTotalCents/out.completedBills):null;
+    out.cohort=list.length?list[0].cohort:null;
+    return out;
+  }
+  A.sumOwnerSummaries=sumSummaries;
+  function groupVenues(venues){ return venues||(A.groupVenues?A.groupVenues():[A.venue()]); }
+  A.groupReport=function(range,at,venues){
+    at=at==null?Date.now():at;
+    var w=A.ownerWindow(range,at),per=groupVenues(venues).map(function(v){
+      return {venue:v,venueId:A.util.venueKey(v),report:A.util.withVenue(v,function(){return A.ownerReport(range,at);})};
+    });
+    return {window:w,previousWindow:{start:w.start-(w.end-w.start),end:w.start},venues:per,
+      current:sumSummaries(per.map(function(p){return p.report.current;})),previous:sumSummaries(per.map(function(p){return p.report.previous;}))};
+  };
+  /* The Live floor of every venue: the live queue (cash awaiting collection, open bills) and what
+     was collected in the period, per venue and for the group. Per venue these are the figures the
+     venue's own Live floor shows (live-cash, live-open, live-paid). */
+  A.groupLive=function(range,at,venues){
+    var report=A.groupReport(range,at,venues);
+    var per=report.venues.map(function(p){
+      return A.util.withVenue(p.venue,function(){
+        var pending=A.pendingCash();
+        return {venue:p.venue,venueId:p.venueId,pendingCashCents:pending.reduce(function(n,x){return n+cents(x.amount);},0),pendingCount:pending.length,
+          openBills:A.serviceChecks().filter(function(c){return !c.closedAt;}).length,collectedCents:p.report.current.grossCents,netCents:p.report.current.netCents,
+          completedBills:p.report.current.completedBills};
+      });
+    });
+    function total(k){return per.reduce(function(n,v){return n+v[k];},0);}
+    return {window:report.window,venues:per,report:report,
+      total:{pendingCashCents:total('pendingCashCents'),pendingCount:total('pendingCount'),openBills:total('openBills'),collectedCents:total('collectedCents'),netCents:total('netCents'),completedBills:total('completedBills')}};
+  };
+  /* Recorded ratings per venue in the period (review_submitted events): count, total, 3 or lower. */
+  A.groupRatings=function(range,at,venues){
+    at=at==null?Date.now():at;
+    var w=A.ownerWindow(range,at),per=groupVenues(venues).map(function(v){
+      return A.util.withVenue(v,function(){
+        var rated=A.events().filter(function(e){return e.eventType==='review_submitted'&&within(Date.parse(e.createdAt),w)&&Number.isFinite(Number(e.payload.rating));});
+        var sum=rated.reduce(function(n,e){return n+Number(e.payload.rating);},0);
+        return {venue:v,venueId:A.util.venueKey(v),count:rated.length,sum:sum,low:rated.filter(function(e){return Number(e.payload.rating)<=3;}).length,average:rated.length?sum/rated.length:null};
+      });
+    });
+    var count=per.reduce(function(n,p){return n+p.count;},0),sum=per.reduce(function(n,p){return n+p.sum;},0);
+    return {window:w,venues:per,total:{count:count,sum:sum,low:per.reduce(function(n,p){return n+p.low;},0),average:count?sum/count:null}};
+  };
   A.ownerPaymentHistory=function(range,at){
     var w=A.ownerWindow(range,at);
     return A.settlements().filter(function(s){return s.venueId===A.venueId()&&A.settlementStatus(s)!=='pending'&&within(timestamp(s),w);});

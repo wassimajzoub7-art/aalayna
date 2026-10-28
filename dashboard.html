@@ -13,7 +13,8 @@
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
 <script src="aalayna-store.js?v=26"></script>
 <script src="restaurant-growth.js?v=8"></script>
-<script src="owner-metrics.js?v=7"></script>
+<script src="owner-metrics.js?v=8"></script>
+<script src="owner-group.js?v=1"></script>
 <script src="aalayna-config.js"></script>
 <script src="aalayna-sync.js?v=9"></script>
 
@@ -257,6 +258,28 @@
   .staff-bar{font-size:12.5px;color:var(--sub);padding:0 0 14px}
   [data-staff-role=waiter] [data-owner-only]{display:none !important}
   /* ==== T4 staff sign-in: end ==== */
+  /* ==== T2 owner group: start ==== */
+  .venue-switch{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 18px}
+  .venue-switch[hidden]{display:none}
+  .venue-switch .vs-label{font-family:var(--font-label);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-right:2px}
+  .venue-switch button{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:8px 15px;font-family:inherit;
+    font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease}
+  .venue-switch button:hover{border-color:#CFCCC5}
+  .venue-switch button[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#fff}
+  .venue-switch button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .group-tbl{overflow-x:auto;margin-top:10px}
+  .group-tbl .dish-table td,.group-tbl .dish-table th{white-space:nowrap}
+  .group-tbl tfoot td{font-weight:600;border-bottom:none;border-top:1px solid var(--line)}
+  .group-tbl .btn{padding:5px 11px;margin-left:12px}
+  .group-team{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .group-team h4{font-size:13px;margin:12px 0 4px;color:var(--sub);font-weight:600}
+  .group-team ul{list-style:none;font-size:13px;line-height:1.9}
+  .group-team .role{color:var(--sub);font-size:12px}
+  body[data-floor=all] .view>:not(.top):not([data-group-only]){display:none !important}
+  body[data-floor=all] [data-venue-only]{display:none !important}
+  body:not([data-floor=all]) [data-group-only]{display:none !important}
+  body:not([data-floor]) [data-group-venue]{display:none !important}
+  /* ==== T2 owner group: end ==== */
 </style>
 </head>
 <body>
@@ -280,6 +303,8 @@
   <div style="font-size:14px;padding:12px 0 20px;color:var(--sub)">Interactive demo · sample data · no real payments or messages. <a href="index.html">Back to website</a></div>
   <div class="staff-bar" id="staff-bar" hidden><span id="staff-bar-who"></span> · <a href="#" id="staff-bar-action"></a></div>
 
+  <!-- ==== T2 owner group: venue switcher ==== -->
+  <div class="venue-switch" id="venue-switch" role="group" aria-label="Venue" hidden></div>
   <div class="report-toolbar" id="report-toolbar">
     <label for="report-period">Reporting period <select id="report-period" onchange="paintTonight()"><option value="today">Today</option><option value="7" selected>Last 7 days</option><option value="30">Last 30 days</option></select></label>
     <p id="report-period-note">Reports use Beirut time. Open bills and pending cash always show the live queue.</p>
@@ -293,10 +318,18 @@
         <span class="status-badge pending" id="incomplete-badge" hidden></span>
       </div>
       <div class="actions">
-        <button class="btn" data-owner-only onclick="exportCSV()">Export CSV</button>
+        <button class="btn" data-owner-only data-venue-only onclick="exportCSV()">Export CSV</button>
       </div>
     </div>
 
+    <!-- ==== T2 owner group: every venue's floor ==== -->
+    <section id="group-live" data-group-only>
+      <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="g-live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="g-live-open">0</strong></div><div><span>Collected in period · incl. tips</span><strong id="g-live-paid">$0.00</strong></div></div>
+      <div class="card"><h3>Every venue</h3><div class="cs">The live queue at each venue, and what it collected in the selected period. Open a venue to confirm cash, enter bills or set its floor.</div>
+        <div class="group-tbl"><table class="dish-table"><thead><tr><th>Venue</th><th class="num">Awaiting cash</th><th class="num">Open bills</th><th class="num">Collected · incl. tips</th><th class="num"></th></tr></thead><tbody id="g-live-rows"></tbody><tfoot id="g-live-foot"></tfoot></table></div></div>
+      <div class="card mt"><h3>Settlement by venue</h3><div class="cs" id="g-settle-note">Confirmed amounts in the selected period, including tips.</div>
+        <div class="group-tbl"><table class="dish-table"><thead><tr><th>Venue</th><th class="num">Whish Money</th><th class="num">Card</th><th class="num">Cash</th><th class="num">At the till</th><th class="num">Total settled</th><th class="num">Tips</th><th class="num">Completed bills</th></tr></thead><tbody id="g-settle-rows"></tbody><tfoot id="g-settle-foot"></tfoot></table></div></div>
+    </section>
     <nav class="ops-tabs" aria-label="Service views"><button type="button" aria-pressed="true" data-group="service" data-panel="service-live" onclick="opsPanel('service','service-live')">Live floor</button><button type="button" aria-pressed="false" data-group="service" data-panel="service-report" data-owner-only onclick="opsPanel('service','service-report')">Settlement report</button></nav>
     <section id="service-live" data-panel-group="service">
       <div class="service-summary"><div><span>Awaiting cash collection</span><strong id="live-cash">$0.00</strong></div><div><span>Open bills</span><strong id="live-open">0</strong></div><div><span>Collected in period · incl. tips</span><strong id="live-paid">$0.00</strong></div></div>
@@ -375,6 +408,17 @@
 
   <div class="view" id="v-week">
     <div class="top"><div><h1>Business overview</h1><div class="sub" id="overview-period">Collected payments and customer growth</div></div></div>
+    <!-- ==== T2 owner group: overview across venues ==== -->
+    <section id="group-week" data-group-only>
+      <div class="grid g4 owner-kpis">
+        <div class="card"><div class="k">Bill payments collected</div><div class="v" id="g-week-net">$0.00</div><div class="d" id="g-week-net-detail"></div></div>
+        <div class="card"><div class="k">Contact capture</div><div class="v" id="g-week-capture">–</div><div class="d" id="g-week-capture-detail"></div></div>
+        <div class="card"><div class="k">Marketing sign-ups</div><div class="v" id="g-week-optin">–</div><div class="d" id="g-week-optin-detail"></div></div>
+        <div class="card"><div class="k">Return within 30 days</div><div class="v" id="g-week-return">–</div><div class="d" id="g-week-return-detail"></div></div>
+      </div>
+      <div class="card mt"><h3>By venue</h3><div class="cs">Each venue's figures as its own overview shows them. The group line adds the counts up and works the rates out from the totals.</div>
+        <div class="group-tbl"><table class="dish-table"><thead><tr><th>Venue</th><th class="num">Collected · excl. tips</th><th class="num">Completed bills</th><th class="num">Average bill</th><th class="num">Contact capture</th><th class="num">Sign-ups</th><th class="num">Return</th><th class="num"></th></tr></thead><tbody id="g-week-rows"></tbody><tfoot id="g-week-foot"></tfoot></table></div></div>
+    </section>
     <div class="grid g4 owner-kpis">
       <div class="card"><div class="k">Bill payments collected</div><div class="v" id="week-net">$0.00</div><div class="d" id="overview-money-detail"></div><p class="metric-change" id="overview-money-change"></p></div>
       <div class="card"><div class="k">Contact capture</div><div class="v" id="capture-rate">–</div><div class="d" id="capture-detail"></div><p class="metric-change" id="capture-change"></p></div>
@@ -419,6 +463,7 @@
 
   <div class="view" id="v-guests">
     <div class="top"><div><h1>Customers &amp; return visits</h1><div class="sub">All recorded customer history · known payers, not every diner</div></div></div>
+    <div class="card" data-group-only><h3>Customer lists stay with each venue</h3><p class="cs">A guest gave their details to one restaurant. Aalayna never joins the lists across venues, so each list opens from its venue.</p><div class="staff-links" data-group-pick></div></div>
     <div class="grid g3 mb">
       <div class="card"><div class="k">Known contacts</div><div class="v" id="gl-total">0</div></div>
       <div class="card"><div class="k">Marketing permission</div><div class="v" id="gl-mkt">0</div></div>
@@ -461,6 +506,8 @@
         <div class="sub">After paying, guests who give 4 or 5 stars are invited to review on Google; 1 to 3 stars send a private note to you</div>
       </div>
     </div>
+    <div class="card" data-group-only><h3>Ratings by venue</h3><p class="cs">Recorded ratings in the selected period, and how many need a follow-up. Open a venue to read them.</p>
+      <div class="group-tbl"><table class="dish-table"><thead><tr><th>Venue</th><th class="num">Ratings</th><th class="num">Average</th><th class="num">3 or lower</th><th class="num"></th></tr></thead><tbody id="g-rating-rows"></tbody><tfoot id="g-rating-foot"></tfoot></table></div></div>
 
     <div class="card mb" id="recorded-ratings">
       <h3>Recorded ratings</h3>
@@ -511,6 +558,12 @@
       </div>
     </div>
 
+    <!-- ==== T2 owner group: the team, scoped per venue ==== -->
+    <div class="card mb" data-group-venue data-venue-only id="venue-team-card"><h3>Who works here</h3><div class="cs">Tonight's servers come from the floor plan on the Live floor. Group owners and managers see every venue; this venue's staff see only this venue, and a waiter only its Live floor.</div><div id="venue-team" class="group-team"></div></div>
+    <section data-group-only>
+      <div class="card mb"><h3>Group staff</h3><div class="cs">They sign in once and see every venue of the group, with the owner's controls at each.</div><div id="group-staff" class="group-team"></div></div>
+      <div class="group-team" id="group-team"></div>
+    </section>
     <div class="grid g2e">
       <div class="card">
         <h3>Tips by server &middot; this week</h3>
@@ -972,5 +1025,132 @@ try {
   }
 } catch (e) {}
 </script>
+<!-- ==== T2 owner group: start ==== -->
+<script>
+/* One floor for several venues (T2). In the demo, a device whose venue belongs to an owner group
+   (owner-group.js, aal.group) gets a venue switcher: All venues, then each venue. All venues shows
+   the Live floor, the period's settlement, the overview, ratings and the team of every venue, each
+   venue's figures exactly as its own screens compute them and the group line their sum (owner-metrics.js
+   A.groupLive, A.groupReport, A.groupRatings). Picking a venue shows that venue's own screens, unchanged.
+   Customer lists are never joined across venues. Shared mode keeps one venue per link: no switcher. */
+var floorScope = null;   // null: no group; 'all'; or the venue id being shown
+function groupOwnId(){ return Aalayna.groupVenueId(Aalayna.ownVenue()); }
+function groupVenueName(v, g){
+  var same = g.venues.every(function(x){ return x.name === v.name; });
+  return same ? (v.place || v.name) : v.name + (v.place ? ' · ' + v.place : '');
+}
+function groupCell(tr, text, cls){ var td = document.createElement('td'); td.textContent = text; if (cls) td.className = cls; tr.appendChild(td); return td; }
+function groupOpenButton(tr, id){
+  var td = groupCell(tr, '', 'num'), b = document.createElement('button');
+  b.type = 'button'; b.className = 'btn'; b.textContent = 'Open'; b.onclick = function(){ pickVenue(id); };
+  td.appendChild(b); return b;
+}
+function groupRows(bodyId, footId, rows, total){
+  var body = $(bodyId), foot = $(footId); body.replaceChildren(); foot.replaceChildren();
+  rows.forEach(function(r){ var tr = document.createElement('tr'); r.cells.forEach(function(c, i){ groupCell(tr, c, i ? 'num' : ''); }); if (r.id) groupOpenButton(tr, r.id); tr.setAttribute('data-venue', r.id || ''); body.appendChild(tr); });
+  var tr = document.createElement('tr'); total.forEach(function(c, i){ groupCell(tr, c, i ? 'num' : ''); }); groupCell(tr, '', 'num'); foot.appendChild(tr);
+}
+function paintVenueSwitch(){
+  var g = Aalayna.groupActive(), box = $('venue-switch');
+  box.hidden = !g; box.replaceChildren(); if (!g) return;
+  var label = document.createElement('span'); label.className = 'vs-label'; label.textContent = g.name; box.appendChild(label);
+  [{ id: 'all', text: 'All venues' }].concat(g.venues.map(function(v){ return { id: Aalayna.groupVenueId(v), text: groupVenueName(v, g) }; })).forEach(function(o){
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = o.text; b.setAttribute('data-venue', o.id);
+    b.setAttribute('aria-pressed', String(floorScope === o.id)); b.onclick = function(){ pickVenue(o.id); };
+    box.appendChild(b);
+  });
+}
+function pickVenue(id){
+  var g = Aalayna.groupActive(); if (!g) return;
+  var v = g.venues.filter(function(x){ return Aalayna.groupVenueId(x) === id; })[0];
+  if (id !== 'all' && !v) id = groupOwnId();
+  floorScope = id;
+  try { sessionStorage.setItem('aal.dash.floor', id); } catch (e) {}
+  document.body.setAttribute('data-floor', id === 'all' ? 'all' : 'venue');
+  billDraft = null; flActive = null; ownerReportSnapshot = null;   // the bill being entered and the server picked belong to the venue left
+  Aalayna.useVenue(id === 'all' || id === groupOwnId() ? null : v);   // repaints the venue's screens through Aalayna.on
+  var shown = id === 'all' ? null : Aalayna.venue();
+  $('v-sub').textContent = (shown ? shown.name + (shown.place ? ' · ' + shown.place : '') : g.name + ' · ' + g.venues.length + ' venues').toUpperCase();
+  paintVenueSwitch(); paintGroup(); paintVenueTeam();
+}
+function paintGroup(){
+  if (floorScope !== 'all') return;
+  var g = Aalayna.groupActive(); if (!g) return;
+  var range = $('report-period').value, live = Aalayna.groupLive(range), report = live.report, ratings = Aalayna.groupRatings(range);
+  var name = function(p){ return groupVenueName(p.venue, g); }, pct = opsPercent;
+  $('g-live-cash').textContent = money(live.total.pendingCashCents / 100);
+  $('g-live-open').textContent = live.total.openBills;
+  $('g-live-paid').textContent = money(live.total.collectedCents / 100);
+  groupRows('g-live-rows', 'g-live-foot', live.venues.map(function(p){
+    return { id: p.venueId, cells: [name(p), money(p.pendingCashCents / 100) + (p.pendingCount ? ' · ' + p.pendingCount + ' waiting' : ''), String(p.openBills), money(p.collectedCents / 100)] };
+  }), ['All venues', money(live.total.pendingCashCents / 100) + (live.total.pendingCount ? ' · ' + live.total.pendingCount + ' waiting' : ''), String(live.total.openBills), money(live.total.collectedCents / 100)]);
+  var settle = function(m){ var r = m.rails; return [money(r.whish / 100), money(r.card / 100), money(r.cash / 100), money((r.pos || 0) / 100), money(m.grossCents / 100), money(m.tipCents / 100), String(m.completedBills)]; };
+  groupRows('g-settle-rows', 'g-settle-foot', report.venues.map(function(p){ return { id: p.venueId, cells: [name(p)].concat(settle(p.report.current)) }; }), ['All venues'].concat(settle(report.current)));
+  $('g-settle-note').textContent = report.window.label + ' · Beirut time. Confirmed amounts including tips; pending cash stays on each venue’s Live floor.';
+  var c = report.current;
+  $('overview-period').textContent = report.window.label + ' · every venue of ' + g.name;
+  $('g-week-net').textContent = money(c.netCents / 100);
+  $('g-week-net-detail').textContent = c.completedBills + ' completed bills · ' + money(c.tipCents / 100) + ' tips separately';
+  $('g-week-capture').textContent = pct(c.captureRate); $('g-week-capture-detail').textContent = c.identifiedBills + ' of ' + c.bills + ' paid bills linked to a contact';
+  $('g-week-optin').textContent = pct(c.optInRate); $('g-week-optin-detail').textContent = c.marketingContacts + ' of ' + c.receiptContacts + ' receipt contacts chose offers';
+  $('g-week-return').textContent = pct(c.returnRate); $('g-week-return-detail').textContent = c.eligibleReturners ? c.returners + ' of ' + c.eligibleReturners + ' eligible guests returned' : 'Waiting for a full 30-day follow-up';
+  var week = function(m){ return [money(m.netCents / 100), String(m.completedBills), m.averageBillCents == null ? '–' : money(m.averageBillCents / 100), pct(m.captureRate), pct(m.optInRate), pct(m.returnRate)]; };
+  groupRows('g-week-rows', 'g-week-foot', report.venues.map(function(p){ return { id: p.venueId, cells: [name(p)].concat(week(p.report.current)) }; }), ['All venues'].concat(week(c)));
+  var rate = function(r){ return [String(r.count), r.average == null ? '–' : r.average.toFixed(1), String(r.low)]; };
+  groupRows('g-rating-rows', 'g-rating-foot', ratings.venues.map(function(p){ return { id: p.venueId, cells: [name(p)].concat(rate(p)) }; }), ['All venues'].concat(rate(ratings.total)));
+  document.querySelectorAll('[data-group-pick]').forEach(function(box){
+    box.replaceChildren();
+    g.venues.forEach(function(v){ var b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = 'Open ' + groupVenueName(v, g); b.onclick = function(){ pickVenue(Aalayna.groupVenueId(v)); }; box.appendChild(b); });
+  });
+  paintGroupTeam();
+}
+var GROUP_ROLE = { owner: 'Owner', manager: 'Manager', waiter: 'Waiter' };
+function groupList(title, people, note){
+  var frag = document.createDocumentFragment(), h = document.createElement('h4'); h.textContent = title; frag.appendChild(h);
+  var ul = document.createElement('ul');
+  if (!people.length){ var li = document.createElement('li'); li.className = 'role'; li.textContent = note || 'Nobody yet'; ul.appendChild(li); }
+  people.forEach(function(p){ var li = document.createElement('li'); li.textContent = p.name || p.email; if (p.role){ var r = document.createElement('span'); r.className = 'role'; r.textContent = ' · ' + p.role; li.appendChild(r); } ul.appendChild(li); });
+  frag.appendChild(ul); return frag;
+}
+function groupPeople(rows, scope){ return rows.map(function(s){ return { name: s.name || s.email, role: GROUP_ROLE[s.role] + (scope ? ', ' + scope : '') }; }); }
+function venueTeamCard(v, g){
+  var id = Aalayna.groupVenueId(v), team = Aalayna.groupTeam(id, g), card = document.createElement('div'); card.className = 'card'; card.setAttribute('data-venue', id);
+  var h = document.createElement('h3'); h.textContent = groupVenueName(v, g); card.appendChild(h);
+  var floor = Aalayna.util.withVenue(v, function(){ return Aalayna.floor(); });
+  card.appendChild(groupList('Floor tonight', floor.pooled ? [{ name: 'Team pool', role: 'tips pooled' }] : floor.servers.map(function(n){ return { name: n }; })));
+  card.appendChild(groupList('Staff of this venue', groupPeople(team.venue, 'this venue only'), 'No staff of its own; the group staff run it'));
+  var b = document.createElement('button'); b.type = 'button'; b.className = 'btn mt'; b.textContent = 'Open'; b.onclick = function(){ pickVenue(id); }; card.appendChild(b);
+  return card;
+}
+function paintGroupTeam(){
+  var g = Aalayna.groupActive(); if (!g) return;
+  var staff = $('group-staff'); staff.replaceChildren();
+  var col = document.createElement('div'); col.appendChild(groupList('Every venue', groupPeople(Aalayna.groupTeam(null, g).group, 'all venues'))); staff.appendChild(col);
+  var box = $('group-team'); box.replaceChildren();
+  g.venues.forEach(function(v){ box.appendChild(venueTeamCard(v, g)); });
+}
+function paintVenueTeam(){
+  var g = Aalayna.groupActive(), box = $('venue-team'); box.replaceChildren();
+  if (!g || floorScope === 'all' || !floorScope) return;
+  var team = Aalayna.groupTeam(floorScope, g), floor = Aalayna.floor(), col = document.createElement('div');
+  col.appendChild(groupList('Floor tonight', floor.pooled ? [{ name: 'Team pool', role: 'tips pooled' }] : floor.servers.map(function(n){ return { name: n }; })));
+  var col2 = document.createElement('div');
+  col2.appendChild(groupList('Staff of this venue', groupPeople(team.venue, 'this venue only'), 'No staff of its own'));
+  col2.appendChild(groupList('Group staff', groupPeople(team.group, 'every venue')));
+  box.append(col, col2);
+}
+(function(){
+  var g = Aalayna.seedDemoGroup ? Aalayna.seedDemoGroup() : null;
+  if (!g) return;
+  var asked = '', kept = '';
+  try { asked = new URLSearchParams(location.search).get('floor') || ''; } catch (e) {}
+  try { kept = sessionStorage.getItem('aal.dash.floor') || ''; } catch (e) {}
+  var ids = g.venues.map(Aalayna.groupVenueId);
+  pickVenue(asked === 'all' ? 'all' : (kept === 'all' || ids.indexOf(kept) >= 0) ? kept : groupOwnId());
+  $('report-period').addEventListener('change', paintGroup);
+  Aalayna.on(function(){ paintGroup(); paintVenueTeam(); });
+})();
+</script>
+<!-- ==== T2 owner group: end ==== -->
 </body>
 </html>
