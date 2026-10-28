@@ -21,7 +21,7 @@
    Bump VERSION (guest) or STAFF_VERSION (staff) when this file or that shell list changes;
    activate deletes the older caches of its own kind only. */
 var VERSION = 'aal-guest-v3';
-var STAFF_VERSION = 'aal-staff-v1';
+var STAFF_VERSION = 'aal-staff-v2';
 var GUEST_SHELL = [
   'guest.html',
   'aalayna-store.js',
@@ -39,7 +39,8 @@ var STAFF_SHELL = [
   'aalayna-config.js',
   'aalayna-sync.js',
   'restaurant-ops.css',
-  'restaurant-ops.js'
+  'restaurant-ops.js',
+  'owner-group.js'
 ];
 var TIMEOUT_MS = 6000;
 var WARM_MAX = 60;
