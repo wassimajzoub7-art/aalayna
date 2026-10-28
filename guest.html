@@ -1153,6 +1153,18 @@ var AalaynaTableQR = (function (global) {
   };
   function msg(k) { return MSG[lang][k]; }
   function load() { try { return JSON.parse(global.sessionStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
+  /* T1 (docs/resilience.md): the last resolution of this card on this phone, so a rescan with no
+     connection opens the bill this phone last read for the table, for six hours, instead of a
+     dead end. Only the address without its keys is kept; the bill key stays where the sync
+     layer keeps it, and the page still says how old the bill is. */
+  var LAST = 'aal.table-qr.last:', LAST_MAX_MS = 6 * 3600 * 1000;
+  function remember(v, t, rid, table, query) { try { global.localStorage.setItem(LAST + v + ':' + t, JSON.stringify({ at: Date.now(), rid: rid, table: table, query: query })); } catch (e) {} }
+  function remembered(v, t) {
+    var r = null; try { r = JSON.parse(global.localStorage.getItem(LAST + v + ':' + t) || 'null'); } catch (e) { r = null; }
+    if (!r || !r.rid || !r.query || !(Date.now() - r.at <= LAST_MAX_MS)) return null;
+    try { if (!global.localStorage.getItem('aal.access:' + r.rid + ':guest')) return null; } catch (e) { return null; }
+    return r;
+  }
   function save(s) { try { global.sessionStorage.setItem(STORE, JSON.stringify(s)); } catch (e) {} }
   var session = load();
   var api = { lang: lang, holding: false, waiting: false, table: null, onAttach: null, ask: ask, poll: poll, start: start, stop: stop, reopen: reopen };
@@ -1216,13 +1228,22 @@ var AalaynaTableQR = (function (global) {
       p.set('live', '1');   // a table scan brought this page here (see the sync layer)
       session = { v: session.v, t: session.t, s: session.s, rid: rid, table: res.table, waiting: !res.key, docs: res.key ? null : (res.docs || []) };
       save(session);
+      if (res.key) remember(session.v, session.t, rid, res.table, p.toString());
       if (res.key) p.set('k', res.key);
       // no bill: a bill key remembered for this venue belongs to another party
-      else try { global.localStorage.removeItem('aal.access:' + rid + ':guest'); } catch (e) {}
+      else try { global.localStorage.removeItem('aal.access:' + rid + ':guest'); global.localStorage.removeItem(LAST + session.v + ':' + session.t); } catch (e) {}
       global.location.replace(global.location.pathname + '?' + p.toString());
     }, function (e) {
-      if (refused(e)) notice(e.message === NOT_ACTIVE ? msg('notActive') : msg('cannot'));
-      else notice(msg('offline'), resolve);
+      if (refused(e)) { notice(e.message === NOT_ACTIVE ? msg('notActive') : msg('cannot')); return; }
+      // T1: no connection, and this phone read this table's bill lately: open it as it was then
+      var last = remembered(session.v, session.t);
+      if (last) {
+        session = { v: session.v, t: session.t, s: session.s, rid: last.rid, table: last.table, waiting: false, docs: null };
+        save(session);
+        global.location.replace(global.location.pathname + '?' + last.query);
+        return;
+      }
+      notice(msg('offline'), resolve);
     });
   }
   function stop() { if (timer) { global.clearInterval(timer); timer = null; } }
@@ -1295,7 +1316,7 @@ var AalaynaTableQR = (function (global) {
   return api;
 })(window);
 </script>
-<script src="aalayna-sync.js?v=8"></script>
+<script src="aalayna-sync.js?v=9"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -2968,6 +2989,7 @@ function paintQueued(){
   }
   var sent = job === null;
   $('rc-amt').textContent = p.amount != null ? usd(p.amount) : '';
+  if ($('rc-table')) $('rc-table').textContent = String(TABLE);   // T1: the bill's table, not the markup's placeholder
   $('rc-method').textContent = railName('cash') + (p.change > 0 ? ' \u00b7 ' + t('change', {amt: usd(p.change)}) : '');
   $('method-label').textContent = t('requestedVia');
   $('result-seal').textContent = '\u2026';
@@ -2992,6 +3014,18 @@ if (!lastSettlementId && readPending()) { paymentBusy = true; go('v-done'); refr
 try {
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.register('sw.js', { scope: 'guest.html', updateViaCache: 'none' }).catch(function(){});
+    /* T1: the menu photos load lazily; the worker keeps them all now (at most 60), so the
+       menu keeps its pictures offline. Again once the restaurant's menu has been read. */
+    var worker = null;
+    var warmPhotos = function () {
+      try {
+        var to = navigator.serviceWorker.controller || worker;
+        var urls = (Aalayna.published().items || []).filter(function (x) { return !x.archivedAt && x.imageUrl; }).map(function (x) { return x.imageUrl; });
+        if (urls.length && to) to.postMessage({ type: 'warm', urls: urls });
+      } catch (e) {}
+    };
+    if (navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(function (reg) { worker = reg && reg.active; setTimeout(warmPhotos, 1500); }, function () {});
+    if (Aalayna.sync && Aalayna.sync.onReady) Aalayna.sync.onReady(function () { setTimeout(warmPhotos, 1500); });
   }
 } catch (e) {}
 </script>

@@ -11,7 +11,43 @@
   function inVenue(row,rid){return !!row && (!row.venueId || row.venueId===rid) && (!row.restaurantId || row.restaurantId===rid) && (row.venueId===rid || row.restaurantId===rid);}
   function diffRows(c,local,snapshot,rid){return (local||[]).filter(function(r){return (!rid||inVenue(r,rid))&&rowId(c,r)&&snapshot[rowId(c,r)]!==JSON.stringify(r);}).map(function(r){return {id:rowId(c,r),body:r,json:JSON.stringify(r)};});}
   function mergeRows(c,local,remote){var by={},order=[];(local||[]).forEach(function(r){var id=rowId(c,r);if(id){if(!by[id])order.push(id);by[id]=r;}});(remote||[]).forEach(function(r){if(!by[r.id])order.push(r.id);by[r.id]=r.body;});return order.map(function(id){return by[id];});}
-  var core={rowId:rowId,inVenue:inVenue,diffRows:diffRows,mergeRows:mergeRows,COLLECTIONS:COLLECTIONS,DOCS:DOCS};
+  /* ==== T1 resilience (docs/resilience.md) ====
+     orderJobs: the outbox sends in seq order (a counter per device), never in clock order; jobs
+     stored before seq existed sort first, in the order they were kept. sameJob: a second queue
+     of the same change (same op, body and payer token) is the same job, never two. admitOffline:
+     what a page that has not reached the server since it loaded may queue (section 2): a guest's
+     cash request or cancel on a bill read in the last six hours, a staff cash confirmation of a
+     request this device holds as pending; ONLINE_ONLY operations are refused on the device
+     whenever the connection is down. It returns null when admitted, else the message. */
+  var OFFLINE_MAX_AGE_MS=6*3600*1000,STAFF_ROLE=['owner','waiter','staff'];
+  var OFFLINE_OPS={guest:['reserve','cancel'],staff:['confirm_cash']},ONLINE_ONLY=['close_check','refund','issue_key'];
+  var MSG_CONNECT='Connect to the restaurant before continuing.',MSG_ONLINE_ONLY={close_check:'Closing a bill needs the connection. Try again when the status line says Saved.',refund:'A refund needs the connection. Try again when the status line says Saved.',issue_key:'A bill link needs the connection. Try again when the status line says Saved.'};
+  function orderJobs(q){return Object.keys(q||{}).map(function(id,i){var j=q[id];return {id:id,i:i,seq:j&&typeof j.seq==='number'?j.seq:-1};}).sort(function(a,b){return a.seq-b.seq||a.i-b.i;}).map(function(x){return x.id;});}
+  function sameJob(a,b){return !!a&&!!b&&a.kind===b.kind&&a.op===b.op&&(a.token||'')===(b.token||'')&&JSON.stringify(a.body)===JSON.stringify(b.body);}
+  function admitOffline(o){
+    o=o||{};var role=o.role==='guest'?'guest':STAFF_ROLE.indexOf(o.role)>=0?'staff':null;
+    if(ONLINE_ONLY.indexOf(o.op)>=0)return MSG_ONLINE_ONLY[o.op];
+    if(!role||OFFLINE_OPS[role].indexOf(o.op)<0)return MSG_CONNECT;
+    if(role==='guest'){
+      var at=o.lastReadAt?new Date(o.lastReadAt).getTime():NaN,now=o.now==null?new Date().getTime():o.now;
+      if(!o.held||!(now-at<=OFFLINE_MAX_AGE_MS))return MSG_CONNECT;
+      return null;
+    }
+    // staff: the cash request must be on this device, still pending
+    if(!o.settlement||o.settlement.rail!=='cash'||o.settlement.status!=='pending'||o.settlement.cancelled)return MSG_CONNECT;
+    return null;
+  }
+  /* The message a refused cash confirmation shows (conflict C3): the cash is not recorded, and
+     the person who took it is told what to do. */
+  function explainRefusal(job,message,settlement,clock){
+    if(!job||job.op!=='confirm_cash')return message;
+    var s=settlement||{},what=(s.table!=null?'Table '+s.table+', ':'')+(s.amount!=null?'$'+Number(s.amount).toFixed(2):'this cash request');
+    var when=job.at&&clock?' (you confirmed it on this device at '+clock(job.at)+')':'';
+    return what+': this cash request was cancelled or changed on another device before your confirmation reached the restaurant'+when+'. It is not recorded as paid. If you took the cash, give it back or tell the manager.';
+  }
+  /* ==== T1 resilience: core end ==== */
+  var core={rowId:rowId,inVenue:inVenue,diffRows:diffRows,mergeRows:mergeRows,COLLECTIONS:COLLECTIONS,DOCS:DOCS,
+    orderJobs:orderJobs,sameJob:sameJob,admitOffline:admitOffline,explainRefusal:explainRefusal,OFFLINE_MAX_AGE_MS:OFFLINE_MAX_AGE_MS,ONLINE_ONLY:ONLINE_ONLY};
   if(A)A.syncCore=core;else global.AalaynaSyncCore=core;
   /* ==== T4 staff sign-in (supabase/auth-2026-09-24.sql) ====
      Staff pages sign people in with a six-digit code sent to their email, through
@@ -189,7 +225,7 @@
   }catch(e){}
   // A signed-in member is 'staff' until the first snapshot names the role (owner or waiter): nothing is
   // queued as an owner write before the server has said so, so a waiter never gets a refused change.
-  var state={status:key||signedIn?'starting':'no-key',role:signedIn?'staff':key.indexOf('own_')===0?'owner':key?'guest':null,checkId:null,lastPull:null,lastPush:null,pending:0,failed:0,errors:0,lastError:null,lastRefusal:null};
+  var state={status:key||signedIn?'starting':'no-key',role:signedIn?'staff':key.indexOf('own_')===0?'owner':key?'guest':null,checkId:null,lastPull:null,lastPush:null,pending:0,failed:0,errors:0,lastError:null,lastRefusal:null,pendingCash:0};
   var queue={},running=null,paused=false,ready=false,online=false,observers=[],docSnap={},rowSnap={};
   /* T8: refused outbox jobs. A job the server refuses with a definite answer (a 4xx with a
      message) can never succeed on a resend, so it leaves the outbox and is kept here, per
@@ -214,7 +250,8 @@
     if(s.status==='live')return 'Saved';
     if(s.status==='starting')return 'Connecting…';
     if(s.status==='no-key')return '';
-    if(s.status==='offline')return 'Connection lost'+(s.pending?' · '+changes(s.pending)+' waiting':'');
+    // T1: the offline indicator names the queue, and how many of it are cash confirmations
+    if(s.status==='offline')return 'Offline'+(s.pending?' · '+changes(s.pending)+' waiting to send'+(s.pendingCash?' ('+s.pendingCash+(s.pendingCash===1?' cash confirmation)':' cash confirmations)'):''):'');
     if(s.status==='error')return (s.failed===1?'Not saved: ':changes(s.failed)+' not saved. Latest: ')+s.lastRefusal;
     return 'Syncing '+changes(s.pending)+'…';
   }
@@ -226,6 +263,7 @@
     try{global.localStorage.setItem(A.util.storageKey('aal.outbox.refused'),JSON.stringify(refused));}catch(e){}
   }
   function refuse(id,job,message,shown){
+    if(job.op==='confirm_cash'&&message!==CLOSED_MSG)message=explainRefusal(job,message,(A.util.read('aal.settle',[])||[]).filter(function(x){return x&&x.id===(job.body&&job.body.id);})[0],clock);
     var r={id:id,kind:job.kind,op:job.op||null,target:job.kind==='doc'?job.body.key:(job.collection||null),message:String(message||'The restaurant did not accept this change.'),at:new Date().toISOString(),shown:!!shown};
     refused[id]=r;saveRefused();
     errorFns.forEach(function(f){try{f(JSON.parse(JSON.stringify(r)));}catch(e){}});
@@ -240,7 +278,7 @@
     return e;
   }
   function update(){
-    var open=unseen();state.pending=Object.keys(queue).length;state.failed=open.length;state.lastRefusal=open.length?open[open.length-1].message:null;
+    var open=unseen();state.pending=Object.keys(queue).length;state.pendingCash=Object.keys(queue).filter(function(id){return queue[id]&&queue[id].op==='confirm_cash';}).length;state.failed=open.length;state.lastRefusal=open.length?open[open.length-1].message:null;
     state.status=!key&&!signedIn?'no-key':!ready?(state.errors?'offline':'starting'):!online?'offline':state.failed?'error':state.pending?'syncing':'live';
     observers.forEach(function(f){f(view());});
   }
@@ -275,7 +313,7 @@
     if(running)return running;
     if(paused||(!key&&!signedIn)||!ready)return Promise.resolve();
     running=(async function(){
-      var ids=Object.keys(queue);
+      var ids=orderJobs(queue);   // T1: seq order, see orderJobs
       for(var i=0;i<ids.length;i++){
         var id=ids[i],job=queue[id];if(!job||job.blocked)continue;
         var sent=JSON.stringify(job);
@@ -306,16 +344,41 @@
     })().finally(function(){running=null;update();});return running;
   }
   var waiters={};
-  function enqueue(id,job){queue[id]=job;persist();if(ready)run();}
+  /* T1: every job carries seq (this device's counter, shared by its credentials so a carried
+     outbox keeps its order) and at (the device clock, shown, never used to decide). A job
+     replaced under the same id keeps its seq, so its place in the order. */
+  function nextSeq(){var n=0;try{n=Number(global.localStorage.getItem('aal.outbox.seq'))||0;}catch(e){}n++;try{global.localStorage.setItem('aal.outbox.seq',String(n));}catch(e){}return n;}
+  function enqueue(id,job){var old=queue[id];job.seq=old&&typeof old.seq==='number'?old.seq:nextSeq();job.at=new Date().toISOString();queue[id]=job;persist();if(ready)run();}
+  function two(n){return (n<10?'0':'')+n;}
+  function clock(at){var d=new Date(at);return two(d.getHours())+':'+two(d.getMinutes());}
+  function down(){return !ready||!online||!!(global.navigator&&global.navigator.onLine===false);}
   async function mutate(op,body,token){
     if(!ready){try{await A.sync.ready;}catch(e){}}
-    // Offline: a guest page opened without a connection, whose bill this device already
-    // holds, queues the request; the outbox sends it after the first good read.
-    var early=!ready&&state.role==='guest'&&!!A.sync.boundCheck();
-    if(!ready&&!early)throw new Error('Connect to the restaurant before continuing.');
-    var id='op:'+op+':'+(body.requestId||body.id||body.checkId||A.util.uid()), waiter=A.util.uid();
-    var promise=new Promise(function(resolve,reject){waiters[waiter]={resolve:resolve,reject:reject};});
-    enqueue(id,{kind:'op',op:op,body:body,token:token||'',waiter:waiter});
+    // T1: closing a bill, a refund or a bill link need the server now; never queued
+    if(down()&&ONLINE_ONLY.indexOf(op)>=0)throw new Error(MSG_ONLINE_ONLY[op]);
+    var id='op:'+op+':'+(body.requestId||body.id||body.checkId||A.util.uid());
+    // Offline: a page opened without a connection queues only what admitOffline admits (a guest's
+    // cash request on a bill this device read in the last six hours; a staff cash confirmation);
+    // the outbox sends it after the first good read.
+    var early=false;
+    if(!ready){
+      var why=admitOffline({role:state.role,op:op,held:!!A.sync.boundCheck(),lastReadAt:lastRead().at,
+        settlement:op==='confirm_cash'?A.settlements().filter(function(x){return x.id===body.id;})[0]:null});
+      if(why)throw new Error(why);
+      early=true;
+    }
+    // T1: the same change queued twice is one job (C1, C11)
+    var job={kind:'op',op:op,body:body,token:token||''};
+    if(sameJob(queue[id],job)){
+      var held=queue[id].waiter&&waiters[queue[id].waiter];
+      if(held&&!early)return held.promise.then(function(r){return pull().then(function(){return r;},function(e){fail(e);return r;});});
+      var dup=new Error(op==='confirm_cash'?'Already confirmed on this device. It is sent when the connection returns.':'Already saved on this device. It is sent once the connection returns.');dup.queued=true;dup.duplicate=true;throw dup;
+    }
+    var waiter=A.util.uid(),settle={};
+    var promise=new Promise(function(resolve,reject){settle.resolve=resolve;settle.reject=reject;});
+    waiters[waiter]={resolve:settle.resolve,reject:settle.reject,promise:promise};
+    job.waiter=waiter;
+    enqueue(id,job);
     if(early){delete waiters[waiter];var saved=new Error('Saved on this device. It is sent once the connection returns.');saved.queued=true;throw saved;}
     var result=await promise;
     // An acknowledged mutation stays successful even if the following refresh fails.

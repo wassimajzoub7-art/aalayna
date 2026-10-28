@@ -81,7 +81,7 @@ test('a definite refusal leaves the outbox, is recorded with its message, reache
  const errors=[],states=[];p.a.sync.onError(r=>errors.push(r));p.a.sync.onState(s=>states.push(s));
  server.down=true;floorEdit(p.a,4,'Sara');await flush();
  assert.equal(p.a.sync.job('doc:aal.floor'),'pending');                             // a network failure keeps it
- assert.equal(p.a.sync.state().pending,1);assert.equal(p.a.sync.statusText(p.a.sync.state()),'Connection lost · 1 change waiting');
+ assert.equal(p.a.sync.state().pending,1);assert.equal(p.a.sync.statusText(p.a.sync.state()),'Offline · 1 change waiting to send');
  server.down=false;server.docs=()=>[403,{code:'42501',message:'new row violates row-level security policy for table "kv_docs"'}];
  await p.a.sync.retry();await flush();
  assert.equal(server.docWrites().length,1);
@@ -145,9 +145,9 @@ test('a refusal whose caller is waiting goes to that caller and is recorded as s
 
 test('the status line is grammatical: 1 change, 2 changes',()=>{
  const p=staffBoot({search:SEARCH+'&k='+OWNER_KEY});const t=p.a.sync.statusText;
- assert.equal(t({status:'offline',pending:1}),'Connection lost · 1 change waiting');
- assert.equal(t({status:'offline',pending:2}),'Connection lost · 2 changes waiting');
- assert.equal(t({status:'offline',pending:0}),'Connection lost');
+ assert.equal(t({status:'offline',pending:1}),'Offline · 1 change waiting to send');
+ assert.equal(t({status:'offline',pending:2}),'Offline · 2 changes waiting to send');
+ assert.equal(t({status:'offline',pending:0}),'Offline');
  assert.equal(t({status:'syncing',pending:1}),'Syncing 1 change…');
  assert.equal(t({status:'error',failed:2,lastRefusal:'Bill unavailable'}),'2 changes not saved. Latest: Bill unavailable');
  const src=fs.readFileSync(path.join(root,'aalayna-sync.js'),'utf8');
