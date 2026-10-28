@@ -1,0 +1,31 @@
+{
+  "fixture": "arabic-cp1256.bin",
+  "synthetic": true,
+  "description": "An Arabic guest check in Windows-1256 (ESC t 50), every line sent in visual order (amounts on the left, letters reversed) as a POS does for a printer with no bidi; right-aligned header rows; invoice 3318 on table 5; an unpriced modifier ('without garlic') under an item; a 10% service charge; the total in double size.",
+  "profile": "arabic",
+  "venue": { "id": "al-zaytouna", "system": "pos", "currency": "USD" },
+  "documents": [
+    {
+      "kind": "bill",
+      "needsReview": false,
+      "check": { "number": "3318", "table": "5", "tableNumber": 5, "printedAt": "2026-10-27T20:45:00", "reprint": false },
+      "vat": null,
+      "tenders": [],
+      "bill": {
+        "externalId": "2026-10-27/3318",
+        "system": "pos",
+        "table": 5,
+        "currency": "USD",
+        "lines": [
+          { "externalId": "حمص", "name": "حمص", "quantity": 2, "unitPriceCents": 500 },
+          { "externalId": "متبل", "name": "متبل", "quantity": 1, "unitPriceCents": 550 },
+          { "externalId": "شيش-طاووق", "name": "شيش طاووق", "quantity": 2, "unitPriceCents": 1200, "modifiers": ["بدون ثوم"] },
+          { "externalId": "تبولة", "name": "تبولة", "quantity": 1, "unitPriceCents": 600 },
+          { "externalId": "عصير-ليمون", "name": "عصير ليمون", "quantity": 3, "unitPriceCents": 300 }
+        ],
+        "totalCents": 5995,
+        "serviceCents": 545
+      }
+    }
+  ]
+}

@@ -57,6 +57,20 @@
 !tools/ui/*
 !tests/fixtures/
 !tests/fixtures/*
+# the printer-stream bridge (T3): parser, profiles, listener, synthetic captures; never a live
+# config (it names the venues), the ledger or the dry-run output
+!tools/pos-printer/
+!tools/pos-printer/*
+!tools/pos-printer/profiles/
+!tools/pos-printer/profiles/*
+!tests/fixtures/pos-printer/
+!tests/fixtures/pos-printer/*
+tools/pos-printer/config.json
+tools/pos-printer/state/
+tools/pos-printer/out/
+tools/pos-printer/review/
+tools/pos-printer/captures/
+tools/pos-printer/captures-in/
 # never shipped: onboarding/<slug>.json holds the owner key, the card sheet the table codes
 onboarding/
 # marketing screenshots and the share image (W3a)

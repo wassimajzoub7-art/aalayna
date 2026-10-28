@@ -1,0 +1,31 @@
+{
+  "fixture": "loyverse-paid.bin",
+  "synthetic": true,
+  "description": "Loyverse-style receipt, 58 mm (32 columns), CP858 (ESC t 19). The open ticket 'Table 4', Receipt #2-1015, an item whose quantity is on the row below ('2 x $3.00'), paid in cash with change, a barcode and a drawer kick. Sent without tenders unless the venue sets sendTenders.",
+  "profile": "loyverse",
+  "venue": { "id": "cafe-younes", "system": "loyverse", "currency": "USD" },
+  "documents": [
+    {
+      "kind": "bill",
+      "needsReview": false,
+      "check": { "number": "2-1015", "table": "4", "tableNumber": 4, "printedAt": "2026-10-27T10:42:00", "reprint": false, "paid": true },
+      "vat": null,
+      "altTotals": [],
+      "tenders": [{ "method": "cash", "amountCents": 2000 }],
+      "changeCents": 600,
+      "codes": [{ "type": "barcode", "data": "{B21015" }],
+      "bill": {
+        "externalId": "2026-10-27/2-1015",
+        "system": "loyverse",
+        "table": 4,
+        "currency": "USD",
+        "lines": [
+          { "externalId": "espresso", "name": "Espresso", "quantity": 2, "unitPriceCents": 300 },
+          { "externalId": "croissant", "name": "Croissant", "quantity": 1, "unitPriceCents": 350 },
+          { "externalId": "orange-juice", "name": "Orange juice", "quantity": 1, "unitPriceCents": 450 }
+        ],
+        "totalCents": 1400
+      }
+    }
+  ]
+}
