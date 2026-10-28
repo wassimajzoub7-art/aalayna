@@ -1,0 +1,11 @@
+{
+  "id": "foodics",
+  "extends": "generic",
+  "system": "foodics",
+  "synthetic": true,
+  "description": "A cloud POS guest check in the layout cloud systems such as Foodics print in text mode: 'Order #' and 'Dine In' on one row, Qty / Item / Amount columns, indented '+' modifiers (priced or not) under their item, a VAT line added on top, the total in double size with a second total in LBP. Modelled on typical layouts; not yet checked against a real capture.",
+  "columns": 48,
+  "fields": {
+    "check": ["order\\s*(?:no\\.?|#)\\s*:?\\s*(?<v>\\d{1,10})"]
+  }
+}

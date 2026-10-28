@@ -1,0 +1,10 @@
+{
+  "id": "omega",
+  "extends": "generic",
+  "system": "omega",
+  "synthetic": true,
+  "description": "A legacy Windows POS of the kind long installed in Lebanese restaurants: French labels in Windows-1252 (ESC t 16), 'Facture N°', 'Couverts', Qté / Désignation / P.U. / Montant columns, LBP amounts with comma thousands, the total in double width, VAT shown as included ('dont TVA 11%') and a second total in USD. Modelled on typical layouts; not yet checked against a real capture.",
+  "columns": 48,
+  "codePage": "cp1252",
+  "kitchen": ["BON CUISINE", "BON BAR"]
+}
