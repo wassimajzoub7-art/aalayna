@@ -11,7 +11,7 @@
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
-<script src="aalayna-store.js?v=25"></script>
+<script src="aalayna-store.js?v=26"></script>
 <script src="restaurant-growth.js?v=8"></script>
 <script src="owner-metrics.js?v=7"></script>
 <script src="aalayna-config.js"></script>
@@ -168,6 +168,19 @@
   </section>
   <!-- ==== T6 Venues (onboarding): end ==== -->
 
+  <!-- ==== T2 owner groups (admin): start ==== -->
+  <section class="card" id="groups">
+    <div class="heading"><div><h2>Owner groups</h2><p class="cs">One owner, several venues. A group's owner link opens the dashboard of every venue in it with the owner's rights; the group's owners and managers sign in once and see every venue. Waiters stay on one venue's staff list, under Venues. Needs supabase/groups-2026-10-28.sql and the admin key above.</p></div><button class="btn" id="groups-load" type="button">Load groups</button></div>
+    <p class="status" id="groups-status" role="status" aria-live="polite"></p>
+    <div id="groups-list"></div>
+    <form class="row" id="group-create" novalidate hidden>
+      <label class="lbl" for="group-name" style="flex-basis:100%;margin-bottom:0">New group</label>
+      <input class="in" id="group-name" maxlength="80" autocomplete="off" placeholder="Mayda Group">
+      <button class="btn primary" type="submit">Create group</button>
+    </form>
+  </section>
+  <!-- ==== T2 owner groups (admin): end ==== -->
+
   <section class="card" id="funnel">
     <div class="heading"><div><h2>Website funnel</h2><p class="cs">Clicks and demo events from aalayna.com, read from the shared store with the owner key. Last 7 and last 30 days, by event and by where on the page it happened.</p></div></div>
     <div class="tbl"><table><thead><tr><th>Event</th><th class="num">7 days</th><th class="num">30 days</th><th>Where (30 days)</th></tr></thead><tbody id="funnel-rows"></tbody></table></div>
@@ -295,7 +308,7 @@ Aalayna.on(function(){ paintAll(); });
 (function(){
   'use strict';
   var ROLES=[['owner','Owner'],['manager','Manager'],['waiter','Waiter']];
-  var ROLE_NOTE='Owner and manager: everything on the dashboard and editor; only an owner manages staff. Waiter: the Live floor, bills, bill links, cash collection and cancelling cash requests; no refunds, closing bills, menu changes or customer list.';
+  var ROLE_NOTE='Owner and manager: everything on the dashboard and editor; only an owner manages staff. Waiter: the Live floor, bills, bill links, cash collection and cancelling cash requests; no refunds, closing bills, menu changes or customer list. Everyone here sees this venue only; the owners and managers of its owner group (Owner groups, below) see every venue of the group.';
   var ST={};
   function el(tag,text,cls){ var n=document.createElement(tag); if(text!=null)n.textContent=text; if(cls)n.className=cls; return n; }
   function button(text,cls,fn){ var b=el('button',text,'btn small'+(cls?' '+cls:'')); b.type='button'; b.onclick=fn; return b; }
@@ -382,6 +395,124 @@ Aalayna.on(function(){ paintAll(); });
 })();
 </script>
 <!-- ==== T4 staff (admin) script: end ==== -->
+<!-- ==== T2 owner groups (admin) script: start ==== -->
+<script>
+/* Owner groups (T2, supabase/groups-2026-10-28.sql). The admin key (the same one Venues uses, from this
+   tab's session storage) creates a group, adds and removes its venues and rotates its owner key. Group
+   staff (owner or manager, every venue of the group) are managed with the group's own owner key through
+   aal_group, exactly as the group owner would. A venue's own staff, waiters included, stay in Venues. */
+(function(){
+  'use strict';
+  var GS={groups:null,venues:[],busy:false,reveal:{},confirm:null,invite:{}};
+  function $(id){ return document.getElementById(id); }
+  function el(tag,text,cls){ var n=document.createElement(tag); if(text!=null)n.textContent=text; if(cls)n.className=cls; return n; }
+  function button(text,cls,fn){ var b=el('button',text,'btn small'+(cls?' '+cls:'')); b.type='button'; b.onclick=fn; return b; }
+  function say(text,kind){ var n=$('groups-status'); n.textContent=text||''; n.className='status'+(kind?' '+kind:''); }
+  function mask(k){ k=String(k||''); return k.length>12?k.slice(0,4)+'••••••••'+k.slice(-4):k; }
+  function adminKey(){ try{ return sessionStorage.getItem('aal.adminKey')||''; }catch(e){ return ''; } }
+  function rpc(fn,args,headers){
+    var cfg=window.AalaynaConfig||{};
+    if(!cfg.supabaseUrl||!cfg.anonKey)return Promise.reject(new Error('No shared store is configured in aalayna-config.js.'));
+    var h={apikey:cfg.anonKey,Authorization:'Bearer '+cfg.anonKey,'Content-Type':'application/json'};
+    Object.keys(headers||{}).forEach(function(k){ h[k]=headers[k]; });
+    return fetch(cfg.supabaseUrl.replace(/\/$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',cache:'no-store',headers:h,body:JSON.stringify(args||{})})
+    .then(function(res){ return res.text().then(function(t){
+      var j=null; try{ j=t?JSON.parse(t):null; }catch(e){}
+      if(!res.ok){
+        if(j&&j.code==='PGRST202')throw new Error('Owner groups are not on the shared store yet. Run supabase/groups-2026-10-28.sql in the Supabase SQL editor.');
+        throw new Error(j&&j.message?j.message:'The shared store answered '+res.status+'.');
+      }
+      return j; }); },function(){ throw new Error('Could not reach the shared store. Check the connection and try again.'); });
+  }
+  function admin(fn,args){ var k=adminKey(); if(!k)return Promise.reject(new Error('Connect with the admin key under Venues first.')); return rpc(fn,args,{'x-aalayna-admin':k}); }
+  function venueLabel(v){ return (v.name||v.restaurant_id)+(v.place?' · '+v.place:''); }
+  function dashboardLink(g,v){
+    var base=location.origin&&location.origin.indexOf('http')===0&&location.hostname!=='127.0.0.1'?location.origin+location.pathname.replace(/[^\/]*$/,''):'https://aalayna.com/';
+    return base+'dashboard.html?venue='+encodeURIComponent(v.name||'')+'&place='+encodeURIComponent(v.place||'')+'&k='+encodeURIComponent(g.owner_key);
+  }
+  function load(){
+    GS.busy=true; say('Loading groups...'); paint();
+    return Promise.all([admin('aal_admin_list_groups',{}),admin('aal_admin_list_venues',{})]).then(function(r){
+      GS.busy=false; GS.groups=Object.prototype.toString.call(r[0])==='[object Array]'?r[0]:[];
+      GS.venues=(r[1]||[]).map(function(v){ var p=v.profile||{}; return {restaurant_id:v.restaurant_id,name:p.name||v.name,place:p.place||''}; });
+      say(GS.groups.length===1?'1 group.':GS.groups.length+' groups.'); paint();
+    },function(e){ GS.busy=false; say(e.message,'err'); paint(); });
+  }
+  function replace(g){ GS.groups=(GS.groups||[]).map(function(x){ return x.group_id===g.group_id?g:x; }); }
+  function run(promise,ok){
+    GS.busy=true; paint();
+    return promise.then(function(g){ GS.busy=false; if(g&&g.group_id){ if(GS.groups.some(function(x){ return x.group_id===g.group_id; }))replace(g); else GS.groups.unshift(g); } say(ok,'ok'); paint(); return true; },
+      function(e){ GS.busy=false; say(e.message,'err'); paint(); return false; });
+  }
+  function groupStaff(g,body,ok){
+    /* aal_group answers with the group (no owner key); keep the key and venues from the admin listing */
+    return run(rpc('aal_group',{p_body:Object.assign({group_id:g.group_id},body)},{'x-aalayna-key':g.owner_key}).then(function(r){ return Object.assign({},g,{staff:r.staff||[]}); }),ok);
+  }
+  function line(label,value,buttons){ var d=el('div',null,'line'),u=el('div',value,'u'); d.append(el('div',label,'t'),u); (buttons||[]).forEach(function(b){ d.appendChild(b); }); return d; }
+  function paintGroup(g){
+    var box=el('div',null,'card'), inGroup={}; box.setAttribute('data-group',g.group_id);
+    box.appendChild(el('h3',g.name));
+    box.appendChild(el('p','Group id '+g.group_id+'. Its venues share one Live floor and one daily close on the dashboard and in the 04:00 email.','hint'));
+    box.appendChild(el('h3','Venues'));
+    (g.venues||[]).forEach(function(v){
+      inGroup[v.restaurant_id]=1;
+      var copy=button('Copy owner dashboard link','',function(){ try{ navigator.clipboard.writeText(dashboardLink(g,v)); copy.textContent='Copied'; }catch(e){} });
+      var rm=button('Remove','danger',function(){ run(admin('aal_admin_group_venue',{p_group:g.group_id,p_rid:v.restaurant_id,p_op:'remove'}),venueLabel(v)+' left '+g.name+'. The group key and group staff no longer open it.'); });
+      copy.disabled=rm.disabled=GS.busy; box.appendChild(line(venueLabel(v),v.restaurant_id,[copy,rm]));
+    });
+    if(!(g.venues||[]).length)box.appendChild(el('p','No venues yet.','hint'));
+    var others=GS.venues.filter(function(v){ return !inGroup[v.restaurant_id]; });
+    if(others.length){
+      var row=el('div',null,'row'), sel=el('select',null,'in'); sel.setAttribute('aria-label','Venue to add to '+g.name);
+      others.forEach(function(v){ var o=el('option',venueLabel(v)); o.value=v.restaurant_id; sel.appendChild(o); });
+      var add=button('Add venue','primary',function(){ run(admin('aal_admin_group_venue',{p_group:g.group_id,p_rid:sel.value,p_op:'add'}),'Venue added to '+g.name+'.'); }); add.disabled=GS.busy;
+      row.append(sel,add); box.appendChild(row);
+    }
+    box.appendChild(el('h3','Group owner key'));
+    var shown=GS.reveal[g.group_id];
+    var rev=button(shown?'Hide':'Reveal','',function(){ GS.reveal[g.group_id]=!shown; paint(); });
+    var rot=button('Rotate','danger',function(){ GS.confirm=g.group_id; paint(); }); rot.disabled=GS.busy;
+    box.appendChild(line('Owner key',shown?g.owner_key:mask(g.owner_key),[rev,rot]));
+    if(GS.confirm===g.group_id){
+      var c=el('div',null,'confirm'); c.appendChild(el('div','Rotate the group key of '+g.name+'? Every dashboard that stored the old key loses access to all its venues until it is opened with a new link.'));
+      var r2=el('div',null,'row'); r2.append(button('Rotate group key','danger',function(){ GS.confirm=null; run(admin('aal_admin_rotate_group_key',{p_group:g.group_id}),'New group key issued. Send the new owner links.'); }),button('Cancel','',function(){ GS.confirm=null; paint(); }));
+      c.appendChild(r2); box.appendChild(c);
+    }
+    box.appendChild(el('h3','Group staff'));
+    box.appendChild(el('p','Owner and manager of the group: every venue, with the owner’s controls; only an owner manages staff. They sign in with a code sent to their email.','hint'));
+    (g.staff||[]).forEach(function(m){
+      var b=m.revoked_at?[]:[button('Revoke','danger',function(){ groupStaff(g,{op:'revoke',email:m.email},m.email+' no longer sees the group’s venues.'); })];
+      if(b[0])b[0].disabled=GS.busy;
+      box.appendChild(line(m.revoked_at?'Former staff':(m.role==='owner'?'Owner':'Manager'),m.email+(m.invited_by?' · invited by '+m.invited_by:''),b));
+    });
+    var st=GS.invite[g.group_id]||(GS.invite[g.group_id]={email:'',role:'manager'});
+    var form=el('form',null,'row'); form.noValidate=true;
+    var email=el('input',null,'in'); email.type='email'; email.placeholder='name@group.com'; email.value=st.email; email.setAttribute('aria-label','Email to invite to '+g.name); email.oninput=function(){ st.email=email.value; };
+    var role=el('select',null,'in'); [['manager','Manager'],['owner','Owner']].forEach(function(r){ var o=el('option',r[1]); o.value=r[0]; role.appendChild(o); }); role.value=st.role; role.style.flex='0 0 auto'; role.style.width='auto'; role.onchange=function(){ st.role=role.value; };
+    var go=el('button','Invite','btn small primary'); go.type='submit'; go.disabled=GS.busy;
+    form.append(email,role,go);
+    form.onsubmit=function(e){ e.preventDefault(); var addr=String(email.value||'').trim().toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)){ say('Enter a valid email address.','err'); return; }
+      groupStaff(g,{op:'invite',email:addr,role:role.value},addr+' is invited to '+g.name+' as '+role.value+'.').then(function(ok){ if(ok){ st.email=''; paint(); } }); };
+    box.appendChild(form);
+    return box;
+  }
+  function paint(){
+    var list=$('groups-list'); list.replaceChildren();
+    $('groups-load').textContent=GS.groups?'Refresh':'Load groups'; $('groups-load').disabled=GS.busy;
+    $('group-create').hidden=!GS.groups;
+    (GS.groups||[]).forEach(function(g){ list.appendChild(paintGroup(g)); });
+  }
+  $('groups-load').onclick=function(){ load(); };
+  $('group-create').onsubmit=function(e){
+    e.preventDefault(); var n=String($('group-name').value||'').trim();
+    if(!n){ say('Give the group a name.','err'); return; }
+    run(admin('aal_admin_create_group',{p_name:n}),n+' created. Add its venues, then send its owner link.').then(function(ok){ if(ok)$('group-name').value=''; });
+  };
+  window.AalaynaAdminGroups={state:function(){ return GS; },load:load};
+})();
+</script>
+<!-- ==== T2 owner groups (admin) script: end ==== -->
 <!-- ==== T6 Venues (onboarding) script: start ==== -->
 <script>
 /* Venues: onboarding with an admin key (supabase/admin.sql).

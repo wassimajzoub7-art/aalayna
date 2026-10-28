@@ -49,6 +49,59 @@ Then, in this order: `hardening-2026-09-24.sql`, `admin.sql`, `sessions-2026-09-
 file replaces some functions of the earlier ones and says which; re-running an earlier
 file means running the later ones again.
 
+The September 30 files follow (`daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`,
+`integrations-2026-09-30.sql`, each with its own section below), then `groups-2026-10-28.sql`
+last ("Owner groups", below). It replaces `aal_role`, `aal_staff_role` and `aal_staff` from
+`auth-2026-09-24.sql`: re-running `auth-2026-09-24.sql` means running `groups-2026-10-28.sql`
+again.
+
+## Owner groups: one floor for several venues (October 28)
+
+An owner with several venues gets one owner link and one sign-in for all of them, and one 04:00
+email. File: `groups-2026-10-28.sql` (run it after `auth-2026-09-24.sql`, and after the September 30
+files where they are installed). Untested against PostgreSQL here, like the files before it.
+
+**The model.** `owner_groups` (id `grp_...`, name, the group's owner key `own_...`),
+`owner_group_venues` (a venue belongs to at most one group) and `owner_group_staff` (email, role
+owner or manager, revoked_at). All closed: RLS on, no policies, reached only through the functions.
+`aal_role` now answers `owner` at a venue for the venue's own owner key (as before), for the owner key
+of the group that owns the venue, and for a signed-in owner or manager of the venue or of its group;
+`waiter` only for a waiter on that venue's own staff list. So every policy, `aal_snapshot` and
+`aal_mutate` give a group owner or manager the owner's rights at each venue of the group and nowhere
+else, and a waiter stays on their venue. `aal_staff` 'mine' lists the group's venues too, so the staff
+sign-in admits a group manager at each of them. Group staff are managed with `aal_group`
+(`{op:'mine'}`, `{op:'list', group_id}`, `{op:'invite'|'revoke'|'change_role', group_id, email, role}`)
+with the group owner key or as a signed-in group owner; waiters are invited at their venue, as before.
+
+**Install (in this order).**
+1. Run `groups-2026-10-28.sql` in the SQL editor. It stops without changing anything if
+   `auth-2026-09-24.sql` or `admin.sql` is missing.
+2. In admin.html, connect with the admin key under Venues, then under Owner groups press Load groups,
+   create the group, and add its venues (a venue already in another group is refused).
+3. Copy a venue's owner dashboard link from the group: it carries the group key and opens that venue
+   with the owner's rights; the same key opens every venue of the group. Send it to the owner only.
+4. Invite the group's owners and managers under Group staff. They sign in on the dashboard with the
+   six-digit code, like venue staff, and see every venue of the group.
+5. Redeploy `daily-close` (`supabase functions deploy daily-close --no-verify-jwt --project-ref
+   xeqbkamwucqplvoavhyd`): it then also sends the group close (see "Daily close email"). Without the
+   groups file installed the function keeps sending per-venue closes only.
+
+To check access from the SQL editor, borrow a key for one transaction:
+
+```sql
+begin;
+select set_config('request.headers', json_build_object('x-aalayna-key',
+  (select owner_key from owner_groups where name = 'Mayda Group'))::text, true);
+select restaurant_id, aal_role(restaurant_id) from venue_keys;   -- 'owner' for the group's venues only
+rollback;
+```
+
+What it does not do yet: the shared-mode dashboard is still one venue per link (the venue switcher and
+the All venues view run in the no-key demo, from the same per-venue figures); `aal_pos_is_owner`
+accepts the venue's own owner key and signed-in owners, not the group key, for POS keys and webhooks.
+`aal_role` is evaluated per row by the policies and now also looks up the group, a few more index
+lookups per row.
+
 ## Menu style (September 28)
 
 `theme-2026-09-28.sql` adds `venue_profiles.theme`: empty is the standard guest menu,
