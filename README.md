@@ -99,6 +99,30 @@ the reason. The demo shows the same banner and keeps working locally. `sw.js` mu
 never get a long HTTP cache lifetime (GitHub Pages sends ten minutes, and the page
 registers it with `updateViaCache: 'none'`). See `tests/offline.test.cjs`.
 
+**T1 resilience** ([docs/resilience.md](docs/resilience.md) is the contract: what is kept, what
+can be queued offline and the conflict rules). The worker also keeps any other same-origin
+script, style, font or JSON the page asks for, and the guest page hands it the menu photos to
+keep (at most 60), so the menu keeps its pictures offline. A table card scanned again with no
+connection opens the bill this phone last read for that table (for six hours) instead of a dead
+end. A cash request is queued offline only on a bill read in the last six hours. The outbox
+sends in the order changes were made on the device (`seq`), never by the device clock, and the
+same change queued twice stays one job; its id (`op:reserve:<payment id>`) is the idempotency
+key the server already honours. Verified in headless Chromium: a table page loaded once, taken
+offline and reloaded shows the menu and the bill, a cash request made then is sent exactly once
+when the connection returns. See `tests/resilience.test.cjs`.
+
+On the staff side the dashboard registers the same worker as `sw.js?shell=staff`, scoped to
+`dashboard.html` with its own cache, so a dashboard loaded once opens again with no connection
+on the Live floor as last read. A signed-in member whose staff list cannot be checked for want
+of a connection gets the list the server last gave this device (the server checks every change
+again when it is sent). **Confirm cash received** made offline is queued
+(`op:confirm_cash:<payment id>`): the row loses its buttons and reads "Confirmed on this device
+at 21:04 · waiting to send", a second confirmation of the same request stays one job, and the
+status line turns red: "Offline · 1 change waiting to send (1 cash confirmation)". If the
+request was cancelled elsewhere before the confirmation arrives, the confirmation is refused and
+the dashboard says the cash is not recorded and what to do with it. Closing a bill, refunds and
+bill links need the connection and are refused, never queued, while offline.
+
 ### Table QR
 
 A printed table card opens `guest.html?v=<slug>&t=<table>&s=<code>`. Run

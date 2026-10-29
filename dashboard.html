@@ -15,7 +15,7 @@
 <script src="restaurant-growth.js?v=8"></script>
 <script src="owner-metrics.js?v=7"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=8"></script>
+<script src="aalayna-sync.js?v=9"></script>
 
 <style>
   :root{
@@ -804,7 +804,12 @@ function paintRows(){
       (x.refunded ? '<span class="rftag">REFUNDED</span>'
         : x.cancelled ? '<span class="rftag">CANCELLED</span>'
         : '');
-    if (Aalayna.settlementStatus(x) === 'pending') {
+    // T1 (docs/resilience.md): a confirmation made offline waits on this device; no second tap
+    var waiting = Aalayna.sync && Aalayna.sync.pendingJob ? Aalayna.sync.pendingJob('op:confirm_cash:' + x.id) : null;
+    if (waiting && Aalayna.settlementStatus(x) === 'pending') {
+      var queued = opsEl('span', 'Confirmed on this device' + (waiting.at ? ' at ' + Aalayna.sync.clock(waiting.at) : '') + ' · waiting to send', 'ops-queued');
+      queued.style.cssText = 'font-size:13px;color:var(--sub)'; d.appendChild(queued);
+    } else if (Aalayna.settlementStatus(x) === 'pending') {
       var collect = document.createElement('button'); collect.className = 'rfb'; collect.textContent = 'Confirm cash received';
       collect.onclick = function(){ confirmCashReceived(x.id); };
       d.appendChild(collect);
@@ -828,7 +833,11 @@ async function confirmCashReceived(id){
   try { var changed=Aalayna.confirmCash(id); if(changed && typeof changed.then==='function')changed=await changed;
     if(changed)toast(Aalayna.sync && Aalayna.sync.enabled?'Cash collection saved':'Cash collection recorded (demo)');
     else {paintRows();toast('Request changed. Check its current status.');}
-  } catch(error){toast(error.message);}
+  } catch(error){
+    // T1: kept in the outbox; sent, exactly once, when the connection returns
+    if (error.queued) { paintRows(); toast(error.duplicate ? error.message : 'No connection. Cash confirmed on this device; it is sent when the connection returns. Do not confirm it again.'); return; }
+    toast(error.message);
+  }
 }
 /* Refunds retain two taps: first arms the button, second executes. */
 async function refundRow(btn, id){
@@ -948,10 +957,20 @@ paintTonight();
 paintTips();
 if (healthAfterRead) Aalayna.sync.onReady(function(){ Aalayna.recordHealth(); paintTonight(); paintTips(); });
 Aalayna.on(function(){ paintTonight(); paintTips(); });
+(function(){ var q = -1; if (Aalayna.sync && Aalayna.sync.subscribe) Aalayna.sync.subscribe(function(s){ if (s.pending !== q) { q = s.pending; paintRows(); } }); })();   // T1: a queued confirmation repaints its row
 simpleBars('rtrend','rtrend-ax','rtrend-v', RTREND.map(function(r){return {d:r.d,v:r.v};}), function(v){ return v.toFixed(1); });
 paintReviews();
 paintTeam();
 if (window.opsIntegrationsInit) opsIntegrationsInit();   // T16
+</script>
+<script>
+/* T1 (docs/resilience.md): the dashboard's offline shell, the same sw.js with its staff list,
+   scoped to this page only. Opened from a file, or without service workers: works as is. */
+try {
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('sw.js?shell=staff', { scope: 'dashboard.html', updateViaCache: 'none' }).catch(function(){});
+  }
+} catch (e) {}
 </script>
 </body>
 </html>
