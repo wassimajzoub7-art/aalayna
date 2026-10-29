@@ -446,7 +446,7 @@ test('install keeps its own shell; activate deletes only the older caches of its
  assert.deepEqual(s.opened[s.ctx.STAFF_VERSION].added,plain(s.ctx.SHELL));
  await g.lifecycle('activate');await s.lifecycle('activate');
  assert.deepEqual(g.deleted,['aal-guest-v2']);
- assert.deepEqual(s.deleted,['aal-staff-v0']);
+ assert.deepEqual(s.deleted,['aal-staff-v0','aal-staff-v1'].filter(k=>k!==s.ctx.STAFF_VERSION));   // every older staff cache, whatever the current version
 });
 
 test('routing: the API is never cached, pages and assets network first, fonts and images cache first',()=>{

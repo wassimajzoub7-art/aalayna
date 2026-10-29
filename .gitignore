@@ -30,6 +30,8 @@
 
 !restaurant-growth.js
 !owner-metrics.js
+# owner groups in the demo (T2): one owner, several venues
+!owner-group.js
 !restaurant-ops.js
 !restaurant-ops.css
 !INTEGRATIONS.md

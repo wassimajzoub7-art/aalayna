@@ -179,8 +179,21 @@
 
   /* ---------- plumbing ---------------------------------------------------- */
   var activeScope = null, activeVenue = null;
+  /* Owner groups in the no-key demo (owner-group.js): the dashboard can look at another venue of
+     the device's group without changing the device's own venue (aal.venue, what guest pages use).
+     viewVenue is that in-memory choice. Records are already scoped by venueId; the floor is the one
+     venue document kept per venue, as aal.floor@<venueId> for every venue but the device's own. */
+  var viewVenue = null;
+  function venueKeyOf(v) { return JSON.stringify([String(v.name || '').trim().toLowerCase(), String(v.place || '').trim().toLowerCase()]); }
   function storageKey(k) {
-    if (!activeScope || [K.venue, K.device, K.devices].indexOf(k) >= 0) return k;
+    if (!activeScope) {
+      if (k === K.floor && viewVenue) {
+        var own = venueFromURL() || read(K.venue, null) || DEFAULT_VENUE;
+        if (venueKeyOf(viewVenue) !== venueKeyOf(own)) return k + '@' + venueKeyOf(viewVenue);
+      }
+      return k;
+    }
+    if ([K.venue, K.device, K.devices].indexOf(k) >= 0) return k;
     return 'aal.scope:' + activeScope + ':' + k;
   }
   function read(k, fallback) {
@@ -841,11 +854,22 @@
     },
     venue: function () {
       if (activeVenue) return clone(activeVenue);
+      if (viewVenue) return clone(viewVenue);
       var u = venueFromURL();
       if (u) { if (JSON.stringify(read(K.venue, null)) !== JSON.stringify(u)) write(K.venue, u); return u; }
       return read(K.venue, null) || DEFAULT_VENUE;
     },
     setVenue: function (v) { if(activeScope)throw new Error('Open a separate restaurant link to change venue.'); write(K.venue, v); },
+    /* The demo dashboard's venue switcher: look at another venue of this device's owner group
+       (null returns to the device's own venue). Never in shared mode: a shared page is one venue's
+       credential scope, and another venue opens through its own link. */
+    useVenue: function (v) {
+      if (activeScope) throw new Error('Open the other venue with its own link.');
+      viewVenue = v ? clone(v) : null;
+      fire('venue');
+    },
+    /* the device's own venue, whatever the switcher shows */
+    ownVenue: function () { if (activeVenue) return clone(activeVenue); return clone(venueFromURL() || read(K.venue, null) || DEFAULT_VENUE); },
     /* Balat, the Beirut cement-tile menu (guest.html, ?theme=balat), draws its tiles in four pigments:
        terracotta, ochre, sage and indigo. A restaurant's brand colour takes the place of the pigment nearest
        its hue, so the tiles are theirs and still sit together; greys, near-black and near-white leave them. */
@@ -951,7 +975,14 @@
     /* ---- plumbing ---- */
     on: function (fn) { subs.push(fn); },
     notify: function (key) { fire(key); },
-    util: { storageKey: storageKey, activateScope: function (scope) { activeVenue = clone(A.venue()); activeScope = scope; seedIfEmpty(); migrate(); }, read: read, write: write, rawWrite: rawWrite, hooks: hooks, uid: uid, now: now, cents: cents, clone: clone },
+    util: { storageKey: storageKey, activateScope: function (scope) { activeVenue = clone(A.venue()); activeScope = scope; seedIfEmpty(); migrate(); },
+            /* run fn as if venue v were shown (the demo's group figures read each venue this way) */
+            withVenue: function (v, fn) {
+              if (activeScope) throw new Error('Group figures are read venue by venue only in the demo.');
+              var was = viewVenue; viewVenue = clone(v);
+              try { return fn(); } finally { viewVenue = was; }
+            },
+            venueKey: venueKeyOf, read: read, write: write, rawWrite: rawWrite, hooks: hooks, uid: uid, now: now, cents: cents, clone: clone },
     reset: function () {
       try { localStorage.removeItem(storageKey('aal.pack')); } catch (e) {}
       try { localStorage.removeItem(storageKey(K.guests)); localStorage.removeItem(storageKey(K.campaigns)); } catch (e) {}
