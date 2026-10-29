@@ -143,7 +143,7 @@ function resolveInputs(flags, files, saved, shellCwd) {
   if (flags.nfc && flags['no-nfc']) throw new Usage('Use --nfc or --no-nfc, not both.');
   if (flags.nfc || flags['no-nfc']) {
     const nfc = !!flags.nfc;
-    if (saved && !!saved.nfc !== nfc) changed.push('tables');   // the sheet's wording and the tag list change
+    if (saved && !!saved.nfc !== nfc) changed.push('nfc');   // the sheet's wording and the tag list change: tables runs again
     if (nfc) inp.nfc = true; else delete inp.nfc;
   }
   return { inputs: inp, changed };
@@ -252,8 +252,9 @@ async function main(argv, opts) {
   }
 
   // an input a finished step used has changed: that step runs again
-  resolved.changed.forEach(function (n) {
-    if (state.steps[n].status === 'done') { state.steps[n].status = 'pending'; out('note: --' + (n === 'staff' ? 'owner/--staff' : n) + ' changed, so ' + n + ' runs again'); }
+  resolved.changed.forEach(function (c) {
+    const n = c === 'nfc' ? 'tables' : c;
+    if (state.steps[n].status === 'done') { state.steps[n].status = 'pending'; out('note: --' + (c === 'staff' ? 'owner/--staff' : c) + ' changed, so ' + n + ' runs again'); }
   });
 
   let sb = null;

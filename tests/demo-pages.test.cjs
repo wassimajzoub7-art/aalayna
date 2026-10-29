@@ -70,6 +70,21 @@ test('qr.html: Mayda defaults, the review flow as it works now, no em dash',()=>
  assert.ok(!/—|&mdash;/.test(html));
 });
 
+test('qr.html: Cards carry an NFC tag switches the card to Tap or scan and shows Copy tag list, with a box when there is no clipboard',()=>{
+ const html=read('qr.html');
+ assert.match(html,/<label class="chk" for="f-nfc"><input type="checkbox" id="f-nfc" onchange="paint\(\)"> Cards carry an NFC tag<\/label>/);
+ assert.match(html,/<button class="btn line" id="tags-copy" onclick="copyTags\(\)" hidden>Copy tag list<\/button>/);
+ assert.match(html,/<textarea class="in" id="tags-out"[^>]* readonly[^>]* hidden><\/textarea>/);
+ assert.match(html,/\(nfc\(\) \? 'Tap or scan with your phone\.' : 'Point your camera at the code\.'\) \+ ' No app, no account\. English, français, عربي\.<\/div>'/);
+ assert.match(html,/function tagsCSV\(\)\{ return 'table,url\\n' \+ tagRows\(\)\.join\('\\n'\) \+ '\\n'; \}/);
+ assert.match(html,/return t\.table \+ ',' \+ tableURL\(t\);/,'a live row is the link the card\'s QR encodes');
+ assert.match(html,/if \(!navigator\.clipboard \|\| !navigator\.clipboard\.writeText\) \{ fallback\(\); return; \}/);
+ const css=(html.match(/<style>([\s\S]*?)<\/style>/)||[])[1];
+ assert.ok(!/border-radius:(?!0\b)/.test(css),'square corners');
+ const script=html.match(/<script>\n([\s\S]*?)<\/script>/)[1];
+ assert.ok(!/=>|\blet\s|\bconst\s|`/.test(script),'qr.html stays ES5');
+});
+
 test('editor.html marks missing translations and never copies English into French or Arabic',()=>{
  const html=read('editor.html');
  assert.match(html,/Needs translation/);
