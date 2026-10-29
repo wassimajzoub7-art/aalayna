@@ -139,6 +139,42 @@ a send under way (or one that died; it is retried after ten minutes). Whether th
 emails are sent one per recipient, so one bad address does not stop the others; if some but not all
 fail, the row is `sent` and `error` says how many failed. Not covered: the function and the migration have been tested here only against fakes (no Deno, Supabase CLI or PostgreSQL).
 
+## The close, in words (October 28)
+
+The daily close email now opens with a short narrative of the day, above the figures, in the
+venue's language: what the evening was (bills, takings, against the same weekday last week and
+the average of the previous four), what moved (tips, cash share, average bill, settlement time),
+what to look at (a POS push that failed, cash left waiting, a bill left open, a refund, a stale
+lira rate) and who came back (regulars, lapsed guests, first visits, new second-visit candidates;
+counts only). The rules and every threshold: `docs/close-narrative.md`; the code:
+`functions/_shared/close-narrative.js`. The CSV is unchanged.
+
+**Set up.** Run `close-narrative-2026-10-28.sql` (after `admin.sql`): it adds
+`venue_profiles.lang` (`en`, `fr`, `ar`; English when null) and `venue_profiles.currency`
+(`USD`, or `LBP` for takings in lira first). Set them per venue in the SQL editor, for example
+`update public.venue_profiles set lang = 'fr' where slug = 'mayda';`. Then redeploy `daily-close`.
+The function reads the venue with `select=*`, so it also runs before the file is applied
+(English, dollars). To compare weekdays it now reads the venue's last 28 days of bills and
+payments, every payment linked to a guest, and the POS webhook deliveries of the day; if the last
+two reads fail, the email goes out without the sentences that need them, and if the narrative
+fails, without the narrative.
+
+**Read it first.** `node tools/close-preview.js --demo good` (or `bad`, `empty`; `--lang fr`,
+`--currency LBP`, `--email` for the whole text) prints yesterday's narrative from fictional
+Mayda activity; `--fixture rows.json --date YYYY-MM-DD` from rows in the shape of the tables.
+Nothing is sent.
+
+**Optional: a model rewrite (off by default).** With the function secret
+`CLOSE_NARRATIVE_MODEL_KEY` (an Anthropic API key) set, the rules' narrative and the day's figures
+(no venue name, dishes or contacts) go to the Claude API (`claude-sonnet-5-5`; another model with
+`CLOSE_NARRATIVE_MODEL`) to be reworded more naturally in the venue's language, under strict
+instructions: keep every number, add nothing, same length. The rewrite is used only if its numbers
+are exactly the rules' numbers (checked numerically, Arabic-Indic digits included) and it passes
+the other checks in `docs/close-narrative.md`; on any error, refusal, timeout (20 s) or doubt the
+rules' text goes out, and the function log says why. Unset the secret to turn it off. Cost: one
+short request per venue per day. `node tools/close-preview.js --demo good --model` tries it locally
+with the key in the environment.
+
 ## Payment callbacks and receipt emails (September 30)
 
 Two Edge Functions and `payments-2026-09-30.sql` (run it after `auth-2026-09-24.sql`; it

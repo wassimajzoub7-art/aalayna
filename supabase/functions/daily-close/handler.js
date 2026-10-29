@@ -8,6 +8,9 @@
                          -> {id}. attachments is [{filename, content}] with content in base64.
        now()             milliseconds since the epoch (default Date.now)
        env               function name -> value, or a plain object
+       narrate(input)    optional (T4): closeNarrative's input -> Promise<{text, lang}>. index.ts passes
+                         createNarrator from ../_shared/close-narrative-model.js; without it the email
+                         has no narrative and the loads are exactly the day's.
    The window is Asia/Beirut 04:00 of the business day to 04:00 of the next day, so a
    late-night service belongs to the night it started in.
    A cron call closes, for every venue, the latest finished business day that has no sent row
@@ -245,6 +248,110 @@ export function computeClose({ window: w, checks, settles, guests, events, docs 
   };
 }
 
+/* ---------------------------------------------------- narrative facts (T4) */
+
+/* What the narrative needs beyond computeClose, for the same window and with the same
+   as-of-the-close statuses (docs/close-narrative.md):
+     averageBillCents / Count  mean totalCents of the bills closed in the window that have one
+     settleMinutes / Count     median minutes from request (ts) to confirmedAt over the payments
+                               confirmed in the window (rail 'pos' excluded: the till times them)
+     pendingCash               the cash requests still pending at the close that had waited at
+                               least pendingMinutes (10) by then, with amount, tables and how many
+                               are from before the window
+     rateAgeDays               whole days from aal.rate_meta updatedAt to the close, when on file
+     pos                       {count, lastStatus}: webhook deliveries created in the window and not
+                               delivered by the close (at least one failed attempt); null = unknown
+     returns                   computeReturns below, only when asked for (returns: true) */
+const PENDING_MS = 10 * 60 * 1000;
+export function computeFacts({ window: w, checks, settles, guests, docs, deliveries, customerSettles, returns }) {
+  const { start, end } = w;
+  const closedWithTotal = bodies(checks).filter((c) => within(stamp(c.closedAt), start, end) && Number(c.totalCents) > 0);
+  const views = bodies(settles).map((s) => viewOf(s, end)).filter(Boolean);
+  const timed = views.filter((v) => v.status === 'confirmed' && within(v.at, start, end) && v.rail !== 'pos' && Number.isFinite(v.created) && Number.isFinite(stamp(v.s.confirmedAt)))
+    .map((v) => (stamp(v.s.confirmedAt) - v.created) / 60000).filter((m) => m >= 0).sort((a, b) => a - b);
+  const median = timed.length ? (timed.length % 2 ? timed[(timed.length - 1) / 2] : (timed[timed.length / 2 - 1] + timed[timed.length / 2]) / 2) : null;
+  const overdue = views.filter((v) => v.status === 'pending' && v.rail === 'cash' && Number.isFinite(v.created) && end - v.created >= PENDING_MS);
+  const meta = (docs || []).find((d) => d.key === 'aal.rate_meta'), metaAt = meta && meta.body ? stamp(meta.body.updatedAt) : NaN;
+  let pos = null;
+  if (Array.isArray(deliveries)) {
+    const failed = deliveries.filter((d) => within(stamp(d.created_at), start, end) && Number(d.attempts) > 0 && !(stamp(d.delivered_at) < end))
+      .sort((a, b) => stamp(a.created_at) - stamp(b.created_at));
+    pos = { count: failed.length, lastStatus: failed.length && failed[failed.length - 1].last_status != null ? Number(failed[failed.length - 1].last_status) : null };
+  }
+  return {
+    averageBillCents: closedWithTotal.length ? Math.round(closedWithTotal.reduce((n, c) => n + Number(c.totalCents), 0) / closedWithTotal.length) : null,
+    averageBillCount: closedWithTotal.length,
+    settleMinutes: median == null ? null : Math.round(median), settleCount: timed.length,
+    pendingCash: {
+      count: overdue.length, usdCents: overdue.reduce((n, v) => n + v.usd.amount, 0), tables: tableList(overdue.map((v) => v.s.table)),
+      older: overdue.filter((v) => v.created < start).length
+    },
+    rateAgeDays: readRate(docs) && Number.isFinite(metaAt) && metaAt <= end ? Math.floor((end - metaAt) / 86400000) : null,
+    pos,
+    returns: returns && Array.isArray(customerSettles) ? computeReturns({ window: w, guests, settles: [...(settles || []), ...customerSettles] }) : null
+  };
+}
+
+/* Who came back, from the growth model (restaurant-growth.js A.customerProfiles,
+   A.campaignAudience): a visit is a guest/bill pair with a payment confirmed by the close and
+   linked to the guest (customerId), at its earliest payment. Counts only: no contact detail
+   leaves this function.
+     seen        guests with a visit in the window
+     first       ... whose first visit it is
+     returning   ... whose previous visit is under 30 days old and who have 2 visits
+     regulars    ... whose previous visit is under 30 days old and who have 3 or more
+     lapsed      ... whose previous visit is 30 days old or more
+     secondVisit guests who entered the second-visit audience during the window: exactly one visit,
+                 7 days old at some instant of the window, and offers permission (the latest
+                 marketing choice before the close) */
+export function computeReturns({ window: w, guests, settles }) {
+  const { start, end } = w, DAYMS = 86400000;
+  const visits = new Map();
+  for (const v of bodies(settles).map((s) => viewOf(s, end)).filter(Boolean)) {
+    if (v.status !== 'confirmed' || !v.s.customerId || !v.s.checkId || !(v.at < end)) continue;
+    const g = String(v.s.customerId), byCheck = visits.get(g) || new Map(), k = String(v.s.checkId);
+    if (!byCheck.has(k) || v.at < byCheck.get(k)) byCheck.set(k, v.at);
+    visits.set(g, byCheck);
+  }
+  const out = { seen: 0, first: 0, returning: 0, regulars: 0, lapsed: 0, secondVisit: 0 };
+  for (const g of bodies(guests)) {
+    const times = [...(visits.get(String(g.id)) || new Map()).values()].sort((a, b) => a - b);
+    if (!times.length) continue;
+    const todayAt = times.find((t) => t >= start);
+    if (todayAt != null && todayAt < end) {
+      const before = times.filter((t) => t < todayAt), prev = before[before.length - 1];
+      out.seen++;
+      if (prev == null) out.first++;
+      else if (todayAt - prev >= 30 * DAYMS) out.lapsed++;
+      else if (times.length >= 3) out.regulars++;
+      else out.returning++;
+    }
+    if (times.length === 1 && within(times[0] + 7 * DAYMS, start, end)) {
+      const hist = (g.consentHistory || []).filter((h) => stamp(h.at) < end).sort((a, b) => stamp(a.at) - stamp(b.at));
+      const marketing = hist.length ? !!hist[hist.length - 1].marketing : !!g.marketing;
+      if (marketing) out.secondVisit++;
+    }
+  }
+  return out;
+}
+
+/* The narrative's input for one venue and one day (closeNarrative in
+   ../_shared/close-narrative.js): the day, the same weekday a week earlier, and the same
+   weekday 7, 14, 21 and 28 days earlier, all computed from one load of the venue's rows. */
+export const COMPARE_WEEKS = 4;
+export function narrativeInput({ venue, window: w, data }) {
+  const one = (d, full) => {
+    const win = d === w.day ? w : windowFor(d);
+    return { figures: computeClose({ window: win, ...data }), facts: computeFacts({ window: win, ...data, returns: full }) };
+  };
+  const trailing = [];
+  for (let k = 1; k <= COMPARE_WEEKS; k++) trailing.push(one(addDays(w.day, -7 * k), false));
+  return {
+    lang: venue && venue.lang, currency: venue && venue.currency, day: w.day,
+    today: one(w.day, true), lastWeek: trailing[0], trailing
+  };
+}
+
 /* ------------------------------------------------------------------ csv */
 
 export const CSV_HEADER = ['settlementId', 'checkId', 'table', 'rail', 'status', 'amountUsd', 'tipUsd', 'currency', 'confirmedAt', 'externalRef', 'refunded'];
@@ -284,7 +391,7 @@ const railName = (r) => (r === 'card' ? 'Card' : r === 'whish' ? 'Whish' : r ===
 const lbp = (n) => 'LL ' + String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 const tablesText = (t) => (t.length === 1 ? 'table ' : 'tables ') + t.join(', ');
 
-export function buildEmail({ venue, figures: f, csvName }) {
+export function buildEmail({ venue, figures: f, csvName, narrative }) {
   const name = oneLine(venue.name), label = dayLabel(f.day);
   const subject = `${name}: ${label}, on Aalayna`;
   const cashLine = plural(f.cash.count, 'payment') + ', ' + usdText(f.cash.usdCents) + (f.cash.lbp != null ? ' (' + lbp(f.cash.lbp) + ')' : '');
@@ -318,7 +425,9 @@ export function buildEmail({ venue, figures: f, csvName }) {
   if (f.unconverted) actions.push(`${plural(f.unconverted, 'payment')} had no USD value on record and ${f.unconverted === 1 ? 'is' : 'are'} left out of the dollar totals (the CSV lists them).`);
 
   const width = Math.max(...rows.map((r) => r[0].length)) + 2;
+  const story = narrative && narrative.text ? oneLine(narrative.text) : '';
   const textParts = [
+    ...(story ? [story, ''] : []),
     `${name}, ${label}, 04:00 to 04:00 Beirut time.`,
     'Amounts are USD and include tips.', '',
     ...rows.map((r) => (r[0] + ':').padEnd(width) + r[1]), '',
@@ -329,7 +438,9 @@ export function buildEmail({ venue, figures: f, csvName }) {
 
   const td = 'padding:4px 12px 4px 0;vertical-align:top';
   const htmlRows = rows.map((r) => `<tr><td style="${td};color:#555">${esc(r[0]).replace(/ /g, '&nbsp;')}</td><td style="${td}">${esc(r[1])}</td></tr>`).join('');
+  const storyLang = narrative && (narrative.lang === 'fr' || narrative.lang === 'ar') ? narrative.lang : 'en';
   const html = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#111;max-width:560px">'
+    + (story ? `<p dir="${storyLang === 'ar' ? 'rtl' : 'ltr'}" lang="${storyLang}" style="margin:0 0 16px;line-height:1.5${storyLang === 'ar' ? ';text-align:right' : ''}">${esc(story)}</p>` : '')
     + `<p style="margin:0 0 4px"><strong>${esc(name)}</strong>, ${esc(label)}</p>`
     + '<p style="margin:0 0 12px;color:#555">04:00 to 04:00 Beirut time. Amounts are USD and include tips.</p>'
     + `<table style="border-collapse:collapse">${htmlRows}</table>`
@@ -376,18 +487,36 @@ export function createHandler(deps) {
   }
   const rows = (rid, collection, more) => `kv_rows?select=id,body&restaurant_id=eq.${enc(rid)}&collection=eq.${collection}${more || ''}&order=id.asc`;
 
-  async function loadVenue(venue, w) {
-    const rid = venue.restaurant_id, since = enc(new Date(w.start).toISOString());
-    const [docs, checksTouched, checksOpen, settlesTouched, settlesPending, events, guests] = await Promise.all([
-      all(`kv_docs?select=key,body&restaurant_id=eq.${enc(rid)}&key=in.(aal.live,aal.rate)&order=key.asc`),
+  /* since: the earliest window start the caller needs (with a narrator, 28 days earlier, so the
+     comparable weekdays come from the same load). The growth rows (every payment linked to a guest)
+     and the POS deliveries are read softly: if either read fails, the close goes out without the
+     sentences that need them. */
+  async function loadVenue(venue, w, since0) {
+    const rid = venue.restaurant_id, since = enc(new Date(since0 == null ? w.start : since0).toISOString());
+    const soft = (p) => p.catch(() => null);
+    const [docs, checksTouched, checksOpen, settlesTouched, settlesPending, events, guests, customerSettles, deliveries] = await Promise.all([
+      all(`kv_docs?select=key,body&restaurant_id=eq.${enc(rid)}&key=in.(aal.live,aal.rate,aal.rate_meta)&order=key.asc`),
       all(rows(rid, 'aal.checks', `&updated_at=gte.${since}`)),
       all(rows(rid, 'aal.checks', '&body->>closedAt=is.null')),
       all(rows(rid, 'aal.settle', `&updated_at=gte.${since}`)),
       all(rows(rid, 'aal.settle', '&body->>status=eq.pending')),
       all(rows(rid, 'aal.events', `&body->>eventType=eq.review_submitted&updated_at=gte.${since}`)),
-      all(rows(rid, 'aal.guests', `&updated_at=gte.${since}`))
+      all(rows(rid, 'aal.guests', `&updated_at=gte.${since}`)),
+      deps.narrate ? soft(all(rows(rid, 'aal.settle', '&body->>customerId=not.is.null'))) : null,
+      deps.narrate ? soft(posDeliveries(rid, w)) : null
     ]);
-    return { docs, checks: [...checksTouched, ...checksOpen], settles: [...settlesTouched, ...settlesPending], events, guests };
+    return { docs, checks: [...checksTouched, ...checksOpen], settles: [...settlesTouched, ...settlesPending], events, guests, customerSettles, deliveries };
+  }
+  async function posDeliveries(rid, w) {
+    const ends = await all(`webhook_endpoints?select=id&restaurant_id=eq.${enc(rid)}&order=id.asc`);
+    if (!ends.length) return [];
+    return all(`webhook_deliveries?select=id,attempts,last_status,delivered_at,created_at&endpoint_id=in.(${ends.map((e) => enc(e.id)).join(',')})`
+      + `&created_at=gte.${enc(new Date(w.start).toISOString())}&created_at=lt.${enc(new Date(w.end).toISOString())}&order=id.asc`);
+  }
+  /* The narrative, never in the way of the email: any error leaves the close without it. */
+  async function narrativeFor(venue, w, data) {
+    if (!deps.narrate) return null;
+    try { const n = await deps.narrate(narrativeInput({ venue, window: w, data })); return n && n.text ? n : null; } catch (_) { return null; }
   }
 
   async function recipientsOf(rid) {
@@ -435,14 +564,16 @@ export function createHandler(deps) {
         await finish({ status: 'skipped', recipients: 0, provider_id: null, error: 'no active owner or manager email' });
         return { restaurantId: rid, name: venue.name, status: 'skipped', reason: 'no active owner or manager email' };
       }
-      const figures = computeClose({ window: w, ...(await loadVenue(venue, w)) });
+      const data = await loadVenue(venue, w, deps.narrate ? windowFor(addDays(day, -7 * COMPARE_WEEKS)).start : w.start);
+      const figures = computeClose({ window: w, ...data });
       // A window with no bill opened or closed and no payment record is not worth an email; force sends it anyway.
       if (!force && !figures.bills.opened && !figures.bills.closed && !figures.csvRows.length) {
         await finish({ status: 'skipped', recipients: 0, provider_id: null, error: 'no activity' });
         return { restaurantId: rid, name: venue.name, status: 'skipped', reason: 'no activity' };
       }
       const csvName = `close-${slugOf(venue.slug)}-${day}.csv`;
-      const mail = buildEmail({ venue, figures, csvName });
+      const narrative = await narrativeFor(venue, w, data);
+      const mail = buildEmail({ venue, figures, csvName, narrative });
       const attachments = [{ filename: csvName, content: toBase64(buildCsv(figures.csvRows)) }];
       const from = env('DAILY_CLOSE_FROM');
       const ids = [], failures = [];
@@ -489,7 +620,7 @@ export function createHandler(deps) {
 
     let venues;
     try {
-      venues = await all(`venue_profiles?select=restaurant_id,name,place,slug${venueParam != null ? `&restaurant_id=eq.${enc(venueParam)}` : ''}&order=restaurant_id.asc`);
+      venues = await all(`venue_profiles?select=*${venueParam != null ? `&restaurant_id=eq.${enc(venueParam)}` : ''}&order=restaurant_id.asc`);
     } catch (e) { return json(500, { error: 'could not read venues: ' + String(e && e.message || e).slice(0, 200) }); }
     if (venueParam != null && !venues.length) return json(404, { error: 'unknown venue' });
 
