@@ -1295,7 +1295,7 @@ var AalaynaTableQR = (function (global) {
   return api;
 })(window);
 </script>
-<script src="aalayna-sync.js?v=8"></script>
+<script src="aalayna-sync.js?v=9"></script>
 <script src="analytics-config.js" defer></script>
 <script src="analytics.js" defer></script>
 <script>
@@ -1372,6 +1372,11 @@ var STR = {
     stCashConfirmed: 'Cash collection confirmed by your server.', stDemoConfirmed: 'Demo payment confirmed · no money moved.',
     stOther: 'This request was {status}. Please speak with your server.',
     stat_cancelled: 'cancelled', stat_refunded: 'refunded', stat_failed: 'declined', stat_expired: 'not completed', stat_other: 'changed',
+    openingProvider: 'Opening the payment page…', confirmingTitle: 'Confirming…',
+    stConfirming: 'Waiting for the payment provider to confirm. This usually takes a few seconds; keep this page open.',
+    stProviderConfirmed: 'Confirmed by the payment provider.', stFakeConfirmed: 'Confirmed by the demo provider · no money moved.',
+    providerBack: 'This payment was {status}. Nothing was charged. You can try again or pay another way.',
+    demoProvider: 'Demo provider · no money moves', cardDesc: 'Visa, Mastercard, Amex',
     stQueued: 'Cash request saved on this phone. It reaches the restaurant as soon as you are back online.',
     unableConnect: 'Unable to connect to this bill. Please speak with your server.',
     mailPh: 'WhatsApp (+code) or email', mailAria: 'Optional WhatsApp number with any country code, or email',
@@ -1458,6 +1463,11 @@ var STR = {
     stCashConfirmed: 'Encaissement confirmé par votre serveur.', stDemoConfirmed: 'Paiement de démonstration confirmé · aucun argent n’a circulé.',
     stOther: 'Cette demande a été {status}. Merci de voir avec votre serveur.',
     stat_cancelled: 'annulée', stat_refunded: 'remboursée', stat_failed: 'refusée', stat_expired: 'interrompue', stat_other: 'modifiée',
+    openingProvider: 'Ouverture de la page de paiement…', confirmingTitle: 'Confirmation…',
+    stConfirming: 'En attente de la confirmation du prestataire de paiement. Cela prend en général quelques secondes ; gardez cette page ouverte.',
+    stProviderConfirmed: 'Confirmé par le prestataire de paiement.', stFakeConfirmed: 'Confirmé par le prestataire de démonstration · aucun argent transféré.',
+    providerBack: 'Cette demande de paiement a été {status}. Rien n’a été débité. Vous pouvez réessayer ou payer autrement.',
+    demoProvider: 'Prestataire de démonstration · aucun argent transféré', cardDesc: 'Visa, Mastercard, Amex',
     stQueued: 'Demande en espèces enregistrée sur ce téléphone. Elle part au restaurant dès votre retour en ligne.',
     unableConnect: 'Impossible de se connecter à cette addition. Merci de voir avec votre serveur.',
     mailPh: 'WhatsApp (+indicatif) ou e-mail', mailAria: 'Numéro WhatsApp avec indicatif, ou e-mail (facultatif)',
@@ -1544,6 +1554,11 @@ var STR = {
     stCashConfirmed: 'أكّد النادل استلام المبلغ نقداً.', stDemoConfirmed: 'تم تأكيد الدفع التجريبي · لم تُحوَّل أي أموال.',
     stOther: 'هذا الطلب {status}. يُرجى التحدث مع النادل.',
     stat_cancelled: 'أُلغي', stat_refunded: 'استُرِدّ', stat_failed: 'رُفض', stat_expired: 'لم يكتمل', stat_other: 'تغيّر',
+    openingProvider: 'جارٍ فتح صفحة الدفع…', confirmingTitle: 'جارٍ التأكيد…',
+    stConfirming: 'بانتظار تأكيد مزوّد الدفع. يستغرق ذلك بضع ثوانٍ عادةً؛ أبقِ هذه الصفحة مفتوحة.',
+    stProviderConfirmed: 'أكّده مزوّد الدفع.', stFakeConfirmed: 'أكّده مزوّد الدفع التجريبي · لم يُحوَّل أي مال.',
+    providerBack: 'هذا الدفع {status}. لم يُخصم شيء. يمكنك المحاولة مجدداً أو الدفع بطريقة أخرى.',
+    demoProvider: 'مزوّد تجريبي · لا يُحوَّل أي مال', cardDesc: 'Visa, Mastercard, Amex',
     stQueued: 'الطلب النقدي محفوظ على هذا الهاتف. يصل إلى المطعم فور عودتك إلى الاتصال.',
     unableConnect: 'تعذّر الاتصال بهذه الفاتورة. يُرجى التحدث مع النادل.',
     mailPh: 'واتساب (+رمز الدولة) أو البريد الإلكتروني', mailAria: 'رقم واتساب مع رمز الدولة، أو بريد إلكتروني (اختياري)',
@@ -1910,6 +1925,9 @@ function renderMenu(){
 /* ---------------- state ---------------- */
 var people = 4, splitMode = 'even', picked = {}, share = 0;
 var tipRate = .10, tipFlat = null, kind = 'whish', note = 0;
+/* T15: with a venue key, the digital rails this bill may pay and their provider, e.g.
+   {card:'fake'}, from Aalayna.paymentRails (supabase/functions/payment-start); {} until known */
+var RAILS = {}, railPicked = false;   // railPicked: the guest tapped a rail; until then the page prefers Whish, then card, then cash
 /* T12: the amount this guest was shown and is paying. From the tap on Pay until the
    payment completes, fails or is cancelled, the share and tip stay as shown. The
    request reserves the share on the check (availableCents drops by it) and the store
@@ -2412,28 +2430,45 @@ function tipTyped(){
 }
 function pick(el, k){
   if (k !== kind) ui('rail', k);
-  kind = k;
+  kind = k; railPicked = true;
   document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on');p.setAttribute('aria-pressed','false'); });
   el.classList.add('on');el.setAttribute('aria-pressed','true');
   $('cashnote').style.display = (k === 'cash') ? 'block' : 'none';
   $('chg').classList.toggle('on', k === 'cash');
   paintPay();
 }
-/* Rails by mode. Demo mode simulates Whish and card end to end. With a venue key
-   only cash can complete: a digital payment needs a verified provider callback
-   (aal_mutate confirm_digital), which no guest device can supply, so card and
-   Whish are not offered until the payment provider is connected. */
+/* Rails by mode. Demo mode simulates Whish and card end to end. With a venue key a
+   digital rail is offered only when the venue has a provider for it (RAILS, from the
+   payment-start function): the guest is then taken to the provider's page and only the
+   provider's callback confirms the payment (aal_mutate confirm_digital), which no guest
+   device can supply. A rail with no provider is not offered. The fake provider, at venues
+   whose demo payments are on, says so under the rail. */
 function applyRails(){
-  var cashOnly = !Aalayna.demoMode();
-  ['whish','card'].forEach(function(r){ $('pm-' + r).hidden = cashOnly; });
+  var demo = Aalayna.demoMode();
+  ['whish','card'].forEach(function(r){
+    var on = demo || !!RAILS[r], pd = $('pm-' + r).querySelector('.pd');
+    $('pm-' + r).hidden = !on;
+    if (pd) pd.textContent = !demo && RAILS[r] === 'fake' ? t('demoProvider') : t(r === 'whish' ? 'whishDesc' : 'cardDesc');
+  });
+  var cashOnly = !demo && !RAILS.whish && !RAILS.card;
   $('rails-note').hidden = !cashOnly;
-  if (cashOnly && kind !== 'cash'){
-    kind = 'cash';
-    document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on'); p.setAttribute('aria-pressed','false'); });
-    $('pm-cash').classList.add('on'); $('pm-cash').setAttribute('aria-pressed','true');
-    $('cashnote').style.display = 'block';
-    $('chg').classList.add('on');
+  if (!demo) {
+    var want = railPicked ? kind : 'whish';
+    if (want !== 'cash' && !RAILS[want]) want = RAILS.whish ? 'whish' : RAILS.card ? 'card' : 'cash';
+    if (want !== kind) markRail(want);
   }
+}
+/* the rail the page shows as chosen, without counting it as the guest's tap */
+function markRail(k){
+  kind = k;
+  document.querySelectorAll('.pm').forEach(function(p){ p.classList.remove('on'); p.setAttribute('aria-pressed','false'); });
+  $('pm-' + k).classList.add('on'); $('pm-' + k).setAttribute('aria-pressed','true');
+  $('cashnote').style.display = (k === 'cash') ? 'block' : 'none';
+  $('chg').classList.toggle('on', k === 'cash');
+}
+function loadRails(){
+  if (!(Aalayna.sync && Aalayna.sync.enabled && Aalayna.paymentRails)) return;
+  Aalayna.paymentRails().then(function(r){ RAILS = r && typeof r === 'object' ? r : {}; applyRails(); paintPay(); });
 }
 function setNote(el, n){
   ui('note', n === 0 ? 'exact' : String(n));
@@ -2517,13 +2552,17 @@ function restoreReceipt(){
   lastSettlementStatus = saved.status;
   paymentBusy = true;
   paintSettlementResult();
-  go('v-done');
+  if (lastSettlementId) go('v-done');   // T15: a declined digital payment went back to the bill instead
 }
 function refreshGuest(){
   if (Aalayna.sync && Aalayna.sync.enabled && !lastSettlementId) {
     var pending = readPending();
     var recovered = pending && Aalayna.settlements().find(function(s){ return s.requestId === pending.requestId; });
-    if (recovered) { paymentRequestId = pending.requestId; paymentBusy = true; completeSettle(recovered, recovered.rail); }
+    if (recovered) {
+      var st = Aalayna.settlementStatus(recovered);
+      if (recovered.rail !== 'cash' && ['failed','expired','cancelled'].indexOf(st) >= 0) providerBack(st);
+      else { paymentRequestId = pending.requestId; paymentBusy = true; completeSettle(recovered, recovered.rail); }
+    }
   }
   paintSettlementResult();
   var before = MENU_V;
@@ -2540,6 +2579,18 @@ function watchGuestChanges(){
   });
 }
 function newRequestId(){ return 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2); }
+/* T15: the provider declined, or the guest left its page and the reservation ran out. The
+   bill is repainted with the balance free again; the next tap is a fresh request. */
+function providerBack(status){
+  clearPending();
+  try { sessionStorage.removeItem(receiptSessionKey()); } catch(e) {}
+  paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null;
+  paymentRequestId = newRequestId();
+  releasePayment();
+  buildBill(); buildPick(); calcShare();
+  go('v-pay');
+  alert(t('providerBack', {status: t(STR.en['stat_' + status] ? 'stat_' + status : 'stat_other')}));
+}
 /* the same fields whichever rail: the store validates them against the open check */
 function paymentFields(rail){
   var tip = tipAmt(), tot = share + tip;
@@ -2588,6 +2639,7 @@ async function settle(){
   }
   try { var requested = Aalayna.requestPayment(paymentFields(kind)); if(requested && typeof requested.then === "function") await requested; }
   catch(error) { paymentFailed(error); return; }
+  if (Aalayna.sync && Aalayna.sync.enabled) { openProvider(kind); return; }
   if (kind === 'whish'){
     $('wh-amt').textContent = t('payAmt', {amt: usd(tot)});
     $('wh-btn').textContent = t('openWhish');
@@ -2596,6 +2648,33 @@ async function settle(){
   }
   $('card-btn').textContent = t('payAmt', {amt: usd(tot)});
   openOv('ov-card');
+}
+/* T15, shared mode: the provider's own page. The reservation is made; payment-start names
+   the page, the browser goes there, and the provider brings it back to this address with
+   pay=<id>. Whether the payment is confirmed is read from the snapshot afterwards
+   (refreshGuest); nothing here marks anything paid. If no page can be opened the
+   reservation is cancelled so the balance is free again and the guest is told why. */
+async function openProvider(rail){
+  paymentBusy = true;
+  savePending(paymentFields(rail), rail);
+  var btn = $('paybtn'), was = btn.innerHTML;
+  btn.textContent = t('openingProvider'); btn.disabled = true;
+  try {
+    var res = await Aalayna.startPayment(paymentRequestId, returnAddress());
+    if (!res || typeof res.url !== 'string') throw new Error(t('unableConnect'));
+    location.assign(res.url);
+  } catch(error) {
+    btn.innerHTML = was; btn.disabled = false;
+    clearPending();
+    try { var cancelled = Aalayna.failPayment(paymentRequestId, 'failed'); if (cancelled && cancelled.catch) cancelled.catch(function(){}); } catch(e) {}
+    paymentFailed(error);
+  }
+}
+/* this page's address without any credential or earlier pay= parameter; the function adds pay=<id> */
+function returnAddress(){
+  var q = new URLSearchParams(location.search);
+  ['k','s','reset','pay'].forEach(function(p){ q.delete(p); });
+  return location.origin + location.pathname + (q.toString() ? '?' + q.toString() : '');
 }
 /* closing the provider without confirming: the request expires, a retry starts clean */
 function cancelProvider(ovId){
@@ -2631,7 +2710,7 @@ async function finishSettle(rail){
   completeSettle(record, rail);
 }
 function completeSettle(record, rail){
-  try { sessionStorage.removeItem(receiptSessionKey()+':pending'); } catch(e) {}
+  clearPending();
   releasePayment();
   lastSettlementId = record.id;
   lastSettlementStatus = null;
@@ -2639,8 +2718,11 @@ function completeSettle(record, rail){
   var w = $('inner');
   w.classList.remove('go');
   paintSettlementResult();
-  if (rail !== 'cash') makeBurst();
-  if (window.AalaynaAnalytics) AalaynaAnalytics.track(rail === 'cash' ? 'demo_cash_requested' : 'demo_complete', rail === 'cash' ? 'cash_requested' : rail);
+  // a digital payment still 'initiated' (the provider has not answered yet) gets its burst
+  // in paintSettlementResult once the snapshot says it is confirmed
+  var confirmedNow = rail === 'cash' || Aalayna.isConfirmed(record);
+  if (rail !== 'cash' && confirmedNow) makeBurst();
+  if (window.AalaynaAnalytics && confirmedNow) AalaynaAnalytics.track(rail === 'cash' ? 'demo_cash_requested' : 'demo_complete', rail === 'cash' ? 'cash_requested' : rail);
   void w.offsetWidth;
   w.classList.add('go');
 }
@@ -2649,18 +2731,27 @@ function paintSettlementResult(){
   var record = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
   if (!record) return;
   var status = Aalayna.settlementStatus(record), confirmed = status === 'confirmed';
+  // T15: a digital payment this page was waiting on, declined or run out meanwhile: back to the bill
+  if (record.rail !== 'cash' && Aalayna.sync && Aalayna.sync.enabled && lastSettlementStatus === 'initiated' && ['failed','expired','cancelled'].indexOf(status) >= 0) { providerBack(status); return; }
   $('rc-amt').textContent = usd(record.amount);
   if ($('rc-table')) $('rc-table').textContent = String(record.table != null ? record.table : TABLE);
   $('rc-method').textContent = railName(record.rail) + (record.rail === 'cash' && record.change > 0 ? ' · ' + t('change', {amt: usd(record.change)}) : '');
-  $('result-title').textContent = confirmed ? t('thanks') : status === 'pending' ? t('cashRequested') : t('requestUpdated');
+  var digital = record.rail !== 'cash', shared = !!(Aalayna.sync && Aalayna.sync.enabled);
+  $('result-title').textContent = confirmed ? t('thanks') : status === 'pending' ? t('cashRequested') : status === 'initiated' ? t('confirmingTitle') : t('requestUpdated');
   $('result-seal').textContent = confirmed ? '✓' : '…';
   $('method-label').textContent = confirmed ? t('paidVia') : t('requestedVia');
   $('payment-status').textContent = status === 'pending' ? t('stPending')
-    : confirmed ? (Aalayna.sync && Aalayna.sync.enabled ? t('stCashConfirmed') : t('stDemoConfirmed'))
+    : status === 'initiated' ? t('stConfirming')
+    : confirmed ? (!shared ? t('stDemoConfirmed') : !digital ? t('stCashConfirmed') : /^fake-/.test(record.externalRef || '') ? t('stFakeConfirmed') : t('stProviderConfirmed'))
     : t('stOther', {status: t(STR.en['stat_' + status] ? 'stat_' + status : 'stat_other')});
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
   if (record.rail === 'cash' && lastSettlementStatus === 'pending' && confirmed && window.AalaynaAnalytics) {
     AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
+  }
+  // the provider's callback arrived while this page waited: the moment it reads as paid
+  if (digital && lastSettlementStatus === 'initiated' && confirmed) {
+    makeBurst();
+    if (window.AalaynaAnalytics) AalaynaAnalytics.track('demo_complete', record.rail);
   }
   lastSettlementStatus = status;
   rememberReceipt();
@@ -2789,7 +2880,7 @@ function restart(){
   $('review-text').value = ''; reviewDone = false; reviewDoneMsg = ''; ratingLogged = false;
   // a new scan on this phone keeps the guest's language and currency
   people = 4; splitMode = 'even'; picked = {}; tipRate = .10; tipFlat = null;
-  kind = 'whish'; note = 0; rating = 0;
+  kind = 'whish'; railPicked = false; note = 0; rating = 0;
   $('amt-in').value = '';
   $('tip-in').value = ''; $('tipcw').style.display = 'none';
   $('pn').textContent = 4;
@@ -2884,7 +2975,7 @@ $('staff-demo').href = 'dashboard.html' + window.location.search;
 staggered = true;
 restoreReceipt();
 watchGuestChanges();
-function sharedReady(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();}
+function sharedReady(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();loadRails();}
 function sharedFailed(){
   if (BILL_ENDED) return;   // T8: the closed-bill message is already on screen
   // opened without a connection: the bill this phone last saw stays on screen, with the banner
@@ -2941,25 +3032,41 @@ function paintNet(){
   paintQueued();
 }
 function pendingKey(){ return receiptSessionKey() + ':pending'; }
+/* T15: the payment the provider sent this browser back for (pay=<id>). Kept by venue alone,
+   because the table, and so pendingKey(), is not known until the bill has been read. */
+function returnKey(){ return 'aal.guest-return:' + JSON.stringify([Aalayna.venueId()]); }
+function clearPending(){ try { sessionStorage.removeItem(pendingKey()); sessionStorage.removeItem(returnKey()); } catch(e) {} }
 function readPending(){
   var raw = null;
   try { raw = sessionStorage.getItem(pendingKey()); } catch(e) {}
-  if (!raw) return null;
+  if (!raw) { try { var back = sessionStorage.getItem(returnKey()); if (back) return { requestId: back, rail: 'provider' }; } catch(e) {} return null; }
   try { var p = JSON.parse(raw); if (p && p.requestId) return p; } catch(e) {}
   return { requestId: raw };   // an id alone, as earlier versions of this page kept it
 }
-function savePending(fields){
-  try { sessionStorage.setItem(pendingKey(), JSON.stringify({ requestId: paymentRequestId, amount: fields ? fields.amount : null, change: fields ? fields.change : 0 })); } catch(e) {}
+function savePending(fields, rail){
+  try { sessionStorage.setItem(pendingKey(), JSON.stringify({ requestId: paymentRequestId, amount: fields ? fields.amount : null, change: fields ? fields.change : 0, rail: rail || 'cash' })); } catch(e) {}
+}
+/* T15: back from the provider's page, before the snapshot carries the payment's answer */
+function paintConfirming(p){
+  $('rc-amt').textContent = p.amount != null ? usd(p.amount) : '';
+  $('rc-method').textContent = p.rail === 'whish' || p.rail === 'card' ? railName(p.rail) : '';
+  $('method-label').textContent = t('requestedVia');
+  $('result-seal').textContent = '\u2026';
+  $('result-title').textContent = t('confirmingTitle');
+  $('payment-status').textContent = t('stConfirming');
+  ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = 'none'; });
+  return true;
 }
 /* the receipt of a cash request this phone holds; the sent record replaces it (refreshGuest) */
 function paintQueued(){
   var p = readPending();
   if (!p || lastSettlementId) return false;
+  if (p.rail && p.rail !== 'cash') return paintConfirming(p);
   var job = Aalayna.sync && Aalayna.sync.job ? Aalayna.sync.job('op:reserve:' + p.requestId) : 'pending';
   if (job === 'blocked' || job === 'refused') {
     // refused by the restaurant: never "saved" again; the guest may make a new request.
     // T8: the sync layer dropped the refused job and keeps its message; it is shown here, once.
-    try { sessionStorage.removeItem(pendingKey()); } catch(e) {}
+    clearPending();
     if (Aalayna.sync.dismiss) Aalayna.sync.dismiss('op:reserve:' + p.requestId);
     if (BILL_ENDED || (Aalayna.sync.closed && Aalayna.sync.closed())) { paymentBusy = false; releasePayment(); return false; }   // the closed-bill message says it
     go('v-pay');
@@ -2981,6 +3088,18 @@ window.addEventListener('offline', paintNet);
 window.addEventListener('resize', function(){ if (NET.off) paintNet(); });
 if (Aalayna.sync && Aalayna.sync.onState) Aalayna.sync.onState(function(s){ NET.lastReadAt = s.lastReadAt; NET.readFailures = s.readFailures; paintNet(); });
 else paintNet();
+// T15: brought back by the payment provider with pay=<id>. The id names the payment to look at
+// and nothing more: sessionStorage may not have survived the provider's page (another tab, a
+// wallet app), so the pending note is rebuilt from it. The parameter is then dropped from the
+// address so a reload or a share does not carry it.
+(function(){
+  var q = new URLSearchParams(location.search), pay = q.get('pay');
+  if (!pay || !(Aalayna.sync && Aalayna.sync.enabled)) return;
+  var p = readPending();
+  if (!p || p.requestId !== pay) { paymentRequestId = pay; try { sessionStorage.setItem(returnKey(), pay); } catch(e) {} }
+  q.delete('pay');
+  try { history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q.toString() : '')); } catch(e) {}
+})();
 // reloaded while a cash request still waits on this phone: its receipt, not the pay screen
 if (!lastSettlementId && readPending()) { paymentBusy = true; go('v-done'); refreshGuest(); paintQueued(); }
 </script>

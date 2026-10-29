@@ -15,7 +15,7 @@
 <script src="restaurant-growth.js?v=8"></script>
 <script src="owner-metrics.js?v=7"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=8"></script>
+<script src="aalayna-sync.js?v=9"></script>
 <style>
   :root{
     /* Aalayna brand: cream, ink, red for the main action, petrol for positive states; square corners. */
@@ -657,7 +657,7 @@ Aalayna.on(function(){ paintAll(); });
     var demoText=p.demo?'On: the venue is marked as still using simulated payments.':'Off: the venue is marked as using its real payment provider.';
     var toggle=button(p.demo?'Switch demo payments off':'Switch demo payments on','',function(){ saveProfile(v,{demo_payments:!p.demo},'Demo payments switched '+(p.demo?'off.':'on.')); });
     toggle.disabled=busy;
-    box.appendChild(line('Status',demoText+' Stored with the profile; shared digital payments stay disabled until a provider callback is connected.',[toggle],true));
+    box.appendChild(line('Status',demoText+' Stored with the profile. On: card and Whish on a shared bill go to the fake provider (no money moves) while FAKE_WEBHOOK_SECRET is set on the functions. Off: only the rails with a payment_providers row are offered; with none, cash only.',[toggle],true));
 
     box.appendChild(el('h3','Profile'));
     if(VS.editing[rid]){
