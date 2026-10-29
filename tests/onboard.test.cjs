@@ -19,7 +19,7 @@ const fs = require('node:fs'), path = require('node:path'), os = require('node:o
 const root = path.join(__dirname, '..');
 const { start } = require('./fixtures/onboard-server.cjs');
 const { main } = require('../tools/onboard.js');
-const { qrSvg, tableURL } = require('../tools/lib/cards.js');
+const { qrSvg, tableURL, HOW, HOW_NFC } = require('../tools/lib/cards.js');
 const { loadConfig } = require('../tools/lib/supabase.js');
 const { FONTS } = require('../tools/steps/theme.js');
 
@@ -369,6 +369,61 @@ test('the card sheet has one card per table with its link and its QR from qr-lib
       assert.ok(html.includes(rule), 'sheet has ' + rule);
     }
     assert.equal(fs.statSync(path.join(s.dir, 'onboarding', SLUG + '-table-cards.html')).mode & 0o077, 0);
+  } finally { await s.close(); }
+});
+
+test('--nfc: the tag list carries the card sheet\'s links, the cards say Tap or scan, and --no-nfc gives the plain sheet back', async () => {
+  const s = await setup();
+  try {
+    const dir = path.join(s.dir, 'onboarding'), cardsFile = path.join(dir, SLUG + '-table-cards.html'), tagsFile = path.join(dir, SLUG + '-table-tags.csv');
+    await s.run(ARGS.concat(['--nfc'], s.fixture));
+    const r = await s.run(['--slug', SLUG, '--approve-menu'].concat(s.fixture));
+    assert.equal(r.code, 0, r.text);
+    assert.equal(s.state().inputs.nfc, true);                                              // kept between runs
+    assert.match(r.text, /tables\s+done\s+24 table codes \(issued 24\); cards in onboarding\/test-bistro-table-cards\.html, NFC tag list in onboarding\/test-bistro-table-tags\.csv/);
+    const codes = tokensOf(s), nfcSheet = fs.readFileSync(cardsFile, 'utf8');
+    // one row per table, the exact URL the card's QR encodes and its link shows
+    const rows = fs.readFileSync(tagsFile, 'utf8').split('\n');
+    assert.equal(rows[0], 'table,url');
+    assert.equal(rows.pop(), '');
+    assert.equal(rows.length, 25);
+    for (let t = 1; t <= 24; t++) {
+      const url = tableURL(SLUG, t, codes[t]);
+      assert.equal(rows[t], t + ',' + url);
+      assert.ok(nfcSheet.includes(qrSvg(url)) && nfcSheet.includes('<div class="tlink">' + url.replace(/&/g, '&amp;') + '</div>'), 'table ' + t + ': tag, QR and link agree');
+    }
+    assert.equal(fs.statSync(tagsFile).mode & 0o077, 0);
+    assert.equal(cp.spawnSync('git', ['check-ignore', '-q', 'onboarding/test-bistro-table-tags.csv'], { cwd: root }).status, 0, 'the tag list stays out of git');
+    // the card wording: one line changes, on every card
+    assert.equal(HOW, 'Point your camera at the code, no app, no account.');
+    assert.equal(HOW_NFC, 'Tap or scan with your phone, no app, no account.');
+    assert.equal(nfcSheet.split('<div class="how">' + HOW_NFC + ' English, français, عربي.</div>').length - 1, 24);
+    assert.ok(!nfcSheet.includes(HOW));
+    // the checklist and the welcome note
+    assert.match(r.text, /\[ \] Print the table cards: open onboarding\/test-bistro-table-cards\.html in a browser and print on card stock\n  \[ \] Write each NFC tag from onboarding\/test-bistro-table-tags\.csv with a phone app \(any free NDEF writer\): one URL record per tag, the url of its table\n  \[ \] Lock each tag read-only, then tap it once from an iPhone and once from an Android before gluing it into its card \(docs\/nfc-tags\.md\)\n/);
+    const md = fs.readFileSync(path.join(dir, SLUG + '-welcome.md'), 'utf8');
+    assert.match(md, /I replace it\. Each card also carries an NFC tag, so guests can tap the card with their phone or scan the code\.\n/);
+    assert.doesNotMatch(r.text + md + nfcSheet + rows.join('\n'), /[—–]/);
+
+    // --no-nfc: tables runs again with the same codes; the sheet differs only by the words, the list is gone
+    const off = await s.run(['--slug', SLUG, '--no-nfc'].concat(s.fixture));
+    assert.equal(off.code, 0, off.text);
+    assert.match(off.text, /note: --nfc changed, so tables runs again/);
+    assert.match(off.text, /tables\s+done\s+24 table codes \(kept 24\); cards in onboarding\/test-bistro-table-cards\.html\n/);
+    assert.deepEqual(tokensOf(s), codes);
+    assert.ok(!('nfc' in s.state().inputs));
+    assert.ok(!fs.existsSync(tagsFile));
+    const plain = fs.readFileSync(cardsFile, 'utf8');
+    assert.equal(nfcSheet.split(HOW_NFC).join(HOW), plain, 'without --nfc the sheet is the same byte for byte, but for the how line');
+    assert.ok(!/Tap|NFC/.test(plain));
+    assert.doesNotMatch(off.text, /NFC tag/);
+    assert.match(off.text, /\[ \] Print the table cards: [^\n]*\n  \[ \] Send the welcome note/);
+    // and back on: the same sheet as the first time
+    await s.run(['--slug', SLUG, '--nfc'].concat(s.fixture));
+    assert.equal(fs.readFileSync(cardsFile, 'utf8'), nfcSheet);
+    const both = await s.run(['--slug', SLUG, '--nfc', '--no-nfc']);
+    assert.equal(both.code, 2);
+    assert.match(both.text, /Use --nfc or --no-nfc, not both\./);
   } finally { await s.close(); }
 });
 

@@ -556,6 +556,19 @@ test('book.html: the calendar that needs no script, the pilot in four stops with
   assert.ok(!/\.hero|#how|\.steps|\.benefits-band|\.contact|\.reel-|details\.lang|\.lang summary/.test(read('website.css')), 'the old homepage\'s rules are gone from website.css');
 });
 
+test('tap or scan (T7): book.html says the cards are tapped, the roadmap has T7, the NFC doc is linked and has no em dash', () => {
+  const pilot = read('book.html').match(/<section id="pilot"[\s\S]*?<\/section>/)[0];
+  assert.match(pilot, /table cards guests tap or scan/);
+  const roadmap = read('docs/roadmap.md');
+  assert.match(roadmap, /\n\| \*\*T7 Tap or scan\*\* \| An NFC tag inside the table card opens the same table link as its QR[^\n]*\[docs\/nfc-tags\.md\]\(nfc-tags\.md\)[^\n]*\| Nothing external \(tags cost under a dollar\) \|\n/);
+  assert.match(roadmap, /Wave two started 29 October 2026 with T7/);
+  const doc = read('docs/nfc-tags.md');
+  for (const want of ['NTAG213', 'NTAG215', 'NDEF', 'iPhone XS', 'camera app', 'Android', 'read-only', 'onboarding/<slug>-table-tags.csv']) assert.ok(doc.includes(want), 'docs/nfc-tags.md: ' + want);
+  assert.match(read('README.md'), /`docs\/nfc-tags\.md`/);
+  for (const f of ['docs/nfc-tags.md', 'docs/roadmap.md', 'book.html', 'qr.html', 'tools/lib/cards.js', 'tools/onboard.js', 'tools/steps/tables.js', 'tools/steps/welcome.js', 'tools/ui/index.html'])
+    assert.ok(!/—|&mdash;|&#8212;/.test(read(f)), f + ' has an em dash');
+});
+
 test('browser scripts on the marketing pages stay ES5', () => {
   SITE.concat([FR, AR]).forEach(f => (read(f).match(/<script>([\s\S]*?)<\/script>/g) || []).forEach(code => {
     assert.ok(!/=>|\blet\s|\bconst\s|`/.test(code), f + ' inline script uses ES2015 syntax');

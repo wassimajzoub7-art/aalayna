@@ -342,6 +342,23 @@ test('a failed run shows the step message; resume continues it; reset forgets it
   } finally { await s.close(); }
 });
 
+test('the form\'s "Cards carry an NFC tag" box runs the tool with --nfc', async () => {
+  const page = fs.readFileSync(path.join(root, 'tools', 'ui', 'index.html'), 'utf8');
+  assert.match(page, /<label class="check"><input type="checkbox" id="f-nfc"> Cards carry an NFC tag<\/label>/);
+  assert.match(fs.readFileSync(path.join(root, 'tools', 'ui', 'app.js'), 'utf8'), /nfc: \$\('f-nfc'\)\.checked/);
+  const s = await setup();
+  try {
+    await s.setKeys();
+    assert.equal((await s.call('POST', '/api/venues', Object.assign({}, FORM, { nfc: true }))).status, 202);
+    await s.stream(SLUG, 0);
+    assert.equal(s.state().inputs.nfc, true);
+    fs.rmSync(path.join(s.dir, 'onboarding'), { recursive: true, force: true });
+    assert.equal((await s.call('POST', '/api/venues', Object.assign({}, FORM, { nfc: 'yes' }))).status, 202);   // only true turns it on
+    await s.stream(SLUG, 0);
+    assert.ok(!('nfc' in s.state().inputs));
+  } finally { await s.close(); }
+});
+
 test('one run at a time per venue: a second start, a resume, an edit or a reset during a run is refused with 409', async () => {
   const s = await setup();
   try {

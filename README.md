@@ -114,6 +114,11 @@ for its table: anyone with a photo of it can open that table's current bill, so
 revoke and reissue a lost or copied card. Keys minted this way never expire (the
 same limit as bill links).
 
+A card can also carry an NFC tag that opens the same link, and then says "Tap or scan".
+In `qr.html` tick "Cards carry an NFC tag" and use "Copy tag list"; `tools/onboard.js
+--nfc` writes the list for a new venue. See `docs/nfc-tags.md` for the tags, how to write
+and lock them, and why the QR stays.
+
 **Pilot follow-ups (T8).** Run `supabase/followups-2026-09-24.sql` after the auth file
 (its header lists every change; untested against the live project). This replaces the
 note above that keys never expire: a bill's `chk_` keys keep working for 24 hours after
@@ -202,7 +207,9 @@ module each in `tools/steps/`, run in order and print one line each:
    the venue (draft and live menu, exactly as the editor's Publish makes them) and read
    back from the server. A pack with an item without a price is refused.
 4. **tables**: a code for tables 1 to N and `onboarding/<slug>-table-cards.html`, the
-   print sheet with the same cards as `qr.html`.
+   print sheet with the same cards as `qr.html`. With `--nfc` the cards say "Tap or
+   scan" and `onboarding/<slug>-table-tags.csv` lists each table's link for its NFC tag
+   (`docs/nfc-tags.md`).
 5. **staff**: the owner and each `--staff` email go on the staff list. No email is
    sent; each person signs in with their email and gets a six-digit code then.
 6. **verify**: a live test on table 9999: a $1.00 bill, two scans (same key), a cash

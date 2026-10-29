@@ -56,6 +56,7 @@ settlement licence; keep the product team small.
 | **T4 The morning close, in words** | The 04:00 close carries a plain-language narrative of the evening (what moved, what to look at, who came back), deterministic first, an optional model behind a server key later. | Nothing external |
 | **T5 Whish, for real** | Whish Money payments settle through the callback receiver; tips are attributed per server and paid out through the same rail. | Whish docs and test access |
 | **T6 The French and Arabic site, read** | A native read of the French and Arabic copy; the calculator relinked or retired; the questions reachable on phones. | The founder |
+| **T7 Tap or scan** | An NFC tag inside the table card opens the same table link as its QR; onboarding writes the tag list, and the cards say "Tap or scan" ([docs/nfc-tags.md](nfc-tags.md)). | Nothing external (tags cost under a dollar) |
 
 ### 90 days to 6 months: the restaurant's memory
 
@@ -83,3 +84,5 @@ Four agents, one per track, each in its own worktree from main, each delivering 
 T2 one floor for three places, T3 the printer-stream bridge, T4 the morning close in words. T5 waits on Whish; T6
 on the founder. Every build keeps the repository's rules: a static site with no build step, ES5 in the browser,
 Supabase for shared mode, no real money in the demo, every change covered by `node --test tests/*.test.cjs`.
+
+Wave two started 29 October 2026 with T7, tap or scan.

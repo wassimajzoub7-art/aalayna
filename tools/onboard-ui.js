@@ -105,6 +105,7 @@ function checkForm(b) {
   f.font = typeof b.font === 'string' && b.font.trim() ? b.font.trim() : null;
   if (f.font && !FONT.test(f.font)) throw new HttpError(400, 'The font is a Google Fonts name: letters, digits and spaces, up to 40 characters.', 'font');
   f.reimport = b.reimport === true;
+  f.nfc = b.nfc === true;
   if (!Array.isArray(b.files) || !b.files.length) throw new HttpError(400, 'Add the menu: a PDF or photos of its pages.', 'files');
   let total = 0;
   f.files = b.files.map(function (x, i) {
@@ -138,6 +139,7 @@ function createServer(o) {
   const P = function (slug) {
     return {
       state: path.join(onboardingDir, slug + '.json'), cards: path.join(onboardingDir, slug + '-table-cards.html'),
+      tags: path.join(onboardingDir, slug + '-table-tags.csv'),
       welcome: path.join(onboardingDir, slug + '-welcome.md'), dir: path.join(onboardingDir, slug),
       uploads: path.join(onboardingDir, slug, 'uploads'), ui: path.join(onboardingDir, slug, 'ui.json'),
       report: path.join(onboardingDir, slug, 'import-report.txt'), pack: path.join(cwd, 'venues', slug + '.json')
@@ -244,7 +246,7 @@ function createServer(o) {
       cards: fs.existsSync(p.cards) ? '/onboarding/' + slug + '-table-cards.html' : null,
       welcome: fs.existsSync(p.welcome),
       report: fs.existsSync(p.report),
-      checklist: settled ? onboard.manualChecklist(state, cwd, { cards: p.cards, welcome: p.welcome }) : [],
+      checklist: settled ? onboard.manualChecklist(state, cwd, { cards: p.cards, tags: p.tags, welcome: p.welcome }) : [],
       seq: hist.has(slug) ? hist.get(slug).seq : 0
     });
   }
@@ -321,6 +323,7 @@ function createServer(o) {
     if (f.brand) argv.push('--brand', f.brand);
     if (f.bg) argv.push('--bg', f.bg);
     if (f.font) argv.push('--font', f.font);
+    if (f.nfc) argv.push('--nfc');
     try {   // the command line's own checks, before anything is written
       const parsed = onboard.parseArgs(argv);
       onboard.resolveInputs(parsed.flags, [], null, cwd);
