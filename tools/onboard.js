@@ -25,7 +25,7 @@ const STEPS = ['register', 'theme', 'menu', 'tables', 'staff', 'verify', 'welcom
 const NAMES = STEPS.map(function (s) { return s.name; });
 const ROLES = ['owner', 'manager', 'waiter'];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const BOOL = ['approve-menu', 'reimport', 'reset', 'yes', 'dry-run', 'no-theme', 'no-welcome', 'help', 'strict'];
+const BOOL = ['approve-menu', 'reimport', 'reset', 'yes', 'dry-run', 'no-theme', 'no-welcome', 'help', 'strict', 'nfc', 'no-nfc'];
 const VALUE = ['name', 'place', 'slug', 'currency', 'tables', 'owner', 'staff', 'from', 'only', 'fixture-dir', 'brand', 'bg', 'font', 'model', 'effort'];
 
 const HELP = [
@@ -44,6 +44,9 @@ const HELP = [
   '  --dry-run          print what each step would do; calls nothing, writes nothing',
   '  --brand HEX --bg HEX --font NAME   theme overrides; with all three no model is asked',
   '  --no-theme --no-welcome            skip those steps',
+  '  --nfc              the cards carry an NFC tag: "Tap or scan" on the cards, and',
+  '                     onboarding/<slug>-table-tags.csv (table,url) to write the tags from',
+  '  --no-nfc           cards without a tag again (the choice is kept between runs)',
   '  --model ID         model for theme, menu and welcome (default claude-opus-5-5)',
   '  --strict           send the tools with strict: true (dropped once if the model refuses it)',
   '  --effort LEVEL     low, medium, high, xhigh or max, sent as output_config (not sent unless given)',
@@ -137,6 +140,12 @@ function resolveInputs(flags, files, saved, shellCwd) {
     });
   }
   if (flags.model != null) inp.model = flags.model;
+  if (flags.nfc && flags['no-nfc']) throw new Usage('Use --nfc or --no-nfc, not both.');
+  if (flags.nfc || flags['no-nfc']) {
+    const nfc = !!flags.nfc;
+    if (saved && !!saved.nfc !== nfc) changed.push('tables');   // the sheet's wording and the tag list change
+    if (nfc) inp.nfc = true; else delete inp.nfc;
+  }
   return { inputs: inp, changed };
 }
 
@@ -189,7 +198,7 @@ async function main(argv, opts) {
   if (!slug) { out('onboard: --slug is required (or --name on the first run, to derive one).'); return 2; }
   if (slug.length > 40 || !SLUG.test(slug)) { out('onboard: the slug uses lower-case letters, digits and hyphens only, up to 40 characters, not starting or ending with a hyphen.'); return 2; }
   const dir = path.join(cwd, 'onboarding');
-  const paths = { dir, state: path.join(dir, slug + '.json'), cards: path.join(dir, slug + '-table-cards.html'), welcome: path.join(dir, slug + '-welcome.md') };
+  const paths = { dir, state: path.join(dir, slug + '.json'), cards: path.join(dir, slug + '-table-cards.html'), tags: path.join(dir, slug + '-table-tags.csv'), welcome: path.join(dir, slug + '-welcome.md') };
 
   if (flags.reset) {
     if (!fs.existsSync(paths.state)) { out('onboard: no state file for ' + slug + '; nothing to reset.'); return 0; }
@@ -337,6 +346,10 @@ function manualChecklist(state, cwd, paths) {
   const demoOff = !(st.register.data && st.register.data.demo_payments === true);
   const L = [];
   L.push('[ ] Print the table cards: open ' + rel(paths.cards) + ' in a browser and print on card stock');
+  if (inputs.nfc) {
+    L.push('[ ] Write each NFC tag from ' + rel(paths.tags) + ' with a phone app (any free NDEF writer): one URL record per tag, the url of its table');
+    L.push('[ ] Lock each tag read-only, then tap it once from an iPhone and once from an Android before gluing it into its card (docs/nfc-tags.md)');
+  }
   L.push(st.welcome.status === 'done'
     ? '[ ] Send the welcome note: ' + rel(paths.welcome) + ' (add your WhatsApp number first)'
     : '[ ] Write and send the welcome note (the welcome step was skipped)');

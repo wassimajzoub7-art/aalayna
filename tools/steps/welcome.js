@@ -62,7 +62,8 @@ function compose(ctx, prose) {
   out.push('Each person opens https://aalayna.com/dashboard.html on their own phone and signs in with their own email; the six-digit code arrives by email. ' +
     'Managers can do everything except manage staff. Waiters open and change bills and confirm cash. To add or remove someone, message me.', '',
     '## Table cards', '',
-    i.tables + ' cards, one per table, are in the print sheet that comes with this note. Put each on its table. A card opens that table\'s current bill; if one is lost or copied, tell me and I replace it.', '',
+    i.tables + ' cards, one per table, are in the print sheet that comes with this note. Put each on its table. A card opens that table\'s current bill; if one is lost or copied, tell me and I replace it.' +
+      (i.nfc ? ' Each card also carries an NFC tag, so guests can tap the card with their phone or scan the code.' : ''), '',
     '## Day one', '', prose.dayOne, '',
     '## Contact', '', 'Wassim, WhatsApp [WhatsApp number]', '');
   return out.join('\n');

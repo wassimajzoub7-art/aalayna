@@ -19,8 +19,10 @@ function qrSvg(url) {
   return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
 }
 
-// qr.html tent(), same markup and copy
-function tent(url, name, place, table) {
+// qr.html tent(), same markup and copy; nfc: the card carries an NFC tag (docs/nfc-tags.md)
+const HOW = 'Point your camera at the code, no app, no account.';
+const HOW_NFC = 'Tap or scan with your phone, no app, no account.';
+function tent(url, name, place, table, nfc) {
   return '<div class="tent">' +
     '<div class="top"><div class="vn">' + esc(name) + '</div>' +
     (place ? '<div class="vp">' + esc(place) + '</div>' : '') +
@@ -29,7 +31,7 @@ function tent(url, name, place, table) {
     '<div class="mid"><div class="cta">See the menu · split the bill · pay</div>' +
     '<div class="cta-ar">شوف المنيو · اقسم الحساب · ادفع</div></div>' +
     '<div class="qr">' + qrSvg(url) + '</div>' +
-    '<div class="how">Point your camera at the code, no app, no account. English, français, عربي.</div>' +
+    '<div class="how">' + (nfc ? HOW_NFC : HOW) + ' English, français, عربي.</div>' +
     '<div class="foot">powered by <b>Aalayna</b></div></div>';
 }
 
@@ -59,11 +61,14 @@ const CSS = [
   '@media print{body{background:#fff;padding:0}header,.tlink{display:none !important}.sheet{gap:8mm}.tent{box-shadow:none;border:1px dashed #bbb;page-break-inside:avoid}}'
 ].join('\n');
 
-/* tokens: [{table, token}] */
-function sheet(venue, tokens) {
-  const cards = tokens.slice().sort(function (a, b) { return a.table - b.table; }).map(function (t) {
+function byTable(tokens) { return tokens.slice().sort(function (a, b) { return a.table - b.table; }); }
+
+/* tokens: [{table, token}]; opts.nfc: the cards carry an NFC tag */
+function sheet(venue, tokens, opts) {
+  const nfc = !!(opts && opts.nfc);
+  const cards = byTable(tokens).map(function (t) {
     const url = tableURL(venue.slug, t.table, t.token);
-    return '<div class="tcard" data-table="' + t.table + '">' + tent(url, venue.name, venue.place, t.table) + '<div class="tlink">' + esc(url) + '</div></div>';
+    return '<div class="tcard" data-table="' + t.table + '">' + tent(url, venue.name, venue.place, t.table, nfc) + '<div class="tlink">' + esc(url) + '</div></div>';
   });
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
     '<title>' + esc(venue.name) + ' table cards</title>\n' +
@@ -75,4 +80,10 @@ function sheet(venue, tokens) {
     '<div class="sheet">\n' + cards.join('\n') + '\n</div>\n</body>\n</html>\n';
 }
 
-module.exports = { sheet, tableURL, qrSvg, BASE };
+/* The NFC tag list: one row per table, the exact URL its QR encodes, so a tag and its QR
+   always agree. The URL has no comma or quote, so no field needs quoting. */
+function tagsCSV(slug, tokens) {
+  return 'table,url\n' + byTable(tokens).map(function (t) { return t.table + ',' + tableURL(slug, t.table, t.token); }).join('\n') + '\n';
+}
+
+module.exports = { sheet, tagsCSV, tableURL, qrSvg, BASE, HOW, HOW_NFC };

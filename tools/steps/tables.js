@@ -2,14 +2,15 @@
 /* Step 4. One table code per table, and the print sheet.
    in:  inputs.tables (N); the codes already in state
    out: data {codes: {table: token}, issued: [...], kept: [...], adopted: [...], sheet}
-        onboarding/<slug>-table-cards.html with one card per table
+        onboarding/<slug>-table-cards.html with one card per table; with --nfc also
+        onboarding/<slug>-table-tags.csv (table,url), the URLs the cards' QR codes encode
    Never reissues a live code: a printed card would stop working. A table whose code the
    server still lists as live keeps it (whether this tool or qr.html issued it); only a
    table with no live code gets one, and a table whose earlier code was revoked is named
    in the summary so its card is reprinted. */
 const fs = require('fs');
 const path = require('path');
-const { sheet } = require('../lib/cards');
+const { sheet, tagsCSV } = require('../lib/cards');
 
 const MAX_TABLES = 200;   // qr.html's range limit; 9999 is kept for the smoke test
 
@@ -31,7 +32,7 @@ module.exports = {
   env: [],
   plan: function (ctx) {
     return 'aal_table_tokens list; issue a code for each of tables 1 to ' + ctx.inputs.tables + ' that has no live code; write ' +
-      path.relative(ctx.cwd, ctx.paths.cards);
+      path.relative(ctx.cwd, ctx.paths.cards) + (ctx.inputs.nfc ? ' and ' + path.relative(ctx.cwd, ctx.paths.tags) : '');
   },
   run: async function (ctx) {
     const n = ctx.inputs.tables;
@@ -59,10 +60,14 @@ module.exports = {
     const slug = res.slug || ctx.inputs.slug;
     if (slug !== ctx.inputs.slug) return { ok: false, summary: 'The server says this venue\'s slug is ' + slug + ', not ' + ctx.inputs.slug + '.' };
     const extra = Object.keys(live).map(Number).filter(function (t) { return t > n && t !== 9999; });
-    const html = sheet({ slug, name: ctx.inputs.name, place: ctx.inputs.place },
-      Object.keys(codes).map(function (t) { return { table: Number(t), token: codes[t] }; }));
+    const list = Object.keys(codes).map(function (t) { return { table: Number(t), token: codes[t] }; });
+    const nfc = !!ctx.inputs.nfc;
+    const html = sheet({ slug, name: ctx.inputs.name, place: ctx.inputs.place }, list, { nfc });
     fs.mkdirSync(path.dirname(ctx.paths.cards), { recursive: true, mode: 0o700 });
     fs.writeFileSync(ctx.paths.cards, html, { mode: 0o600 });
+    // the tag list holds the table codes too; a list left from an earlier --nfc run is removed
+    if (nfc) fs.writeFileSync(ctx.paths.tags, tagsCSV(slug, list), { mode: 0o600 });
+    else if (fs.existsSync(ctx.paths.tags)) fs.unlinkSync(ctx.paths.tags);
     const parts = [];
     if (issued.length) parts.push('issued ' + issued.length);
     if (kept.length) parts.push('kept ' + kept.length);
@@ -72,8 +77,9 @@ module.exports = {
     if (extra.length) lines.push('tables ' + ranges(extra) + ' also have live codes (beyond --tables ' + n + '); left as they are.');
     return {
       ok: true,
-      summary: n + ' table codes (' + parts.join(', ') + '); cards in ' + path.relative(ctx.cwd, ctx.paths.cards),
-      data: { codes, issued, kept, adopted, replaced, sheet: path.relative(ctx.cwd, ctx.paths.cards) },
+      summary: n + ' table codes (' + parts.join(', ') + '); cards in ' + path.relative(ctx.cwd, ctx.paths.cards) +
+        (nfc ? ', NFC tag list in ' + path.relative(ctx.cwd, ctx.paths.tags) : ''),
+      data: Object.assign({ codes, issued, kept, adopted, replaced, sheet: path.relative(ctx.cwd, ctx.paths.cards) }, nfc ? { tags: path.relative(ctx.cwd, ctx.paths.tags) } : {}),
       lines
     };
   }
