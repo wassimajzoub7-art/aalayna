@@ -274,7 +274,8 @@ test('the bill changed while a request waited: checked against the bill as it is
 test('a digital payment, a bill close or a refund offline is refused on the device, never queued (C10)',async()=>{
  const server=venueServer(),p=await guestOffline(server);
  const card=await settled(p.a.requestPayment(cash('card-1',{rail:'card'})));
- assert.equal(card.ok,false);assert.match(card.error.message,/^Digital payments are not connected yet/);
+ // the provider's page finishes a card or Whish payment, so the reserve is never held for later
+ assert.equal(card.ok,false);assert.match(card.error.message,/^Paying by card or Whish needs the connection/);assert.equal(card.error.queued,undefined);
  assert.deepEqual(Object.keys(p.outbox()),[]);
  // a dashboard that was connected, then lost it
  const staff=boot({page:'dashboard',search:SEARCH+'&k='+OWNER_KEY,server:Object.assign(server,{down:false})});await staff.a.sync.ready;await flush();
@@ -410,7 +411,7 @@ test('a signed-in member offline gets the staff list the server last gave this d
 function worker(search=''){
  const listeners={},opened={},deleted=[],fetched=[];
  const cacheFor=name=>opened[name]||(opened[name]={added:[],put:[],add:async r=>{opened[name].added.push(typeof r==='string'?r:r.url);},put:async(r)=>{opened[name].put.push(r.url);},match:async()=>undefined});
- const caches={open:async n=>cacheFor(n),keys:async()=>['aal-guest-v2','aal-guest-v3','aal-staff-v0','aal-staff-v1','someone-else'],delete:async k=>{deleted.push(k);return true;},match:async()=>undefined};
+ const caches={open:async n=>cacheFor(n),keys:async()=>['aal-guest-v2','aal-guest-v3','aal-guest-v4','aal-staff-v0','aal-staff-v1','aal-staff-v2','aal-staff-v3','someone-else'],delete:async k=>{deleted.push(k);return true;},match:async()=>undefined};
  class Req{constructor(u,o){this.url=u;Object.assign(this,o||{});}}
  const self={location:{origin:'https://aalayna.com',search},addEventListener:(t,f)=>{listeners[t]=f;},skipWaiting:async()=>{},clients:{claim:async()=>{}}};
  const ctx={self,caches,Request:Req,URL,Promise,setTimeout,clearTimeout,fetch:async r=>{fetched.push(r.url||r);return {ok:false,type:'opaque',clone(){return this;}};}};
@@ -445,8 +446,9 @@ test('install keeps its own shell; activate deletes only the older caches of its
  assert.deepEqual(g.opened[g.ctx.VERSION].added,plain(g.ctx.SHELL));
  assert.deepEqual(s.opened[s.ctx.STAFF_VERSION].added,plain(s.ctx.SHELL));
  await g.lifecycle('activate');await s.lifecycle('activate');
- assert.deepEqual(g.deleted,['aal-guest-v2']);
- assert.deepEqual(s.deleted,['aal-staff-v0','aal-staff-v1'].filter(k=>k!==s.ctx.STAFF_VERSION));   // every older staff cache, whatever the current version
+ assert.deepEqual(g.deleted,['aal-guest-v2','aal-guest-v3']);   // fails on purpose when VERSION moves: update the list with it
+ assert.deepEqual(s.deleted,['aal-staff-v0','aal-staff-v1','aal-staff-v2']);   // the same for STAFF_VERSION
+ assert.equal(g.ctx.VERSION,'aal-guest-v4');assert.equal(s.ctx.STAFF_VERSION,'aal-staff-v3');   // every older staff cache, whatever the current version
 });
 
 test('routing: the API is never cached, pages and assets network first, fonts and images cache first',()=>{

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self' https://*.supabase.co; img-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Demo payment provider</title>
+<!--
+  The fake payment provider's checkout (supabase/functions/payment-start, "The fake provider").
+  It stands in for a third party's hosted page, so it does not look like the Aalayna guest app.
+  payment-start sends the guest here with ?s=<signed token>, the only query parameter read.
+  The function's address comes from aalayna-config.js, as on the guest page (aalayna-sync.js:
+  functionsUrl, or supabaseUrl + /functions/v1); never from the address bar.
+    GET  <functions>/payment-start/fake/checkout?s=  the amount, venue and reference
+    POST <functions>/payment-start/fake/checkout     {s, outcome}: the function posts the signed
+                                                     callback and answers the return URL
+  The browser goes back only to a return URL on this page's own origin. Nothing from the token
+  or the server is written as HTML: textContent and href only. No money moves.
+  Outside both service worker scopes (guest.html, dashboard.html): never cached.
+-->
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f1ea;color:#1d1d1b;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px}
+.card{background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.tag{display:inline-block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6b645b;margin-bottom:12px}
+.lead{font-size:20px;margin:0 0 4px;outline:none}
+.sub{margin:0 0 20px;color:#6b645b;font-size:14px;overflow-wrap:anywhere}
+.msg{margin:0 0 4px}
+.btn{display:flex;align-items:center;justify-content:center;gap:.3em;width:100%;min-height:48px;border:0;border-radius:12px;padding:12px 14px;font:inherit;font-weight:600;background:#C9414B;color:#fff;margin-top:10px;cursor:pointer;text-align:center;text-decoration:none}
+.btn.ghost{background:transparent;color:#4f4942;border:1px solid #cfc5b2}
+.btn:disabled{opacity:.6;cursor:default}
+.btn:focus-visible,a:focus-visible{outline:3px solid #1d1d1b;outline-offset:3px}
+.status{min-height:1.5em;margin:12px 0 0;font-size:14px;color:#4f4942}
+.note{margin:18px 0 0;font-size:13px;color:#6b645b}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.btn{transition:opacity .15s}}
+</style>
+<script src="aalayna-config.js"></script>
+</head>
+<body>
+<main class="card" aria-labelledby="tag">
+  <span class="tag" id="tag">Demo payment provider</span>
+
+  <section id="st-loading" aria-busy="true">
+    <p class="lead" tabindex="-1">Loading the payment…</p>
+  </section>
+
+  <section id="st-ready" hidden>
+    <p class="lead" tabindex="-1">Pay <b id="amt"></b> to <span id="venue"></span></p>
+    <p class="sub">Reference <span id="ref"></span></p>
+    <button class="btn" id="pay" type="button">Pay <span id="pay-amt"></span></button>
+    <button class="btn ghost" id="decline" type="button">Decline</button>
+  </section>
+
+  <section id="st-invalid" hidden>
+    <p class="lead" tabindex="-1">This payment page cannot be used.</p>
+    <p class="msg" id="invalid-msg">This payment page has expired. Go back to your bill and try again.</p>
+  </section>
+
+  <section id="st-offline" hidden>
+    <p class="lead" tabindex="-1">The payment page could not be loaded.</p>
+    <p class="msg">Check your connection and try again.</p>
+    <button class="btn" id="reload" type="button">Try again</button>
+  </section>
+
+  <section id="st-undelivered" hidden>
+    <p class="lead" tabindex="-1">The payment could not be reported to Aalayna.</p>
+    <p class="msg">Nothing was charged. Try again, or go back to your bill.</p>
+    <button class="btn" id="retry" type="button">Try again</button>
+    <a class="btn ghost" id="back" hidden>Back to the bill</a>
+  </section>
+
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <p class="note">This page stands in for the provider’s checkout. No money moves and no card is asked for.</p>
+</main>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var STATES = ['loading', 'ready', 'invalid', 'offline', 'undelivered'];
+  var EXPIRED = 'This payment page has expired. Go back to your bill and try again.';
+  var UNREADABLE = 'This payment link is not complete. Go back to your bill and try again.';
+  var ELSEWHERE = 'This payment page cannot send you back to your bill from here. Go back to your bill and try again.';
+  var NOT_SET = 'The payment service is not set up on this site.';
+
+  /* the function's address, from the site's own config (as aalayna-sync.js builds FUNCTIONS) */
+  var cfg = window.AalaynaConfig || {};
+  var base = String(cfg.functionsUrl || (cfg.supabaseUrl ? String(cfg.supabaseUrl).replace(/\/$/, '') + '/functions/v1' : '')).replace(/\/$/, '');
+  var ROUTE = base ? base + '/payment-start/fake/checkout' : '';
+  /* the signed token: the one query parameter this page reads */
+  var token = new URLSearchParams(location.search).get('s') || '';
+  var data = null, outcome = null, busy = false, expiryTimer = null;
+
+  function show(name, focus) {
+    STATES.forEach(function (s) { $('st-' + s).hidden = s !== name; });
+    $('status').textContent = '';
+    if (focus) { var lead = $('st-' + name).querySelector('.lead'); if (lead && lead.focus) lead.focus(); }
+  }
+  function invalid(message) {
+    busy = false;
+    if (expiryTimer) clearTimeout(expiryTimer);
+    $('invalid-msg').textContent = message;
+    show('invalid', true);
+  }
+  /* an absolute http(s) URL on this page's origin, or null */
+  function sameOrigin(raw) {
+    var u;
+    try { u = new URL(String(raw)); } catch (e) { return null; }
+    if (!/^https?:$/.test(u.protocol) || u.origin !== location.origin) return null;
+    return u.href;
+  }
+  function money(cents, cur) {
+    var n = (cents / 100).toFixed(2);
+    return cur === 'USD' ? '$' + n : n + ' ' + cur;
+  }
+  function call(method, body) {
+    var init = { method: method, cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' };
+    if (body) { init.headers = { 'Content-Type': 'application/json' }; init.body = JSON.stringify(body); }
+    return fetch(method === 'GET' ? ROUTE + '?s=' + encodeURIComponent(token) : ROUTE, init).then(function (r) {
+      return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) { j = null; } return { status: r.status, ok: r.ok, body: j }; });
+    });
+  }
+
+  function load() {
+    if (!ROUTE) return invalid(NOT_SET);
+    if (!/^[A-Za-z0-9_-]+\.[0-9a-f]{64}$/.test(token)) return invalid(UNREADABLE);
+    show('loading');
+    call('GET').then(function (r) {
+      if (r.status === 404) return invalid(EXPIRED);
+      if (!r.ok) return show('offline', true);
+      var j = r.body;
+      if (!j || typeof j !== 'object' || !Number.isSafeInteger(j.amountCents) || j.amountCents <= 0 || typeof j.currency !== 'string' || typeof j.paymentId !== 'string') return invalid(UNREADABLE);
+      var back = sameOrigin(j.returnUrl);
+      if (!back) return invalid(ELSEWHERE);
+      data = { amount: money(j.amountCents, j.currency), venue: String(j.venue || ''), ref: j.paymentId, back: back, expiresAt: Date.parse(j.expiresAt) };
+      $('amt').textContent = data.amount;
+      $('pay-amt').textContent = data.amount;
+      $('venue').textContent = data.venue;
+      $('ref').textContent = data.ref;
+      $('back').href = data.back;
+      $('back').hidden = false;
+      show('ready');
+      if (Number.isFinite(data.expiresAt)) {
+        var left = data.expiresAt - Date.now();
+        expiryTimer = setTimeout(function () { if (!busy) invalid(EXPIRED); }, Math.max(0, Math.min(left, 2147483647)));
+      }
+    }, function () { show('offline', true); });
+  }
+
+  function setBusy(on, text) {
+    busy = on;
+    ['pay', 'decline', 'retry'].forEach(function (id) { $(id).disabled = on; });
+    $('st-ready').setAttribute('aria-busy', on ? 'true' : 'false');
+    $('status').textContent = text || '';
+  }
+
+  function send(choice) {
+    if (busy || !data) return;
+    outcome = choice;
+    setBusy(true, choice === 'paid' ? 'Sending the payment…' : 'Sending the decline…');
+    call('POST', { s: token, outcome: choice }).then(function (r) {
+      if (r.status === 404) return invalid(EXPIRED);
+      if (r.status === 400) return invalid(UNREADABLE);
+      if (!r.ok) { setBusy(false); return show('undelivered', true); }
+      var to = sameOrigin(r.body && r.body.returnUrl);
+      if (!to) return invalid(ELSEWHERE);
+      $('status').textContent = 'Going back to your bill…';
+      location.replace(to);
+    }, function () { setBusy(false); show('undelivered', true); });
+  }
+
+  $('pay').addEventListener('click', function () { send('paid'); });
+  $('decline').addEventListener('click', function () { send('failed'); });
+  $('retry').addEventListener('click', function () { send(outcome || 'paid'); });
+  $('reload').addEventListener('click', load);
+  load();
+})();
+</script>
+</body>
+</html>

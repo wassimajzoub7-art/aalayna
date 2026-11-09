@@ -21,6 +21,7 @@
      whenever the connection is down. It returns null when admitted, else the message. */
   var OFFLINE_MAX_AGE_MS=6*3600*1000,STAFF_ROLE=['owner','waiter','staff'];
   var OFFLINE_OPS={guest:['reserve','cancel'],staff:['confirm_cash']},ONLINE_ONLY=['close_check','refund','issue_key'];
+  var MSG_DIGITAL_ONLINE='Paying by card or Whish needs the connection. Try again once you are back online.';
   var MSG_CONNECT='Connect to the restaurant before continuing.',MSG_ONLINE_ONLY={close_check:'Closing a bill needs the connection. Try again when the status line says Saved.',refund:'A refund needs the connection. Try again when the status line says Saved.',issue_key:'A bill link needs the connection. Try again when the status line says Saved.'};
   function orderJobs(q){return Object.keys(q||{}).map(function(id,i){var j=q[id];return {id:id,i:i,seq:j&&typeof j.seq==='number'?j.seq:-1};}).sort(function(a,b){return a.seq-b.seq||a.i-b.i;}).map(function(x){return x.id;});}
   function sameJob(a,b){return !!a&&!!b&&a.kind===b.kind&&a.op===b.op&&(a.token||'')===(b.token||'')&&JSON.stringify(a.body)===JSON.stringify(b.body);}
@@ -239,7 +240,7 @@
   // A signed-in member is 'staff' until the first snapshot names the role (owner or waiter): nothing is
   // queued as an owner write before the server has said so, so a waiter never gets a refused change.
   var state={status:key||signedIn?'starting':'no-key',role:signedIn?'staff':key.indexOf('own_')===0?'owner':key?'guest':null,checkId:null,lastPull:null,lastPush:null,pending:0,failed:0,errors:0,lastError:null,lastRefusal:null,pendingCash:0};
-  var queue={},running=null,paused=false,ready=false,online=false,observers=[],docSnap={},rowSnap={};
+  var queue={},running=null,paused=false,ready=false,online=false,observers=[],docSnap={},rowSnap={},railsCache=null;
   /* T8: refused outbox jobs. A job the server refuses with a definite answer (a 4xx with a
      message) can never succeed on a resend, so it leaves the outbox and is kept here, per
      credential scope, with the server's message. failed in state() counts the refusals
@@ -370,6 +371,9 @@
     if(!ready){try{await A.sync.ready;}catch(e){}}
     // T1: closing a bill, a refund or a bill link need the server now; never queued
     if(down()&&ONLINE_ONLY.indexOf(op)>=0)throw new Error(MSG_ONLINE_ONLY[op]);
+    // C10: a card or Whish payment is finished on the provider's page, which needs the connection
+    // now; a reserve queued for later would hold part of the bill with nobody there to pay it
+    if(down()&&op==='reserve'&&body.rail!=='cash')throw new Error(MSG_DIGITAL_ONLINE);
     var id='op:'+op+':'+(body.requestId||body.id||body.checkId||A.util.uid());
     // Offline: a page opened without a connection queues only what admitOffline admits (a guest's
     // cash request on a bill this device read in the last six hours; a staff cash confirmation);
@@ -420,6 +424,7 @@
     if(key&&!closedNow)throw new Error('This page already has a bill key.');
     if(!guestPage||!/^chk_[0-9a-f]{12,64}$/.test(k||''))throw new Error('Only a bill key can be attached on a guest page.');
     key=k;headers['x-aalayna-key']=k;state.role='guest';state.checkId=null;ready=false;A.sync.enabled=true;
+    railsCache=null;
     closedNow=false;closedFor=null;try{global.sessionStorage.removeItem(CLOSED);}catch(e){}
     try{global.localStorage.setItem(credentialKey,k);}catch(e){}
     start(docs);return A.sync.ready;
@@ -572,12 +577,36 @@
     }
   });
   function payerToken(id){var k='aal.payer:'+id,t=A.util.read(k,null);if(!t){t=A.util.uid()+A.util.uid();A.util.rawWrite(k,t);}return t;}
-  function remoteReserve(s){
-    if(s.rail!=='cash')return Promise.reject(new Error('Digital payments are not connected yet. Please arrange payment with your server.'));
-    var id=s.requestId||A.util.uid();return mutate('reserve',Object.assign({},s,{id:id,items:s.items||{},tip:s.tip||0}),payerToken(id));
-  }
-  A.settle=remoteReserve;A.requestPayment=remoteReserve;
+  function remoteReserve(s){var id=s.requestId||A.util.uid();return mutate('reserve',Object.assign({},s,{id:id,items:s.items||{},tip:s.tip||0}),payerToken(id));}
+  /* A cash request settles in one step (pending until staff confirm). A digital payment is
+     two steps: requestPayment reserves it, then the provider's page (startPayment) and the
+     provider's callback finish it; nothing on this device can. */
+  A.requestPayment=remoteReserve;
+  A.settle=function(s){if(s.rail!=='cash')return Promise.reject(new Error('Card and Whish payments complete on the payment provider\'s page.'));return remoteReserve(s);};
   A.confirmPayment=function(){throw new Error('Only a verified provider callback can confirm a shared digital payment.');};
+  /* T15 hosted payment pages (supabase/functions/payment-start). Both calls carry the bill key;
+     startPayment adds the payer token the reserve was made with. */
+  var FUNCTIONS=String(cfg.functionsUrl||cfg.supabaseUrl.replace(/\/$/,'')+'/functions/v1').replace(/\/$/,'');
+  function startCall(method,body,token){
+    var h={'x-aalayna-key':key};if(body!=null)h['Content-Type']='application/json';if(token)h['x-aalayna-payer']=token;
+    return fetch(FUNCTIONS+'/payment-start',{method:method,headers:h,body:body==null?undefined:JSON.stringify(body)}).then(function(r){
+      return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null;}catch(e){}
+        if(!r.ok){var e=new Error(j&&j.error||'The payment page could not be opened ('+r.status+').');e.status=r.status;e.paymentStatus=j&&j.status||null;e.serverMessage=!!(j&&j.error);throw e;}
+        return j;});
+    });
+  }
+  /* which digital rails this bill may pay and by which provider, e.g. {card:'fake'}; {} when
+     none, when the page holds no bill key, or when the function cannot be reached (then the
+     guest sees cash only, never a page that pretends) */
+  A.paymentRails=function(force){
+    if(!/^chk_/.test(key||''))return Promise.resolve({});
+    if(railsCache&&!force)return railsCache;
+    railsCache=startCall('GET').then(function(j){return j&&j.rails&&typeof j.rails==='object'?j.rails:{};}).catch(function(){railsCache=null;return {};});
+    return railsCache;
+  };
+  /* the provider page for a reserved digital payment: {url, provider, expiresAt}; the page
+     sends the browser there and the provider brings it back to returnUrl with pay=<id> */
+  A.startPayment=function(id,returnUrl){return startCall('POST',{paymentId:id,returnUrl:returnUrl},payerToken(id));};
   A.confirmCash=function(id){return mutate('confirm_cash',{id:id}).then(function(){return true;});};
   A.cancelCash=function(id){return mutate('cancel',{id:id},payerToken(id));};
   A.refund=function(id){return mutate('refund',{id:id});};
