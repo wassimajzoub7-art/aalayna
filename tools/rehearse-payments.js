@@ -8,8 +8,13 @@
    plus the two real Edge Function handlers, payment-start and payment-webhook, run exactly
    as they are deployed (supabase/functions/<name>/handler.js) against an in-memory PostgREST.
    One venue (Mayda, demo payments on), one open bill at table 7, one bill key, printed at
-   start as a guest link. Open it, split the bill, pay by card or Whish: the fake provider's
-   checkout page opens, Pay posts the signed callback to payment-webhook, the guest page
+   start as a guest link. Open it, split the bill, pay by card or Whish: payment-start sends the
+   browser to the fake provider's checkout, pay-demo.html, a static page served from here as
+   GitHub Pages serves it on aalayna.com. It finds the functions the way the guest page does,
+   through aalayna-config.js, which this server answers itself with its own address (the
+   address the browser used, so a phone's LAN address works too); it reads the amount from
+   GET /functions/v1/payment-start/fake/checkout and Pay POSTs the outcome there, the function
+   posts the signed callback to payment-webhook and answers the return URL, and the guest page
    comes back and reads Confirmed by the demo provider. Decline sends the guest back to the
    bill. The console says what happened at each step.
 
@@ -133,7 +138,9 @@ async function main() {
   const quiet = { warn: (...a) => say('function  ', ...a), info: () => {} };
   const webhook = hook.createHandler({ fetch: postgrest, env, log: quiet });
   const fetchFromFunction = (url, init) => String(url).startsWith(SELF + '/functions/v1/payment-webhook/') ? webhook(new Request(url, init)) : postgrest(url, init);
-  const handlers = { 'payment-start': start.createHandler({ fetch: fetchFromFunction, env, log: quiet }), 'payment-webhook': webhook };
+  // the fake provider's callback goes to SELF, whichever address the browser used
+  const startEnv = Object.assign({}, env, { PAYMENT_WEBHOOK_URL: SELF + '/functions/v1/payment-webhook' });
+  const handlers = { 'payment-start': start.createHandler({ fetch: fetchFromFunction, env: startEnv, log: quiet }), 'payment-webhook': webhook };
 
   const server = http.createServer(async (req, res) => {
     const u = new URL(req.url, SELF);
@@ -150,9 +157,7 @@ async function main() {
         const url = 'http://' + req.headers.host + req.url;
         let out;
         if (fn && handlers[fn[1]]) {
-          // the function sees the address the browser used, so its own pages and the webhook stay on it
-          const h = fn[1] === 'payment-start' ? start.createHandler({ fetch: (x, i) => fetchFromFunction(String(x).replace('http://' + req.headers.host, SELF), i), env: Object.assign({}, env, { PAYMENT_WEBHOOK_URL: SELF + '/functions/v1/payment-webhook' }), log: quiet }) : handlers[fn[1]];
-          out = await h(new Request(url, { method: req.method, headers, body: ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ? undefined : body }));
+          out = await handlers[fn[1]](new Request(url, { method: req.method, headers, body: ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ? undefined : body }));
         } else if (fn) out = json(404, { error: 'No such function' });
         else {
           if (req.method === 'OPTIONS') out = new Response(null, { status: 204 });

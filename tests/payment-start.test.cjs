@@ -10,10 +10,13 @@
      payment is this bill's (404), a digital rail (400), 'initiated' (409 with the status) and
      not expired (409), and that returnUrl is on an allowed origin (400); it strips k, s, reset
      and pay from returnUrl and adds pay=<id>; every handoff is a payment_sessions row;
-   - the fake checkout page shows the amount and the venue, refuses a tampered or expired token,
-     and on Pay posts a correctly signed callback to payment-webhook/fake (the payment becomes
-     confirmed), then sends the browser back (303) to returnUrl; Decline releases the payment;
-     a webhook that cannot be reached shows the guest a way back and confirms nothing;
+   - the fake provider's handoff is pay-demo.html beside the guest page (or FAKE_CHECKOUT_URL),
+     carrying only ?s=<token>; its routes answer JSON only, never HTML: GET gives the token's
+     display data (amount, venue, reference, return URL, expiry) and refuses a tampered or
+     expired token (404); POST {s, outcome} posts a correctly signed callback to
+     payment-webhook/fake (the payment becomes confirmed) and answers the return URL; Decline
+     releases the payment; a webhook that cannot be reached is 502 with the way back and
+     confirms nothing;
    - whish answers 501 naming what is unknown; a row naming an adapter this server lacks is 409;
    - CORS: an allowed origin gets the headers and the preflight; another origin gets none;
    - bodies over 8 kB are 413; callers are rate limited; no payer token or secret is logged. */
@@ -161,7 +164,9 @@ test('POST: a reserved card payment gets the fake checkout page; returnUrl is cl
   const r = await read(await t.start());
   assert.equal(r.status, 200, JSON.stringify(r.body));
   assert.equal(r.body.provider, 'fake');
-  assert.match(r.body.url, new RegExp('^' + FN.replace(/[.]/g, '\\.') + '/fake/checkout\\?s=[A-Za-z0-9_%.-]+$'));
+  // the static page beside the guest page, on the guest's own origin; the token is the only parameter
+  assert.match(r.body.url, /^https:\/\/aalayna\.com\/pay-demo\.html\?s=[A-Za-z0-9_%.-]+$/);
+  assert.deepEqual([...new URL(r.body.url).searchParams.keys()], ['s']);
   assert.equal(r.body.expiresAt, new Date(t.db.row(RID, 'pay-1').expiresAt).toISOString());
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'https://aalayna.com');
   assert.equal(t.db.sessions.length, 1);
@@ -243,31 +248,35 @@ test('POST: no provider at a live venue is 409; whish is 501 naming what is unkn
   assert.equal(r.status, 500);
 });
 
-test('the fake checkout page: shows the amount and the venue; Pay signs a callback to payment-webhook/fake, the payment is confirmed, and the browser goes back with pay=', async () => {
+const post = (t, body, headers = {}) => t.handle(new Request(FN + '/fake/checkout', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json', Origin: 'https://aalayna.com' }, headers), body: typeof body === 'string' ? body : JSON.stringify(body) }));
+const checkoutGet = (t, token, handle) => (handle || t.handle)(new Request(FN + '/fake/checkout?s=' + encodeURIComponent(token), { method: 'GET', headers: { Origin: 'https://aalayna.com' } }));
+const tokenOf = (url) => new URL(url).searchParams.get('s');
+
+test('the fake checkout routes: GET answers the token\'s display data as JSON; POST paid signs a callback to payment-webhook/fake, the payment is confirmed, and the answer is the return URL', async () => {
   const t = await setup();
   const { body: started } = await read(await t.start());
-  const u = new URL(started.url), token = decodeURIComponent(u.searchParams.get('s'));
-  let page = await t.handle(new Request(started.url, { method: 'GET' }));
-  assert.equal(page.status, 200);
-  assert.match(page.headers.get('Content-Type'), /^text\/html/);
-  assert.equal(page.headers.get('X-Frame-Options'), 'DENY');
-  const html = await page.text();
-  assert.match(html, /Pay <b>\$22\.00<\/b> to Mayda/);
-  assert.match(html, /Reference pay-1/);
-  assert.match(html, /name="outcome" value="paid"/);
-  assert.match(html, /name="outcome" value="failed"/);
-  assert.match(html, /No money moves/);
-  assert.ok(html.includes('value="' + token.replace(/&/g, '&amp;') + '"'));
-  // a tampered or foreign token has no page
-  page = await t.handle(new Request(FN + '/fake/checkout?s=' + encodeURIComponent(token.slice(0, -2) + 'zz'), { method: 'GET' }));
-  assert.equal(page.status, 404);
-  page = await t.handle(new Request(FN + '/fake/checkout', { method: 'GET' }));
-  assert.equal(page.status, 404);
+  const token = tokenOf(started.url);
+  let r = await read(await checkoutGet(t, token));
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('Content-Type'), /^application\/json/);
+  assert.equal(r.headers.get('Cache-Control'), 'no-store');
+  assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'https://aalayna.com');
+  assert.deepEqual(r.body, {
+    paymentId: 'pay-1', amountCents: 2200, currency: 'USD', venue: 'Mayda', rail: 'card',
+    returnUrl: 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1',
+    expiresAt: new Date(t.db.row(RID, 'pay-1').expiresAt).toISOString(),
+  });
+  // a tampered, missing or foreign token has no data
+  for (const bad of [token.slice(0, -2) + 'zz', '', 'x.' + '0'.repeat(64)]) {
+    r = await read(await checkoutGet(t, bad));
+    assert.deepEqual([r.status, r.body.status], [404, 'expired'], bad);
+    assert.match(r.body.error, /has expired/);
+  }
   // Pay
-  const form = new URLSearchParams({ s: token, outcome: 'paid' }).toString();
-  const back = await t.handle(new Request(FN + '/fake/checkout', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form }));
-  assert.equal(back.status, 303);
-  assert.equal(back.headers.get('Location'), 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1');
+  r = await read(await post(t, { s: token, outcome: 'paid' }));
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.body, { returnUrl: 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1', outcome: 'paid' });
+  assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'https://aalayna.com');
   assert.equal(t.state.webhookCalls.length, 1);
   const call = t.state.webhookCalls[0];
   assert.equal(call.url, URL_BASE + '/functions/v1/payment-webhook/fake');
@@ -279,40 +288,51 @@ test('the fake checkout page: shows the amount and the venue; Pay signs a callba
   assert.equal(t.db.row(RID, 'pay-1').externalRef, event.externalRef);
   assert.equal(t.db.callbacks.length, 1);
   assert.equal(t.db.callbacks[0].outcome, 'confirmed');
-  // Pay again on the same page: the same reference, still 200 at the webhook, still sent back
-  const again = await t.handle(new Request(FN + '/fake/checkout', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: form }));
-  assert.equal(again.status, 303);
+  // Pay again on the same page: the same reference, still 200 at the webhook, still the way back
+  r = await read(await post(t, { s: token, outcome: 'paid' }));
+  assert.equal(r.status, 200);
   assert.equal(t.db.callbacks[1].outcome, 'confirmed');
+  // the preflight for the page's JSON POST
+  const pre = await t.handle(new Request(FN + '/fake/checkout', { method: 'OPTIONS', headers: { Origin: 'https://aalayna.com', 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type' } }));
+  assert.equal(pre.status, 204);
+  assert.equal(pre.headers.get('Access-Control-Allow-Origin'), 'https://aalayna.com');
 });
 
-test('the fake checkout page: Decline releases the payment; an unreachable webhook confirms nothing and offers the way back; an expired token has no page', async () => {
+test('the fake checkout routes: Decline releases the payment; an unreachable webhook is 502 with the way back and confirms nothing; an expired token is 404; a bad body is 400', async () => {
   const t = await setup();
   const { body: started } = await read(await t.start());
-  const token = decodeURIComponent(new URL(started.url).searchParams.get('s'));
-  const post = (outcome) => t.handle(new Request(FN + '/fake/checkout', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ s: token, outcome }).toString() }));
+  const token = tokenOf(started.url);
   t.state.webhookDown = true;
-  let r = await post('paid');
+  let r = await read(await post(t, { s: token, outcome: 'paid' }));
   assert.equal(r.status, 502);
-  const html = await r.text();
-  assert.match(html, /could not be reported to Aalayna/);
-  assert.match(html, /href="https:\/\/aalayna\.com\/guest\.html\?venue=Mayda&amp;place=Hamra&amp;live=1&amp;pay=pay-1"/);
+  assert.match(r.body.error, /could not be reported to Aalayna/);
+  assert.equal(r.body.returnUrl, 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1');
   assert.equal(t.db.row(RID, 'pay-1').status, 'initiated');
   t.state.webhookDown = false;
-  r = await post('failed');
-  assert.equal(r.status, 303);
+  r = await read(await post(t, { s: token, outcome: 'failed' }));
+  assert.deepEqual([r.status, r.body.outcome], [200, 'failed']);
   assert.equal(t.db.row(RID, 'pay-1').status, 'failed');
   assert.equal(t.db.callbacks[0].outcome, 'failed_released');
+  // unreadable bodies and unknown outcomes are refused before anything is posted
+  const calls = t.state.webhookCalls.length;
+  for (const bad of ['not json', '', { s: token }, { s: token, outcome: 'refunded' }, { outcome: 'paid' }, new URLSearchParams({ s: token, outcome: 'paid' }).toString()]) {
+    r = await read(await post(t, bad));
+    assert.equal(r.status, 400, JSON.stringify(bad));
+  }
+  r = await read(await post(t, JSON.stringify({ s: token, outcome: 'paid', pad: 'x'.repeat(9000) })));
+  assert.equal(r.status, 413);
+  assert.equal(t.state.webhookCalls.length, calls);
   // an expired reservation: the token expires with it
   t.db.put(RID, settleRow({ id: 'pay-2', expiresAt: new Date(Date.now() + 1000).toISOString() }));
   const { body: s2 } = await read(await t.start({ body: { paymentId: 'pay-2', returnUrl: RETURN } }));
-  const t2 = decodeURIComponent(new URL(s2.url).searchParams.get('s'));
+  const t2 = tokenOf(s2.url);
   const later = t.mod.createHandler({ fetch: t.db.fetch, env: t.env, now: () => new Date(Date.now() + 5000), log: { warn() {}, info() {} } });
-  r = await later(new Request(s2.url, { method: 'GET' }));
+  r = await read(await checkoutGet(t, t2, later));
   assert.equal(r.status, 404);
-  r = await later(new Request(FN + '/fake/checkout', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ s: t2, outcome: 'paid' }).toString() }));
-  assert.equal(r.status, 404);
+  r = await read(await later(new Request(FN + '/fake/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ s: t2, outcome: 'paid' }) })));
+  assert.deepEqual([r.status, r.body.status], [404, 'expired']);
   assert.equal(t.db.row(RID, 'pay-2').status, 'initiated');
-  // no such page without the secret, and no other provider has pages
+  // no such route without the secret, and no other provider has routes
   const u = await setup({ env: { FAKE_WEBHOOK_SECRET: '' } });
   r = await u.handle(new Request(FN + '/fake/checkout?s=x', { method: 'GET' }));
   assert.equal(r.status, 404);
@@ -320,6 +340,41 @@ test('the fake checkout page: Decline releases the payment; an unreachable webho
   assert.equal(r.status, 404);
   r = await t.handle(new Request(FN + '/fake/checkout', { method: 'DELETE' }));
   assert.equal(r.status, 405);
+});
+
+test('no HTML leaves the function: every answer of every route is JSON (or empty), on success and on error', async () => {
+  const t = await setup();
+  const { body: started } = await read(await t.start());
+  const token = tokenOf(started.url);
+  const answers = [
+    await t.req('GET'), await t.start(), await checkoutGet(t, token), await checkoutGet(t, 'nope'),
+    await post(t, 'nope'), await t.handle(new Request(FN + '/fake/other', { method: 'GET' })),
+    await t.handle(new Request(FN + '/fake/checkout', { method: 'PUT' })),
+  ];
+  t.state.webhookDown = true;
+  answers.push(await post(t, { s: token, outcome: 'paid' }));
+  t.state.webhookDown = false;
+  answers.push(await post(t, { s: token, outcome: 'paid' }));
+  for (const r of answers) {
+    assert.match(r.headers.get('Content-Type') || '', /^application\/json/, String(r.status));
+    assert.doesNotMatch(await r.text(), /<[a-z!]/i);
+  }
+  const src = require('node:fs').readFileSync(path.join(root, 'supabase/functions/payment-start/handler.js'), 'utf8');
+  assert.doesNotMatch(src, /text\/html|<!doctype|<form|status: 303/i);
+});
+
+test('the fake handoff URL: pay-demo.html beside the return URL, only ?s=, FAKE_CHECKOUT_URL overrides', async () => {
+  const mod = await load('payment-start/handler.js');
+  const none = () => undefined;
+  assert.equal(mod.fakeCheckoutUrl('https://aalayna.com/guest.html?venue=Mayda&pay=p1', 'a.b', none), 'https://aalayna.com/pay-demo.html?s=a.b');
+  assert.equal(mod.fakeCheckoutUrl('http://127.0.0.1:8788/sub/guest.html?pay=p1', 'a.b', none), 'http://127.0.0.1:8788/sub/pay-demo.html?s=a.b');
+  assert.equal(mod.fakeCheckoutUrl('https://aalayna.com/guest.html', 'a b&c', none), 'https://aalayna.com/pay-demo.html?s=a+b%26c');
+  const over = (k) => ({ FAKE_CHECKOUT_URL: 'https://staging.example/pay/demo.html?x=1#y' })[k];
+  assert.equal(mod.fakeCheckoutUrl('https://aalayna.com/guest.html', 'a.b', over), 'https://staging.example/pay/demo.html?s=a.b');
+  // through the handler, the override is what POST answers
+  const t = await setup({ env: { FAKE_CHECKOUT_URL: 'https://staging.example/pay-demo.html' } });
+  const r = await read(await t.start());
+  assert.match(r.body.url, /^https:\/\/staging\.example\/pay-demo\.html\?s=/);
 });
 
 test('CORS, method, size and rate limits', async () => {

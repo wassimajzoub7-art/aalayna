@@ -64,7 +64,8 @@ collection. A card or Whish payment is reserved on the server, then the guest is
 sent to the provider's hosted page (`supabase/functions/payment-start`) and only
 the provider's signed callback (`payment-webhook`) confirms it; a rail with no
 provider at the venue is not offered. The fake provider stands in at venues with
-demo payments on; `node tools/rehearse-payments.js` runs the whole flow on one
+demo payments on, with its checkout as a static page on the site (`pay-demo.html`,
+which talks to `payment-start` in JSON); `node tools/rehearse-payments.js` runs the whole flow on one
 computer. The local no-key demo still simulates payments. Shared mode never
 uploads demo history or falls back to simulated payment confirmation.
 

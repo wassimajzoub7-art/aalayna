@@ -18,10 +18,13 @@
      its menu photos (a 'warm' message, at most WARM_MAX), which load lazily otherwise.
    - The Supabase API, other hosts and every non-GET request: never cached, never touched.
      Data offline is the store's last good read (aalayna-sync.js), never an old HTTP answer.
-   Bump VERSION (guest) or STAFF_VERSION (staff) when this file or that shell list changes;
+   - pay-demo.html (the fake payment provider's checkout) is in neither scope: no worker
+     controls it and nothing of it is kept; it always comes from the network.
+   Bump VERSION (guest) or STAFF_VERSION (staff) when this file or that shell list changes,
+   or when a shell script's ?v= stamp moves (aalayna-sync.js?v=10: guest-v4, staff-v3);
    activate deletes the older caches of its own kind only. */
-var VERSION = 'aal-guest-v3';
-var STAFF_VERSION = 'aal-staff-v2';
+var VERSION = 'aal-guest-v4';
+var STAFF_VERSION = 'aal-staff-v3';
 var GUEST_SHELL = [
   'guest.html',
   'aalayna-store.js',

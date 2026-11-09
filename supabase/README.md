@@ -378,14 +378,22 @@ insert into payment_providers (restaurant_id, rail, provider, config, secret_nam
 ```
 
 **The fake provider.** A stand-in for Whish or a card gateway, for rehearsals only (it refuses
-venues with demo payments off, on both legs). Its page is served by this function at
-`/payment-start/fake/checkout?s=<token>`: the amount, the venue, Pay and Decline, and the
-sentence that no money moves. The token is HMAC-signed with `FAKE_WEBHOOK_SECRET` and
-carries the payment, the amount, the return URL and the reservation's expiry. Pay posts a
+venues with demo payments off, on both legs). Its checkout is a static page on the site,
+`pay-demo.html`, beside the guest page: `create` answers `pay-demo.html?s=<token>` resolved
+from the cleaned return URL, so it is on the origin the guest came from (`FAKE_CHECKOUT_URL`
+overrides it). Supabase rewrites HTML answers from Edge Functions to `text/plain` with a
+sandbox CSP, so the function answers JSON only: `GET /payment-start/fake/checkout?s=<token>`
+gives `{paymentId, amountCents, currency, venue, rail, returnUrl, expiresAt}` (404 when the
+token is not ours or has expired), and `POST` with `{s, outcome: "paid" | "failed"}` posts a
 callback to `payment-webhook/fake` signed with the same secret, exactly as a provider would,
-then sends the browser back; Decline posts `failed` (the payment is released). Every handoff
-is in `payment_sessions`, every callback in `payment_callbacks`: a session with no callback is
-a guest who left the provider's page.
+and answers `{returnUrl, outcome}` (502 with `returnUrl` when the callback could not be
+delivered). The page finds the function through `aalayna-config.js`, as the guest page does,
+never through its address; it reads only `s`, and sends the browser back only to a return URL
+on its own origin. It shows the amount, the venue, the reference, Pay and Decline, and the
+sentence that no money moves. The token is HMAC-signed with `FAKE_WEBHOOK_SECRET` and carries
+the payment, the amount, the return URL and the reservation's expiry. Decline posts `failed`
+(the payment is released). Every handoff is in `payment_sessions`, every callback in
+`payment_callbacks`: a session with no callback is a guest who left the provider's page.
 
 **Adding a real provider.** One adapter in `payment-start/handler.js` (`create`: their
 request, our payment id as the merchant reference, the return URL) and one in
@@ -400,7 +408,10 @@ answers 501 naming what is unknown until Whish shares its merchant API.
 3. Function secrets: `FAKE_WEBHOOK_SECRET` (the same value as for payment-webhook; unset it
    after rehearsals, and the fake provider disappears from both functions), optionally
    `PAYMENT_RETURN_ORIGINS` (comma-separated origins; the default is
-   `https://aalayna.com,https://www.aalayna.com,http://127.0.0.1:8787,http://localhost:8787`).
+   `https://aalayna.com,https://www.aalayna.com,http://127.0.0.1:8787,http://localhost:8787`;
+   `pay-demo.html` calls the function from the same origins, so CORS follows the same list),
+   and `FAKE_CHECKOUT_URL` only to serve the demo checkout from somewhere other than
+   `pay-demo.html` beside the guest page. `pay-demo.html` ships with the site (GitHub Pages).
 4. Rehearse on a venue whose demo payments are on, from a phone: scan the table card or open
    the bill link, split, pay by card, press Pay on the demo provider's page, read "Shukran.
    Confirmed by the demo provider · no money moved."; the dashboard shows the payment
@@ -409,7 +420,7 @@ answers 501 naming what is unknown until Whish shares its merchant API.
    `payment_callbacks` rows are the trail.
 
 **On one computer, without Supabase.** `node tools/rehearse-payments.js` serves the pages
-and, in the same process, a stand-in for the parts of the shared store a guest touches plus
+(`pay-demo.html` included, with an `aalayna-config.js` that points at itself) and, in the same process, a stand-in for the parts of the shared store a guest touches plus
 the two real function handlers against an in-memory PostgREST. It prints a guest link for
 this computer and for a phone on the same Wi-Fi. The store's rules are approximated there,
 not run; the SQL is tested by `tests/payment-start-sql.test.cjs` with PGLITE_MODULE.

@@ -21,9 +21,16 @@
                                          the page to send the guest to. The payment must be
                                          this bill's, 'initiated', not expired, a digital rail,
                                          and the payer token must be the one the reserve set.
-     GET|POST /payment-start/<provider>/<page>
-                                         pages a provider adapter serves itself; today the
-                                         fake provider's checkout page (below).
+     GET  /payment-start/fake/checkout?s=<token>
+                                         the fake provider's checkout data for pay-demo.html:
+                                         {paymentId, amountCents, currency, venue, rail,
+                                         returnUrl, expiresAt}; 404 {error, status: 'expired'}
+                                         for a token that is not ours or has expired.
+     POST /payment-start/fake/checkout   {s, outcome: 'paid'|'failed'} -> the signed callback
+                                         to payment-webhook/fake, then {returnUrl, outcome};
+                                         502 {error, returnUrl} when it was not delivered.
+   No route answers HTML: Supabase rewrites HTML from Edge Functions to text/plain with a
+   sandbox CSP, so a provider's page lives elsewhere (the fake one on the site, pay-demo.html).
    Headers from the guest page: x-aalayna-key (the chk_ bill key; the same credential the
    snapshot takes) and, on POST, x-aalayna-payer (the payer token the reserve was made with;
    its SHA-256 is in payment_secrets). returnUrl must be on an allowed origin; the function
@@ -40,22 +47,26 @@
      create    ctx = {rid, pid, payment, amountCents, currency, rail, returnUrl, config, secret,
                selfBase, env, crypto, now, fetch}; selfBase is this function's own URL
                (…/functions/v1/payment-start). Throws {notImplemented: sentence} -> 501.
-     pages     (request, ctx) -> Response, ctx = {env, crypto, now, fetch, selfBase, log}.
+     pages     (request, ctx) -> Response (JSON), ctx = {env, crypto, now, fetch, selfBase, log,
+               headers}; headers are CORS and no-store, for every answer.
    Every handoff is a payment_sessions row (provider, rail, amount, return URL), written
    before the URL is answered; with payment_callbacks it is the reconciliation trail.
 
    The fake provider: a stand-in for Whish or a card gateway, for rehearsals at venues whose
-   demo payments are on. create answers a page this function serves,
-   /payment-start/fake/checkout?s=<signed token>: the amount, Pay and Decline. Pay posts a
-   callback to /payment-webhook/fake signed with FAKE_WEBHOOK_SECRET exactly as a provider
-   would, then sends the browser back to returnUrl. The token is HMAC-signed with the same
+   demo payments are on. create answers pay-demo.html beside the guest page (resolved from the
+   cleaned return URL, or FAKE_CHECKOUT_URL when set) with ?s=<signed token> and nothing else.
+   That static page finds this function the way the guest page does (aalayna-config.js), reads
+   the amount, venue and reference from GET /payment-start/fake/checkout, and on Pay or Decline
+   POSTs {s, outcome}; this function then posts a callback to /payment-webhook/fake signed with
+   FAKE_WEBHOOK_SECRET exactly as a provider would and answers the return URL, which the page
+   follows only when it is on the page's own origin. The token is HMAC-signed with the same
    secret and carries the venue, payment, amount, return URL and the reservation's expiry.
    No money moves; the page says so.
 
    Whish: create throws notImplemented until Whish shares its merchant API (the questions are
    in the sentence). Filling in create here and verify/parse in payment-webhook is the work.
 
-   Answers (JSON unless a page)
+   Answers (always JSON)
      200 rails or {url}       400 bad request (missing header, unreadable body, return URL not
      allowed, cash rail)      401 wrong payer token   404 bill or payment unavailable
      405 wrong method         409 payment not 'initiated' (confirmed, expired, cancelled,
@@ -106,8 +117,8 @@ export function routeFrom(pathname) {
    the function its request with the public /functions/v1 prefix stripped and, behind its TLS
    termination, as plain http (it arrives as http://<project>.supabase.co/payment-start/...).
    A request at the project's own host (SUPABASE_URL) with no prefix therefore gets the public
-   address back from SUPABASE_URL; the checkout page and the callback to payment-webhook are
-   built from this. */
+   address back from SUPABASE_URL; the fake provider's callback to payment-webhook is built
+   from this. */
 export function selfBaseFrom(url, env) {
   const u = new URL(url);
   const i = u.pathname.lastIndexOf('/payment-start');
@@ -131,15 +142,12 @@ export function cleanReturnUrl(raw, paymentId, env) {
   return { url: u.toString() };
 }
 
-const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const money = (cents, cur) => (cur === 'USD' ? '$' : '') + (cents / 100).toFixed(2) + (cur === 'USD' ? '' : ' ' + cur);
 /* the venue's name as the id stores it (lower case), with its initials back */
 const venueName = (rid) => {
   let name = String(rid);
   try { const a = JSON.parse(rid); if (Array.isArray(a) && a[0]) name = String(a[0]); } catch (_) { /* not a JSON id */ }
   return name.replace(/(^|\s)(\S)/g, (m, sp, c) => sp + c.toUpperCase());
 };
-const page = (status, html, headers) => new Response(html, { status, headers: Object.assign({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'DENY' }, headers || {}) });
 
 /* ------------------------------------------------------------------ fake provider */
 
@@ -160,29 +168,19 @@ export async function readCheckoutToken(token, secret, cryptoImpl, nowMs) {
   return p;
 }
 
-function checkoutHtml(p, token, selfBase, state) {
-  const amt = money(p.c, p.cur), venue = venueName(p.rid), action = selfBase + '/fake/checkout';
-  const body = state === 'unreachable'
-    ? '<p class="lead">The payment could not be reported to Aalayna.</p><p>Nothing was charged. Go back to your bill and try again.</p>' +
-      '<p><a class="btn ghost" href="' + esc(p.ret) + '">Back to the bill</a></p>'
-    : '<p class="lead">Pay <b>' + esc(amt) + '</b> to ' + esc(venue) + '</p>' +
-      '<p class="sub">Reference ' + esc(p.pid) + '</p>' +
-      '<form method="post" action="' + esc(action) + '">' +
-      '<input type="hidden" name="s" value="' + esc(token) + '">' +
-      '<button class="btn" name="outcome" value="paid">Pay ' + esc(amt) + '</button>' +
-      '<button class="btn ghost" name="outcome" value="failed">Decline</button>' +
-      '</form>';
-  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<meta name="robots" content="noindex"><title>Demo payment provider</title>' +
-    '<style>body{margin:0;font:16px/1.5 system-ui,sans-serif;background:#f4f1ea;color:#1d1d1b;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}' +
-    '.card{background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.08)}' +
-    '.tag{display:inline-block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#7a7268;margin-bottom:12px}' +
-    '.lead{font-size:20px;margin:0 0 4px}.sub{margin:0 0 20px;color:#7a7268;font-size:14px;word-break:break-all}' +
-    '.btn{display:block;width:100%;box-sizing:border-box;border:0;border-radius:12px;padding:14px;font:inherit;font-weight:600;background:#C9414B;color:#fff;margin-top:10px;cursor:pointer;text-align:center;text-decoration:none}' +
-    '.btn.ghost{background:transparent;color:#7a7268;border:1px solid #ddd3c0}.note{margin:18px 0 0;font-size:13px;color:#7a7268}</style></head>' +
-    '<body><div class="card"><span class="tag">Demo payment provider</span>' + body +
-    '<p class="note">This page stands in for the provider’s checkout. No money moves and no card is asked for.</p></div></body></html>';
+/* where the fake provider's checkout page lives: pay-demo.html beside the guest page (resolved
+   from the cleaned return URL, so it is always on the origin the guest came from), or
+   FAKE_CHECKOUT_URL when set; only ?s=<token> is carried */
+export function fakeCheckoutUrl(returnUrl, token, env) {
+  const override = String((typeof env === 'function' && env('FAKE_CHECKOUT_URL')) || '').trim();
+  const u = override ? new URL(override) : new URL('pay-demo.html', returnUrl);
+  u.search = '';
+  u.hash = '';
+  u.searchParams.set('s', token);
+  return u.toString();
 }
+
+const EXPIRED = 'This payment page has expired. Go back to your bill and try again.';
 
 export const fakeAdapter = {
   name: 'fake',
@@ -192,44 +190,53 @@ export const fakeAdapter = {
     const exp = Math.min(Date.parse(ctx.payment.expiresAt) || 0, ctx.now().getTime() + 10 * 60000);
     const payload = { rid: ctx.rid, pid: ctx.pid, c: ctx.amountCents, cur: ctx.currency, rail: ctx.rail, ret: ctx.returnUrl, exp, n: nonce };
     const token = await checkoutToken(payload, ctx.env('FAKE_WEBHOOK_SECRET'), ctx.crypto);
-    return { url: ctx.selfBase + '/fake/checkout?s=' + encodeURIComponent(token), providerRef: 'fake-session-' + nonce };
+    return { url: fakeCheckoutUrl(ctx.returnUrl, token, ctx.env), providerRef: 'fake-session-' + nonce };
   },
+  /* JSON only: pay-demo.html (on the site's own origin) reads the token's display data with
+     GET and reports the guest's choice with POST. Supabase rewrites HTML from Edge Functions to
+     text/plain, so no page is served from here. */
   pages: {
     checkout: {
       async get(request, ctx) {
         const token = new URL(request.url).searchParams.get('s');
         const p = await readCheckoutToken(token, ctx.env('FAKE_WEBHOOK_SECRET'), ctx.crypto, ctx.now().getTime());
-        if (!p) return page(404, '<!doctype html><meta charset="utf-8"><title>Demo payment provider</title><p>This payment page has expired. Go back to your bill and try again.</p>');
-        return page(200, checkoutHtml(p, token, ctx.selfBase));
+        if (!p) return reply(404, { error: EXPIRED, status: 'expired' }, ctx.headers);
+        return reply(200, {
+          paymentId: p.pid, amountCents: p.c, currency: p.cur, venue: venueName(p.rid), rail: p.rail,
+          returnUrl: p.ret, expiresAt: new Date(p.exp).toISOString(),
+        }, ctx.headers);
       },
       async post(request, ctx) {
         const body = await readCapped(request, MAX_BODY);
-        if (!body.text) return page(400, '<!doctype html><meta charset="utf-8"><p>Unreadable form.</p>');
-        const form = new URLSearchParams(body.text);
-        const token = form.get('s'), outcome = form.get('outcome') === 'failed' ? 'failed' : 'paid';
+        if (body.tooLarge) return reply(413, { error: 'Request body is over 8 kB' }, ctx.headers);
+        let j = null;
+        try { j = body.text ? JSON.parse(body.text) : null; } catch (_) { j = null; }
+        if (!j || typeof j !== 'object' || typeof j.s !== 'string' || !['paid', 'failed'].includes(j.outcome)) return reply(400, { error: 'Send {s, outcome: "paid" or "failed"}' }, ctx.headers);
+        const token = j.s, outcome = j.outcome;
         const secret = ctx.env('FAKE_WEBHOOK_SECRET');
         const p = await readCheckoutToken(token, secret, ctx.crypto, ctx.now().getTime());
-        if (!p) return page(404, '<!doctype html><meta charset="utf-8"><title>Demo payment provider</title><p>This payment page has expired. Go back to your bill and try again.</p>');
+        if (!p) return reply(404, { error: EXPIRED, status: 'expired' }, ctx.headers);
         const event = JSON.stringify({
           externalRef: 'fake-' + p.pid + '-' + p.n, paymentId: p.pid, restaurantId: p.rid,
           amountCents: p.c, currency: p.cur, status: outcome, occurredAt: ctx.now().toISOString(),
         });
         const webhook = String(ctx.env('PAYMENT_WEBHOOK_URL') || ctx.selfBase.replace(/\/payment-start$/, '/payment-webhook')).replace(/\/+$/, '') + '/fake';
+        const undelivered = { error: 'The payment could not be reported to Aalayna. Nothing was charged.', returnUrl: p.ret };
         let res;
         try {
           res = await ctx.fetch(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Signature': await hmacHex(secret, event, ctx.crypto) }, body: event });
         } catch (e) {
           ctx.log.warn('payment-start: fake callback not delivered', JSON.stringify({ paymentId: p.pid, error: String(e && e.message || e).slice(0, 200) }));
-          return page(502, checkoutHtml(p, token, ctx.selfBase, 'unreachable'));
+          return reply(502, undelivered, ctx.headers);
         }
         // 2xx confirmed or released; 4xx is the database's answer (expired, mismatch): the
         // guest page shows the payment's state either way. 5xx: the callback is not recorded.
         if (res.status >= 500) {
           ctx.log.warn('payment-start: fake callback refused', JSON.stringify({ paymentId: p.pid, status: res.status }));
-          return page(502, checkoutHtml(p, token, ctx.selfBase, 'unreachable'));
+          return reply(502, undelivered, ctx.headers);
         }
         ctx.log.info('payment-start: fake callback delivered', JSON.stringify({ paymentId: p.pid, outcome, status: res.status }));
-        return new Response(null, { status: 303, headers: { Location: p.ret, 'Cache-Control': 'no-store' } });
+        return reply(200, { returnUrl: p.ret, outcome }, ctx.headers);
       },
     },
   },
@@ -284,15 +291,15 @@ export function createHandler(deps = {}) {
     const route = routeFrom(new URL(request.url).pathname);
     const selfBase = selfBaseFrom(request.url, env);
 
-    // a provider's own pages (the fake checkout)
+    // a provider's own routes (the fake checkout's data and its outcome; JSON only)
     if (route.length) {
       const adapter = Object.prototype.hasOwnProperty.call(adapters, route[0]) ? adapters[route[0]] : null;
       const p = adapter && adapter.enabled(env) && adapter.pages && Object.prototype.hasOwnProperty.call(adapter.pages, route[1] || '') ? adapter.pages[route[1]] : null;
-      if (!p) return reply(404, { error: 'No such page' }, cors);
+      if (!p) return reply(404, { error: 'No such route' }, cors);
       const method = request.method === 'GET' ? 'get' : request.method === 'POST' ? 'post' : null;
       if (!method || !p[method]) return reply(405, { error: 'Use GET or POST' }, Object.assign({ Allow: 'GET, POST' }, cors));
       if (!limiter.take('page|' + (request.headers.get('x-forwarded-for') || '').split(',')[0].trim(), now())) return reply(429, { error: 'Too many requests' }, Object.assign({ 'Retry-After': '60' }, cors));
-      return p[method](request, { env, crypto: cryptoImpl, now, fetch: fetchImpl, selfBase, log });
+      return p[method](request, { env, crypto: cryptoImpl, now, fetch: fetchImpl, selfBase, log, headers: Object.assign({ 'Cache-Control': 'no-store' }, cors) });
     }
 
     if (request.method !== 'GET' && request.method !== 'POST') return reply(405, { error: 'Use GET or POST' }, Object.assign({ Allow: 'GET, POST, OPTIONS' }, cors));

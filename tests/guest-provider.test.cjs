@@ -60,7 +60,7 @@ function makeServer(){
    if((options.method||'GET')==='GET')return reply(200,{rails:server.rails});
    if(server.startError)return reply(server.startError.status,server.startError.body);
    server.start={body,token:options.headers['x-aalayna-payer']};
-   return reply(200,{url:FN+'/fake/checkout?s=token-for-'+body.paymentId,provider:'fake',expiresAt:new Date(Date.now()+600000).toISOString()});
+   return reply(200,{url:'https://aalayna.com/pay-demo.html?s=token-for-'+body.paymentId,provider:'fake',expiresAt:new Date(Date.now()+600000).toISOString()});
   }
   if(url.endsWith('/rpc/aal_snapshot')){
    if(options.headers['x-aalayna-key']!==KEY)return reply(400,{message:'Open a current bill link.'});
@@ -137,7 +137,7 @@ test('paying by card reserves on the server, asks payment-start for the page wit
  assert.deepEqual(server.start.body,{paymentId:requestId,returnUrl:'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1'});
  assert.equal(server.start.token,sent.p_token);                          // the same payer token as the reserve
  assert.ok(server.start.token.length>=32);
- assert.deepEqual(p.assigned,[FN+'/fake/checkout?s=token-for-'+requestId]);
+ assert.deepEqual(p.assigned,['https://aalayna.com/pay-demo.html?s=token-for-'+requestId]);
  const pend=p.pending();
  assert.deepEqual([pend.requestId,pend.rail,pend.amount],[requestId,'card',shown]);
  assert.equal(p.run('paymentBusy'),true);
