@@ -362,6 +362,14 @@ test('helpers: routes, self base, return URL cleaning, base64url round trip', as
   assert.deepEqual(mod.routeFrom('/other'), []);
   assert.equal(mod.selfBaseFrom('https://proj.supabase.co/functions/v1/payment-start/fake/checkout?s=1'), FN);
   assert.equal(mod.selfBaseFrom('http://127.0.0.1:9000/functions/v1/payment-start'), 'http://127.0.0.1:9000/functions/v1/payment-start');
+  // Supabase's gateway strips /functions/v1 before the function sees the path: at the project's own origin the prefix comes back
+  const onSupabase = (k) => ({ SUPABASE_URL: URL_BASE })[k];
+  assert.equal(mod.selfBaseFrom(URL_BASE + '/payment-start/fake/checkout?s=1', onSupabase), FN);
+  assert.equal(mod.selfBaseFrom(URL_BASE + '/payment-start', onSupabase), FN);
+  assert.equal(mod.selfBaseFrom('http://proj.supabase.co/payment-start/fake/checkout?s=1', onSupabase), FN); // plain http behind the gateway
+  // elsewhere (a local server that mounts the function at the root) nothing is added
+  assert.equal(mod.selfBaseFrom('http://127.0.0.1:8788/payment-start', onSupabase), 'http://127.0.0.1:8788/payment-start');
+  assert.equal(mod.selfBaseFrom(URL_BASE + '/payment-start'), URL_BASE + '/payment-start');
   const env = (k) => ({})[k];
   assert.deepEqual(mod.cleanReturnUrl('https://aalayna.com/guest.html?k=chk_1&venue=M&pay=old&reset=1&s=tbl#x', 'p9', env), { url: 'https://aalayna.com/guest.html?venue=M&pay=p9' });
   assert.deepEqual(mod.cleanReturnUrl('https://aalayna.com/guest.html', 'p9', env), { url: 'https://aalayna.com/guest.html?pay=p9' });

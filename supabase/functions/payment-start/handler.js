@@ -102,11 +102,22 @@ export function routeFrom(pathname) {
   return i >= 0 ? parts.slice(i + 1).map((p) => p.toLowerCase()) : [];
 }
 
-/* this function's own URL, up to and including payment-start */
-export function selfBaseFrom(url) {
+/* this function's own public URL, up to and including payment-start. Supabase's gateway hands
+   the function its request with the public /functions/v1 prefix stripped and, behind its TLS
+   termination, as plain http (it arrives as http://<project>.supabase.co/payment-start/...).
+   A request at the project's own host (SUPABASE_URL) with no prefix therefore gets the public
+   address back from SUPABASE_URL; the checkout page and the callback to payment-webhook are
+   built from this. */
+export function selfBaseFrom(url, env) {
   const u = new URL(url);
   const i = u.pathname.lastIndexOf('/payment-start');
-  return u.origin + (i >= 0 ? u.pathname.slice(0, i) : '') + '/payment-start';
+  const prefix = i >= 0 ? u.pathname.slice(0, i) : '';
+  if (!prefix && typeof env === 'function') {
+    let own = null;
+    try { own = new URL(String(env('SUPABASE_URL') || '')); } catch (_) { own = null; }
+    if (own && own.hostname === u.hostname) return own.origin + '/functions/v1/payment-start';
+  }
+  return u.origin + prefix + '/payment-start';
 }
 
 /* The return URL the guest page asked for, checked and cleaned, or {error}. */
@@ -271,7 +282,7 @@ export function createHandler(deps = {}) {
     const cors = corsHeaders(request, env);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     const route = routeFrom(new URL(request.url).pathname);
-    const selfBase = selfBaseFrom(request.url);
+    const selfBase = selfBaseFrom(request.url, env);
 
     // a provider's own pages (the fake checkout)
     if (route.length) {
