@@ -102,6 +102,30 @@ the reason. The demo shows the same banner and keeps working locally. `sw.js` mu
 never get a long HTTP cache lifetime (GitHub Pages sends ten minutes, and the page
 registers it with `updateViaCache: 'none'`). See `tests/offline.test.cjs`.
 
+**T1 resilience** ([docs/resilience.md](docs/resilience.md) is the contract: what is kept, what
+can be queued offline and the conflict rules). The worker also keeps any other same-origin
+script, style, font or JSON the page asks for, and the guest page hands it the menu photos to
+keep (at most 60), so the menu keeps its pictures offline. A table card scanned again with no
+connection opens the bill this phone last read for that table (for six hours) instead of a dead
+end. A cash request is queued offline only on a bill read in the last six hours. The outbox
+sends in the order changes were made on the device (`seq`), never by the device clock, and the
+same change queued twice stays one job; its id (`op:reserve:<payment id>`) is the idempotency
+key the server already honours. Verified in headless Chromium: a table page loaded once, taken
+offline and reloaded shows the menu and the bill, a cash request made then is sent exactly once
+when the connection returns. See `tests/resilience.test.cjs`.
+
+On the staff side the dashboard registers the same worker as `sw.js?shell=staff`, scoped to
+`dashboard.html` with its own cache, so a dashboard loaded once opens again with no connection
+on the Live floor as last read. A signed-in member whose staff list cannot be checked for want
+of a connection gets the list the server last gave this device (the server checks every change
+again when it is sent). **Confirm cash received** made offline is queued
+(`op:confirm_cash:<payment id>`): the row loses its buttons and reads "Confirmed on this device
+at 21:04 · waiting to send", a second confirmation of the same request stays one job, and the
+status line turns red: "Offline · 1 change waiting to send (1 cash confirmation)". If the
+request was cancelled elsewhere before the confirmation arrives, the confirmation is refused and
+the dashboard says the cash is not recorded and what to do with it. Closing a bill, refunds and
+bill links need the connection and are refused, never queued, while offline.
+
 ### Table QR
 
 A printed table card opens `guest.html?v=<slug>&t=<table>&s=<code>`. Run
@@ -116,6 +140,11 @@ every 10 seconds, then attaches the bill in place. A card is a standing credenti
 for its table: anyone with a photo of it can open that table's current bill, so
 revoke and reissue a lost or copied card. Keys minted this way never expire (the
 same limit as bill links).
+
+A card can also carry an NFC tag that opens the same link, and then says "Tap or scan".
+In `qr.html` tick "Cards carry an NFC tag" and use "Copy tag list"; `tools/onboard.js
+--nfc` writes the list for a new venue. See `docs/nfc-tags.md` for the tags, how to write
+and lock them, and why the QR stays.
 
 **Pilot follow-ups (T8).** Run `supabase/followups-2026-09-24.sql` after the auth file
 (its header lists every change; untested against the live project). This replaces the
@@ -205,7 +234,9 @@ module each in `tools/steps/`, run in order and print one line each:
    the venue (draft and live menu, exactly as the editor's Publish makes them) and read
    back from the server. A pack with an item without a price is refused.
 4. **tables**: a code for tables 1 to N and `onboarding/<slug>-table-cards.html`, the
-   print sheet with the same cards as `qr.html`.
+   print sheet with the same cards as `qr.html`. With `--nfc` the cards say "Tap or
+   scan" and `onboarding/<slug>-table-tags.csv` lists each table's link for its NFC tag
+   (`docs/nfc-tags.md`).
 5. **staff**: the owner and each `--staff` email go on the staff list. No email is
    sent; each person signs in with their email and gets a six-digit code then.
 6. **verify**: a live test on table 9999: a $1.00 bill, two scans (same key), a cash

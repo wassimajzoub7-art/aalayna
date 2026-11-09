@@ -1,0 +1,30 @@
+{
+  "fixture": "legacy-omega-cp1252.bin",
+  "synthetic": true,
+  "description": "Legacy Windows POS (Omega-style): Windows-1252 (ESC t 16) with French accents, two ESC * logo bands whose data holds LF bytes, Facture N° 000587 on table 12, qty / name / unit / amount columns in LBP with comma thousands, the total in double width, VAT included ('dont TVA'), and a second total in USD.",
+  "profile": "omega",
+  "venue": { "id": "petit-cafe", "system": "omega", "currency": "LBP" },
+  "documents": [
+    {
+      "kind": "bill",
+      "needsReview": false,
+      "check": { "number": "000587", "table": "12", "tableNumber": 12, "covers": 4, "printedAt": "2026-10-27T22:05:00", "reprint": false },
+      "vat": { "cents": 34139600, "ratePercent": 11, "inclusive": true, "label": "dont TVA 11%" },
+      "altTotals": [{ "currency": "USD", "cents": 3849 }],
+      "tenders": [],
+      "bill": {
+        "externalId": "2026-10-27/000587",
+        "system": "omega",
+        "table": 12,
+        "currency": "LBP",
+        "lines": [
+          { "externalId": "entrecote", "name": "Entrecôte", "quantity": 2, "unitPriceCents": 125000000 },
+          { "externalId": "creme-brulee", "name": "Crème brûlée", "quantity": 1, "unitPriceCents": 45000000 },
+          { "externalId": "cafe", "name": "Café", "quantity": 2, "unitPriceCents": 18000000 },
+          { "externalId": "eau-minerale", "name": "Eau minérale", "quantity": 1, "unitPriceCents": 13500000 }
+        ],
+        "totalCents": 344500000
+      }
+    }
+  ]
+}

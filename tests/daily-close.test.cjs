@@ -32,7 +32,7 @@ const CRON_NOW=at('2026-10-01T01:00:00Z');   // 04:00 in Beirut
 
 /* ---------------------------------------------------------------- fakes */
 function fakeDb(seed){
- const db=Object.assign({venue_profiles:[],staff_members:[],kv_docs:[],kv_rows:[],daily_close_log:[]},seed),calls=[];
+ const db=Object.assign({venue_profiles:[],staff_members:[],kv_docs:[],kv_rows:[],daily_close_log:[],owner_groups:[],owner_group_venues:[],owner_group_staff:[],daily_close_group_log:[]},seed),calls=[];
  const RESERVED=new Set(['select','order','limit','offset','on_conflict']),isoLike=/^\d{4}-\d\d-\d\dT/;
  const cell=(row,col)=>{const m=/^(\w+)->>(\w+)$/.exec(col);if(m){const v=row[m[1]]&&row[m[1]][m[2]];return v==null?null:String(v);}return row[col]==null?null:row[col];};
  const cmp=(a,b)=>isoLike.test(String(a))&&isoLike.test(String(b))?Date.parse(a)-Date.parse(b):String(a)<String(b)?-1:String(a)>String(b)?1:0;
@@ -61,7 +61,7 @@ function fakeDb(seed){
   if(method==='POST'){
    const body=JSON.parse(opts.body),prefer=(opts.headers||{}).Prefer||'',out=[];
    for(const item of body){
-    if(table==='daily_close_log'&&db[table].some(r=>r.restaurant_id===item.restaurant_id&&r.day===item.day)){
+    if((table==='daily_close_log'&&db[table].some(r=>r.restaurant_id===item.restaurant_id&&r.day===item.day))||(table==='daily_close_group_log'&&db[table].some(r=>r.group_id===item.group_id&&r.day===item.day))){
      if(prefer.includes('ignore-duplicates'))continue;throw new Error('409 duplicate key');
     }
     const row=Object.assign({id:'log-'+(db[table].length+1)},item);db[table].push(row);out.push(row);

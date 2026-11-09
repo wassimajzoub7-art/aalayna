@@ -1,0 +1,10 @@
+{
+  "fixture": "kitchen.bin",
+  "synthetic": true,
+  "description": "A kitchen ticket for table 7, order 1042: KITCHEN in double size, items in double height without prices, modifiers, a buzzer. It is not a bill and must be ignored.",
+  "profile": "foodics",
+  "venue": { "id": "mayda-hamra", "system": "foodics", "currency": "USD" },
+  "documents": [
+    { "kind": "kitchen", "needsReview": false, "bill": null }
+  ]
+}

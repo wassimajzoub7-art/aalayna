@@ -1,0 +1,10 @@
+{
+  "id": "arabic",
+  "extends": "generic",
+  "system": "pos",
+  "synthetic": true,
+  "description": "An Arabic guest check printed in text mode by a local POS: Windows-1256 (ESC t 50) or CP864, each line sent in visual order (the printer has no bidi, so the amount is on the left and the letters run reversed), right-aligned header rows, item rows of name, quantity and line total, Arabic labels for subtotal, service and total. The parser turns each Arabic line back into logical order; the column test is off because amounts sit at the start of the visual line. Modelled on typical layouts; not yet checked against a real capture.",
+  "columns": 48,
+  "columnTest": false,
+  "visualOrder": true
+}

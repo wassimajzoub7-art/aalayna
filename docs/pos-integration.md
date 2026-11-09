@@ -170,6 +170,103 @@ if seen(header["X-Aalayna-Delivery"]): return 200   // already handled
 
 Answer any 2xx within 10 seconds; do the work afterwards. Anything else, a redirect or a timeout is retried after 1, 5, 30, 120, 720, 720 and 720 minutes; after 8 failed attempts the delivery is dropped and shown to the owner. Delivery is at least once and not ordered: deduplicate on `X-Aalayna-Delivery` (the same on every retry) or `eventId`.
 
+## The printer-stream path (a POS with no API)
+
+Many POS installed in Lebanon have no API and no vendor who will add one. Every one of them
+prints the guest check, though. The printer-stream bridge reads the ESC/POS bytes the POS
+sends to its receipt printer and pushes each check through this same `pos-bill` call, with
+an integration key, so everything above still applies. Nothing changes at the POS but the
+printer address. It lives in `tools/pos-printer/` (plain Node 18+, no packages):
+
+| File | Role |
+| --- | --- |
+| `escpos.js` | Reads the stream into text lines with their alignment, bold, size and code page, one document per cut. CP437, CP850, CP858, CP1252, CP864 and CP1256 are built in. Handles partial reads and garbage. |
+| `ticket.js`, `profiles/*.json` | Reads a document with a vendor layout profile (`generic`, `foodics`, `loyverse`, `omega`, `arabic`) into a bill. Ledger for reprints and versions. |
+| `listen.js`, `config.example.json` | The service: TCP 9100, a serial device or a watched folder in; `pos-bill` out. |
+| `capture.md` | How to record real tickets at a pilot venue. |
+
+**How a printed check becomes a bill.**
+
+- *Items.* The item rows are the ones whose amount ends in the common right-hand column,
+  up to the first subtotal, discount, service, VAT or total row. Indented or `+` rows under
+  an item are its modifiers, and a priced modifier adds to the item's unit price.
+- *Quantities and prices.* A quantity comes from the row (`2 x Hummus`, `2 Hummus 5.00 10.00`,
+  `Hummus x2`) or from the row below (`2 x $3.00`). The unit price is the line total divided
+  by the quantity, and must divide to the cent.
+- *Line ids.* The id is the item's name, folded to lower case without accents (`shish-taouk`,
+  `shish-taouk~2` for a second one), so it stays stable when the check prints again with
+  more items.
+- *Discount, service and VAT.* The discount and the service charge go into `discountCents` and
+  `serviceCents`. `pos-bill` has no VAT field. VAT added on top of the items becomes a line
+  named as printed (`VAT 11%`, id `vat`). VAT included in the prices is only recorded. The
+  arithmetic decides which applies. The discount is spread over the item lines as usual,
+  the VAT line included.
+- *The total.* The items, discount, service and VAT must come to the printed total to the
+  cent. A second total in the other currency (`Total LBP`) is recorded, not used.
+- *Check, table and date.* These come from the header. The table goes through the venue's
+  mapping (`"tables": {"B7": 107}`); a bare number is used as is.
+- *The externalId.* It is `<printed date>/<check number>` (with an optional `checkPrefix`).
+  It is fixed the first time the check is seen, so a check reprinted after midnight keeps it.
+- *Currency.* It is the venue's configured one.
+- *Reprints.* The ledger (`state/ledger.json`) keeps every check for 14 hours. An unchanged
+  reprint sends nothing. A changed print (items added, a void, a discount) is sent as the
+  same `externalId` with a higher `version`, using milliseconds that never go backwards. A
+  new check on a table that had another open is logged; Aalayna supersedes the old bill as
+  described above.
+- *Paid receipts.* The tenders and change printed after the total are read. They are sent as
+  till tenders, with `closed: true` when they cover the bill, only when the venue sets
+  `"sendTenders": true`. The change comes off the cash tender.
+- *What is not a bill.* Kitchen and bar tickets, X/Z reports and anything without a total are
+  ignored.
+- *Review.* A check that does not balance, has no table or check number, has an unmapped
+  table, is printed as an image, or scores under `minConfidence` (0.8) is held for review.
+  It is written to `review/` with its text and the reasons, and is **never sent**. Each row
+  the reader could not place costs 0.1 of confidence.
+
+**Pushing.** The same body is retried with backoff after a timeout, a network error, a 5xx,
+or a 429 after `Retry-After`. Resending the same version is a no-op here, so a retry can
+never double a bill. `stale_version` is dropped, because a newer print already arrived.
+`version_reused` moves to a higher version once. Every other refusal (`table_busy`, `rule`,
+`balance_outstanding`, `overpaid` and so on) goes to `review/` with Aalayna's message for
+staff. Bills still unsent wait in `state/outbox.json` and are retried every minute and at
+start.
+
+**Setting up a pilot venue.**
+
+1. **Capture first.** Record a week of tickets with `capture.md` (the listener in dry run
+   with `captureDir`, or a tap), redact them, and add them as fixtures with hand-written
+   expectations. Make the vendor's profile pass them before anything goes live. The
+   fixtures in `tests/fixtures/pos-printer/` are synthetic until then.
+2. **Issue a key.** The owner issues an integration key for the venue, as for any POS. On the
+   listener machine it goes in an environment variable, for example
+   `AALAYNA_POS_KEY_MAYDA_HAMRA`, never in the configuration file.
+3. **Configure.** Copy `config.example.json` to `config.json`: the venue (`system`,
+   `currency`, the `tables` mapping for any non-numeric table labels), and one entry per
+   printer with its `profile`, its source and, for TCP, `forward` with the real printer's
+   address. Code page numbers that differ on the venue's printer go in the profile's
+   `codePages`.
+4. **Re-point the POS.** On a small always-on machine on the venue's network, run
+   `node tools/pos-printer/listen.js --config tools/pos-printer/config.json --dry-run` and
+   point the POS's receipt printer at that machine, port 9100. Every check still prints,
+   because the listener forwards each byte. If the printer is unreachable the listener drops
+   the POS connection, so the POS shows its usual printer error. Compare `out/` with the paper
+   for a few services, and clear `review/` by fixing the profile.
+5. **Go live.** Restart without `--dry-run`, under a supervisor (systemd, launchd, or NSSM on
+   Windows) so it restarts after a power cut. A single check can be replayed with
+   `--replay capture.bin`, which is dry unless `--push` is given.
+
+**Limits.** These are known today:
+
+- Receipts printed as images (some cloud POS apps and Windows graphics drivers) have no text
+  to read; there is no OCR.
+- Multi-byte code pages (Chinese, Japanese, Korean) are not decoded; send UTF-8 instead.
+- Star Line mode printers are not parsed, only ESC/POS.
+- Fractional quantities (by weight) are sent as one line at the printed total.
+- A void is understood only as a negative row that names an item above it.
+- Arabic printed in visual order is turned back into logical order by a heuristic. It is
+  checked only on synthetic tickets.
+- Every vendor profile is modelled on typical layouts, not yet on a real capture.
+
 ## What Aalayna never does
 
 - It never creates orders or sends items to your kitchen.

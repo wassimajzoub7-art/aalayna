@@ -291,7 +291,7 @@
       return api('POST', '/api/venues', {
         name: $('f-name').value.trim(), place: $('f-place').value.trim(), slug: $('f-slug').value.trim(), currency: currency(),
         rate: currency() === 'LBP' && rate ? Number(rate) : null, tables: Number($('f-tables').value), owner: $('f-owner').value.trim(),
-        staff: staffRows().filter(function (s) { return s.email; }), files: files, reimport: !$('f-packnote').hidden && $('f-reimport').checked,
+        staff: staffRows().filter(function (s) { return s.email; }), files: files, reimport: !$('f-packnote').hidden && $('f-reimport').checked, nfc: $('f-nfc').checked,
         brand: $('f-brand').value.trim(), bg: $('f-bg').value.trim(), font: $('f-font').value.trim()
       });
     }).then(function (r) {

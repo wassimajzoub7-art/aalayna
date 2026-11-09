@@ -49,6 +49,59 @@ Then, in this order: `hardening-2026-09-24.sql`, `admin.sql`, `sessions-2026-09-
 file replaces some functions of the earlier ones and says which; re-running an earlier
 file means running the later ones again.
 
+The September 30 files follow (`daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`,
+`integrations-2026-09-30.sql`, each with its own section below), then `groups-2026-10-28.sql`
+last ("Owner groups", below). It replaces `aal_role`, `aal_staff_role` and `aal_staff` from
+`auth-2026-09-24.sql`: re-running `auth-2026-09-24.sql` means running `groups-2026-10-28.sql`
+again.
+
+## Owner groups: one floor for several venues (October 28)
+
+An owner with several venues gets one owner link and one sign-in for all of them, and one 04:00
+email. File: `groups-2026-10-28.sql` (run it after `auth-2026-09-24.sql`, and after the September 30
+files where they are installed). Untested against PostgreSQL here, like the files before it.
+
+**The model.** `owner_groups` (id `grp_...`, name, the group's owner key `own_...`),
+`owner_group_venues` (a venue belongs to at most one group) and `owner_group_staff` (email, role
+owner or manager, revoked_at). All closed: RLS on, no policies, reached only through the functions.
+`aal_role` now answers `owner` at a venue for the venue's own owner key (as before), for the owner key
+of the group that owns the venue, and for a signed-in owner or manager of the venue or of its group;
+`waiter` only for a waiter on that venue's own staff list. So every policy, `aal_snapshot` and
+`aal_mutate` give a group owner or manager the owner's rights at each venue of the group and nowhere
+else, and a waiter stays on their venue. `aal_staff` 'mine' lists the group's venues too, so the staff
+sign-in admits a group manager at each of them. Group staff are managed with `aal_group`
+(`{op:'mine'}`, `{op:'list', group_id}`, `{op:'invite'|'revoke'|'change_role', group_id, email, role}`)
+with the group owner key or as a signed-in group owner; waiters are invited at their venue, as before.
+
+**Install (in this order).**
+1. Run `groups-2026-10-28.sql` in the SQL editor. It stops without changing anything if
+   `auth-2026-09-24.sql` or `admin.sql` is missing.
+2. In admin.html, connect with the admin key under Venues, then under Owner groups press Load groups,
+   create the group, and add its venues (a venue already in another group is refused).
+3. Copy a venue's owner dashboard link from the group: it carries the group key and opens that venue
+   with the owner's rights; the same key opens every venue of the group. Send it to the owner only.
+4. Invite the group's owners and managers under Group staff. They sign in on the dashboard with the
+   six-digit code, like venue staff, and see every venue of the group.
+5. Redeploy `daily-close` (`supabase functions deploy daily-close --no-verify-jwt --project-ref
+   xeqbkamwucqplvoavhyd`): it then also sends the group close (see "Daily close email"). Without the
+   groups file installed the function keeps sending per-venue closes only.
+
+To check access from the SQL editor, borrow a key for one transaction:
+
+```sql
+begin;
+select set_config('request.headers', json_build_object('x-aalayna-key',
+  (select owner_key from owner_groups where name = 'Mayda Group'))::text, true);
+select restaurant_id, aal_role(restaurant_id) from venue_keys;   -- 'owner' for the group's venues only
+rollback;
+```
+
+What it does not do yet: the shared-mode dashboard is still one venue per link (the venue switcher and
+the All venues view run in the no-key demo, from the same per-venue figures); `aal_pos_is_owner`
+accepts the venue's own owner key and signed-in owners, not the group key, for POS keys and webhooks.
+`aal_role` is evaluated per row by the policies and now also looks up the group, a few more index
+lookups per row.
+
 ## Menu style (September 28)
 
 `theme-2026-09-28.sql` adds `venue_profiles.theme`: empty is the standard guest menu,
@@ -102,6 +155,23 @@ opened or closed and no payment record is skipped too, with error `no activity`,
 `?force=1` still sends the all-zero email. Skipped and failed rows are picked up again by the next
 call, so a venue that gains a recipient, or whose late-synced activity arrives, is emailed then.
 
+**One close for an owner group.** With `groups-2026-10-28.sql` installed, each group that has venues
+also gets one email a day, to the group's owners and managers (`owner_group_staff`): subject
+`<Group>: Wednesday 30 September, on Aalayna`, the group's figures under "All venues" (every count and
+amount is the sum of its venues'; the lira line is left to each venue, whose rate may differ; the
+average rating is worked out from all the ratings; the top dishes from every venue's closed bills, by
+name), "Needs action" with each venue's items prefixed by the venue, then one section per venue with
+that venue's figures exactly as its own close has them. The attachment `close-<group-slug>-<date>.csv`
+is every venue's CSV rows with a first column `venue` (`Mayda · Hamra`). It is logged per group and day
+in `daily_close_group_log`, with the same claim, "already sent", retry, `no activity` and `?force=1`
+rules; a group with no live owner or manager is skipped (`no active group owner or manager email`).
+Each venue of a group still gets its own close, to its own owners and managers (`staff_members`), minus
+anyone who already gets the group's email; a venue with no one left is skipped as before. Single-venue
+owners see no change. `?group=<group id>` closes one group (and no venue); `?venue=` closes one venue
+(and no group); a call with neither, the cron's included, closes every venue and every group. The
+answer lists groups under `groups`, beside `results`. Without the groups migration the function reads
+no group (PostgREST answers 404 for the missing tables) and sends per-venue closes exactly as before.
+
 **Set up (in this order).**
 1. Deploy: `supabase functions deploy daily-close --no-verify-jwt --project-ref xeqbkamwucqplvoavhyd`.
    JWT verification is off because pg_net cannot present a user JWT; the function checks the
@@ -138,6 +208,42 @@ a send under way (or one that died; it is retried after ten minutes). Whether th
 `select status_code, content from net._http_response order by created desc limit 5;`. Each venue's
 emails are sent one per recipient, so one bad address does not stop the others; if some but not all
 fail, the row is `sent` and `error` says how many failed. Not covered: the function and the migration have been tested here only against fakes (no Deno, Supabase CLI or PostgreSQL).
+
+## The close, in words (October 28)
+
+The daily close email now opens with a short narrative of the day, above the figures, in the
+venue's language: what the evening was (bills, takings, against the same weekday last week and
+the average of the previous four), what moved (tips, cash share, average bill, settlement time),
+what to look at (a POS push that failed, cash left waiting, a bill left open, a refund, a stale
+lira rate) and who came back (regulars, lapsed guests, first visits, new second-visit candidates;
+counts only). The rules and every threshold: `docs/close-narrative.md`; the code:
+`functions/_shared/close-narrative.js`. The CSV is unchanged.
+
+**Set up.** Run `close-narrative-2026-10-28.sql` (after `admin.sql`): it adds
+`venue_profiles.lang` (`en`, `fr`, `ar`; English when null) and `venue_profiles.currency`
+(`USD`, or `LBP` for takings in lira first). Set them per venue in the SQL editor, for example
+`update public.venue_profiles set lang = 'fr' where slug = 'mayda';`. Then redeploy `daily-close`.
+The function reads the venue with `select=*`, so it also runs before the file is applied
+(English, dollars). To compare weekdays it now reads the venue's last 28 days of bills and
+payments, every payment linked to a guest, and the POS webhook deliveries of the day; if the last
+two reads fail, the email goes out without the sentences that need them, and if the narrative
+fails, without the narrative.
+
+**Read it first.** `node tools/close-preview.js --demo good` (or `bad`, `empty`; `--lang fr`,
+`--currency LBP`, `--email` for the whole text) prints yesterday's narrative from fictional
+Mayda activity; `--fixture rows.json --date YYYY-MM-DD` from rows in the shape of the tables.
+Nothing is sent.
+
+**Optional: a model rewrite (off by default).** With the function secret
+`CLOSE_NARRATIVE_MODEL_KEY` (an Anthropic API key) set, the rules' narrative and the day's figures
+(no venue name, dishes or contacts) go to the Claude API (`claude-sonnet-5-5`; another model with
+`CLOSE_NARRATIVE_MODEL`) to be reworded more naturally in the venue's language, under strict
+instructions: keep every number, add nothing, same length. The rewrite is used only if its numbers
+are exactly the rules' numbers (checked numerically, Arabic-Indic digits included) and it passes
+the other checks in `docs/close-narrative.md`; on any error, refusal, timeout (20 s) or doubt the
+rules' text goes out, and the function log says why. Unset the secret to turn it off. Cost: one
+short request per venue per day. `node tools/close-preview.js --demo good --model` tries it locally
+with the key in the environment.
 
 ## Payment callbacks and receipt emails (September 30)
 

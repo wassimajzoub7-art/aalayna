@@ -1,0 +1,69 @@
+{
+  "id": "generic",
+  "description": "Any guest check: item lines are the rows whose amount ends at the common right-hand column, the bill ends at the first summary row (subtotal, discount, service, VAT, total), and the printed total must balance. Every vendor profile extends this one; its lists are tried after the vendor's own.",
+  "system": "pos",
+  "columns": 48,
+  "columnTest": true,
+  "visualOrder": false,
+  "dateOrder": "dmy",
+  "codePages": {},
+  "encoding": null,
+  "kitchen": ["KITCHEN", "KOT", "ORDER TICKET", "KITCHEN ORDER", "BAR ORDER", "BAR TICKET", "CUISINE", "BON DE COMMANDE", "PREPARATION", "مطبخ", "طلب المطبخ"],
+  "report": ["Z REPORT", "X REPORT", "Z-REPORT", "X-REPORT", "END OF DAY", "SHIFT REPORT", "DAILY REPORT", "SALES REPORT", "RAPPORT Z", "CLOTURE", "تقرير"],
+  "reprint": ["REPRINT", "RE-PRINT", "DUPLICATE", "DUPLICATA", "COPY", "COPIE", "نسخة", "إعادة طباعة"],
+  "fields": {
+    "table": [
+      "(?:^|\\s)(?:table|tbl|tab|tisch|طاولة رقم|طاولة)\\s*(?:no\\.?|n°|#)?\\s*[:#.]?\\s*(?<v>[A-Z]?\\d{1,4}[A-Z]?)(?![\\d.,])"
+    ],
+    "check": [
+      "(?:check|chk|bill|invoice|receipt|order|ticket|facture|fact\\.|note|رقم الفاتورة|فاتورة رقم|فاتورة|رقم الطلب|طلب رقم)\\s*(?:no\\.?|number|nr|n°|#)?\\s*[:#.]?\\s*(?<v>[A-Z0-9\\-\\/]*\\d[A-Z0-9\\-\\/]*)"
+    ],
+    "date": [
+      "(?<y>\\d{4})-(?<m>\\d{1,2})-(?<d>\\d{1,2})",
+      "(?<d>\\d{1,2})[\\/.\\-](?<m>\\d{1,2})[\\/.\\-](?<y>\\d{2,4})",
+      "(?<d>\\d{1,2})[\\s\\-](?<mon>jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|janv|févr|fevr|mars|avr|mai|juin|juil|août|aout|déc)[a-zéû.]*[\\s\\-']*(?<y>\\d{2,4})"
+    ],
+    "time": [
+      "(?<h>\\d{1,2}):(?<min>\\d{2})(?::(?<s>\\d{2}))?\\s*(?<ap>AM|PM)?"
+    ],
+    "covers": [
+      "(?:guests|gst|covers|couverts|pax|persons|عدد الأشخاص|عدد الضيوف)\\s*[:#]?\\s*(?<v>\\d{1,3})"
+    ]
+  },
+  "item": {
+    "patterns": [
+      "^(?<qty>{Q})\\s*[xX×]\\s*(?<name>.+?)\\s+(?<unit>{A})\\s+(?<total>{A})$",
+      "^(?<qty>{Q})\\s+(?<name>[^\\d\\s].*?)\\s+(?<unit>{A})\\s+(?<total>{A})$",
+      "^(?<name>[^\\d\\s].*?)\\s+(?<qty>{Q})\\s*[@xX×]\\s*(?<unit>{A})\\s+(?<total>{A})$",
+      "^(?<name>[^\\d\\s].*?)\\s{2,}(?<qty>{Q})\\s{2,}(?<unit>{A})\\s{2,}(?<total>{A})$",
+      "^(?<qty>{Q})\\s*[xX×]\\s*(?<name>.+?)\\s+(?<total>{A})$",
+      "^(?<qty>{Q})\\s+(?<name>[^\\d\\s].*?)\\s+(?<total>{A})$",
+      "^(?<name>.+?)\\s+[xX×]\\s?(?<qty>{Q})\\s+(?<total>{A})$",
+      "^(?<name>.*?[^\\d\\s])\\s{2,}(?<qty>{Q})\\s{2,}(?<total>{A})$",
+      "^(?<name>.+?)\\s+(?<total>{A})$"
+    ],
+    "qtyLine": [],
+    "modifierPrefix": "^[+\\-*>~•·]+\\s*",
+    "modifierWords": ["with ", "no ", "extra ", "add ", "without ", "sans ", "avec ", "بدون ", "مع ", "زيادة "],
+    "modifierIndent": 2,
+    "voidWords": ["void", "annul", "cancel", "ملغى", "الغاء"]
+  },
+  "summary": {
+    "subtotal": ["subtotal", "sub total", "sub-total", "sous-total", "sous total", "total ht", "net amount", "المجموع الفرعي"],
+    "discount": ["discount", "disc.", "disc", "remise", "réduction", "promo", "خصم", "حسم"],
+    "service": ["service charge", "service", "svc", "serv.", "رسم الخدمة", "خدمة"],
+    "vat": ["vat", "tva", "t.v.a", "tax", "dont tva", "incl. vat", "ضريبة القيمة المضافة", "الضريبة", "ضريبة"],
+    "total": ["grand total", "total due", "amount due", "net total", "net à payer", "net a payer", "à payer", "total ttc", "montant total", "total", "المبلغ الإجمالي", "الإجمالي", "الاجمالي", "المجموع", "المطلوب"],
+    "tender": {
+      "cash": ["cash", "espèces", "especes", "نقدا", "نقداً", "كاش"],
+      "card": ["credit card", "card", "visa", "mastercard", "master", "amex", "carte", "cb", "بطاقة"],
+      "other": ["whish", "omt", "voucher", "transfer", "other"]
+    },
+    "change": ["change", "rendu", "monnaie", "الباقي", "الفكة"],
+    "ignore": ["total items", "total qty", "total quantity", "items count", "item count", "nb articles", "عدد الأصناف"]
+  },
+  "currencies": {
+    "USD": ["$", "USD", "US$", "دولار"],
+    "LBP": ["LBP", "L.L.", "L.L", "LL", "ل.ل", "ليرة"]
+  }
+}

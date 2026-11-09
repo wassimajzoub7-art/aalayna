@@ -1,0 +1,32 @@
+{
+  "fixture": "cloud-foodics.bin",
+  "synthetic": true,
+  "description": "Cloud POS (Foodics-style), 80 mm, CP437. Raster logo and a status query before the text, Order #1042 on table 7, a priced and an unpriced modifier, VAT 11% added on top (it becomes a VAT line, since pos-bill has no VAT field), the total in double size and a second total in LBP, a QR code.",
+  "profile": "foodics",
+  "venue": { "id": "mayda-hamra", "system": "foodics", "currency": "USD" },
+  "documents": [
+    {
+      "kind": "bill",
+      "needsReview": false,
+      "check": { "number": "1042", "table": "7", "tableNumber": 7, "covers": 2, "printedAt": "2026-10-27T21:14:00", "reprint": false },
+      "vat": { "cents": 380, "ratePercent": 11, "inclusive": false, "label": "VAT 11%" },
+      "altTotals": [{ "currency": "LBP", "cents": 342785000 }],
+      "tenders": [],
+      "codes": [{ "type": "qr", "data": "https://receipts.example.invalid/1042" }],
+      "bill": {
+        "externalId": "2026-10-27/1042",
+        "system": "foodics",
+        "table": 7,
+        "currency": "USD",
+        "lines": [
+          { "externalId": "hummus", "name": "Hummus", "quantity": 2, "unitPriceCents": 500 },
+          { "externalId": "shish-taouk", "name": "Shish Taouk", "quantity": 1, "unitPriceCents": 1250, "modifiers": ["Extra garlic", "Fries"] },
+          { "externalId": "fattoush", "name": "Fattoush", "quantity": 1, "unitPriceCents": 600 },
+          { "externalId": "pepsi", "name": "Pepsi", "quantity": 3, "unitPriceCents": 200 },
+          { "externalId": "vat", "name": "VAT 11%", "quantity": 1, "unitPriceCents": 380 }
+        ],
+        "totalCents": 3830
+      }
+    }
+  ]
+}

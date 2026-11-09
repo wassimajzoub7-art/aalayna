@@ -1,0 +1,14 @@
+{
+  "id": "loyverse",
+  "extends": "generic",
+  "system": "loyverse",
+  "synthetic": true,
+  "description": "A Loyverse-style receipt on a 58 mm printer: the open ticket's name carries the table ('Ticket: Table 4'), 'Receipt #2-1015' is the check, each item prints its line total with '2 x $3.00' on the row below, and a paid receipt lists the tender and the change after the total. Modelled on typical layouts; not yet checked against a real capture.",
+  "columns": 32,
+  "fields": {
+    "check": ["receipt\\s*(?:no\\.?|#|№)\\s*:?\\s*(?<v>\\d[\\d\\-]{0,15})"]
+  },
+  "item": {
+    "qtyLine": ["^(?<qty>{Q})\\s*[xX×]\\s*(?<unit>{A})$"]
+  }
+}
