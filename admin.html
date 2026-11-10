@@ -582,7 +582,7 @@ Aalayna.on(function(){ paintAll(); });
   function profileOf(v){
     var p=v.profile||{}, ids=ridParts(v.restaurant_id);
     return {name:p.name||v.name||ids[0]||'',place:p.place!=null?p.place:(ids[1]||''),slug:p.slug||'',gplace:p.gplace||'',
-            brand:p.brand||'',bg:p.bg||'',font:p.font||'',theme:p.theme||'',menu:p.menu_pack||'',demo:p.demo_payments!==false};
+            brand:p.brand||'',bg:p.bg||'',font:p.font||'',theme:p.theme||'',menu:p.menu_pack||'',demo:p.demo_payments===true};
   }
   function slugify(name){
     var s=String(name||'');

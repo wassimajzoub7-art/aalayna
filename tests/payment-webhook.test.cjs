@@ -352,6 +352,37 @@ test('a database outage is 500 and recorded when possible; logs never carry the 
   }
 });
 
+test('every decision about a payment (200, 202, 403, 404, 409) names it; 400, 401, 404 unknown provider, 429 and 500 do not', async () => {
+  const t = await setup();
+  t.db.put(RID, settleRow({ id: 'pay-r', status: 'confirmed', externalRef: 'fake-ref-r' }));
+  t.db.put(RID, settleRow({ id: 'pay-x', expiresAt: new Date(Date.now() - 1000).toISOString() }));
+  t.db.put(OTHER, settleRow({ id: 'pay-live' }));
+  const decisions = [
+    [event(), 200], [event({ status: 'refunded', paymentId: 'pay-r', externalRef: 'fake-ref-r' }), 202],
+    [event({ paymentId: 'pay-live' }), 403], [event({ paymentId: 'nope' }), 404], [event({ paymentId: 'pay-x' }), 409],
+  ];
+  for (const [e, status] of decisions) {
+    const r = await read(await t.call(e));
+    assert.equal(r.status, status, JSON.stringify(r.body));
+    assert.equal(r.body.paymentId, e.paymentId, String(status));
+  }
+  const none = [
+    [await t.call(event({ amountCents: 0 })), 400],
+    [await t.call(event(), { signature: '0'.repeat(64) }), 401],
+    [await (await setup({ env: { FAKE_WEBHOOK_SECRET: '' } })).call(event()), 404],
+  ];
+  const u = await setup();
+  u.db.failCallbacks = true;
+  none.push([await u.call(event()), 500]);
+  const http = await load('_shared/http.js');
+  none.push([await (await setup({ limiter: http.createLimiter({ max: 0, windowMs: 60000 }) })).call(event()), 429]);
+  for (const [res, status] of none) {
+    const r = await read(res);
+    assert.equal(r.status, status);
+    assert.equal(r.body.paymentId, undefined, String(status));
+  }
+});
+
 test('the Deno wrapper only wires the handler', () => {
   const src = require('node:fs').readFileSync(path.join(root, 'supabase', 'functions', 'payment-webhook', 'index.ts'), 'utf8');
   assert.match(src, /import \{ createHandler \} from '\.\/handler\.js'/);

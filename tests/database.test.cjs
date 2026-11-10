@@ -72,7 +72,7 @@ test('bill entry: open_check computes the total from lines; update_check applies
   await assert.rejects(call('update_check',{checkId:'bill-1',lines:[]}),/Only staff/);
   await call('reserve',{id:'pay-1',requestId:'pay-1',checkId:'bill-1',amount:5,tip:0,rail:'cash',items:{i06:1}},'t'.repeat(40));
   await auth(a.owner_key);
-  await assert.rejects(call('update_check',{checkId:'bill-1',baseRevision:2,lines:[{id:'i07',q:1,p:16},{id:'i14',q:4,p:10},{id:'i13',q:1,p:2}]}),/Hummus is covered by a payment/);
+  await assert.rejects(call('update_check',{checkId:'bill-1',baseRevision:2,lines:[{id:'i07',q:1,p:16},{id:'i14',q:4,p:10},{id:'i13',q:1,p:2}]}),/This item is covered by a payment and cannot be removed\./);   // no live menu here, so the SQL names no dish
   await assert.rejects(call('update_check',{checkId:'bill-1',baseRevision:2,lines:[{id:'i07',q:1,p:16},{id:'i06',q:2,p:10},{id:'i14',q:3,p:7.5},{id:'i13',q:1,p:2}]}),/added, not removed/);
   await assert.rejects(call('update_check',{checkId:'bill-1',baseRevision:2,lines:[{id:'i07',q:1,p:12},{id:'i06',q:2,p:10},{id:'i14',q:4,p:10},{id:'i13',q:1,p:2}]}),/Prices of existing items/);
   u=await call('update_check',{checkId:'bill-1',baseRevision:2,lines:[{id:'i07',q:1,p:16},{id:'i06',q:3,p:15},{id:'i14',q:4,p:10},{id:'i13',q:1,p:2}]});

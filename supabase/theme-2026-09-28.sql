@@ -129,7 +129,7 @@ begin
   n_slug := nullif(btrim(coalesce(v->>'slug', '')), '');
   n_slug := public.aal_admin_slug(coalesce(n_slug, cur.slug), n_name, p_rid);
   n_demo := coalesce(case when v ? 'demo_payments' then (v->>'demo_payments')::boolean end,
-                     cur.demo_payments, true);
+                     cur.demo_payments, false);
 
   insert into public.venue_profiles as vp
     (restaurant_id, slug, name, place, gplace, brand, bg, font, menu_pack, demo_payments)
