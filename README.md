@@ -82,8 +82,9 @@ sample bill whenever table 12 has no open staff bill. With a venue key, saves go
 `aal_mutate` (`open_check` with lines, `update_check`); run
 `supabase/hardening-2026-09-24.sql` after the September 15 file. A guest opens
 the bill from its **Guest bill link** (`chk_` key); the table comes from that
-check. With a key the guest page offers cash only until a payment provider is
-connected.
+check. With a key the guest page offers cash, plus card and Whish wherever
+`payment-start` reports a rail for the bill (a `payment_providers` row, or the fake provider
+at a venue whose demo payments are on; they are off unless the admin turns them on).
 
 ### Offline
 

@@ -761,9 +761,15 @@
       seedIfEmpty(); var scope = A.venueId();
       return read(K.settle, []).filter(function(s){ return !s.venueId || s.venueId === scope; });
     },
+    /* C9: whether an initiated digital payment ran out is judged by the clock that set
+       expiresAt. In shared mode that is the server: the sync layer sets A.serverNow (the
+       device clock corrected by the offset it measured with aal_now), and while no offset is
+       known it answers null, and an initiated payment is not called expired here (the server
+       still expires it). Local demo mode has no server: the device clock set it and decides. */
     settlementStatus: function (s) {
       if (s.refunded) return 'refunded';
-      if (s.status === 'initiated' && s.expiresAt && Date.parse(s.expiresAt) <= Date.now()) return 'expired';
+      var at = typeof A.serverNow === 'function' ? A.serverNow() : Date.now();
+      if (s.status === 'initiated' && s.expiresAt && at != null && Date.parse(s.expiresAt) <= at) return 'expired';
       if (s.cancelled) return 'cancelled';
       return s.status || (s.rail === 'cash' ? 'pending' : 'confirmed');
     },

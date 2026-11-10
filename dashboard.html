@@ -11,12 +11,12 @@
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
-<script src="aalayna-store.js?v=26"></script>
+<script src="aalayna-store.js?v=27"></script>
 <script src="restaurant-growth.js?v=8"></script>
 <script src="owner-metrics.js?v=8"></script>
 <script src="owner-group.js?v=1"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=10"></script>
+<script src="aalayna-sync.js?v=11"></script>
 
 <style>
   :root{
@@ -854,6 +854,8 @@ function paintRows(){
       '<span class="rl">' + (opsRailLabel(x) + (x.rail === 'cash' ? (Aalayna.isConfirmed(x) ? ', collected' : ', ' + Aalayna.settlementStatus(x)) : '')) + '</span>' +
       '<span class="am">' + money(x.amount) + '</span>' +
       '<span class="tp2">' + (x.tip ? '+' + money(x.tip) + ' tip' : '') + '</span>' +
+      // confirmed by the fake provider (the server sets demo; review-fixes-2026-11-10.sql): no money moved
+      (x.demo === true ? '<span class="rftag" title="Confirmed by the demo provider: no money moved">Demo</span>' : '') +
       (x.refunded ? '<span class="rftag">REFUNDED</span>'
         : x.cancelled ? '<span class="rftag">CANCELLED</span>'
         : '');
@@ -942,8 +944,8 @@ function payTip(server, amount){
 function exportCSV(){
   var s = Aalayna.ownerPaymentHistory($('report-period').value);
   if (!s.length){ toast('No payment history in this period to export'); return; }
-  var rows = [['id','timestamp','table','method','amount','tip','server','status','confirmed_at','refunded','cancelled']];
-  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server, Aalayna.settlementStatus(x), x.confirmedAt || '', x.refunded || '', x.cancelled || '']); });
+  var rows = [['id','timestamp','table','method','amount','tip','server','status','confirmed_at','refunded','cancelled','demo']];
+  s.forEach(function(x){ rows.push([x.id, x.ts, x.table, x.rail, x.amount.toFixed(2), x.tip.toFixed(2), x.server, Aalayna.settlementStatus(x), x.confirmedAt || '', x.refunded || '', x.cancelled || '', x.demo === true ? 'yes' : '']); });
   var csv = rows.map(function(r){ return r.map(function(v){ var text = String(v); if (/^[=+@-]/.test(text)) text = "'" + text; return '"' + text.replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
   try{
     var a = document.createElement('a');

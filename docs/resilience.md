@@ -49,11 +49,12 @@ Two layers keep a device working without the network:
 | Entering or changing a bill (staff) | only on a dashboard that was connected when the connection dropped | queued as before (`restaurant-ops.js`: "This bill is waiting to be sent"); the server checks it against the bill's revision |
 | **Closing a bill** | no | needs the server to see every payment on the bill; refused on the device: "Closing a bill needs the connection. Try again when the status line says Saved." |
 | A refund, a new bill link, staff changes | no | refused on the device with the same kind of message |
-| A **digital payment** (Whish, card) | no | the hand-off goes to the provider and back; the page says so, and cash stays available |
+| A **digital payment** (Whish, card) | no | the hand-off goes to the provider and back; the page says so, and cash stays available. Back on the bill, "Confirming…" re-reads itself every two seconds, gives up on a payment the snapshot never shows after two good reads, and offers "Cancel this payment" (a cancel that arrives after the provider confirmed loses: the receipt shows) |
 | Signing in | no | a code is sent by email; an already signed-in device keeps working |
 
 The device clock is never trusted for money: what the server records as `ts` and
-`confirmedAt` is the server's time at receipt. The device's time is kept in the outbox (`at`)
+`confirmedAt` is the server's time at receipt, and a payment's expiry is judged by server
+time (C9). The device's time is kept in the outbox (`at`)
 and shown to the person who acted ("confirmed on this device at 21:04").
 
 ## 3. The outbox
@@ -116,8 +117,8 @@ unless noted).
 | C6 | A split changed on two devices: two guests claim the same items, or together more than the balance, one or both offline | First received wins. The server refuses the second ("Item already reserved", "Another payment already covers this balance. Refresh your bill.") | the guest is taken back to Pay with that reason and the refreshed bill; their saved receipt is withdrawn, never left as "saved" |
 | C7 | Staff changed the bill while a guest's cash request waited offline | The request is checked against the bill as it is when it arrives: items that no longer match, or an amount over the new balance, are refused | as C6 |
 | C8 | The bill this phone holds is old (last good read more than 6 hours ago) | No offline cash request: "Connect to the restaurant before continuing." The bill is still shown with its time | the guest asks the server, as before |
-| C9 | The device clock is wrong | Clocks never order or decide anything; `seq` orders one device, server receipt orders devices; server timestamps are recorded | nothing |
-| C10 | Someone tries to close a bill, refund, or start a digital payment offline | Refused on the device, never queued | a plain message: it needs the connection |
+| C9 | The device clock is wrong | Clocks never order or decide anything; `seq` orders one device, server receipt orders devices; server timestamps are recorded. Whether a card or Whish payment ran out is judged by server time: in shared mode the sync layer measures the offset to `aal_now()` (once after the first good read on a guest page, and at most once a minute while a digital payment is initiated) and the store compares `expiresAt` with the device clock corrected by it; with no offset known an initiated payment is never called expired on the device (the server still expires it). Local demo mode has no server and uses the device clock. The demo provider's page arms no expiry timer: its function answers 404 for a token that ran out (`tests/guest-provider.test.cjs`, `tests/pay-demo.test.cjs`) | nothing: a phone fifteen minutes fast still reads "Confirming…" |
+| C10 | Someone tries to close a bill, refund, or start a digital payment offline | Refused on the device, never queued. A card or Whish reserve is never put in the outbox at all: it is sent once, and a lost answer (the connection dropped on the way) fails plainly, is followed by a cancel with the same payer token, and is never labelled a cash request (`tests/guest-provider.test.cjs`) | a plain message: it needs the connection |
 | C11 | A second tap on "Confirm cash received" while the first waits | One outbox entry; the row has no buttons while its confirmation waits | "Already confirmed on this device. It is sent when the connection returns." |
 | C12 | The bill's key ended (closed more than 24 hours ago) while a request waited | Unchanged from T8: unsent requests for that bill are refused with "This bill is closed. Scan the table code again for a new bill." (`tests/followups.test.cjs`) | that message |
 | C13 | Staff sign out, or switch from an owner link to a sign-in, with confirmations waiting | Unchanged from T8: a warning before sign-out, and the outbox follows the device to the next credential that may send it (`tests/followups.test.cjs`) | the warning |

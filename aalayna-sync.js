@@ -373,7 +373,7 @@
     if(down()&&ONLINE_ONLY.indexOf(op)>=0)throw new Error(MSG_ONLINE_ONLY[op]);
     // C10: a card or Whish payment is finished on the provider's page, which needs the connection
     // now; a reserve queued for later would hold part of the bill with nobody there to pay it
-    if(down()&&op==='reserve'&&body.rail!=='cash')throw new Error(MSG_DIGITAL_ONLINE);
+    if(op==='reserve'&&body.rail!=='cash'){if(down())throw new Error(MSG_DIGITAL_ONLINE);return reserveNow(body,token);}
     var id='op:'+op+':'+(body.requestId||body.id||body.checkId||A.util.uid());
     // Offline: a page opened without a connection queues only what admitOffline admits (a guest's
     // cash request on a bill this device read in the last six hours; a staff cash confirmation);
@@ -401,6 +401,26 @@
     var result=await promise;
     // An acknowledged mutation stays successful even if the following refresh fails.
     // Its authoritative result is already applied; polling will refresh other records.
+    try{await pull();}catch(e){fail(e);}
+    return result;
+  }
+  /* C10: a card or Whish reserve never enters the outbox, not even when the connection drops
+     while it is on its way (the admission check above only sees the moment of the tap). It is
+     sent once, now. A refusal is the server's message; a lost answer is the plain "needs the
+     connection" message, never queued, and a cancel with the same payer token follows at once
+     in case the reserve did land, so no part of the bill stays held for nobody (the server
+     expires it anyway after ten minutes). */
+  async function reserveNow(body,token){
+    var result;
+    try{result=await rpc('reserve',body,token);}
+    catch(e){
+      e.queued=false;
+      if(definitive(e))throw e;
+      fail(e);
+      rpc('cancel',{id:body.id},token).then(function(row){applyRow('aal.settle',row);},function(){});
+      var plain=new Error(MSG_DIGITAL_ONLINE);plain.queued=false;plain.lost=true;throw plain;
+    }
+    applyRow('aal.settle',result);online=true;state.lastPush=new Date().toISOString();update();
     try{await pull();}catch(e){fail(e);}
     return result;
   }
@@ -446,6 +466,7 @@
     reads.ok=true;reads.fails=0;
     try{global.localStorage.setItem(A.util.storageKey('aal.sync.read'),JSON.stringify({checkId:res.checkId||null,at:state.lastPull}));}catch(e){}
     if(!carried&&!guestPage){carried=true;carryOutbox();}
+    if(held&&held===key)measureClock();
     emitState();
     // T8: a server without followups-2026-09-24.sql still answers for a closed bill
     if(held&&held===key&&boundClosed(res))markClosed(res.checkId);
@@ -455,6 +476,33 @@
     if(held&&held===key&&guestPage&&held.indexOf('chk_')===0&&e.status===400&&e.code==='P0001'){billEnded();throw e;}
     reads.ok=false;reads.fails++;emitState();throw e;});};
   A.sync.pull=pull;
+  /* C9: the server's clock (supabase: aal_now(), an ISO timestamp). The offset between it and
+     this device is measured once after the first good read (guest pages; see measureClock for
+     staff pages), and again (at most once a minute) while a card or Whish payment here is
+     still initiated; it is taken at the midpoint of the
+     request. A.serverNow() is the device clock corrected by it, or null while none is known
+     (the function missing, or not reached yet). The store judges a payment's expiry by it
+     (aalayna-store.js settlementStatus); nothing else uses it. A 404 or a refusal is kept as
+     "unknown", never retried more than that. */
+  var clockOffset=null,clockTried=0,clockBusy=false,CLOCK_AGAIN_MS=60000;
+  function serverNow(){return clockOffset==null?null:new Date().getTime()+clockOffset;}
+  function digitalPending(){try{return (A.util.read('aal.settle',[])||[]).some(function(s){return s&&s.rail!=='cash'&&s.status==='initiated'&&!s.cancelled&&inVenue(s,rid);});}catch(e){return false;}}
+  function measureClock(){
+    if(clockBusy)return;
+    var t0=new Date().getTime();
+    // the first measure: on a guest page after the first good read; on a staff page once a card
+    // or Whish payment is initiated (before that it has nothing to judge). Then once a minute
+    // while one is initiated.
+    if(clockTried?!(digitalPending()&&t0-clockTried>=CLOCK_AGAIN_MS):!(guestPage||digitalPending()))return;
+    clockBusy=true;clockTried=t0;
+    call('rpc/aal_now',{}).then(function(at){
+      var t1=new Date().getTime(),ms=typeof at==='string'?Date.parse(at):NaN;
+      clockBusy=false;
+      if(Number.isFinite(ms)){clockOffset=Math.round(ms-(t0+t1)/2);update();}
+    },function(){clockBusy=false;});
+  }
+  A.sync.serverNow=serverNow;
+  A.sync.clockOffset=function(){return clockOffset;};
   A.sync.boundCheck=function(){var id=state.checkId||(key&&state.role==='guest'?lastRead().checkId:null);return id?A.serviceChecks().find(function(c){return c.id===id;}):null;};
   A.sync.onState=function(f){stateFns.push(f);f(netState());};
   A.sync.job=function(id){return queue[id]?'pending':refused[id]?'refused':null;};
@@ -549,6 +597,8 @@
   start();
   function start(docs){
   A.util.activateScope(JSON.stringify(signedIn?[rid,'staff',Auth.scope()]:[rid,state.role,key]));
+  // C9: from here on payments are the server's, and so is the clock that expires them
+  A.serverNow=serverNow;
   (docs||[]).forEach(function(d){if(d&&['aal.live','aal.rate','aal.rate_meta'].indexOf(d.key)>=0&&d.body!=null)A.util.rawWrite(d.key,d.body);});
   try{queue=JSON.parse(global.localStorage.getItem(A.util.storageKey('aal.outbox'))||'{}')||{};}catch(e){queue={};}
   // T8: an older page kept refused jobs as blocked; each gets one more try under the rules above
@@ -589,21 +639,32 @@
   var FUNCTIONS=String(cfg.functionsUrl||cfg.supabaseUrl.replace(/\/$/,'')+'/functions/v1').replace(/\/$/,'');
   function startCall(method,body,token){
     var h={'x-aalayna-key':key};if(body!=null)h['Content-Type']='application/json';if(token)h['x-aalayna-payer']=token;
+    /* every failure is marked provider (the guest page words it by status, never shows the
+       function's own sentence); status 0 is no answer at all */
     return fetch(FUNCTIONS+'/payment-start',{method:method,headers:h,body:body==null?undefined:JSON.stringify(body)}).then(function(r){
       return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null;}catch(e){}
-        if(!r.ok){var e=new Error(j&&j.error||'The payment page could not be opened ('+r.status+').');e.status=r.status;e.paymentStatus=j&&j.status||null;e.serverMessage=!!(j&&j.error);throw e;}
+        if(!r.ok){var e=new Error(j&&j.error||'The payment page could not be opened ('+r.status+').');e.status=r.status;e.paymentStatus=j&&j.status||null;e.serverMessage=!!(j&&j.error);e.provider=true;throw e;}
         return j;});
-    });
+    },function(cause){var e=new Error('The payment page could not be reached.');e.status=0;e.provider=true;e.cause=cause;throw e;});
   }
   /* which digital rails this bill may pay and by which provider, e.g. {card:'fake'}; {} when
      none, when the page holds no bill key, or when the function cannot be reached (then the
      guest sees cash only, never a page that pretends) */
+  /* A.paymentRailsFailed() is true after a read that got no answer, or a 5xx or 429: worth
+     asking again later (the guest page does, with a back-off and when the connection
+     returns). A 4xx answer is final for this key. */
+  var railsFailed=false;
   A.paymentRails=function(force){
     if(!/^chk_/.test(key||''))return Promise.resolve({});
     if(railsCache&&!force)return railsCache;
-    railsCache=startCall('GET').then(function(j){return j&&j.rails&&typeof j.rails==='object'?j.rails:{};}).catch(function(){railsCache=null;return {};});
+    railsCache=startCall('GET').then(function(j){railsFailed=false;return j&&j.rails&&typeof j.rails==='object'?j.rails:{};}).catch(function(e){railsCache=null;railsFailed=!e||!e.status||e.status>=500||e.status===429;return {};});
     return railsCache;
   };
+  A.paymentRailsFailed=function(){return railsFailed;};
+  /* the guest leaving a card or Whish payment before the provider confirmed it: the server
+     cancels it only while it is still initiated; a payment the provider confirmed first stays
+     confirmed, and the answer says so */
+  A.cancelPayment=function(id){return mutate('cancel',{id:id},payerToken(id));};
   /* the provider page for a reserved digital payment: {url, provider, expiresAt}; the page
      sends the browser there and the provider brings it back to returnUrl with pay=<id> */
   A.startPayment=function(id,returnUrl){return startCall('POST',{paymentId:id,returnUrl:returnUrl},payerToken(id));};

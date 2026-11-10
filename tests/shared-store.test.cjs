@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const flush=()=>new Promise(r=>setImmediate(r));
 async function boot({map=new Map(),bad=false,role='owner',key='own_aaaaaaaaaaaa',rid='A',remote=[]}={}){
- let fail=bad,failReads=false,tick;const posts=[];const listeners=[];
+ let fail=bad,failReads=false,tick,clockAsks=0;const posts=[];const listeners=[];
  const storage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)};
  const node=()=>({style:{},setAttribute(){},append(){}});
  const doc={visibilityState:'visible',body:{appendChild(){}},createElement:node,addEventListener(){}};
@@ -10,11 +10,12 @@ async function boot({map=new Map(),bad=false,role='owner',key='own_aaaaaaaaaaaa'
  const window={Aalayna:A,AalaynaConfig:{supabaseUrl:'https://mock.invalid',anonKey:'fake'},localStorage:storage,location:{pathname:role==='guest'?'/guest.html':'/dashboard.html',search:'?k='+key},document:doc,addEventListener(){}};
  const snapshot={version:2,role,checkId:null,rows:remote,docs:[]};
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../aalayna-sync.js'),'utf8'),{window,URLSearchParams,fetch:async(url,options)=>{
+  if(url.endsWith('/aal_now')){clockAsks++;return {ok:true,status:200,text:async()=>JSON.stringify(new Date().toISOString())};}
   if(url.endsWith('/aal_snapshot'))return {ok:!failReads,status:503,text:async()=>failReads?'unavailable':JSON.stringify(snapshot)};
   posts.push({url,body:JSON.parse(options.body)});return {ok:!fail,status:503,text:async()=>fail?'unavailable':url.endsWith('/aal_mutate')?JSON.stringify(JSON.parse(options.body).p_body):''};
  },setInterval:f=>{tick=f;}});
  await A.sync.ready;await flush();
- return {A,map,posts,tick,setReadFail:v=>{failReads=v;},setFail:v=>{fail=v;},write:(k,v)=>{A.util.rawWrite(k,v);A.util.hooks.afterWrite.forEach(f=>f(k,v));}};
+ return {A,map,posts,tick,clockAsks:()=>clockAsks,setReadFail:v=>{failReads=v;},setFail:v=>{fail=v;},write:(k,v)=>{A.util.rawWrite(k,v);A.util.hooks.afterWrite.forEach(f=>f(k,v));}};
 }
 test('an acknowledged mutation is not reported as failed when its refresh loses connection',async()=>{
  const b=await boot();b.setReadFail(true);
