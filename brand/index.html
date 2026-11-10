@@ -456,17 +456,19 @@ footer{padding-block:28px 40px;font-size:var(--fs-s);color:var(--sub)}
     document.querySelectorAll('[data-qr]').forEach(function (el) { el.innerHTML = svg; });
   })();
 
-  // Motion: each stage plays when it comes into view; the sound button restarts it with the soundtrack.
+  // Motion: each stage plays when it comes into view, once the tagline's face is in (canvas text loads no font by
+  // itself, so Instrument Sans 600 is asked for here); the sound button restarts it with the soundtrack.
   var players = {}, audio = {};
+  var font = document.fonts ? document.fonts.load("600 40px 'Instrument Sans'").catch(function () {}) : Promise.resolve();
   [['block', 'cv-block'], ['kufi', 'cv-kufi']].forEach(function (p) {
-    var cv = document.getElementById(p[1]);
+    var cv = document.getElementById(p[1]), play = function () { font.then(function () { players[p[0]].play(); }); };
     players[p[0]] = M.player(cv, M[p[0]]({ word: word }), { autoplay: false });
     if ('IntersectionObserver' in window) {
-      var seen = false, io = new IntersectionObserver(function (es) { if (!seen && es[0].isIntersecting) { seen = true; players[p[0]].play(); io.disconnect(); } }, { threshold: 0.4 });
+      var seen = false, io = new IntersectionObserver(function (es) { if (!seen && es[0].isIntersecting) { seen = true; play(); io.disconnect(); } }, { threshold: 0.4 });
       io.observe(cv);
-    } else players[p[0]].play();
+    } else play();
   });
-  if (document.fonts) document.fonts.ready.then(function () { Object.keys(players).forEach(function (k) { players[k].redraw(); }); });
+  font.then(function () { Object.keys(players).forEach(function (k) { players[k].redraw(); }); });
   function stopSound() { Object.keys(audio).forEach(function (a) { audio[a].pause(); }); }
   document.querySelectorAll('[data-play]').forEach(function (b) {
     b.addEventListener('click', function () {
