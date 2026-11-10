@@ -1,8 +1,8 @@
 -- Hosted payment pages (T15), 2026-10-14.
 --
 -- Run after payments-2026-09-30.sql (and the files before it), in the Supabase SQL editor.
--- Tested against PGlite (tests/payment-start-sql.test.cjs with PGLITE_MODULE set); not yet run
--- against the live project.
+-- Tested against PGlite (tests/payment-start-sql.test.cjs with PGLITE_MODULE set); run on the
+-- live project on 16 October 2026.
 --
 -- Safe to re-run: one transaction; "create table/index if not exists", "create or replace
 -- function", grants and revokes. No existing row, table, policy or function is changed;

@@ -50,10 +50,22 @@ file replaces some functions of the earlier ones and says which; re-running an e
 file means running the later ones again.
 
 The September 30 files follow (`daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`,
-`integrations-2026-09-30.sql`, each with its own section below), then `groups-2026-10-28.sql`
-last ("Owner groups", below). It replaces `aal_role`, `aal_staff_role` and `aal_staff` from
-`auth-2026-09-24.sql`: re-running `auth-2026-09-24.sql` means running `groups-2026-10-28.sql`
-again.
+`integrations-2026-09-30.sql`, each with its own section below) and
+`payment-start-2026-10-14.sql` ("Hosted payment pages"), then `groups-2026-10-28.sql` last of
+the files that touch staff roles ("Owner groups", below). It replaces `aal_role`,
+`aal_staff_role` and `aal_staff` from `auth-2026-09-24.sql`: re-running `auth-2026-09-24.sql`
+means running `groups-2026-10-28.sql` again. `close-narrative-2026-10-28.sql` ("The close, in
+words") and `review-fixes-2026-11-10.sql` ("Review fixes", below) come after it, the review
+fixes last. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` from
+`theme-2026-09-28.sql`; both earlier files now carry its fallback, so re-running them undoes
+nothing, and it is safe to run again after them.
+
+The whole order, for a fresh project: `migration.sql`, `site-events.sql`,
+`hardening-2026-09-15.sql`, `hardening-2026-09-24.sql`, `admin.sql`, `sessions-2026-09-24.sql`,
+`auth-2026-09-24.sql`, `followups-2026-09-24.sql`, `theme-2026-09-28.sql`,
+`daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`, `integrations-2026-09-30.sql`,
+`payment-start-2026-10-14.sql`, `groups-2026-10-28.sql`, `close-narrative-2026-10-28.sql`,
+`review-fixes-2026-11-10.sql`.
 
 ## Owner groups: one floor for several venues (October 28)
 
@@ -300,9 +312,10 @@ Turn open and click tracking off for aalayna.com in Resend (Domains), so nothing
    minute; without it a NOTICE says so (enable it and run the file again).
 
 **Rehearsal (the founder, end to end).** Use a venue whose demo payments are on in admin.html,
-not a live venue: the fake provider refuses the others. The guest app offers only cash on a
-shared bill until a provider is connected, so the digital reserve is made with curl, with the
-bill link's key, exactly as the guest page would send it.
+not a live venue: the fake provider refuses the others. The guest page offers card and Whish
+wherever `payment-start` reports a rail for the bill ("Hosted payment pages", below, is the
+rehearsal through the guest page); this one makes the digital reserve with curl, with the bill
+link's key, exactly as the guest page would send it, and plays the provider by hand.
 
 ```sh
 SB=https://xeqbkamwucqplvoavhyd.supabase.co
@@ -361,7 +374,8 @@ origin in `PAYMENT_RETURN_ORIGINS` (default aalayna.com and the local dev ports)
 `reset` and `pay` are stripped from it and `pay=<paymentId>` added, so no credential travels
 through the provider. Answers: 400 bad request, 401 wrong payer token, 404 bill or payment
 unavailable, 409 the payment is not `initiated` (the status is in the answer) or no provider
-is connected for the rail, 501 adapter not built yet (whish), 502 provider unreachable.
+is connected for the rail, 501 adapter not built yet (a `payment_providers` row naming
+`whish`), 502 provider unreachable.
 The function answers CORS for the allowed origins and limits each key to 60 calls a minute.
 
 **Which provider.** `payment_providers` has one row per (venue, rail): `provider` (an adapter
@@ -369,7 +383,10 @@ name), `config` (non-secret settings, e.g. a merchant id) and `secret_name` (a S
 secret holding the venue's own credentials; `aal_payment_provider`, service role only, is the
 one place it is decrypted). A venue with no row for a rail and demo payments on in admin.html
 gets the fake provider while `FAKE_WEBHOOK_SECRET` is set; with demo payments off and no row,
-the rail is not offered. When a venue's provider account is ready:
+the rail is not offered. A row naming `fake` is taken only while the venue's demo payments are
+on, and a row naming `whish` is the only way Whish is offered (there is no Whish fallback).
+Demo payments are off for a venue unless the admin turns them on (since
+`review-fixes-2026-11-10.sql`). When a venue's provider account is ready:
 
 ```sql
 select vault.create_secret('<the credentials, as the adapter documents them>', 'whish_<slug>');
@@ -377,17 +394,26 @@ insert into payment_providers (restaurant_id, rail, provider, config, secret_nam
   values ('["<venue name>","<place>"]', 'whish', 'whish', '{"merchant": "<id>"}', 'whish_<slug>');
 ```
 
-**The fake provider.** A stand-in for Whish or a card gateway, for rehearsals only (it refuses
-venues with demo payments off, on both legs). Its checkout is a static page on the site,
+**The fake provider.** A stand-in for Whish or a card gateway, for rehearsals only. It refuses
+venues with demo payments off on both legs: `payment-start` does not offer it there (with or
+without a `payment_providers` row naming it), and `payment-webhook` will not confirm there (403). Its checkout is a static page on the site,
 `pay-demo.html`, beside the guest page: `create` answers `pay-demo.html?s=<token>` resolved
 from the cleaned return URL, so it is on the origin the guest came from (`FAKE_CHECKOUT_URL`
 overrides it). Supabase rewrites HTML answers from Edge Functions to `text/plain` with a
 sandbox CSP, so the function answers JSON only: `GET /payment-start/fake/checkout?s=<token>`
 gives `{paymentId, amountCents, currency, venue, rail, returnUrl, expiresAt}` (404 when the
 token is not ours or has expired), and `POST` with `{s, outcome: "paid" | "failed"}` posts a
-callback to `payment-webhook/fake` signed with the same secret, exactly as a provider would,
-and answers `{returnUrl, outcome}` (502 with `returnUrl` when the callback could not be
-delivered). The page finds the function through `aalayna-config.js`, as the guest page does,
+callback to `payment-webhook/fake` signed with the same secret, exactly as a provider would.
+When `payment-webhook` decided about this payment (its 200, 202, 403, 404 and 409 answers name
+the payment) it answers 200 `{returnUrl, outcome, result}`, `result` being `confirmed`,
+`released` (declined; the balance is free) or `refused` (the webhook did not apply it: expired,
+mismatched, a live venue, no such payment, a duplicate reference). Anything else, the webhook
+unreachable, a refused signature (the two functions hold different secrets), a wrong address,
+a gateway's answer, 405, 429 or any 5xx, is logged as a warning (`payment-start: fake callback
+not delivered`, with the address and status) and answers 502 `{error, returnUrl}`: "The
+payment could not be reported to Aalayna. Your bill shows where it stands." It never says
+nothing was charged: payment-webhook answers 500 when it confirmed the payment but could not
+write its `payment_callbacks` row. The page finds the function through `aalayna-config.js`, as the guest page does,
 never through its address; it reads only `s`, and sends the browser back only to a return URL
 on its own origin. It shows the amount, the venue, the reference, Pay and Decline, and the
 sentence that no money moves. The token is HMAC-signed with `FAKE_WEBHOOK_SECRET` and carries
@@ -399,7 +425,8 @@ the payment, the amount, the return URL and the reservation's expiry. Decline po
 request, our payment id as the merchant reference, the return URL) and one in
 `payment-webhook/handler.js` (`verify` and `parse`: their callback), a `payment_providers`
 row per venue, and the acceptance tests in INTEGRATIONS.md. `whish` exists in both files and
-answers 501 naming what is unknown until Whish shares its merchant API.
+answers 501 naming what is unknown until Whish shares its merchant API: `payment-webhook/whish`
+always, `payment-start` where a `payment_providers` row names `whish`.
 
 **Set up (in this order).**
 1. Run `payment-start-2026-10-14.sql`.
@@ -410,8 +437,13 @@ answers 501 naming what is unknown until Whish shares its merchant API.
    `PAYMENT_RETURN_ORIGINS` (comma-separated origins; the default is
    `https://aalayna.com,https://www.aalayna.com,http://127.0.0.1:8787,http://localhost:8787`;
    `pay-demo.html` calls the function from the same origins, so CORS follows the same list),
-   and `FAKE_CHECKOUT_URL` only to serve the demo checkout from somewhere other than
-   `pay-demo.html` beside the guest page. `pay-demo.html` ships with the site (GitHub Pages).
+   `FAKE_CHECKOUT_URL` only to serve the demo checkout from somewhere other than
+   `pay-demo.html` beside the guest page, and `PAYMENT_WEBHOOK_URL` only when payment-webhook
+   is not deployed beside this function: its base URL without `/fake` (e.g.
+   `https://<project>.supabase.co/functions/v1/payment-webhook`); the fake provider's callback
+   goes to `<PAYMENT_WEBHOOK_URL>/fake`. Unset, it is this function's sibling, built from
+   `SUPABASE_URL` behind Supabase's gateway; a wrong value shows as 502 and a
+   `fake callback not delivered` warning with the address, never as a confirmation. `pay-demo.html` ships with the site (GitHub Pages).
 4. Rehearse on a venue whose demo payments are on, from a phone: scan the table card or open
    the bill link, split, pay by card, press Pay on the demo provider's page, read "Shukran.
    Confirmed by the demo provider · no money moved."; the dashboard shows the payment
@@ -423,7 +455,38 @@ answers 501 naming what is unknown until Whish shares its merchant API.
 (`pay-demo.html` included, with an `aalayna-config.js` that points at itself) and, in the same process, a stand-in for the parts of the shared store a guest touches plus
 the two real function handlers against an in-memory PostgREST. It prints a guest link for
 this computer and for a phone on the same Wi-Fi. The store's rules are approximated there,
-not run; the SQL is tested by `tests/payment-start-sql.test.cjs` with PGLITE_MODULE.
+not run; the SQL is tested by `tests/payment-start-sql.test.cjs` with PGLITE_MODULE. Where the
+guest page depends on them it behaves as live (`tests/rehearse-payments.test.cjs`): the
+snapshot strips `externalRef`, a confirmed payment carries `demo`, amount and tip must be
+numbers, and `aal_now` answers the server's time.
+
+## Review fixes (November 10)
+
+`review-fixes-2026-11-10.sql`, run after `payment-start-2026-10-14.sql` (and every file before
+it; it is safe to run again). Tested against PGlite (`tests/review-fixes-sql.test.cjs`).
+
+- **Demo payments are off unless the admin turns them on.** `venue_profiles.demo_payments`
+  defaults to false, and `aal_admin_write_profile` falls back to false for a venue registered
+  without naming the flag (`admin.sql` and `theme-2026-09-28.sql` say the same, for a fresh
+  project); admin.html shows a missing flag as off. No venue's flag changes: one that is on
+  stays on. `FAKE_WEBHOOK_SECRET` is one secret for the whole project, so before this every
+  venue registered through admin.html offered the no-money fake provider on card and Whish.
+  To list the venues still on: `select slug, demo_payments from venue_profiles where demo_payments;`
+  and switch off, in admin.html, every venue that takes real money.
+- **A demo confirmation is recognisable.** A trigger on `kv_rows`
+  (`kv_rows_settle_demo`, before insert or update of an `aal.settle` row) gives every confirmed
+  payment `"demo": true` when the reference that confirmed it is the fake provider's
+  (`fake-...`) and `"demo": false` otherwise; any other status carries none. It is derived on
+  every write, whoever writes, so no client can set or clear it; existing payments are
+  backfilled. `aal_snapshot` still strips `externalRef` for everyone but the owner, and keeps
+  `demo`, so the guest page and waiters can say "confirmed by the demo provider"; the
+  dashboard tags such payments "Demo" in its payment list and in the exported statement.
+  A trigger rather than a change to `aal_snapshot` and `aal_mutate`: both are large and
+  replaced by several files, and the flag then also covers rows written by `aal_payment_failed`,
+  `pos-bill` and the SQL editor.
+- **The database's clock.** `aal_now()` (anon and authenticated) answers `now()` as a
+  timestamptz; `POST /rest/v1/rpc/aal_now` answers a JSON string. The guest page measures a
+  payment's ten minutes against it, not against the phone's clock.
 
 ## POS bridge (September 30)
 

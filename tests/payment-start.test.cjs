@@ -17,7 +17,12 @@
      payment-webhook/fake (the payment becomes confirmed) and answers the return URL; Decline
      releases the payment; a webhook that cannot be reached is 502 with the way back and
      confirms nothing;
-   - whish answers 501 naming what is unknown; a row naming an adapter this server lacks is 409;
+   - a row naming whish answers 501 naming what is unknown; a row naming an adapter this server
+     lacks is 409; a row naming fake is taken only where demo payments are on;
+   - the fake checkout's POST answers 200 with result (confirmed, released, refused) only for
+     payment-webhook's own decision about the payment, and 502 for anything else (401, 404, 405,
+     429, 5xx, a gateway, unreachable), never saying nothing was charged; the whole handler works
+     with the request shape Supabase's gateway hands it (no /functions/v1, plain http);
    - CORS: an allowed origin gets the headers and the preflight; another origin gets none;
    - bodies over 8 kB are 413; callers are rate limited; no payer token or secret is logged. */
 const test = require('node:test'), assert = require('node:assert/strict'), path = require('node:path'), crypto = require('node:crypto');
@@ -38,7 +43,7 @@ const RETURN = 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&k=
 /* the fake PostgREST, with confirm_digital's and aal_payment_failed's rules */
 function fakeDb(o = {}) {
   const s = {
-    calls: [], sessions: [], callbacks: [], failSessions: false,
+    calls: [], sessions: [], callbacks: [], failSessions: false, failCallbacks: false,
     keys: new Map([[KEY, { restaurant_id: RID, check_id: 'bill-7' }], [KEY_LIVE, { restaurant_id: LIVE, check_id: 'bill-9' }]]),
     secrets: new Map(), settle: new Map(), providers: new Map(),
     profiles: new Map([[RID, { demo_payments: true }], [LIVE, { demo_payments: false }]]),
@@ -61,7 +66,7 @@ function fakeDb(o = {}) {
     if (u.pathname === '/rest/v1/payment_secrets') { const t = s.secrets.get(val('restaurant_id') + '|' + val('payment_id')); return res(200, t ? [{ token_hash: t }] : []); }
     if (u.pathname === '/rest/v1/venue_profiles') { const p = s.profiles.get(val('restaurant_id')); return res(200, p ? [p] : []); }
     if (u.pathname === '/rest/v1/payment_sessions') { if (s.failSessions) return res(500, { message: 'insert failed' }); s.sessions.push(body); return res(201, null); }
-    if (u.pathname === '/rest/v1/payment_callbacks') { s.callbacks.push(body); return res(201, null); }
+    if (u.pathname === '/rest/v1/payment_callbacks') { if (s.failCallbacks) return res(503, { message: 'insert failed' }); s.callbacks.push(body); return res(201, null); }
     if (u.pathname === '/rest/v1/rpc/aal_payment_provider') { const p = s.providers.get(body.p_rid + '|' + body.p_rail); return res(200, p ? Object.assign({ rail: body.p_rail, config: {}, secret: null }, p) : null); }
     if (u.pathname === '/rest/v1/rpc/aal_mutate') {
       const { p_rid, p_op, p_body } = body;
@@ -71,6 +76,7 @@ function fakeDb(o = {}) {
       if (p.externalRef === p_body.externalRef && p.status === 'confirmed') return res(200, p);
       if (p.status !== 'initiated' || Date.parse(p.expiresAt) <= Date.now()) return refuse('Reservation expired or changed; reconcile received funds');
       if (!p_body.externalRef || p_body.currency !== p.currency || p_body.amountCents !== Math.round(p.amount * 100)) return refuse('Callback amount, currency or reference mismatch');
+      if ([...s.settle.values()].some((r) => r.restaurant_id === p_rid && r.body.externalRef === p_body.externalRef)) return refuse('Duplicate provider reference');
       Object.assign(p, { status: 'confirmed', confirmedAt: new Date().toISOString(), externalRef: p_body.externalRef });
       return res(200, p);
     }
@@ -96,13 +102,17 @@ async function setup(o = {}) {
   const logs = [];
   const log = { warn: (...a) => logs.push(a.join(' ')), info: (...a) => logs.push(a.join(' ')) };
   const env = Object.assign({ SUPABASE_URL: URL_BASE, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: SECRET }, o.env || {});
-  const webhook = hook.createHandler({ fetch: db.fetch, env, log });
-  const state = { webhookDown: false, webhookCalls: [] };
+  const webhook = hook.createHandler({ fetch: db.fetch, env: Object.assign({}, env, o.webhookEnv || {}), log, limiter: o.webhookLimiter });
+  const state = { webhookDown: false, webhookCalls: [], gateway: null };
   // the fake provider's Pay posts to the sibling function over HTTP: here, the real handler
+  // behind Supabase's gateway, which answers for unknown functions (and, in a test, may answer
+  // instead of the function: state.gateway)
   const fetch = async (url, init) => {
-    if (String(url).startsWith(URL_BASE + '/functions/v1/payment-webhook/')) {
+    if (String(url).startsWith(URL_BASE + '/functions/v1/')) {
       state.webhookCalls.push({ url: String(url), init });
       if (state.webhookDown) throw new TypeError('fetch failed');
+      if (state.gateway) return state.gateway(String(url), init);
+      if (!String(url).startsWith(URL_BASE + '/functions/v1/payment-webhook/')) return new Response(JSON.stringify({ code: 'NOT_FOUND', message: 'Requested function was not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
       return webhook(new Request(url, init));
     }
     return db.fetch(url, init);
@@ -275,7 +285,7 @@ test('the fake checkout routes: GET answers the token\'s display data as JSON; P
   // Pay
   r = await read(await post(t, { s: token, outcome: 'paid' }));
   assert.equal(r.status, 200);
-  assert.deepEqual(r.body, { returnUrl: 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1', outcome: 'paid' });
+  assert.deepEqual(r.body, { returnUrl: 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1', outcome: 'paid', result: 'confirmed' });
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'https://aalayna.com');
   assert.equal(t.state.webhookCalls.length, 1);
   const call = t.state.webhookCalls[0];
@@ -306,11 +316,12 @@ test('the fake checkout routes: Decline releases the payment; an unreachable web
   let r = await read(await post(t, { s: token, outcome: 'paid' }));
   assert.equal(r.status, 502);
   assert.match(r.body.error, /could not be reported to Aalayna/);
+  assert.doesNotMatch(r.body.error, /nothing was charged/i);
   assert.equal(r.body.returnUrl, 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1');
   assert.equal(t.db.row(RID, 'pay-1').status, 'initiated');
   t.state.webhookDown = false;
   r = await read(await post(t, { s: token, outcome: 'failed' }));
-  assert.deepEqual([r.status, r.body.outcome], [200, 'failed']);
+  assert.deepEqual([r.status, r.body.outcome, r.body.result], [200, 'failed', 'released']);
   assert.equal(t.db.row(RID, 'pay-1').status, 'failed');
   assert.equal(t.db.callbacks[0].outcome, 'failed_released');
   // unreadable bodies and unknown outcomes are refused before anything is posted
@@ -433,4 +444,146 @@ test('helpers: routes, self base, return URL cleaning, base64url round trip', as
   assert.deepEqual(mod.allowedOrigins((k) => ({ PAYMENT_RETURN_ORIGINS: ' https://a.example/, https://b.example ' })[k]), ['https://a.example', 'https://b.example']);
   for (const s of ['plain', '["مايدا","Hamra"]', 'a+b/c=', '']) assert.equal(http.unb64u(http.b64u(s)), s);
   assert.doesNotMatch(http.b64u('a+b/c='), /[+/=]/);
+});
+
+/* 2026-11-10 review: the fake checkout's POST counts as delivered only payment-webhook's own
+   decision about this payment, and says which (result); everything else is 502, logged. */
+const BACK = 'https://aalayna.com/guest.html?venue=Mayda&place=Hamra&live=1&pay=pay-1';
+async function payAttempt(o, before) {
+  const t = await setup(o);
+  const { body: started } = await read(await t.start());
+  const token = tokenOf(started.url);
+  if (before) await before(t, token);
+  const r = await read(await post(t, { s: token, outcome: (o && o.outcome) || 'paid' }));
+  return { t, r, token };
+}
+const undelivered = (t, r, status) => {
+  assert.equal(r.status, 502, JSON.stringify(r.body));
+  assert.deepEqual(Object.keys(r.body).sort(), ['error', 'returnUrl']);
+  assert.equal(r.body.returnUrl, BACK);
+  assert.equal(r.body.error, 'The payment could not be reported to Aalayna. Your bill shows where it stands.');
+  const warn = t.logs.find((l) => l.startsWith('payment-start: fake callback not delivered'));
+  assert.ok(warn, 'a warning is logged');
+  if (status) assert.match(warn, new RegExp('"status":' + status + '\\b'));
+  assert.ok(!t.logs.join('\n').includes(SECRET));
+};
+
+test('fake checkout POST: payment-webhook\'s decisions are 200 with result confirmed, released or refused', async () => {
+  let { t, r } = await payAttempt();
+  assert.deepEqual([r.status, r.body.result, r.body.outcome, r.body.returnUrl], [200, 'confirmed', 'paid', BACK]);
+  ({ t, r } = await payAttempt({ outcome: 'failed' }));
+  assert.deepEqual([r.status, r.body.result, r.body.outcome], [200, 'released', 'failed']);
+  assert.equal(t.db.row(RID, 'pay-1').status, 'failed');
+  // refused: each a decision payment-webhook wrote a callbacks row for
+  const refusals = {
+    mismatch: (u) => { u.db.row(RID, 'pay-1').amount = 30; },                                          // 409
+    expired: (u) => { u.db.row(RID, 'pay-1').expiresAt = new Date(Date.now() - 1000).toISOString(); }, // 409
+    live: (u) => { u.db.profiles.set(RID, { demo_payments: false }); },                                 // 403
+    gone: (u) => { u.db.settle.delete(RID + '|pay-1'); },                                              // 404 Payment unavailable
+    duplicate: async (u, token) => {                                                                   // 200 duplicate
+      const p = await u.mod.readCheckoutToken(token, SECRET, crypto.webcrypto, Date.now());
+      u.db.put(RID, settleRow({ id: 'pay-0', status: 'confirmed', externalRef: 'fake-pay-1-' + p.n }));
+    },
+  };
+  for (const [name, before] of Object.entries(refusals)) {
+    ({ t, r } = await payAttempt({}, before));
+    assert.deepEqual([r.status, r.body.result, r.body.outcome, r.body.returnUrl], [200, 'refused', 'paid', BACK], name);
+    assert.equal(t.db.callbacks.length, 1, name);
+    assert.notEqual((t.db.row(RID, 'pay-1') || {}).status, 'confirmed', name);
+    assert.ok(t.logs.some((l) => l.startsWith('payment-start: fake callback delivered') && l.includes('"result":"refused"')), name);
+  }
+});
+
+test('fake checkout POST: a refused signature, an unknown provider, a wrong address, a gateway, 405, 429 and any 5xx are 502, logged, never "nothing was charged"', async () => {
+  // the two functions hold different secrets: payment-webhook answers 401
+  let { t, r } = await payAttempt({ webhookEnv: { FAKE_WEBHOOK_SECRET: 'another-secret-' + 'y'.repeat(20) } });
+  undelivered(t, r, 401);
+  assert.equal(t.db.row(RID, 'pay-1').status, 'initiated');
+  // payment-webhook without the secret: its fake route does not exist (404, no payment named)
+  ({ t, r } = await payAttempt({ webhookEnv: { FAKE_WEBHOOK_SECRET: '' } }));
+  undelivered(t, r, 404);
+  // a wrong PAYMENT_WEBHOOK_URL: Supabase's gateway answers 404 for a function that is not there
+  ({ t, r } = await payAttempt({ env: { PAYMENT_WEBHOOK_URL: URL_BASE + '/functions/v1/payment-hook' } }));
+  undelivered(t, r, 404);
+  assert.equal(t.state.webhookCalls[0].url, URL_BASE + '/functions/v1/payment-hook/fake');
+  // payment-webhook's own rate limit
+  const http = await load('_shared/http.js');
+  ({ t, r } = await payAttempt({ webhookLimiter: http.createLimiter({ max: 0, windowMs: 60000 }) }));
+  undelivered(t, r, 429);
+  // answers that are not payment-webhook's decision, whatever their status or body
+  const json = (status, obj) => () => new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } });
+  const gateways = [
+    [405, json(405, { message: 'Method not allowed' })],
+    [429, json(429, { message: 'Too many requests' })],
+    [502, () => new Response('<html>Bad gateway</html>', { status: 502, headers: { 'Content-Type': 'text/html' } })],
+    [503, json(503, { status: 'confirmed', paymentId: 'pay-1' })],
+    [200, () => new Response('<html>ok</html>', { status: 200, headers: { 'Content-Type': 'text/html' } })],
+    [200, json(200, { status: 'confirmed' })],                       // names no payment
+    [200, json(200, { status: 'confirmed', paymentId: 'pay-2' })],   // another payment
+    [409, json(409, { error: 'conflict' })],
+  ];
+  for (const [status, answer] of gateways) {
+    ({ t, r } = await payAttempt({}, (u) => { u.state.gateway = answer; }));
+    undelivered(t, r, status);
+  }
+  // payment-webhook confirms, then cannot write its callbacks row: 500. The payment IS
+  // confirmed, so the answer must not say that nothing was charged
+  ({ t, r } = await payAttempt({}, (u) => { u.db.failCallbacks = true; }));
+  undelivered(t, r, 500);
+  assert.equal(t.db.row(RID, 'pay-1').status, 'confirmed');
+  // unreachable
+  ({ t, r } = await payAttempt({}, (u) => { u.state.webhookDown = true; }));
+  undelivered(t, r);
+  const src = require('node:fs').readFileSync(path.join(root, 'supabase/functions/payment-start/handler.js'), 'utf8');
+  assert.doesNotMatch(src.slice(src.indexOf('import ')), /'[^'\n]*nothing was charged/i);
+});
+
+test('the whole handler with Supabase\'s request shape (no /functions/v1, plain http): the callback reaches https://<project>/functions/v1/payment-webhook/fake', async () => {
+  const t = await setup();
+  const gw = 'http://proj.supabase.co/payment-start';   // what the function is handed for https://proj.supabase.co/functions/v1/payment-start
+  const headers = { 'x-forwarded-for': '203.0.113.9', 'x-aalayna-key': KEY, 'x-aalayna-payer': TOKEN, Origin: 'https://aalayna.com', 'Content-Type': 'application/json' };
+  let r = await read(await t.handle(new Request(gw, { method: 'POST', headers, body: JSON.stringify({ paymentId: 'pay-1', returnUrl: RETURN }) })));
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  const token = tokenOf(r.body.url);
+  r = await read(await t.handle(new Request(gw + '/fake/checkout?s=' + encodeURIComponent(token), { method: 'GET', headers: { Origin: 'https://aalayna.com' } })));
+  assert.equal(r.status, 200);
+  r = await read(await t.handle(new Request(gw + '/fake/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://aalayna.com' }, body: JSON.stringify({ s: token, outcome: 'paid' }) })));
+  assert.deepEqual([r.status, r.body.result], [200, 'confirmed'], JSON.stringify(r.body));
+  assert.deepEqual(t.state.webhookCalls.map((c) => c.url), [URL_BASE + '/functions/v1/payment-webhook/fake']);
+  assert.equal(t.db.row(RID, 'pay-1').status, 'confirmed');
+});
+
+test('a payment_providers row naming fake is taken only at a venue with demo payments on; whish only where a row names it', async () => {
+  const t = await setup();
+  t.db.providers.set(LIVE + '|card', { provider: 'fake' });
+  let r = await read(await t.req('GET', { key: KEY_LIVE }));
+  assert.deepEqual(r.body, { rails: {} });
+  t.db.put(LIVE, settleRow({ id: 'pay-9', checkId: 'bill-9' }));
+  r = await read(await t.start({ key: KEY_LIVE, body: { paymentId: 'pay-9', returnUrl: RETURN } }));
+  assert.deepEqual([r.status, r.body.status], [409, 'no_provider']);
+  assert.match(r.body.error, /only takes payments at venues with demo payments on/);
+  assert.equal(t.db.sessions.length, 0);
+  t.db.providers.set(RID + '|card', { provider: 'fake' });
+  r = await read(await t.req('GET'));
+  assert.deepEqual(r.body, { rails: { card: 'fake', whish: 'fake' } });
+  // no row: no Whish, whatever the venue
+  const u = await setup({ env: { FAKE_WEBHOOK_SECRET: '' } });
+  r = await read(await u.req('GET'));
+  assert.deepEqual(r.body, { rails: {} });
+});
+
+test('webhookResult: only payment-webhook\'s decisions about this payment count', async () => {
+  const { webhookResult } = await load('payment-start/handler.js');
+  const { DECISIONS } = await load('payment-webhook/handler.js');
+  assert.deepEqual(DECISIONS, [200, 202, 403, 404, 409]);
+  const named = (o) => Object.assign({ paymentId: 'p1' }, o);
+  assert.equal(webhookResult(200, named({ status: 'confirmed' }), 'p1'), 'confirmed');
+  assert.equal(webhookResult(200, named({ status: 'failed' }), 'p1'), 'released');
+  assert.equal(webhookResult(200, named({ status: 'duplicate' }), 'p1'), 'refused');
+  for (const s of [202, 403, 404, 409]) assert.equal(webhookResult(s, named({ error: 'x' }), 'p1'), 'refused', String(s));
+  for (const s of [201, 204, 400, 401, 405, 413, 429, 500, 502, 503]) assert.equal(webhookResult(s, named({ status: 'confirmed' }), 'p1'), null, String(s));
+  assert.equal(webhookResult(200, { status: 'confirmed' }, 'p1'), null);
+  assert.equal(webhookResult(200, named({ status: 'confirmed' }), 'p2'), null);
+  assert.equal(webhookResult(200, null, 'p1'), null);
+  assert.equal(webhookResult(200, 'confirmed', 'p1'), null);
 });

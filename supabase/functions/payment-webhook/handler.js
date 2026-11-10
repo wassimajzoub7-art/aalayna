@@ -45,6 +45,11 @@
      413 body over 64 kB   429 rate limited   501 adapter not built yet (whish)
      500 the database refused for another reason, or the callbacks row could not be written;
          the provider retries, and every retry is idempotent
+   Every 200, 202, 403, 404 and 409 written after a readable callback names the payment it
+   decided about ({..., paymentId}); the 404 for an unknown provider, 401, 400, 413, 429, 501
+   and 500 do not. That is how payment-start's fake checkout tells this function's decision
+   from a gateway's answer or a wrong address (a 500 may come after the confirmation itself,
+   when only the callbacks row failed, so it decides nothing either way).
    Every call that passes the signature check writes one payment_callbacks row, whatever the
    outcome. A request body is never logged or stored; the row keeps the parsed fields. */
 
@@ -55,6 +60,8 @@ import { readCapped, createLimiter } from '../_shared/http.js';
 export const MAX_BODY = 64 * 1024;
 export const RATE_LIMIT = { max: 120, windowMs: 60 * 1000 };
 const STATUSES = ['paid', 'failed', 'refunded'];
+/* the answers that are this function's decision about one payment; each carries its paymentId */
+export const DECISIONS = [200, 202, 403, 404, 409];
 
 /* ------------------------------------------------------------------ adapters */
 
@@ -176,6 +183,9 @@ export function createHandler(deps = {}) {
         return reply(500, { error: 'Callback not recorded; send it again' });
       }
       log.info('payment-webhook', JSON.stringify({ provider, paymentId: row.payment_id, outcome, status }));
+      // a decision about the payment names it, so a caller can tell this function's answer
+      // from a gateway's or a wrong address's (payment-start's fake checkout relies on it)
+      if (DECISIONS.includes(status) && row.payment_id && bodyOut && !('paymentId' in bodyOut)) bodyOut = Object.assign({}, bodyOut, { paymentId: row.payment_id });
       return reply(status, bodyOut);
     }
 

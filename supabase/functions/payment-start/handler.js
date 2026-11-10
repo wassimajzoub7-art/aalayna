@@ -27,8 +27,20 @@
                                          returnUrl, expiresAt}; 404 {error, status: 'expired'}
                                          for a token that is not ours or has expired.
      POST /payment-start/fake/checkout   {s, outcome: 'paid'|'failed'} -> the signed callback
-                                         to payment-webhook/fake, then {returnUrl, outcome};
-                                         502 {error, returnUrl} when it was not delivered.
+                                         to payment-webhook/fake, then, when payment-webhook
+                                         decided about this payment, 200 {returnUrl, outcome,
+                                         result}: result 'confirmed' (paid and confirmed),
+                                         'released' (declined, the balance is free) or
+                                         'refused' (the webhook did not apply it: expired,
+                                         mismatched, a live venue, no such payment, a
+                                         duplicate reference). Anything else (unreachable, a
+                                         refused signature, a wrong address, a gateway, 405,
+                                         429, any 5xx) is logged as a warning and answers 502
+                                         {error, returnUrl}: the payment could not be
+                                         reported, and the bill shows where it stands. No
+                                         answer says nothing was charged: a 500 can follow the
+                                         confirmation itself. 400 bad body, 404 {error,
+                                         status: 'expired'} for a token not ours or expired.
    No route answers HTML: Supabase rewrites HTML from Edge Functions to text/plain with a
    sandbox CSP, so a provider's page lives elsewhere (the fake one on the site, pay-demo.html).
    Headers from the guest page: x-aalayna-key (the chk_ bill key; the same credential the
@@ -39,8 +51,17 @@
 
    Which provider: payment_providers (restaurant, rail) -> provider, config, Vault secret, via
    aal_payment_provider. No row, and demo payments on in admin.html, and FAKE_WEBHOOK_SECRET
-   set: the fake provider. Otherwise the rail is not offered (409 'No payment provider is
-   connected for this rail' on POST).
+   set: the fake provider. A row naming 'fake' is also taken only while demo payments are on.
+   Otherwise the rail is not offered (409 'No payment provider is connected for this rail', or
+   the reason the named provider is unavailable, on POST).
+
+   Environment: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (Supabase supplies both),
+   FAKE_WEBHOOK_SECRET (the fake provider exists only while it is set; the same value as
+   payment-webhook's), PAYMENT_RETURN_ORIGINS (comma-separated; default DEFAULT_ORIGINS),
+   FAKE_CHECKOUT_URL (optional, where pay-demo.html lives), PAYMENT_WEBHOOK_URL (optional:
+   payment-webhook's base URL, without /fake, for the fake provider's callback; default this
+   function's sibling, <selfBase with payment-start replaced by payment-webhook>; set it only
+   when payment-webhook is not deployed beside this function, e.g. the local rehearsal).
 
    A provider adapter is
      {name, enabled(env), create(ctx) -> {url, providerRef?}, pages?: {<page>: {get, post}}}
@@ -63,15 +84,16 @@
    secret and carries the venue, payment, amount, return URL and the reservation's expiry.
    No money moves; the page says so.
 
-   Whish: create throws notImplemented until Whish shares its merchant API (the questions are
-   in the sentence). Filling in create here and verify/parse in payment-webhook is the work.
+   Whish: taken only where a payment_providers row names it (there is no Whish fallback);
+   create then throws notImplemented (501) until Whish shares its merchant API (the questions
+   are in the sentence). Filling in create here and verify/parse in payment-webhook is the work.
 
    Answers (always JSON)
      200 rails or {url}       400 bad request (missing header, unreadable body, return URL not
      allowed, cash rail)      401 wrong payer token   404 bill or payment unavailable
      405 wrong method         409 payment not 'initiated' (confirmed, expired, cancelled,
      failed), or no provider for the rail   413 body over 8 kB   429 rate limited
-     501 adapter not built yet (whish)   502 the provider could not be reached
+     501 adapter not built yet (a row naming whish)   502 the provider could not be reached
      500 the database refused, or the session row could not be written
 
    Plain ES module with injected dependencies, so node --test runs it without Deno:
@@ -181,6 +203,26 @@ export function fakeCheckoutUrl(returnUrl, token, env) {
 }
 
 const EXPIRED = 'This payment page has expired. Go back to your bill and try again.';
+/* never "nothing was charged": a 500 from payment-webhook can follow the confirmation itself */
+export const UNREPORTED = 'The payment could not be reported to Aalayna. Your bill shows where it stands.';
+
+/* payment-webhook's address for the fake provider's callback: PAYMENT_WEBHOOK_URL when set
+   (the function's base, without /fake), else this function's sibling */
+export function webhookUrl(ctx) {
+  return String(ctx.env('PAYMENT_WEBHOOK_URL') || ctx.selfBase.replace(/\/payment-start$/, '/payment-webhook')).replace(/\/+$/, '') + '/fake';
+}
+
+/* What payment-webhook decided about payment pid, from its answer: 'confirmed', 'released'
+   or 'refused'; null when the answer is not its decision about this payment. Its decisions
+   (200, 202, 403, 404, 409) are JSON naming the payment (payment-webhook/handler.js,
+   DECISIONS); a gateway, a wrong address, a refused signature, a rate limit or a 500 is not. */
+export function webhookResult(status, answer, pid) {
+  if (![200, 202, 403, 404, 409].includes(status)) return null;
+  if (!answer || typeof answer !== 'object' || answer.paymentId !== pid) return null;
+  if (status === 200 && answer.status === 'confirmed') return 'confirmed';
+  if (status === 200 && answer.status === 'failed') return 'released';
+  return 'refused';   // a duplicate reference, a refund record, a live venue, no such payment, expired or mismatched
+}
 
 export const fakeAdapter = {
   name: 'fake',
@@ -220,23 +262,26 @@ export const fakeAdapter = {
           externalRef: 'fake-' + p.pid + '-' + p.n, paymentId: p.pid, restaurantId: p.rid,
           amountCents: p.c, currency: p.cur, status: outcome, occurredAt: ctx.now().toISOString(),
         });
-        const webhook = String(ctx.env('PAYMENT_WEBHOOK_URL') || ctx.selfBase.replace(/\/payment-start$/, '/payment-webhook')).replace(/\/+$/, '') + '/fake';
-        const undelivered = { error: 'The payment could not be reported to Aalayna. Nothing was charged.', returnUrl: p.ret };
-        let res;
+        const webhook = webhookUrl(ctx);
+        const undelivered = { error: UNREPORTED, returnUrl: p.ret };
+        let res, answer = null;
         try {
           res = await ctx.fetch(webhook, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Signature': await hmacHex(secret, event, ctx.crypto) }, body: event });
+          try { answer = JSON.parse(await res.text()); } catch (_) { answer = null; }
         } catch (e) {
-          ctx.log.warn('payment-start: fake callback not delivered', JSON.stringify({ paymentId: p.pid, error: String(e && e.message || e).slice(0, 200) }));
+          ctx.log.warn('payment-start: fake callback not delivered', JSON.stringify({ paymentId: p.pid, webhook, error: String(e && e.message || e).slice(0, 200) }));
           return reply(502, undelivered, ctx.headers);
         }
-        // 2xx confirmed or released; 4xx is the database's answer (expired, mismatch): the
-        // guest page shows the payment's state either way. 5xx: the callback is not recorded.
-        if (res.status >= 500) {
-          ctx.log.warn('payment-start: fake callback refused', JSON.stringify({ paymentId: p.pid, status: res.status }));
+        const result = webhookResult(res.status, answer, p.pid);
+        if (!result) {
+          // not payment-webhook deciding about this payment: a refused signature (the two
+          // functions hold different secrets), a wrong address, a gateway, a rate limit, or a
+          // 500 (which may come after the confirmation, when only the callbacks row failed)
+          ctx.log.warn('payment-start: fake callback not delivered', JSON.stringify({ paymentId: p.pid, webhook, status: res.status, answer: answer && typeof answer === 'object' ? String(answer.error || answer.message || answer.status || '').slice(0, 200) : null }));
           return reply(502, undelivered, ctx.headers);
         }
-        ctx.log.info('payment-start: fake callback delivered', JSON.stringify({ paymentId: p.pid, outcome, status: res.status }));
-        return reply(200, { returnUrl: p.ret, outcome }, ctx.headers);
+        ctx.log[result === 'refused' ? 'warn' : 'info']('payment-start: fake callback delivered', JSON.stringify({ paymentId: p.pid, outcome, result, status: res.status }));
+        return reply(200, { returnUrl: p.ret, outcome, result }, ctx.headers);
       },
     },
   },
@@ -279,6 +324,7 @@ export function createHandler(deps = {}) {
     if (row && row.provider) {
       const a = Object.prototype.hasOwnProperty.call(adapters, row.provider) ? adapters[row.provider] : null;
       if (!a || !a.enabled(env)) return { error: 'The ' + row.provider + ' provider is not available on this server' };
+      if (row.provider === 'fake' && !(await demo())) return { error: 'The fake provider only takes payments at venues with demo payments on' };
       return { name: row.provider, adapter: a, config: row.config && typeof row.config === 'object' ? row.config : {}, secret: row.secret || null };
     }
     if (adapters.fake && adapters.fake.enabled(env) && await demo()) return { name: 'fake', adapter: adapters.fake, config: {}, secret: null };

@@ -65,7 +65,7 @@ create table if not exists public.venue_profiles (
   bg            text,
   font          text,
   menu_pack     text,
-  demo_payments boolean not null default true,
+  demo_payments boolean not null default false,   -- off unless the admin turns it on (review-fixes-2026-11-10.sql)
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
@@ -197,7 +197,7 @@ begin
   n_slug := nullif(btrim(coalesce(v->>'slug', '')), '');
   n_slug := public.aal_admin_slug(coalesce(n_slug, cur.slug), n_name, p_rid);
   n_demo := coalesce(case when v ? 'demo_payments' then (v->>'demo_payments')::boolean end,
-                     cur.demo_payments, true);
+                     cur.demo_payments, false);
 
   insert into public.venue_profiles as vp
     (restaurant_id, slug, name, place, gplace, brand, bg, font, menu_pack, demo_payments)

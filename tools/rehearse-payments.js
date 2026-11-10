@@ -21,7 +21,15 @@
    The phone on the same Wi-Fi works too: the link is printed with this computer's LAN
    address, and those origins are allowed for the return. Nothing here is a test of the
    SQL (tests/*.test.cjs with PGLITE_MODULE) or of the live project (supabase/README.md,
-   "Hosted payment pages"): the rules of aal_mutate are approximated, not run. */
+   "Hosted payment pages"): the rules of aal_mutate are approximated, not run. Where the guest
+   page depends on them, the stand-in behaves as live does: the snapshot strips externalRef
+   (and the other fields aal_snapshot strips) from payments, a confirmed payment carries the
+   server-derived demo flag (kv_rows_settle_demo, supabase/review-fixes-2026-11-10.sql), amount
+   and tip must be numbers as the SQL's ::numeric casts require, and POST /rest/v1/rpc/aal_now
+   answers the server's time as a JSON string.
+
+   require('./tools/rehearse-payments.js') runs nothing: it exports the stand-in for
+   tests/rehearse-payments.test.cjs. */
 'use strict';
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path'), os = require('node:os'), crypto = require('node:crypto');
 
@@ -50,6 +58,16 @@ CHECK.amountUsd = CHECK.totalCents / 100;
 const db = { settle: new Map(), secrets: new Map(), sessions: [], callbacks: [], events: [] };
 const money = (n) => '$' + Number(n).toFixed(2);
 const live = (s) => !s.refunded && !s.cancelled && (['pending', 'confirmed'].includes(s.status) || (s.status === 'initiated' && Date.parse(s.expiresAt) > Date.now()));
+/* the fields aal_snapshot strips from every row but a bill for anyone but the owner */
+const STRIPPED = ['deviceId', 'sessionId', 'customerId', 'identityId', 'payerRef', 'externalRef'];
+/* kv_rows_settle_demo: on every write, a confirmed payment says whether the fake provider
+   confirmed it; any other status carries no demo key */
+function written(p) {
+  if (p.status === 'confirmed') p.demo = /^fake-/.test(p.externalRef || ''); else delete p.demo;
+  return p;
+}
+/* amount and tip as the SQL's ::numeric casts take them: a number or a numeric string */
+const numeric = (v) => (typeof v === 'number' ? v : typeof v === 'string' && /^\s*[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?\s*$/.test(v) ? Number(v) : NaN);
 const usedCents = () => [...db.settle.values()].filter(live).reduce((n, s) => n + Math.round(s.amount * 100) - Math.round((s.tip || 0) * 100), 0);
 
 /* ---------------------------------------------------------------- the guest's store (anon key + bill key) */
@@ -59,7 +77,9 @@ function mutate(op, body, token, service) {
   if (op === 'reserve') {
     const prev = db.settle.get(body.id);
     if (prev) return prev;
-    const amount = Math.round(body.amount * 100), tip = Math.round((body.tip || 0) * 100);
+    const amountIn = body.amount == null ? 0 : numeric(body.amount), tipIn = body.tip == null ? 0 : numeric(body.tip);
+    if (!Number.isFinite(amountIn) || !Number.isFinite(tipIn)) throw refuse('Invalid amount');
+    const amount = Math.round(amountIn * 100), tip = Math.round(tipIn * 100);
     if (!(amount > 0) || tip < 0 || tip >= amount || !['cash', 'card', 'whish'].includes(body.rail)) throw refuse('Invalid amount');
     if (!token || token.length < 32) throw refuse('Missing payer token');
     if (usedCents() + amount - tip > CHECK.totalCents) throw refuse('Another payment already covers this balance. Refresh your bill.');
@@ -69,7 +89,7 @@ function mutate(op, body, token, service) {
       note: body.note || 0, change: body.change || 0, status: body.rail === 'cash' ? 'pending' : 'initiated', ts: stamp(),
       expiresAt: body.rail === 'cash' ? null : new Date(Date.now() + 10 * 60000).toISOString(),
     };
-    db.settle.set(row.id, row); db.secrets.set(row.id, crypto.createHash('sha256').update(token).digest('hex'));
+    db.settle.set(row.id, written(row)); db.secrets.set(row.id, crypto.createHash('sha256').update(token).digest('hex'));
     say('reserve   ', row.id, money(row.amount), 'by', row.rail, row.status, row.rail === 'cash' ? '' : '(ten minutes to confirm)');
     return row;
   }
@@ -80,7 +100,7 @@ function mutate(op, body, token, service) {
     if (!tokenOk) throw refuse('Wrong payer token');
     if (['cancelled', 'expired', 'failed'].includes(p.status)) return p;
     if (!['pending', 'initiated'].includes(p.status)) throw refuse('Payment already completed');
-    Object.assign(p, { status: 'cancelled', cancelled: stamp() }); say('cancel    ', p.id, 'by the guest'); return p;
+    written(Object.assign(p, { status: 'cancelled', cancelled: stamp() })); say('cancel    ', p.id, 'by the guest'); return p;
   }
   if (op === 'receipt') { if (!tokenOk) throw refuse('Wrong payer token'); if (p.status !== 'confirmed') throw refuse('Payment must be confirmed'); say('receipt   ', p.id, 'asked for (not sent here)'); return { saved: true }; }
   if (op === 'confirm_digital') {
@@ -89,12 +109,13 @@ function mutate(op, body, token, service) {
     if (p.status !== 'initiated' || Date.parse(p.expiresAt) <= Date.now()) throw refuse('Reservation expired or changed; reconcile received funds');
     if (!body.externalRef || body.currency !== p.currency || body.amountCents !== Math.round(p.amount * 100)) throw refuse('Callback amount, currency or reference mismatch');
     if ([...db.settle.values()].some((x) => x.externalRef === body.externalRef)) throw refuse('Duplicate provider reference');
-    Object.assign(p, { status: 'confirmed', confirmedAt: stamp(), externalRef: body.externalRef }); say('confirmed ', p.id, money(p.amount), 'reference', body.externalRef); return p;
+    written(Object.assign(p, { status: 'confirmed', confirmedAt: stamp(), externalRef: body.externalRef })); say('confirmed ', p.id, money(p.amount), 'reference', body.externalRef); return p;
   }
   throw refuse('Unknown operation');
 }
 function snapshot() {
-  return { version: 2, role: 'guest', checkId: CHECK.id, rows: [{ collection: 'aal.checks', id: CHECK.id, body: CHECK }].concat([...db.settle.values()].map((s) => ({ collection: 'aal.settle', id: s.id, body: s }))), docs: menu ? [{ key: 'aal.live', body: menu }] : [] };
+  const guestBody = (b) => { const o = Object.assign({}, b); STRIPPED.forEach((k) => delete o[k]); return o; };
+  return { version: 2, role: 'guest', checkId: CHECK.id, rows: [{ collection: 'aal.checks', id: CHECK.id, body: CHECK }].concat([...db.settle.values()].map((s) => ({ collection: 'aal.settle', id: s.id, body: guestBody(s) }))), docs: menu ? [{ key: 'aal.live', body: menu }] : [] };
 }
 
 /* ---------------------------------------------------------------- the in-memory PostgREST the functions see */
@@ -105,6 +126,7 @@ async function postgrest(url, init = {}) {
   const val = (k) => (q.get(k) || '').replace(/^eq\./, '');
   const service = h.Authorization === 'Bearer ' + SERVICE;
   const guest = h['x-aalayna-key'] === KEY;
+  if (u.pathname === '/rest/v1/rpc/aal_now') return json(200, new Date().toISOString());   // a JSON string, as PostgREST answers a timestamptz
   if (u.pathname === '/rest/v1/rpc/aal_snapshot') return guest ? json(200, snapshot()) : pgError('Open a current bill link.');
   if (u.pathname === '/rest/v1/rpc/aal_mutate') {
     if (!guest && !service) return pgError('Open a current bill link.');
@@ -124,23 +146,26 @@ async function postgrest(url, init = {}) {
     if (!p) return pgError('Payment unavailable');
     if (['failed', 'cancelled', 'expired'].includes(p.status)) return json(200, p);
     if (p.status !== 'initiated') return pgError('Payment already completed');
-    Object.assign(p, { status: 'failed', failedAt: stamp() }); say('declined  ', p.id, 'released'); return json(200, p);
+    written(Object.assign(p, { status: 'failed', failedAt: stamp() })); say('declined  ', p.id, 'released'); return json(200, p);
   }
   return json(404, { message: 'no route ' + u.pathname });
 }
 
 /* ---------------------------------------------------------------- the functions, as deployed */
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
-async function main() {
+async function functionHandlers(opts = {}) {
   const start = await import(path.join(ROOT, 'supabase', 'functions', 'payment-start', 'handler.js'));
   const hook = await import(path.join(ROOT, 'supabase', 'functions', 'payment-webhook', 'handler.js'));
   const env = { SUPABASE_URL: SELF, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: FAKE_SECRET, PAYMENT_RETURN_ORIGINS: ORIGINS.join(',') };
-  const quiet = { warn: (...a) => say('function  ', ...a), info: () => {} };
+  const quiet = opts.log || { warn: (...a) => say('function  ', ...a), info: () => {} };
   const webhook = hook.createHandler({ fetch: postgrest, env, log: quiet });
   const fetchFromFunction = (url, init) => String(url).startsWith(SELF + '/functions/v1/payment-webhook/') ? webhook(new Request(url, init)) : postgrest(url, init);
   // the fake provider's callback goes to SELF, whichever address the browser used
   const startEnv = Object.assign({}, env, { PAYMENT_WEBHOOK_URL: SELF + '/functions/v1/payment-webhook' });
-  const handlers = { 'payment-start': start.createHandler({ fetch: fetchFromFunction, env: startEnv, log: quiet }), 'payment-webhook': webhook };
+  return { 'payment-start': start.createHandler({ fetch: fetchFromFunction, env: startEnv, log: quiet }), 'payment-webhook': webhook };
+}
+async function main() {
+  const handlers = await functionHandlers();
 
   const server = http.createServer(async (req, res) => {
     const u = new URL(req.url, SELF);
@@ -187,4 +212,5 @@ async function main() {
     console.log('\n  One browser holds one bill key: open the link once per device. Ctrl-C ends the rehearsal; nothing is kept.\n');
   });
 }
-main().catch((e) => { console.error(e); process.exit(1); });
+if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { postgrest, mutate, snapshot, functionHandlers, db, CHECK, KEY, RID, SELF, ORIGINS };
