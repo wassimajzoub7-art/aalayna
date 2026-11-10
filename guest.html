@@ -940,6 +940,8 @@
           </div>
           <div class="rc-note" id="payment-status" role="status" aria-live="polite"></div>
         </div>
+        <!-- T15: the way out of "Confirming…" (cancelConfirming) -->
+        <button type="button" class="cta cta-line-lt" id="confirm-cancel" style="max-width:320px;margin-top:10px;min-height:44px" hidden onclick="cancelConfirming()" data-i18n="cancelPayment">Cancel this payment</button>
 
         <div class="mailrc" id="mailrc">
           <input class="mailin" id="mail-in" type="text" inputmode="text"
@@ -1397,6 +1399,13 @@ var STR = {
     stConfirming: 'Waiting for the payment provider to confirm. This usually takes a few seconds; keep this page open.',
     stProviderConfirmed: 'Confirmed by the payment provider.', stFakeConfirmed: 'Confirmed by the demo provider · no money moved.',
     providerBack: 'This payment was {status}. Nothing was charged. You can try again or pay another way.',
+    providerNotDone: 'This payment was not completed here. If the payment provider shows a charge, tell your server. You can try again or pay another way.',
+    cancelPayment: 'Cancel this payment', cancelling: 'Cancelling…',
+    errDigitalOnline: 'Paying by card or Whish needs the connection. Try again once you are back online.',
+    errProviderNet: 'The payment page could not be opened. Check your connection and try again.',
+    errProviderDown: 'The payment page could not be opened right now. Try again in a moment, or pay another way.',
+    errNoProvider: 'Card and Whish are not available for this bill right now. Pay another way, or ask your server.',
+    errProviderStart: 'This payment could not be started. Try again, or ask your server.',
     demoProvider: 'Demo provider · no money moves', cardDesc: 'Visa, Mastercard, Amex',
     stQueued: 'Cash request saved on this phone. It reaches the restaurant as soon as you are back online.',
     unableConnect: 'Unable to connect to this bill. Please speak with your server.',
@@ -1488,6 +1497,13 @@ var STR = {
     stConfirming: 'En attente de la confirmation du prestataire de paiement. Cela prend en général quelques secondes ; gardez cette page ouverte.',
     stProviderConfirmed: 'Confirmé par le prestataire de paiement.', stFakeConfirmed: 'Confirmé par le prestataire de démonstration · aucun argent transféré.',
     providerBack: 'Cette demande de paiement a été {status}. Rien n’a été débité. Vous pouvez réessayer ou payer autrement.',
+    providerNotDone: 'Ce paiement n’a pas abouti ici. Si le prestataire de paiement indique un débit, prévenez votre serveur. Vous pouvez réessayer ou payer autrement.',
+    cancelPayment: 'Annuler ce paiement', cancelling: 'Annulation…',
+    errDigitalOnline: 'Le paiement par carte ou Whish demande une connexion. Réessayez une fois de retour en ligne.',
+    errProviderNet: 'La page de paiement n’a pas pu s’ouvrir. Vérifiez votre connexion et réessayez.',
+    errProviderDown: 'La page de paiement ne peut pas s’ouvrir pour le moment. Réessayez dans un instant, ou payez autrement.',
+    errNoProvider: 'La carte et Whish ne sont pas disponibles pour cette addition pour le moment. Payez autrement, ou demandez à votre serveur.',
+    errProviderStart: 'Ce paiement n’a pas pu être lancé. Réessayez, ou demandez à votre serveur.',
     demoProvider: 'Prestataire de démonstration · aucun argent transféré', cardDesc: 'Visa, Mastercard, Amex',
     stQueued: 'Demande en espèces enregistrée sur ce téléphone. Elle part au restaurant dès votre retour en ligne.',
     unableConnect: 'Impossible de se connecter à cette addition. Merci de voir avec votre serveur.',
@@ -1579,6 +1595,13 @@ var STR = {
     stConfirming: 'بانتظار تأكيد مزوّد الدفع. يستغرق ذلك بضع ثوانٍ عادةً؛ أبقِ هذه الصفحة مفتوحة.',
     stProviderConfirmed: 'أكّده مزوّد الدفع.', stFakeConfirmed: 'أكّده مزوّد الدفع التجريبي · لم يُحوَّل أي مال.',
     providerBack: 'هذا الدفع {status}. لم يُخصم شيء. يمكنك المحاولة مجدداً أو الدفع بطريقة أخرى.',
+    providerNotDone: 'لم يكتمل هذا الدفع هنا. إذا أظهر مزوّد الدفع أنه خصم مبلغاً، أخبر النادل. يمكنك المحاولة مجدداً أو الدفع بطريقة أخرى.',
+    cancelPayment: 'إلغاء هذا الدفع', cancelling: 'جارٍ الإلغاء…',
+    errDigitalOnline: 'الدفع بالبطاقة أو Whish يحتاج إلى اتصال. حاول مجدداً حين يعود الاتصال.',
+    errProviderNet: 'تعذّر فتح صفحة الدفع. تحقّق من الاتصال وحاول مجدداً.',
+    errProviderDown: 'تعذّر فتح صفحة الدفع الآن. حاول بعد قليل، أو ادفع بطريقة أخرى.',
+    errNoProvider: 'البطاقة وWhish غير متاحتين لهذه الفاتورة الآن. ادفع بطريقة أخرى، أو اسأل النادل.',
+    errProviderStart: 'تعذّر بدء هذا الدفع. حاول مجدداً، أو اسأل النادل.',
     demoProvider: 'مزوّد تجريبي · لا يُحوَّل أي مال', cardDesc: 'Visa, Mastercard, Amex',
     stQueued: 'الطلب النقدي محفوظ على هذا الهاتف. يصل إلى المطعم فور عودتك إلى الاتصال.',
     unableConnect: 'تعذّر الاتصال بهذه الفاتورة. يُرجى التحدث مع النادل.',
@@ -1621,10 +1644,24 @@ var ERR_KEYS = [
   ['Use an email or a phone number', 'mailInvalid'],
   ['This payment is already linked to another contact.', 'errLinked'],
   ['Link contact details to a confirmed payment first.', 'errLinked'],
-  ['The restaurant could not be reached', 'errNet']
+  ['The restaurant could not be reached', 'errNet'],
+  ['Paying by card or Whish needs the connection', 'errDigitalOnline']
 ];
+/* payment-start's answers (aalayna-sync.js marks them provider) are worded by their status,
+   in every language: its own sentences are written for developers */
+function providerErrKey(e){
+  var s = Number(e.status) || 0;
+  if (!s) return 'errProviderNet';
+  if (e.paymentStatus === 'no_provider' || s === 501) return 'errNoProvider';
+  if (e.paymentStatus === 'expired') return 'errExpired';
+  if (s >= 500 || s === 429) return 'errProviderDown';
+  return 'errProviderStart';
+}
 function errText(e){
   var m = String(e && e.message || '');
+  if (e && e.provider) return t(providerErrKey(e));
+  // a browser's own network error ("Failed to fetch", "Load failed") is never shown as is
+  if (/^(Failed to fetch|Load failed|NetworkError|Network request failed)/.test(m)) return t('errNet');
   if (LANG === 'en' && m) return m;
   for (var i = 0; i < ERR_KEYS.length; i++) if (m.indexOf(ERR_KEYS[i][0]) === 0) return t(ERR_KEYS[i][1]);
   return t('errGeneric');
@@ -2487,10 +2524,25 @@ function markRail(k){
   $('cashnote').style.display = (k === 'cash') ? 'block' : 'none';
   $('chg').classList.toggle('on', k === 'cash');
 }
+/* Which rails the bill may pay. A read that got no answer (or a 5xx) is asked again: after
+   5 s, then 10, 20, 40 and every 60 s, and at once when the connection returns (the online
+   event, or a good read of the bill after failed ones). One request at a time. */
+var railsRetry = { busy: false, failed: false, loaded: false, delay: 5000, timer: null };
 function loadRails(){
-  if (!(Aalayna.sync && Aalayna.sync.enabled && Aalayna.paymentRails)) return;
-  Aalayna.paymentRails().then(function(r){ RAILS = r && typeof r === 'object' ? r : {}; applyRails(); paintPay(); });
+  if (!(Aalayna.sync && Aalayna.sync.enabled && Aalayna.paymentRails) || railsRetry.busy) return;
+  railsRetry.busy = true;
+  if (railsRetry.timer) { clearTimeout(railsRetry.timer); railsRetry.timer = null; }
+  Aalayna.paymentRails().then(function(r){
+    railsRetry.busy = false;
+    RAILS = r && typeof r === 'object' ? r : {}; applyRails(); paintPay();
+    railsRetry.failed = !!(Aalayna.paymentRailsFailed && Aalayna.paymentRailsFailed());
+    if (!railsRetry.failed) { railsRetry.loaded = true; railsRetry.delay = 5000; return; }
+    railsRetry.timer = setTimeout(function(){ railsRetry.timer = null; loadRails(); }, railsRetry.delay);
+    railsRetry.delay = Math.min(railsRetry.delay * 2, 60000);
+  });
 }
+// also for a page opened without a connection, whose first read (and so loadRails) never ran
+function railsBack(){ if (railsRetry.failed || !railsRetry.loaded) loadRails(); }
 function setNote(el, n){
   ui('note', n === 0 ? 'exact' : String(n));
   note = n;
@@ -2575,21 +2627,93 @@ function restoreReceipt(){
   paintSettlementResult();
   if (lastSettlementId) go('v-done');   // T15: a declined digital payment went back to the bill instead
 }
-function refreshGuest(){
-  if (Aalayna.sync && Aalayna.sync.enabled && !lastSettlementId) {
-    var pending = readPending();
-    var recovered = pending && Aalayna.settlements().find(function(s){ return s.requestId === pending.requestId; });
-    if (recovered) {
-      var st = Aalayna.settlementStatus(recovered);
-      if (recovered.rail !== 'cash' && ['failed','expired','cancelled'].indexOf(st) >= 0) providerBack(st);
-      else { paymentRequestId = pending.requestId; paymentBusy = true; completeSettle(recovered, recovered.rail); }
-    }
+/* the request this phone holds a pending note for, once the snapshot carries it: its receipt,
+   or back to the pay screen when it was declined, cancelled or ran out */
+function recoverPending(){
+  if (!(Aalayna.sync && Aalayna.sync.enabled) || lastSettlementId) return;
+  var pending = readPending();
+  var recovered = pending && Aalayna.settlements().find(function(s){ return s.requestId === pending.requestId; });
+  if (recovered) {
+    var st = Aalayna.settlementStatus(recovered);
+    if (recovered.rail !== 'cash' && ['failed','expired','cancelled'].indexOf(st) >= 0) providerBack(st);
+    else { paymentRequestId = pending.requestId; paymentBusy = true; completeSettle(recovered, recovered.rail); }
   }
+}
+function refreshGuest(){
+  recoverPending();
   paintSettlementResult();
+  watchConfirming();
   var before = MENU_V;
   loadMenu();
   if (MENU_V !== before){ buildCats(true); buildMenu(); renderMenu(); }
   buildBill(); buildPick(); calcShare();
+}
+/* "Confirming…" (T15) is never a dead end:
+   - it is re-read every two seconds while it shows (no store write, focus or page event is
+     needed: a payment that runs out on the server is never written again), so a payment the
+     server's clock has expired goes back to the pay screen on its own (C9: by server time);
+   - a payment the snapshot never shows (a pay= for another bill, a reload that kept the
+     return note) is given up after two good reads that do not hold it;
+   - "Cancel this payment" cancels the reservation with the payer token and goes back to the
+     pay screen with the balance free. A cancel that reaches the server after the provider
+     confirmed loses: the guest then sees the confirmed receipt. */
+var CONFIRM_EVERY_MS = 2000, CONFIRM_GIVE_UP_READS = 2;
+var confirmWait = { on: false, pull: null, reads: 0 };
+function resetConfirmWait(){ confirmWait.on = false; confirmWait.pull = null; confirmWait.reads = 0; }
+/* the digital payment the confirming state waits on: its id, and its record when the snapshot holds it */
+function confirmingTarget(){
+  if (!(Aalayna.sync && Aalayna.sync.enabled) || !$('v-done').classList.contains('on')) return null;
+  if (lastSettlementId) {
+    var r = Aalayna.settlements().filter(function(s){ return s.id === lastSettlementId; })[0];
+    return r && r.rail !== 'cash' && lastSettlementStatus === 'initiated' ? { id: r.id, record: r } : null;
+  }
+  var p = readPending();
+  if (!p || !p.rail || p.rail === 'cash') return null;
+  var rec = Aalayna.settlements().filter(function(s){ return s.requestId === p.requestId || s.id === p.requestId; })[0] || null;
+  return { id: rec ? rec.id : p.requestId, record: rec };
+}
+function watchConfirming(){
+  var target = confirmingTarget();
+  if (!target) { resetConfirmWait(); return; }
+  var lp = Aalayna.sync.state().lastPull || null;
+  if (!confirmWait.on) { confirmWait.on = true; confirmWait.pull = lp; confirmWait.reads = 0; }
+  else if (lp && lp !== confirmWait.pull) { confirmWait.pull = lp; confirmWait.reads++; }
+  if (target.record) { confirmWait.reads = 0; return; }
+  if (confirmWait.reads >= CONFIRM_GIVE_UP_READS && !showConfirmCancel.busy) providerBack('notfound');
+}
+function confirmTick(){
+  if (!confirmingTarget()) { resetConfirmWait(); return; }
+  recoverPending(); paintSettlementResult(); watchConfirming();
+}
+async function cancelConfirming(){
+  var target = confirmingTarget();
+  if (!target || showConfirmCancel.busy) return;
+  var b = $('confirm-cancel'), err = null;
+  showConfirmCancel.busy = true;
+  if (b) { b.disabled = true; b.textContent = t('cancelling'); }
+  try { await Aalayna.cancelPayment(target.id); } catch(e) { err = e; }
+  if (err) { try { await Aalayna.sync.pull(); } catch(e) {} }
+  showConfirmCancel.busy = false;
+  // the server's answer, once written, has usually repainted the page already (refreshGuest):
+  // the receipt if the provider confirmed first, else the pay screen
+  if (!confirmingTarget()) return;
+  showConfirmCancel(true);
+  var record = Aalayna.settlements().filter(function(s){ return s.id === target.id; })[0];
+  var st = record ? Aalayna.settlementStatus(record) : null;
+  if (record && st === 'confirmed') {
+    // the provider's confirmation reached the server first: the payment stands
+    if (lastSettlementId) paintSettlementResult();
+    else { paymentRequestId = record.requestId || record.id; paymentBusy = true; completeSettle(record, record.rail); }
+    return;
+  }
+  if (!record || ['cancelled','expired','failed'].indexOf(st) >= 0) {
+    // not found on the server either ("Payment unavailable"): nothing of the bill is held for it
+    if (!record && err && !err.serverMessage) { alert(errText(err)); return; }
+    providerBack(st === 'failed' ? 'failed' : 'cancelled');
+    return;
+  }
+  // still initiated: the cancel did not reach the restaurant (it waits in the outbox, or failed)
+  alert(err && err.queued ? t('queuedAlert') : errText(err || new Error('')));
 }
 function watchGuestChanges(){
   Aalayna.on(refreshGuest);
@@ -2600,17 +2724,21 @@ function watchGuestChanges(){
   });
 }
 function newRequestId(){ return 'request-' + Date.now() + '-' + Math.random().toString(36).slice(2); }
-/* T15: the provider declined, or the guest left its page and the reservation ran out. The
-   bill is repainted with the balance free again; the next tap is a fresh request. */
+/* T15: the provider declined, the guest cancelled, or the reservation ran out or was never
+   found. The bill is repainted with the balance free again; the next tap is a fresh request.
+   Only a decline is known not to have charged: for the rest the page cannot know what the
+   provider did, so it says the payment was not completed here and to tell the server if the
+   provider shows a charge. */
 function providerBack(status){
   clearPending();
   try { sessionStorage.removeItem(receiptSessionKey()); } catch(e) {}
   paymentBusy = false; lastSettlementId = null; lastSettlementStatus = null;
   paymentRequestId = newRequestId();
+  resetConfirmWait();
   releasePayment();
   buildBill(); buildPick(); calcShare();
   go('v-pay');
-  alert(t('providerBack', {status: t(STR.en['stat_' + status] ? 'stat_' + status : 'stat_other')}));
+  alert(status === 'failed' ? t('providerBack', {status: t('stat_failed')}) : t('providerNotDone'));
 }
 /* the same fields whichever rail: the store validates them against the open check */
 function paymentFields(rail){
@@ -2629,12 +2757,12 @@ function paymentFields(rail){
    is a fresh request, never a retry of the rejected one */
 function paymentFailed(error, fields){
   if (!(Aalayna.sync && Aalayna.sync.enabled)) { try { Aalayna.failPayment(paymentRequestId, 'failed'); } catch(e) {} }
-  if (error.queued) {
-    // kept in the sync outbox, sent when the connection returns (see "offline" below)
-    savePending(fields);
+  // only a cash request is ever kept in the sync outbox, sent when the connection returns (see
+  // "offline" below); a card or Whish reserve never is (C10), whatever the error says
+  if (error.queued && fields && fields.rail === 'cash') {
+    savePending(fields, 'cash');
     paymentBusy = true;
-    if (fields) { go('v-done'); paintQueued(); return; }
-    alert(t('queuedAlert'));
+    go('v-done'); paintQueued();
     return;
   }
   paymentRequestId = newRequestId();
@@ -2658,9 +2786,13 @@ async function settle(){
     finishSettle('cash');
     return;
   }
+  // busy from the tap, not from the answer: a second tap while the reserve is on its way
+  // would otherwise open a second provider session
+  paymentBusy = true;
   try { var requested = Aalayna.requestPayment(paymentFields(kind)); if(requested && typeof requested.then === "function") await requested; }
   catch(error) { paymentFailed(error); return; }
   if (Aalayna.sync && Aalayna.sync.enabled) { openProvider(kind); return; }
+  paymentBusy = false;   // the demo's simulated provider sheets take the next tap
   if (kind === 'whish'){
     $('wh-amt').textContent = t('payAmt', {amt: usd(tot)});
     $('wh-btn').textContent = t('openWhish');
@@ -2682,7 +2814,7 @@ async function openProvider(rail){
   btn.textContent = t('openingProvider'); btn.disabled = true;
   try {
     var res = await Aalayna.startPayment(paymentRequestId, returnAddress());
-    if (!res || typeof res.url !== 'string') throw new Error(t('unableConnect'));
+    if (!res || typeof res.url !== 'string') { var none = new Error('The payment provider gave no page to open'); none.provider = true; none.status = 502; throw none; }
     location.assign(res.url);
   } catch(error) {
     btn.innerHTML = was; btn.disabled = false;
@@ -2763,8 +2895,9 @@ function paintSettlementResult(){
   $('method-label').textContent = confirmed ? t('paidVia') : t('requestedVia');
   $('payment-status').textContent = status === 'pending' ? t('stPending')
     : status === 'initiated' ? t('stConfirming')
-    : confirmed ? (!shared ? t('stDemoConfirmed') : !digital ? t('stCashConfirmed') : /^fake-/.test(record.externalRef || '') ? t('stFakeConfirmed') : t('stProviderConfirmed'))
+    : confirmed ? (!shared ? t('stDemoConfirmed') : !digital ? t('stCashConfirmed') : demoConfirmed(record) ? t('stFakeConfirmed') : t('stProviderConfirmed'))
     : t('stOther', {status: t(STR.en['stat_' + status] ? 'stat_' + status : 'stat_other')});
+  showConfirmCancel(digital && shared && status === 'initiated');
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = confirmed ? '' : 'none'; });
   if (record.rail === 'cash' && lastSettlementStatus === 'pending' && confirmed && window.AalaynaAnalytics) {
     AalaynaAnalytics.track('demo_complete', 'cash_confirmed');
@@ -2776,6 +2909,16 @@ function paintSettlementResult(){
   }
   lastSettlementStatus = status;
   rememberReceipt();
+}
+/* the server marks a payment the fake provider confirmed with demo: true; guests do not
+   receive externalRef on the live project, so its fake- prefix is only a fallback */
+function demoConfirmed(record){ return record.demo === true || /^fake-/.test(record.externalRef || ''); }
+/* the confirming state's way out (cancelConfirming); busy while a cancel is on its way */
+function showConfirmCancel(on){
+  var b = $('confirm-cancel');
+  if (!b) return;
+  b.hidden = !on;
+  if (!showConfirmCancel.busy) { b.disabled = false; b.textContent = t('cancelPayment'); }
 }
 /* a device we already know: offer the contact back, never require it */
 function prefillReceipt(){
@@ -2996,6 +3139,7 @@ $('staff-demo').href = 'dashboard.html' + window.location.search;
 staggered = true;
 restoreReceipt();
 watchGuestChanges();
+setInterval(confirmTick, CONFIRM_EVERY_MS);   // does nothing unless "Confirming…" shows (a table QR page gets its key later)
 function sharedReady(){loadMenu();buildBill();buildPick();calcShare();renderMenu();paintVenue();refreshGuest();restoreReceipt();loadRails();}
 function sharedFailed(){
   if (BILL_ENDED) return;   // T8: the closed-bill message is already on screen
@@ -3065,7 +3209,9 @@ function readPending(){
   return { requestId: raw };   // an id alone, as earlier versions of this page kept it
 }
 function savePending(fields, rail){
-  try { sessionStorage.setItem(pendingKey(), JSON.stringify({ requestId: paymentRequestId, amount: fields ? fields.amount : null, change: fields ? fields.change : 0, rail: rail || 'cash' })); } catch(e) {}
+  rail = rail || (fields && fields.rail);
+  if (!rail) return;   // never guessed: a note without its rail would read as a cash request
+  try { sessionStorage.setItem(pendingKey(), JSON.stringify({ requestId: paymentRequestId, amount: fields ? fields.amount : null, change: fields ? fields.change : 0, rail: rail })); } catch(e) {}
 }
 /* T15: back from the provider's page, before the snapshot carries the payment's answer */
 function paintConfirming(p){
@@ -3076,6 +3222,7 @@ function paintConfirming(p){
   $('result-title').textContent = t('confirmingTitle');
   $('payment-status').textContent = t('stConfirming');
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = 'none'; });
+  showConfirmCancel(true);
   return true;
 }
 /* the receipt of a cash request this phone holds; the sent record replaces it (refreshGuest) */
@@ -3103,12 +3250,20 @@ function paintQueued(){
   $('result-title').textContent = sent ? t('cashRequested') : t('savedPhone');
   $('payment-status').textContent = sent ? t('stPending') : t('stQueued');
   ['mailrc','consents','feedback-options'].forEach(function(id){ $(id).style.display = 'none'; });
+  showConfirmCancel(false);
   return true;
 }
 window.addEventListener('online', paintNet);
 window.addEventListener('offline', paintNet);
 window.addEventListener('resize', function(){ if (NET.off) paintNet(); });
-if (Aalayna.sync && Aalayna.sync.onState) Aalayna.sync.onState(function(s){ NET.lastReadAt = s.lastReadAt; NET.readFailures = s.readFailures; paintNet(); });
+window.addEventListener('online', railsBack);
+var readWasOk = null;
+if (Aalayna.sync && Aalayna.sync.onState) Aalayna.sync.onState(function(s){
+  NET.lastReadAt = s.lastReadAt; NET.readFailures = s.readFailures; paintNet();
+  // the bill is read again after failed reads: the connection is back, and so may the rails be
+  if (s.lastReadOk === true && readWasOk === false) railsBack();
+  readWasOk = s.lastReadOk;
+});
 else paintNet();
 // T15: brought back by the payment provider with pay=<id>. The id names the payment to look at
 // and nothing more: sessionStorage may not have survived the provider's page (another tab, a

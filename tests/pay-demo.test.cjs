@@ -49,7 +49,7 @@ function makeDom() {
 /* a mocked payment-start: answers is {get, post} -> {status, body} or a thrown error */
 function boot({ search = '?s=' + TOKEN, config = { supabaseUrl: SUPA + '/', anonKey: 'anon' }, get = { status: 200, body: DATA }, post = { status: 200, body: { returnUrl: BACK, outcome: 'paid' } }, origin = ORIGIN } = {}) {
   const { byId, document } = makeDom();
-  const calls = [], replaced = [], assigned = [];
+  const calls = [], replaced = [], assigned = [], timers = [];
   const answers = { get, post };
   const fetch = async (url, init = {}) => {
     calls.push({ url: String(url), init, body: init.body ? JSON.parse(init.body) : null });
@@ -60,12 +60,12 @@ function boot({ search = '?s=' + TOKEN, config = { supabaseUrl: SUPA + '/', anon
   };
   const location = { origin, search, href: origin + '/pay-demo.html' + search, replace(u) { replaced.push(u); }, assign(u) { assigned.push(u); } };
   const window = { AalaynaConfig: config };
-  const ctx = { window, document, location, fetch, URL, URLSearchParams, JSON, Number, Date, Math, String, setTimeout: () => 0, clearTimeout: () => {}, console };
+  const ctx = { window, document, location, fetch, URL, URLSearchParams, JSON, Number, Date, Math, String, setTimeout: (f, ms) => { timers.push({ f, ms }); return timers.length; }, clearTimeout: () => {}, console };
   vm.createContext(ctx);
   scripts.forEach((s) => vm.runInContext(s, ctx));
   const $ = (id) => byId.get(id);
   const shown = () => ['loading', 'ready', 'invalid', 'offline', 'undelivered'].filter((s) => !$('st-' + s).hidden);
-  return { $, calls, replaced, assigned, answers, shown };
+  return { $, calls, replaced, assigned, answers, shown, timers };
 }
 
 test('pay-demo.html: noindex, no referrer, a CSP, self-contained, only aalayna-config.js, no em dash, no innerHTML', () => {
@@ -188,7 +188,7 @@ test('states: an unreadable token fetches nothing; expired is 404; a failed load
   await flush();
   assert.deepEqual(p.shown(), ['ready']);
   // the callback could not be delivered: Decline, then retry sends Decline again
-  p = boot({ post: { status: 502, body: { error: 'The payment could not be reported to Aalayna. Nothing was charged.', returnUrl: BACK } } });
+  p = boot({ post: { status: 502, body: { error: 'The payment could not be reported to Aalayna.', returnUrl: BACK } } });
   await flush();
   p.$('decline').click();
   await flush();
@@ -214,6 +214,33 @@ test('states: an unreadable token fetches nothing; expired is 404; a failed load
   await flush();
   assert.deepEqual(p.shown(), ['invalid']);
   assert.match(p.$('invalid-msg').textContent, /has expired/);
+});
+
+test('the device clock decides nothing: no expiry timer, even on a phone whose clock is past expiresAt; the function says expired (404)', async () => {
+  const p = boot({ get: { status: 200, body: Object.assign({}, DATA, { expiresAt: new Date(Date.now() - 60000).toISOString() }) } });
+  await flush();
+  assert.deepEqual(p.shown(), ['ready']);
+  assert.deepEqual(p.timers, [], 'no timer armed from the device clock');
+  assert.ok(!/expiresAt|setTimeout/.test(scripts.join('\n').replace(/\/\*[\s\S]*?\*\//g, '')), 'the script reads no expiry');
+  p.answers.post = { status: 404, body: { error: 'expired', status: 'expired' } };
+  p.$('pay').click();
+  await flush();
+  assert.deepEqual(p.shown(), ['invalid']);
+  assert.match(p.$('invalid-msg').textContent, /has expired/);
+});
+
+test('undelivered (502 {error, returnUrl}): says the payment could not be reported and that the bill shows where it stands, never "Nothing was charged"; 200 {returnUrl, outcome, result} is followed whatever the result', async () => {
+  const undelivered = html.slice(html.indexOf('<section id="st-undelivered"'), html.indexOf('</section>', html.indexOf('<section id="st-undelivered"')));
+  assert.match(undelivered, /could not be reported/);
+  assert.match(undelivered, /Your bill shows where this payment stands\./);
+  assert.ok(!/Nothing was charged/i.test(html), 'the page never claims nothing was charged');
+  for (const result of ['confirmed', 'released', 'refused']) {
+    const p = boot({ post: { status: 200, body: { returnUrl: BACK, outcome: 'paid', result } } });
+    await flush();
+    p.$('pay').click();
+    await flush();
+    assert.deepEqual(p.replaced, [BACK], result);
+  }
 });
 
 test('targets of at least 44 px, visible focus, fits 320 px', () => {
