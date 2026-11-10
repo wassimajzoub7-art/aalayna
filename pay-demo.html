@@ -68,7 +68,7 @@ body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
 
   <section id="st-undelivered" hidden>
     <p class="lead" tabindex="-1">The payment could not be reported to Aalayna.</p>
-    <p class="msg">Nothing was charged. Try again, or go back to your bill.</p>
+    <p class="msg">Your bill shows where this payment stands. Try again, or go back to your bill.</p>
     <button class="btn" id="retry" type="button">Try again</button>
     <a class="btn ghost" id="back" hidden>Back to the bill</a>
   </section>
@@ -92,7 +92,9 @@ body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
   var ROUTE = base ? base + '/payment-start/fake/checkout' : '';
   /* the signed token: the one query parameter this page reads */
   var token = new URLSearchParams(location.search).get('s') || '';
-  var data = null, outcome = null, busy = false, expiryTimer = null;
+  /* no expiry timer: this device's clock never decides (docs/resilience.md C9); the function
+     answers 404 for a token that has run out, and the page then says so */
+  var data = null, outcome = null, busy = false;
 
   function show(name, focus) {
     STATES.forEach(function (s) { $('st-' + s).hidden = s !== name; });
@@ -101,7 +103,6 @@ body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
   }
   function invalid(message) {
     busy = false;
-    if (expiryTimer) clearTimeout(expiryTimer);
     $('invalid-msg').textContent = message;
     show('invalid', true);
   }
@@ -135,7 +136,7 @@ body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
       if (!j || typeof j !== 'object' || !Number.isSafeInteger(j.amountCents) || j.amountCents <= 0 || typeof j.currency !== 'string' || typeof j.paymentId !== 'string') return invalid(UNREADABLE);
       var back = sameOrigin(j.returnUrl);
       if (!back) return invalid(ELSEWHERE);
-      data = { amount: money(j.amountCents, j.currency), venue: String(j.venue || ''), ref: j.paymentId, back: back, expiresAt: Date.parse(j.expiresAt) };
+      data = { amount: money(j.amountCents, j.currency), venue: String(j.venue || ''), ref: j.paymentId, back: back };
       $('amt').textContent = data.amount;
       $('pay-amt').textContent = data.amount;
       $('venue').textContent = data.venue;
@@ -143,10 +144,6 @@ body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif
       $('back').href = data.back;
       $('back').hidden = false;
       show('ready');
-      if (Number.isFinite(data.expiresAt)) {
-        var left = data.expiresAt - Date.now();
-        expiryTimer = setTimeout(function () { if (!busy) invalid(EXPIRED); }, Math.max(0, Math.min(left, 2147483647)));
-      }
     }, function () { show('offline', true); });
   }
 
