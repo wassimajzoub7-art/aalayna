@@ -6,8 +6,8 @@
    Kufi (5.6 s): a red module is the pen. It writes علينا right to left along the baseline, each letter
    rising as it passes, climbs the alif, then hops three times to set the dots. The Latin name follows, letter by letter.
    Both take { word } (a spelling from AalaynaLogo.SPELLINGS; 3LAYNA by default), { colors, tagline } and { words } (the
-   tagline in another language, three words with their punctuation, with { font } and { rtl } for a script the Block
-   does not draw, such as Arabic), and { tagAt }, when the tagline starts (3 s for the Block, 4.1 s for the Kufi),
+   tagline in another language, three words with their punctuation, with { font } and { rtl } for a script Instrument
+   Sans does not set, such as Arabic), and { tagAt }, when the tagline starts (3 s for the Block, 4.1 s for the Kufi),
    so the film can close on either.
 
    Every piece: { duration, cues, render(g, t, W, H) }, g already scaled to W x H logical pixels. */
@@ -40,19 +40,19 @@
   const finder = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= QN - 7) || (r >= QN - 7 && c < 7);
 
   const colorsOf = o => Object.assign({ bg: C.cream, ink: C.ink, red: C.red, sub: '#6E635B' }, o && o.colors);
-  // The tagline is set in the logo's own capitals (the page loads Aalayna Block), a size under the logo.
-  const FONT = "'Aalayna Block', monospace";
+  // The tagline is words, not the name, so it reads in Instrument Sans 600, as on the site, a size under the logo; only
+  // the name keeps the logo's capitals. Canvas text asks for no font by itself: a page that plays a reveal loads this one.
+  const FONT = "'Instrument Sans', sans-serif";
 
-  // With { font } it is set in that face instead (Arabic has no Block letters), and with { rtl } the words run right to
+  // With { font } it is set in that face instead (Instrument Sans has no Arabic), and with { rtl } the words run right to
   // left, still arriving in reading order.
   function tagline(g, t, t0, x, y, size, col, words = ['scan,', 'split,', 'settle.'], o = {}) {
     g.save();
     size = Math.round(size * 0.72);
-    g.font = (o.font ? '600 ' : '400 ') + size + 'px ' + (o.font || FONT);
+    g.font = '600 ' + size + 'px ' + (o.font || FONT);
     g.textBaseline = 'alphabetic';
     if (o.rtl) { g.direction = 'rtl'; g.textAlign = 'left'; words = words.slice().reverse(); }
-    const trim = o.font ? 0 : size * 0.14;
-    const gap = size * 0.42, ws = words.map(w => g.measureText(w).width - trim);   // word gaps as in set text (three modules); drop each word's trailing module
+    const gap = g.measureText(' ').width, ws = words.map(w => g.measureText(w).width);   // word gaps as in set text: the face's own space
     let cx = x - (ws.reduce((a, b) => a + b, 0) + gap * (words.length - 1)) / 2;
     words.forEach((w, i) => {
       const n = o.rtl ? words.length - 1 - i : i;
