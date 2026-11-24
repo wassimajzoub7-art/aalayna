@@ -592,6 +592,41 @@
     return moved;
   }
   A.sync.carryOutbox=carryOutbox;
+  /* ==== All venues (supabase/all-venues-2026-11-24.sql, owner-group.js) ====
+     An owner's other venues, read only, for the dashboard's All venues figures: one aal_all_venues
+     call returns every venue where the server gives this credential owner rights today. Each
+     venue's rows are kept only when they carry that venue's own id (as pull() keeps this venue's),
+     only for the collections the figures read; nothing is stored, queued or sent back. A page whose
+     role is not owner (a waiter, a guest) never asks. aal_group 'list' adds who is on each group's
+     staff (best effort: without it the team cards show the floor alone). */
+  var VENUE_ROWS=['aal.checks','aal.settle','aal.guests','aal.events'],VENUE_DOCS=['aal.floor'],venuesSeen={};
+  function venueOf(v){
+    var data={};VENUE_ROWS.forEach(function(c){data[c]=[];});
+    (v.rows||[]).forEach(function(r){if(r&&data[r.collection]&&inVenue(r.body,v.restaurant_id))data[r.collection].push(r.body);});
+    (v.docs||[]).forEach(function(d){if(d&&VENUE_DOCS.indexOf(d.key)>=0&&d.body!=null)data[d.key]=d.body;});
+    return {restaurantId:v.restaurant_id,name:v.name||'',place:v.place==null?null:v.place,slug:v.slug||'',groupId:v.group_id||null,groupName:v.group_name||'',own:v.restaurant_id===rid,data:data};
+  }
+  A.sync.pullVenues=function(){
+    if(guestPage||(!key&&!signedIn)||state.role!=='owner')return Promise.resolve(null);
+    return call('rpc/aal_all_venues',{}).then(function(res){
+      if(!res||res.version!==1||Object.prototype.toString.call(res.venues)!=='[object Array]')throw new Error('The shared database needs the November 24 migration for All venues.');
+      var list=res.venues.filter(function(v){return v&&typeof v.restaurant_id==='string'&&v.restaurant_id;}).map(venueOf);
+      venuesSeen={};list.forEach(function(v){venuesSeen[v.restaurantId]=true;});
+      return list;
+    });
+  };
+  A.sync.groupStaff=function(groupId){
+    if(guestPage||state.role!=='owner'||!groupId)return Promise.resolve(null);
+    return call('rpc/aal_group',{p_body:{op:'list',group_id:groupId}}).catch(function(){return null;});
+  };
+  /* Opening another venue of the list: a session is already the credential there; an owner link
+     (the group's key) is remembered for that venue too, unless the venue has a key of its own here. */
+  A.sync.openVenue=function(target){
+    if(!venuesSeen[target])return false;
+    if(!signedIn&&/^own_/.test(key)){var slot='aal.access:'+target+':owner';try{if(!global.localStorage.getItem(slot))global.localStorage.setItem(slot,key);}catch(e){}}
+    return true;
+  };
+  /* ==== All venues end ==== */
   if(!key&&!signedIn){A.sync.ready=Promise.resolve();return;}
   var started=false;
   start();

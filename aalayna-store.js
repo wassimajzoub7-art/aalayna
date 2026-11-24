@@ -184,6 +184,12 @@
      viewVenue is that in-memory choice. Records are already scoped by venueId; the floor is the one
      venue document kept per venue, as aal.floor@<venueId> for every venue but the device's own. */
   var viewVenue = null;
+  /* All venues in shared mode (owner-group.js, supabase/all-venues-2026-11-24.sql): the other venues
+     of the signed-in owner, as the server last listed them, kept in memory only (never in this
+     page's storage). lent maps a venue key to { venue, data: { storage key: JSON text } }; while
+     util.withVenue reads one of them (lending), every read answers from its data and every write
+     throws: another venue's figures are read here, never changed. */
+  var lent = {}, lending = null;
   function venueKeyOf(v) { return JSON.stringify([String(v.name || '').trim().toLowerCase(), String(v.place || '').trim().toLowerCase()]); }
   function storageKey(k) {
     if (!activeScope) {
@@ -197,6 +203,7 @@
     return 'aal.scope:' + activeScope + ':' + k;
   }
   function read(k, fallback) {
+    if (lending) { var t = lending.data[k]; try { return t ? JSON.parse(t) : fallback; } catch (e) { return fallback; } }
     try { var v = localStorage.getItem(storageKey(k)); return v ? JSON.parse(v) : fallback; }
     catch (e) { return fallback; }
   }
@@ -226,12 +233,15 @@
       } catch (e) {}
     });
   }
+  function readOnly() { if (lending) throw new Error('Another venue is read only here. Open it to make changes.'); }
   function write(k, v) {
+    readOnly();
     if (!put(k, v)) { relieve(); put(k, v); }
     fire(k);
     hooks.afterWrite.forEach(function (h) { try { h(k, v); } catch (e) {} });
   }
   function rawWrite(k, v) {
+    readOnly();
     if (!put(k, v)) { relieve(); put(k, v); }
     fire(k);
   }
@@ -360,6 +370,7 @@
   }
 
   function seedIfEmpty() {
+    if (lending) return;   // a lent venue is the server's rows as they are
     if (!read(K.live, null)) {
       var seeded = clone(SEED_ITEMS).map(function (x) {
         var tr = SEED_TR[x.id] ? clone(SEED_TR[x.id]) : null;
@@ -859,6 +870,7 @@
       return JSON.stringify([v.name.trim().toLowerCase(), (v.place || '').trim().toLowerCase()]);
     },
     venue: function () {
+      if (lending) return clone(lending.venue);
       if (activeVenue) return clone(activeVenue);
       if (viewVenue) return clone(viewVenue);
       var u = venueFromURL();
@@ -982,12 +994,33 @@
     on: function (fn) { subs.push(fn); },
     notify: function (key) { fire(key); },
     util: { storageKey: storageKey, activateScope: function (scope) { activeVenue = clone(A.venue()); activeScope = scope; seedIfEmpty(); migrate(); },
-            /* run fn as if venue v were shown (the demo's group figures read each venue this way) */
+            /* run fn as if venue v were shown (group figures read each venue this way). In the demo
+               it is the venue's own records on this device. In shared mode it is this page's venue
+               itself, or another venue the server lent (lendVenues), read only; any other throws. */
             withVenue: function (v, fn) {
-              if (activeScope) throw new Error('Group figures are read venue by venue only in the demo.');
+              if (activeScope) {
+                var id = venueKeyOf(v);
+                var own = id === venueKeyOf(activeVenue), l = own ? null : Object.prototype.hasOwnProperty.call(lent, id) ? lent[id] : null;
+                if (!own && !l) throw new Error('Group figures are read venue by venue only in the demo.');
+                var prev = lending; lending = l;
+                try { return fn(); } finally { lending = prev; }
+              }
               var was = viewVenue; viewVenue = clone(v);
               try { return fn(); } finally { viewVenue = was; }
             },
+            /* shared mode: the other venues' rows for withVenue, { venueKey: { venue, data: { key: value } } }.
+               Each venue's data is keyed by its own venue key, never this page's; this page's venue is not lent. */
+            lendVenues: function (map) {
+              var next = {};
+              Object.keys(map || {}).forEach(function (id) {
+                var m = map[id]; if (!m || !m.venue || venueKeyOf(m.venue) !== id) return;
+                if (activeVenue && id === venueKeyOf(activeVenue)) return;
+                var data = {}; Object.keys(m.data || {}).forEach(function (k) { data[k] = JSON.stringify(m.data[k]); });
+                next[id] = { venue: clone(m.venue), data: data };
+              });
+              lent = next;
+            },
+            lentVenues: function () { return Object.keys(lent); },
             venueKey: venueKeyOf, read: read, write: write, rawWrite: rawWrite, hooks: hooks, uid: uid, now: now, cents: cents, clone: clone },
     reset: function () {
       try { localStorage.removeItem(storageKey('aal.pack')); } catch (e) {}
