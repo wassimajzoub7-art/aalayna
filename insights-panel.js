@@ -48,12 +48,48 @@ function insFinding(f){
   b.appendChild(insEl('p', f.rule, 'ins-rule'));
   return b;
 }
+/* ---- shared mode: the period's events come from the server (supabase/insights-2026-11-24.sql,
+   aal_insights_events), one read per venue and period, kept in this variable only: never in
+   localStorage, where a full store keeps 200 events. Without that function on the server (404)
+   the tab falls back to the events this device holds, and says so. ---- */
+var insightsServer = { key: null, status: null, data: null, error: null, at: null, pending: null };
+function insShared(){ var s = Aalayna.sync; return !!(s && s.enabled && !(Aalayna.demoMode && Aalayna.demoMode()) && !(s.state && s.state().role === 'waiter')); }
+function insRpc(fn, args){
+  var A = Aalayna, cfg = window.AalaynaConfig || {}, key = A.sync.key && A.sync.key();
+  if (A.sync.signedIn && window.AalaynaAuth) return window.AalaynaAuth.rpc(fn, args);
+  if (!key) return Promise.reject(new Error('Open the dashboard with your owner link, or sign in.'));
+  return fetch(String(cfg.supabaseUrl || '').replace(/\/$/, '') + '/rest/v1/rpc/' + fn, { method: 'POST',
+    headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey, 'x-aalayna-key': key, 'Content-Type': 'application/json' }, body: JSON.stringify(args) })
+    .then(function(r){ return r.text().then(function(t){
+      var j = null; try { j = t ? JSON.parse(t) : null; } catch (ignore) {}
+      if (!r.ok) { var e = new Error((j && j.message) || 'The shared store answered ' + r.status + '.'); e.status = r.status; throw e; }
+      return j; }); });
+}
+function insFetch(days, force){
+  var key = Aalayna.venueId() + '|' + days;
+  if (!force && insightsServer.key === key && (insightsServer.status || insightsServer.pending)) return insightsServer.pending || Promise.resolve();
+  var at = Date.now(), job = { key: key, status: null, data: null, error: null, at: at, pending: null };
+  insightsServer = job;
+  job.pending = insRpc('aal_insights_events', { p_rid: Aalayna.venueId(), p_body: { since: new Date(at - days * 86400000).toISOString(), until: new Date(at).toISOString() } })
+    .then(function(res){
+      if (!res || res.version !== 1 || !Array.isArray(res.events)) throw new Error('The shared store answered in an unknown form.');
+      job.status = 'ok'; job.data = res;
+    }, function(e){ job.status = e && e.status === 404 ? 'missing' : 'error'; job.error = e && e.message ? e.message : String(e); })
+    .then(function(){ job.pending = null; if (insightsServer === job) paintInsights(); });
+  return job.pending;
+}
+function insRefresh(){ insFetch(Number(($('ins-period') || {}).value) || 30, true); paintInsights(); }
 function paintInsights(){
   var body = $('insights-body'); if (!body) return;
   if (!$('v-insights').classList.contains('on')) { insightsDirty = true; return; }
   insightsDirty = false;
-  var days = Number(($('ins-period') || {}).value) || 30, sample = insSample();
-  var r = Aalayna.venueInsights({ days: days, tables: insTables(), extraEvents: sample || [] });
+  var days = Number(($('ins-period') || {}).value) || 30, sample = insSample(), shared = insShared(), srv = null;
+  if (shared) {
+    insFetch(days, false);
+    if (insightsServer.pending && !insightsServer.status) { body.replaceChildren(insEl('p', 'Reading this period’s activity from the shared store…', 'ops-empty')); return; }
+    if (insightsServer.status === 'ok') srv = insightsServer.data;
+  }
+  var r = Aalayna.venueInsights({ days: days, tables: insTables(), extraEvents: sample || [], server: srv, at: srv ? insightsServer.at : undefined });
   body.replaceChildren();
   /* coverage: how much is behind the findings */
   var cov = insEl('div', null, 'card ins-cover');
@@ -62,6 +98,15 @@ function paintInsights(){
   head.appendChild(insEl('span', r.early ? 'Early signal' : 'A full month or more', 'status-badge ' + (r.early ? 'pending' : 'approved')));
   cov.appendChild(head);
   cov.appendChild(insEl('p', r.daysCollected ? 'Since ' + r.firstLabel + '. ' + (r.early ? 'Until ' + r.matureDays + ' days are recorded every finding is an early signal: ' + (r.matureDays - r.daysCollected) + ' more to go. ' : '') + 'This period: ' + opsCount(r.counts.sessions, 'session') + ', ' + opsCount(r.counts.opens, 'dish open') + ', ' + opsCount(r.counts.bills, 'bill') + ', ' + opsCount(r.counts.payments, 'payment') + '.' : 'Findings appear as guests scan the table QR codes, open dishes and pay. Each one waits until it has enough data behind it.', 'cs'));
+  if (shared) {
+    var note = insightsServer.status === 'ok' ? (srv.truncated ? 'This period holds more events than one read carries (' + srv.limit.toLocaleString('en-US') + '); these findings cover the newest of them, from ' + new Date(srv.from).toLocaleDateString('en-GB', { timeZone: 'Asia/Beirut', day: 'numeric', month: 'short' }) + '.' : 'Read from the shared store for this period' + ' (' + opsCount(srv.count, 'event') + ').')
+      : insightsServer.status === 'missing' ? 'Insights are limited to what this device holds: the shared store cannot send a period’s activity yet (supabase/insights-2026-11-24.sql is not installed).'
+      : 'Insights are limited to what this device holds: the shared store did not answer (' + insightsServer.error + ').';
+    var line = insEl('p', null, 'cs ins-source' + (insightsServer.status === 'ok' && !srv.truncated ? '' : ' warn'));
+    line.appendChild(document.createTextNode(note + ' '));
+    var again = insEl('button', 'Refresh', 'btn'); again.type = 'button'; again.onclick = insRefresh; line.appendChild(again);
+    cov.appendChild(line);
+  }
   if (sample) cov.appendChild(insEl('p', 'Sample history · six weeks of illustrative guest activity at the fictional Mayda, generated for this demo and mixed with what this browser records. No real guests.', 'sample-notice'));
   body.appendChild(cov);
   if (r.orderNote) { var n = insEl('div', null, 'note warn mt'); n.append(insEl('span', 'ⓘ'), insEl('span', r.orderNote)); body.appendChild(n); }

@@ -170,6 +170,8 @@ main a{color:var(--brand-text)}
 .ins-period select{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font:inherit;font-size:14px;background:var(--surface);color:var(--ink)}
 .ins-cover .ops-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .ins-cover .cs{margin-top:6px;font-size:14px;line-height:1.6}
+.ins-cover .ins-source{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}.ins-cover .ins-source.warn{color:var(--amber)}
+.ins-source .btn{padding:5px 11px}
 .ins-list{margin-top:12px;display:grid;gap:12px}
 .ins-item{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
 .ins-item h3{font-size:16px;font-weight:600;margin-top:8px;line-height:1.35;overflow-wrap:anywhere}

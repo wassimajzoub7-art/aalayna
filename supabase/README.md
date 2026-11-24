@@ -488,6 +488,24 @@ it; it is safe to run again). Tested against PGlite (`tests/review-fixes-sql.tes
   timestamptz; `POST /rest/v1/rpc/aal_now` answers a JSON string. The guest page measures a
   payment's ten minutes against it, not against the phone's clock.
 
+## Insights for the owner (November 24)
+
+File: `insights-2026-11-24.sql`. Run it after `review-fixes-2026-11-10.sql`, and after
+`all-venues-2026-11-24.sql` where that is installed. It adds `aal_insights_events(p_rid, p_body)`,
+a read-only (STABLE, security definer) reader of one venue's events for the dashboard's Insights tab,
+and the index `kv_rows_events_created`. Nothing else changes, and it is safe to run again.
+
+- Who: `aal_role(p_rid) = 'owner'` (the venue's owner or manager, its owner key, a group owner or
+  manager or the group key at a venue of the group). Anyone else gets 42501.
+- `p_body`: `{"since": ISO, "until": ISO}`. `until` is at most now; the window is at most 90 days
+  (`"clamped": true` when it was cut).
+- Answer: `{version: 1, since, until, clamped, limit, truncated, from, count, firstEventAt,
+  deviceFirstSeen, events}`. Events are the types Insights reads, narrowed to the fields it reads (no
+  customerId, user agent, payer or provider reference), oldest first, at most 40,000 (the newest are
+  kept; `truncated` and `from` say when the cap cut the period).
+- The dashboard keeps the answer in memory only. Without this file it falls back to the events the
+  device holds, which a full browser store cuts to its last 200, and says so on the tab.
+
 ## POS bridge (September 30)
 
 A point-of-sale system pushes each table's bill into Aalayna and hears back when it is paid and

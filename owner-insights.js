@@ -8,6 +8,9 @@
      tables   optional table labels of the floor (a table with no scan only shows if listed)
      at       the time the report is for (ms); days: the period, 30 by default
      rateAgeDays optional, the age of the LBP rate setting
+     firstEventAt, deviceFirstSeen  optional, from the server when the events cover only the period
+                    (supabase/insights-2026-11-24.sql): the venue's first event of any date, and
+                    each phone's first time at the venue, as ISO times
    It returns {insights, waiting, tables, ...}: the findings ranked by score, the rules still
    short of data (with what each needs and has), and the figures for the supporting tables.
 
@@ -138,6 +141,8 @@
 
     /* how long this venue has been recording, in Beirut calendar days */
     var first = all.reduce(function (m, e) { var t = ts(e); return m == null || t < m ? t : m; }, null);
+    var known = input.firstEventAt ? Date.parse(input.firstEventAt) : NaN;
+    if (Number.isFinite(known) && known <= at && (first == null || known < first)) first = known;
     var daysCollected = first == null ? 0 : beirut(at).day - beirut(first).day + 1;
     early = daysCollected < MIN.matureDays;
     var activeFrom = first == null ? at : Math.max(first, start), periodDays = first == null ? 0 : beirut(at).day - beirut(activeFrom).day + 1;
@@ -445,7 +450,8 @@
         numbers: { lbp: lbp, sessions: sessionList.length } });
     }
     /* returning phones: a session whose phone was seen before that session started (any date) */
-    var firstSeen = {};
+    var firstSeen = {}, given = input.deviceFirstSeen || {};
+    Object.keys(given).forEach(function (d) { var t = Date.parse(given[d]); if (Number.isFinite(t)) firstSeen[d] = t; });
     all.forEach(function (e) { if (!e.deviceId || !GUEST[e.eventType]) return; var t = ts(e); if (firstSeen[e.deviceId] == null || t < firstSeen[e.deviceId]) firstSeen[e.deviceId] = t; });
     var repeat = sessionList.filter(function (s) { return s.device && firstSeen[s.device] < s.start; }).length;
     if (sessionList.length < MIN.repeatSessions || daysCollected < MIN.repeatDays) wait('repeat', 'money', 'Returning phones', MIN.repeatSessions + ' sessions over ' + MIN.repeatDays + ' days', plural(sessionList.length, 'session') + ' over ' + plural(daysCollected, 'day'));
@@ -470,11 +476,14 @@
     };
   };
 
-  /* The shown venue's insights, from the store. extraEvents: the demo's sample history (insights-panel.js). */
+  /* The shown venue's insights. Events: the server's answer for the period when given (opts.server,
+     aal_insights_events, shared mode), else the events this device holds; extraEvents: the demo's
+     sample history (insights-panel.js). */
   A.venueInsights = function (opts) {
     opts = opts || {};
-    var m = A.published(), at = opts.at == null ? Date.now() : opts.at, rate = A.rateInfo ? A.rateInfo(at) : null;
-    return A.computeInsights({ events: (opts.extraEvents || []).concat(A.events()), items: m.items, sections: m.sections, tables: opts.tables,
-      at: at, days: opts.days || 30, rateAgeDays: rate && rate.updatedAt ? rate.ageDays : null });
+    var m = A.published(), at = opts.at == null ? Date.now() : opts.at, rate = A.rateInfo ? A.rateInfo(at) : null, srv = opts.server;
+    return A.computeInsights({ events: (opts.extraEvents || []).concat(srv ? srv.events || [] : A.events()), items: m.items, sections: m.sections, tables: opts.tables,
+      at: at, days: opts.days || 30, rateAgeDays: rate && rate.updatedAt ? rate.ageDays : null,
+      firstEventAt: srv ? srv.firstEventAt : null, deviceFirstSeen: srv ? srv.deviceFirstSeen : null });
   };
 })(window);
