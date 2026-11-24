@@ -57,7 +57,11 @@
 
    Environment: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (Supabase supplies both),
    FAKE_WEBHOOK_SECRET (the fake provider exists only while it is set; the same value as
-   payment-webhook's), PAYMENT_RETURN_ORIGINS (comma-separated; default DEFAULT_ORIGINS),
+   payment-webhook's), PAYMENT_RETURN_ORIGINS (comma-separated; default DEFAULT_ORIGINS, the
+   production site only), PAYMENT_ALLOW_LOCAL_ORIGINS (1/true to also accept plain-http
+   origins: localhost, 127.0.0.1 and LAN addresses, with LOCAL_ORIGINS added to the default
+   list; for a rehearsal on a computer, never set on live; without it every http:// origin,
+   including one named in PAYMENT_RETURN_ORIGINS, is refused for CORS and the return URL),
    FAKE_CHECKOUT_URL (optional, where pay-demo.html lives), PAYMENT_WEBHOOK_URL (optional:
    payment-webhook's base URL, without /fake, for the fake provider's callback; default this
    function's sibling, <selfBase with payment-start replaced by payment-webhook>; set it only
@@ -97,23 +101,41 @@
      500 the database refused, or the session row could not be written
 
    Plain ES module with injected dependencies, so node --test runs it without Deno:
-     createHandler({fetch, now, env, crypto, log, adapters, limiter}) -> (Request) -> Response */
+     createHandler({fetch, now, env, crypto, log, adapters, limiter, addressLimiter}) -> (Request) -> Response
+   Rate limits (in this instance's memory, _shared/http.js): the bill routes RATE_LIMIT per bill
+   key and ADDRESS_LIMIT per caller address (clientAddress: never a header the caller can
+   forge), so a caller cycling made-up bill keys is still held; the fake checkout's routes
+   RATE_LIMIT per address. */
 
 import { hmacHex, sha256Hex, timingSafeEqual } from '../_shared/verify.js';
 import { createClient, envGetter, eq, SupabaseError } from '../_shared/supabase.js';
-import { readCapped, createLimiter, reply, b64u, unb64u } from '../_shared/http.js';
+import { readCapped, createLimiter, clientAddress, reply, b64u, unb64u } from '../_shared/http.js';
 
 export const MAX_BODY = 8 * 1024;
 export const RATE_LIMIT = { max: 60, windowMs: 60 * 1000 };
-export const DEFAULT_ORIGINS = ['https://aalayna.com', 'https://www.aalayna.com', 'http://127.0.0.1:8787', 'http://localhost:8787'];
+/* per address: a whole table on one venue Wi-Fi shares an address, so this is well above one
+   phone's use (RATE_LIMIT per bill key) */
+export const ADDRESS_LIMIT = { max: 300, windowMs: 60 * 1000 };
+/* production only; until 2026-11 the default also held the local dev ports, so live accepted
+   return URLs and CORS from localhost */
+export const DEFAULT_ORIGINS = ['https://aalayna.com', 'https://www.aalayna.com'];
+/* added to the default list only with PAYMENT_ALLOW_LOCAL_ORIGINS (python3 -m http.server 8787) */
+export const LOCAL_ORIGINS = ['http://127.0.0.1:8787', 'http://localhost:8787'];
 const RAILS = ['card', 'whish'];
 const KEY_RE = /^chk_[0-9a-f]{12,64}$/;
 
 /* ------------------------------------------------------------------ helpers */
 
+export const localOriginsAllowed = (env) => /^(1|true|yes|on)$/i.test(String(env('PAYMENT_ALLOW_LOCAL_ORIGINS') || '').trim());
+
+/* the origins a return URL and CORS may name: PAYMENT_RETURN_ORIGINS or DEFAULT_ORIGINS, and
+   only https ones unless PAYMENT_ALLOW_LOCAL_ORIGINS opts in to plain http (a computer or a
+   phone on its Wi-Fi). A guest page on the internet is always https. */
 export function allowedOrigins(env) {
   const raw = String(env('PAYMENT_RETURN_ORIGINS') || '').split(',').map((s) => s.trim().replace(/\/+$/, '')).filter(Boolean);
-  return raw.length ? raw : DEFAULT_ORIGINS;
+  const local = localOriginsAllowed(env);
+  const list = raw.length ? raw : local ? DEFAULT_ORIGINS.concat(LOCAL_ORIGINS) : DEFAULT_ORIGINS.slice();
+  return local ? list : list.filter((o) => /^https:\/\//i.test(o));
 }
 
 function corsHeaders(request, env) {
@@ -314,6 +336,7 @@ export function createHandler(deps = {}) {
   const log = deps.log || console;
   const adapters = deps.adapters || ADAPTERS;
   const limiter = deps.limiter || createLimiter(RATE_LIMIT);
+  const addressLimiter = deps.addressLimiter || createLimiter(ADDRESS_LIMIT);
   const fetchImpl = deps.fetch || ((...a) => globalThis.fetch(...a));
   const db = () => createClient({ url: env('SUPABASE_URL'), serviceKey: env('SUPABASE_SERVICE_ROLE_KEY'), fetch: deps.fetch });
 
@@ -344,14 +367,14 @@ export function createHandler(deps = {}) {
       if (!p) return reply(404, { error: 'No such route' }, cors);
       const method = request.method === 'GET' ? 'get' : request.method === 'POST' ? 'post' : null;
       if (!method || !p[method]) return reply(405, { error: 'Use GET or POST' }, Object.assign({ Allow: 'GET, POST' }, cors));
-      if (!limiter.take('page|' + (request.headers.get('x-forwarded-for') || '').split(',')[0].trim(), now())) return reply(429, { error: 'Too many requests' }, Object.assign({ 'Retry-After': '60' }, cors));
+      if (!limiter.take('page|' + clientAddress(request), now())) return reply(429, { error: 'Too many requests' }, Object.assign({ 'Retry-After': '60' }, cors));
       return p[method](request, { env, crypto: cryptoImpl, now, fetch: fetchImpl, selfBase, log, headers: Object.assign({ 'Cache-Control': 'no-store' }, cors) });
     }
 
     if (request.method !== 'GET' && request.method !== 'POST') return reply(405, { error: 'Use GET or POST' }, Object.assign({ Allow: 'GET, POST, OPTIONS' }, cors));
     const key = String(request.headers.get('x-aalayna-key') || '').trim();
     if (!KEY_RE.test(key)) return reply(400, { error: 'Open a current bill link' }, cors);
-    if (!limiter.take('key|' + key, now())) return reply(429, { error: 'Too many requests' }, Object.assign({ 'Retry-After': '60' }, cors));
+    if (!addressLimiter.take('addr|' + clientAddress(request), now()) || !limiter.take('key|' + key, now())) return reply(429, { error: 'Too many requests' }, Object.assign({ 'Retry-After': '60' }, cors));
 
     const client = db();
     try {

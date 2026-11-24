@@ -401,7 +401,13 @@ test('CORS, method, size and rate limits', async () => {
   r = await read(await t.req('GET', { origin: 'https://evil.example' }));
   assert.equal(r.status, 200);   // the function answers; the browser withholds the answer
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), null);
+  // live (no opt-in): localhost is just another origin, refused
   r = await read(await t.req('GET', { origin: 'http://127.0.0.1:8787' }));
+  assert.equal(r.headers.get('Access-Control-Allow-Origin'), null);
+  r = await t.handle(new Request(FN, { method: 'OPTIONS', headers: { Origin: 'http://localhost:8787' } }));
+  assert.equal(r.headers.get('Access-Control-Allow-Origin'), null);
+  const local = await setup({ env: { PAYMENT_ALLOW_LOCAL_ORIGINS: '1' } });
+  r = await read(await local.req('GET', { origin: 'http://127.0.0.1:8787' }));
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'http://127.0.0.1:8787');
   r = await read(await t.req('DELETE'));
   assert.equal(r.status, 405);
@@ -441,6 +447,7 @@ test('helpers: routes, self base, return URL cleaning, base64url round trip', as
   assert.deepEqual(mod.cleanReturnUrl('https://aalayna.com/guest.html', 'p9', env), { url: 'https://aalayna.com/guest.html?pay=p9' });
   assert.match(mod.cleanReturnUrl('https://aalayna.com.evil.example/g', 'p9', env).error, /allowed origin/);
   assert.deepEqual(mod.allowedOrigins(env), mod.DEFAULT_ORIGINS);
+  assert.deepEqual(mod.DEFAULT_ORIGINS, ['https://aalayna.com', 'https://www.aalayna.com']);
   assert.deepEqual(mod.allowedOrigins((k) => ({ PAYMENT_RETURN_ORIGINS: ' https://a.example/, https://b.example ' })[k]), ['https://a.example', 'https://b.example']);
   for (const s of ['plain', '["مايدا","Hamra"]', 'a+b/c=', '']) assert.equal(http.unb64u(http.b64u(s)), s);
   assert.doesNotMatch(http.b64u('a+b/c='), /[+/=]/);
@@ -586,4 +593,27 @@ test('webhookResult: only payment-webhook\'s decisions about this payment count'
   assert.equal(webhookResult(200, named({ status: 'confirmed' }), 'p2'), null);
   assert.equal(webhookResult(200, null, 'p1'), null);
   assert.equal(webhookResult(200, 'confirmed', 'p1'), null);
+});
+
+/* 2026-11-24 mutation pass: rules no test held before. */
+test('POST: a payment of another bill at the same venue is 404, and opens nothing', async () => {
+  const t = await setup();
+  t.db.put(RID, settleRow({ id: 'pay-other', requestId: 'pay-other', checkId: 'bill-8' }));
+  const r = await read(await t.start({ body: { paymentId: 'pay-other', returnUrl: RETURN } }));
+  assert.equal(r.status, 404);
+  assert.equal(r.body.error, 'Payment unavailable');
+  assert.equal(t.db.sessions.length, 0);
+});
+
+test('a venue with no demo_payments value, or no profile row, is a live venue: no fake provider', async () => {
+  for (const profile of [{}, { demo_payments: null }, { demo_payments: 'true' }, undefined]) {
+    const t = await setup();
+    if (profile === undefined) t.db.profiles.delete(RID); else t.db.profiles.set(RID, profile);
+    let r = await read(await t.req('GET'));
+    assert.deepEqual(r.body, { rails: {} }, JSON.stringify(profile));
+    r = await read(await t.start());
+    assert.equal(r.status, 409, JSON.stringify(profile));
+    assert.equal(r.body.status, 'no_provider');
+    assert.equal(t.db.sessions.length, 0);
+  }
 });

@@ -4,7 +4,9 @@ Static restaurant product demo and marketing website. No package installation or
 
 The public homepage and booking page contain no interactive demos or app previews; calls to action lead to a pilot conversation or direct contact. They do not link into the full guest app, menu editor or dashboard. Those existing demo pages are still accessible by their direct URLs; removing navigation links is not access control.
 
-`fr/index.html` is the French homepage: the same ids, classes, images and tracked placements as `index.html`, linked both ways (FR in the English header, EN in the French footer) and declared with hreflang; the calculator and booking page are English only for now.
+`fr/index.html` is the French homepage: the same ids, classes, images and tracked placements as `index.html`, linked both ways (FR in the English header, EN in the French footer) and declared with hreflang; the booking page (the pilot and the owners' questions) is English only for now, and the French and Arabic homepages say so on the link.
+
+`numbers.html`, the calculator, is retired from the public site: no homepage, booking page or 404 links to it, it stays `noindex`, and it is kept as a tool for meetings with an owner, reached from `system.html`. The homepage figures are published research with their sources noted in the page, not calculator output (tests/website.test.cjs holds both rules).
 
 `ar/index.html` is the Arabic homepage, right to left (`dir="rtl"`), built from `index.html` with the same ids, classes, images and tracked placements. It is set in IBM Plex Sans Arabic, the guest app's Arabic, never tracked or capitalised, and its hero ends on the name itself, in Noto Kufi Arabic like the Kufi mark: الفاتورة. التقسيم. علينا. Prices keep Western digits and dollars as in the other languages. The English header links to it (عربي, next to FR), the French footer too, and its own footer links back to EN and FR; all three pages declare `hreflang` en, fr and ar. Its hero plays the Arabic cut of the film (`images/film-ar.mp4`), which closes on the Kufi mark. The Arabic copy should be read by a native speaker before launch.
 

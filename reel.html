@@ -369,7 +369,7 @@ const COPY = {
     thesis: 'Vos clients consultent, partagent et règlent l’addition depuis la table.',
     ch: [
       ['01 · Scanner', 'Un scan du *QR* sur la table.', 'Aucune appli à télécharger. Aucun compte.'],
-      ['02 · Menu', 'Dans leur langue. *Selon leur régime.*', 'English, Français ou العربية. En dollars ou en livres. Végétarien, sans noix, sans lactose.'],
+      ['02 · Menu', 'Dans leur langue. *Selon leur régime.*', 'English, Français ou العربية. En dollars ou en livres. Végétarien, sans fruits à coque, sans produits laitiers.'],
       ['03 · Partager', 'Chacun paie *sa part.*', 'À parts égales, par plat ou au montant choisi. Personne ne calcule.'],
       ['04 · Pourboire', 'Un geste pour le *serveur.*', `En une touche. 10${N}% déjà sélectionnés.`],
       ['05 · Payer', '*Whish,* carte ou espèces.', 'L’équipe confirme les espèces à l’encaissement.'],
@@ -393,7 +393,7 @@ const COPY = {
     thesis: 'يطّلع ضيوفك على الفاتورة ويقسّمونها ويدفعونها من الطاولة.',
     ch: [
       ['01 · المسح', 'امسح رمز *QR* على الطاولة.', 'لا تطبيق للتنزيل. ولا حساب.'],
-      ['02 · القائمة', 'بلغتهم. *وبحسب نظامهم الغذائي.*', 'English أو Français أو العربية. بالدولار أو بالليرة. نباتي، بلا مكسّرات، بلا ألبان.'],
+      ['02 · القائمة', 'بلغتهم. *وبحسب نظامهم الغذائي.*', 'English أو Français أو العربية. بالدولار أو بالليرة. نباتي، بلا مكسّرات، بلا مشتقات الحليب.'],
       ['03 · التقسيم', 'يقسّمونها *على طريقتهم.*', 'بالتساوي، أو بحسب الأطباق، أو بأي مبلغ. لا أحد يحسب.'],
       ['04 · الإكرامية', 'شيء *للنادل.*', 'نقرة واحدة. و10% محدّدة مسبقاً.'],
       ['05 · الدفع', '*Whish* أو البطاقة أو النقد.', 'يؤكّد الموظفون النقد عند استلامه.'],
@@ -1413,7 +1413,7 @@ function scrMenu(t) {
   // Then the language: العربية, and back to English before the bill.
   const kar = E.inOutCubic(p(t, 17.67, 18.0)) - E.inOutCubic(p(t, 18.87, 19.15));
   rollPV($('pLang').querySelector('.pv'), kar);
-  const fs = $('fSum'); fs.textContent = kar > .5 ? '8 من 13 أطباق تناسبك' : '8 of 13 dishes work for you'; fs.dir = kar > .5 ? 'rtl' : 'ltr';
+  const fs = $('fSum'); fs.textContent = kar > .5 ? '8 من أصل 13 تناسبك' : '8 of 13 dishes work for you'; fs.dir = kar > .5 ? 'rtl' : 'ltr';
   fs.style.opacity = E.outCubic(p(t, 16.7, 17.0)) * (1 - 2 * Math.min(kar, 1 - kar));
   MENU.forEach((m, i) => {
     const row = $('mr' + i), en = row.querySelector('.v.en'), ar = row.querySelector('.v.ar');

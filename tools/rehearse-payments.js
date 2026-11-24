@@ -19,14 +19,21 @@
    bill. The console says what happened at each step.
 
    The phone on the same Wi-Fi works too: the link is printed with this computer's LAN
-   address, and those origins are allowed for the return. Nothing here is a test of the
-   SQL (tests/*.test.cjs with PGLITE_MODULE) or of the live project (supabase/README.md,
-   "Hosted payment pages"): the rules of aal_mutate are approximated, not run. Where the guest
-   page depends on them, the stand-in behaves as live does: the snapshot strips externalRef
-   (and the other fields aal_snapshot strips) from payments, a confirmed payment carries the
-   server-derived demo flag (kv_rows_settle_demo, supabase/review-fixes-2026-11-10.sql), amount
-   and tip must be numbers as the SQL's ::numeric casts require, and POST /rest/v1/rpc/aal_now
-   answers the server's time as a JSON string.
+   address, and those origins are allowed for the return (PAYMENT_ALLOW_LOCAL_ORIGINS, which
+   live never sets). Nothing here is a test of the live project (supabase/README.md, "Hosted
+   payment pages"). The stand-in is a copy of aal_mutate's guest and provider rules
+   (supabase/auth-2026-09-24.sql), not the SQL itself, kept to the same checks in the same
+   order with the same messages: amounts are read as ::numeric reads text and rounded as
+   round() rounds (half away from zero, in exact decimals, never floats); the bill key's bill
+   only; the payer token; a resend must be the same request; the balance; each dish claimed
+   whole, on the bill and not past its quantity, the claims adding up to the amount less the
+   tip; enough cash; confirm_digital's reference, currency and cents; the receipt's channel,
+   contact and permissions. tests/rehearse-payments.test.cjs (with PGLITE_MODULE) runs the same
+   requests through both and fails on any difference. Where the guest page depends on more,
+   the stand-in behaves as live does: the snapshot strips externalRef (and the other fields
+   aal_snapshot strips) from payments, a confirmed payment carries the server-derived demo
+   flag (kv_rows_settle_demo, supabase/review-fixes-2026-11-10.sql), and POST
+   /rest/v1/rpc/aal_now answers the server's time as a JSON string.
 
    require('./tools/rehearse-payments.js') runs nothing: it exports the stand-in for
    tests/rehearse-payments.test.cjs. */
@@ -66,50 +73,198 @@ function written(p) {
   if (p.status === 'confirmed') p.demo = /^fake-/.test(p.externalRef || ''); else delete p.demo;
   return p;
 }
-/* amount and tip as the SQL's ::numeric casts take them: a number or a numeric string */
-const numeric = (v) => (typeof v === 'number' ? v : typeof v === 'string' && /^\s*[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?\s*$/.test(v) ? Number(v) : NaN);
-const usedCents = () => [...db.settle.values()].filter(live).reduce((n, s) => n + Math.round(s.amount * 100) - Math.round((s.tip || 0) * 100), 0);
+/* ---------------------------------------------------------------- PostgreSQL's numbers, as aal_mutate uses them */
+/* aal_mutate reads every amount as text cast ::numeric and rounds with round() (half away
+   from zero) into bigint cents; it never uses a float. The stand-in does the same with
+   BigInt decimals {n, s} (the value n / 10^s), so a tip of 'x', 1.005, -0.004 or 1e999 is
+   taken or refused exactly as live takes or refuses it, with live's message. */
+const refusal = (m) => { const e = new Error(m); e.refused = true; return e; };
+/* p_body->>'k': SQL NULL for a missing key or JSON null, else the value's text */
+const txt = (v) => (v === undefined || v === null ? null : typeof v === 'string' ? v : JSON.stringify(v));
+const NUM_RE = /^\s*([+-]?)(\d+(?:\.\d*)?|\.\d+)(?:[eE]([+-]?\d+))?\s*$/;
+const SPECIAL_RE = /^\s*([+-]?)(nan|inf|infinity)\s*$/i;
+/* (text)::numeric: null for SQL NULL; {special} for NaN and the infinities, which ::numeric
+   takes and every later bigint cast refuses; a refusal for anything else that is not a number */
+function numeric(v) {
+  const t = txt(v);
+  if (t === null) return null;
+  const sp = SPECIAL_RE.exec(t);
+  if (sp) return { special: /nan/i.test(sp[2]) ? 'NaN' : 'infinity', negative: sp[1] === '-' && !/nan/i.test(sp[2]) };
+  const m = NUM_RE.exec(t);
+  if (!m) throw refusal('invalid input syntax for type numeric: "' + t + '"');
+  const [ip, fp = ''] = m[2].split('.');
+  const e = m[3] ? Number(m[3]) : 0;
+  let n = BigInt((ip + fp) || '0'), s = fp.length - e;
+  if (n !== 0n && s < -400) throw refusal('bigint out of range');   // far past any bigint; every use casts to bigint
+  if (s < 0) { n *= 10n ** BigInt(-s); s = 0; }
+  return { n: m[1] === '-' ? -n : n, s: Math.min(s, 1000) };
+}
+const pow10 = (k) => 10n ** BigInt(k);
+function halfAway(N, D) {   // N / D rounded half away from zero
+  const neg = (N < 0n) !== (D < 0n), a = N < 0n ? -N : N, b = D < 0n ? -D : D;
+  let q = a / b; if (2n * (a % b) >= b) q += 1n;
+  return neg ? -q : q;
+}
+const mul = (a, b) => ({ n: a.n * b.n, s: a.s + b.s });
+const add = (a, b) => { const s = Math.max(a.s, b.s); return { n: a.n * pow10(s - a.s) + b.n * pow10(s - b.s), s }; };
+const ZERO = { n: 0n, s: 0 };
+const HUNDRED = { n: 100n, s: 0 };
+/* the weight and first digit of |d| in base 10000, as numeric.c stores it */
+function weightFirst(d) {
+  let a = d.n < 0n ? -d.n : d.n, s = d.s;
+  if (a === 0n) return { w: 0, f: 0 };
+  const pad = (4 - (s % 4)) % 4; a *= pow10(pad); s += pad;
+  const digs = []; for (let x = a; x > 0n; x /= 10000n) digs.unshift(Number(x % 10000n));
+  return { w: digs.length - 1 - s / 4, f: digs[0] };
+}
+/* a / b as numeric division rounds it (numeric.c select_div_scale: at least 16 significant
+   digits, never fewer decimals than either input) */
+function div(a, b) {
+  if (b.n === 0n) throw refusal('division by zero');
+  const wa = weightFirst(a), wb = weightFirst(b);
+  let qw = wa.w - wb.w; if (wa.f <= wb.f) qw--;
+  const rs = Math.min(Math.max(16 - qw * 4, a.s, b.s, 0), 1000);
+  return { n: halfAway(a.n * pow10(b.s + rs), b.n * pow10(a.s)), s: rs };
+}
+const BIG = 2n ** 63n;
+/* round(d)::bigint */
+function bigint(d) {
+  if (d.special) throw refusal('cannot convert ' + d.special + ' to bigint');
+  const r = halfAway(d.n, pow10(d.s));
+  if (r >= BIG || r < -BIG) throw refusal('bigint out of range');
+  return r;
+}
+const cmp = (a, b) => { const s = Math.max(a.s, b.s), x = a.n * pow10(s - a.s), y = b.n * pow10(s - b.s); return x < y ? -1 : x > y ? 1 : 0; };
+/* round(x::numeric*100) for x as aal_mutate reads it; null for SQL NULL */
+const cents = (v) => { const d = numeric(v); return d === null ? null : bigint(d.special ? d : mul(d, HUNDRED)); };
+/* a stored amount (written by this stand-in, so always a number) in cents */
+const storedCents = (v) => cents(v == null ? 0 : v);
+/* jsonb `is distinct from`: undefined is SQL NULL; numbers compare as numbers, objects by keys */
+function jsonbSame(a, b) {
+  if (a === undefined || b === undefined) return a === b;
+  if (a === null || b === null) return a === b;
+  if (typeof a === 'number' && typeof b === 'number') return cmp(numeric(a), numeric(b)) === 0;
+  if (typeof a !== typeof b || Array.isArray(a) !== Array.isArray(b)) return false;
+  if (Array.isArray(a)) return a.length === b.length && a.every((x, i) => jsonbSame(x, b[i]));
+  if (typeof a === 'object') { const ka = Object.keys(a), kb = Object.keys(b); return ka.length === kb.length && ka.every((k) => k in b && jsonbSame(a[k], b[k])); }
+  return a === b;
+}
+const sha = (t) => crypto.createHash('sha256').update(String(t), 'utf8').digest('hex');
+/* the rows reserve counts as holding the bill: live, of this bill */
+const holding = () => [...db.settle.values()].filter((s) => s.checkId === CHECK.id && live(s));
+const usedCents = () => holding().reduce((n, s) => n + storedCents(s.amount) - storedCents(s.tip), 0n);
+/* jsonb_each_text(coalesce(p_body->'items','{}')): an object's pairs in jsonb's key order
+   (shorter keys first, then byte order), or the error SQL raises */
+function eachItem(items) {
+  if (items === undefined) return [];
+  if (items === null || typeof items !== 'object') throw refusal('cannot call jsonb_each_text on a non-object');
+  if (Array.isArray(items)) throw refusal('cannot call jsonb_each_text on a non-object');
+  const bytes = (k) => Buffer.from(k, 'utf8');
+  return Object.entries(items).map(([k, v]) => [k, txt(v)]).sort((a, b) => bytes(a[0]).length - bytes(b[0]).length || Buffer.compare(bytes(a[0]), bytes(b[0])));
+}
+const EVENTS = ['qr_scan', 'item_view', 'bill_requested', 'ui_action', 'review_submitted'];
+const guests = new Map();   // aal.guests by contact
 
 /* ---------------------------------------------------------------- the guest's store (anon key + bill key) */
+/* aal_mutate (supabase/auth-2026-09-24.sql) for a guest holding the bill key and for the
+   service role, check for check and in the same order, with the same messages. tests/
+   rehearse-payments.test.cjs runs the same requests through this and through the SQL in PGlite
+   and compares the answers. */
 function mutate(op, body, token, service) {
-  const refuse = (m) => { const e = new Error(m); e.refused = true; return e; };
-  if (op === 'event') { const ev = Object.assign({}, body, { restaurantId: RID, createdAt: stamp() }); db.events.push(ev); return ev; }
+  const refuse = refusal;
+  body = body || {};
+  token = token == null ? '' : String(token);
+  if (op === 'event') {
+    if (!EVENTS.includes(txt(body.eventType))) throw refuse('This event requires a server operation');
+    if (txt(body.eventId) === null) throw refuse('null value in column "id" of relation "kv_rows" violates not-null constraint');
+    const ev = Object.assign({}, body, { restaurantId: RID, createdAt: stamp(), customerId: null, tableId: String(CHECK.table) });
+    db.events.push(ev); return ev;
+  }
+  const pid = txt(body.id);
   if (op === 'reserve') {
-    const prev = db.settle.get(body.id);
-    if (prev) return prev;
-    const amountIn = body.amount == null ? 0 : numeric(body.amount), tipIn = body.tip == null ? 0 : numeric(body.tip);
-    if (!Number.isFinite(amountIn) || !Number.isFinite(tipIn)) throw refuse('Invalid amount');
-    const amount = Math.round(amountIn * 100), tip = Math.round(tipIn * 100);
-    if (!(amount > 0) || tip < 0 || tip >= amount || !['cash', 'card', 'whish'].includes(body.rail)) throw refuse('Invalid amount');
-    if (!token || token.length < 32) throw refuse('Missing payer token');
-    if (usedCents() + amount - tip > CHECK.totalCents) throw refuse('Another payment already covers this balance. Refresh your bill.');
+    const cid = txt(body.checkId);
+    if (cid !== CHECK.id) throw refuse('Wrong bill');   // a guest reserves on the bill of its key only
+    if (token.length < 32) throw refuse('Missing payer token');
+    const previous = pid === null ? null : db.settle.get(pid);
+    if (previous) {
+      if (db.secrets.get(pid) !== sha(token)) throw refuse('Wrong payer token');
+      if (previous.checkId !== cid || !jsonbSame(previous.amount, body.amount) || !jsonbSame(previous.tip, body.tip) || !jsonbSame(previous.rail, body.rail) || !jsonbSame(previous.items, body.items)) throw refuse('Payment request changed');
+      return previous;
+    }
+    const amount = cents(body.amount), tip = cents(body.tip) ?? 0n, rail = txt(body.rail);
+    if ((amount ?? 0n) <= 0n || tip < 0n || tip >= amount || !['cash', 'card', 'whish'].includes(rail)) throw refuse('Invalid amount');
+    if (CHECK.closedAt) throw refuse('Bill closed or unavailable');
+    if (usedCents() + amount - tip > BigInt(CHECK.totalCents)) throw refuse('Another payment already covers this balance. Refresh your bill.');
+    // the dishes this payment claims: each on the bill, whole, not claimed past its quantity,
+    // and together exactly the amount less the tip. A claim of null is skipped, as the SQL's
+    // null arithmetic skips it (its sum turns null and no comparison fails).
+    let used = 0n;
+    const claims = eachItem(body.items);
+    for (const [k, v] of claims) {
+      const qty = numeric(v), line = CHECK.lines.find((l) => l.id === k);
+      if (qty === null) { if (!line) throw refuse('Invalid item selection'); used = null; continue; }
+      // NaN and +Infinity pass the SQL's `qty<=0 or qty<>trunc(qty)` and then exceed any quantity
+      if (!line || (qty.special ? qty.negative : qty.n <= 0n || qty.n % pow10(qty.s) !== 0n)) throw refuse('Invalid item selection');
+      if (qty.special) throw refuse('Item already reserved');
+      const others = holding().reduce((n, s) => { const q = numeric(s.items && s.items[k]); return q === null ? n : add(n, q); }, ZERO);
+      if (cmp(add(qty, others), numeric(line.q)) > 0) throw refuse('Item already reserved');
+      if (used !== null) used += bigint(mul(div(mul(numeric(line.p), HUNDRED), numeric(line.q)), qty));
+    }
+    if (claims.length && used !== null && used !== amount - tip) throw refuse('Items do not match the amount');
+    const note = numeric(body.note);
+    if (rail === 'cash' && note !== null && !note.special && cmp(note, ZERO) > 0 && cmp(mul(note, HUNDRED), { n: amount, s: 0 }) < 0) throw refuse('Not enough cash');
+    // a NaN or infinite note: not modelled (JSON cannot carry one back); refused here
+    if (note && note.special) throw refuse('Invalid amount');
+    const noteNum = note === null ? 0 : Number(note.n) / 10 ** note.s;
+    if (pid === null) throw refuse('null value in column "id" of relation "kv_rows" violates not-null constraint');
     const row = {
-      id: body.id, requestId: body.requestId, venueId: RID, checkId: CHECK.id, table: CHECK.table, rail: body.rail, amount: amount / 100, tip: tip / 100,
-      items: body.items || {}, deviceId: body.deviceId, sessionId: body.sessionId, server: body.server, currency: 'USD', amountUsd: amount / 100,
-      note: body.note || 0, change: body.change || 0, status: body.rail === 'cash' ? 'pending' : 'initiated', ts: stamp(),
-      expiresAt: body.rail === 'cash' ? null : new Date(Date.now() + 10 * 60000).toISOString(),
+      id: pid, requestId: txt(body.requestId), venueId: RID, checkId: cid, table: CHECK.table, rail, amount: Number(amount) / 100, tip: Number(tip) / 100,
+      items: body.items === undefined ? {} : body.items, deviceId: txt(body.deviceId), sessionId: txt(body.sessionId), server: txt(body.server), currency: 'USD', amountUsd: Number(amount) / 100,
+      fxRateUsed: CHECK.fxRateUsed == null ? null : CHECK.fxRateUsed, note: noteNum, change: rail === 'cash' ? Math.max(0, noteNum - Number(amount) / 100) : 0,
+      status: rail === 'cash' ? 'pending' : 'initiated', ts: stamp(),
+      expiresAt: rail === 'cash' ? null : new Date(Date.now() + 10 * 60000).toISOString(),
     };
-    db.settle.set(row.id, written(row)); db.secrets.set(row.id, crypto.createHash('sha256').update(token).digest('hex'));
+    db.settle.set(row.id, written(row)); db.secrets.set(row.id, sha(token));
     say('reserve   ', row.id, money(row.amount), 'by', row.rail, row.status, row.rail === 'cash' ? '' : '(ten minutes to confirm)');
     return row;
   }
-  const p = db.settle.get(body.id);
-  if (!p) throw refuse('Payment unavailable');
-  const tokenOk = token && db.secrets.get(body.id) === crypto.createHash('sha256').update(token).digest('hex');
+  const p = pid === null ? null : db.settle.get(pid);
+  if (!p || (!service && p.checkId !== CHECK.id)) throw refuse('Payment unavailable');
+  const tokenOk = db.secrets.get(pid) === sha(token);
+  if (op === 'receipt') {
+    if (!tokenOk) throw refuse('Wrong payer token');
+    if (p.status !== 'confirmed' || p.refunded) throw refuse('Payment must be confirmed');
+    if (typeof body.receipt !== 'boolean' || typeof body.marketing !== 'boolean') throw refuse('Separate permissions required');
+    const channel = txt(body.channel);
+    let contact = txt(body.contact); if (contact !== null) contact = contact.replace(/^ +| +$/g, '');
+    // a missing contact passes both patterns, as `null !~ pattern` is null in the SQL
+    if (channel === 'email') { if (contact !== null) { contact = contact.toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) throw refuse('Invalid email'); } }
+    else if (channel === 'whatsapp') { if (contact !== null && !/^\+[1-9][0-9]{7,14}$/.test(contact)) throw refuse('International number required'); }
+    else throw refuse('Invalid channel');
+    const g = (contact !== null && guests.get(contact)) || { id: crypto.randomUUID(), contact };   // a null contact never matches
+    if (p.customerId && p.customerId !== g.id) throw refuse('Payment already linked');
+    if (contact !== null) guests.set(contact, g);
+    p.customerId = g.id;
+    say('receipt   ', p.id, 'asked for (not sent here)'); return { saved: true };
+  }
+  if (op === 'confirm_digital') {
+    if (!service) throw refuse('Verified provider callback required');
+    const ref = txt(body.externalRef);
+    if (p.externalRef === ref && p.status === 'confirmed') return p;
+    if (p.status !== 'initiated' || Date.parse(p.expiresAt) <= Date.now()) throw refuse('Reservation expired or changed; reconcile received funds');
+    const ac = txt(body.amountCents);
+    if (!ref || txt(body.currency) !== p.currency) throw refuse('Callback amount, currency or reference mismatch');
+    if (ac !== null && !/^\s*[+-]?\d+\s*$/.test(ac)) throw refuse('invalid input syntax for type bigint: "' + ac + '"');
+    if (ac !== null && (BigInt(ac.trim()) >= BIG || BigInt(ac.trim()) < -BIG)) throw refuse('value "' + ac + '" is out of range for type bigint');
+    if (ac === null || BigInt(ac.trim()) !== storedCents(p.amount)) throw refuse('Callback amount, currency or reference mismatch');
+    if ([...db.settle.values()].some((x) => x.externalRef === ref)) throw refuse('Duplicate provider reference');
+    written(Object.assign(p, { status: 'confirmed', confirmedAt: stamp(), externalRef: ref })); say('confirmed ', p.id, money(p.amount), 'reference', ref); return p;
+  }
   if (op === 'cancel') {
     if (!tokenOk) throw refuse('Wrong payer token');
     if (['cancelled', 'expired', 'failed'].includes(p.status)) return p;
     if (!['pending', 'initiated'].includes(p.status)) throw refuse('Payment already completed');
     written(Object.assign(p, { status: 'cancelled', cancelled: stamp() })); say('cancel    ', p.id, 'by the guest'); return p;
-  }
-  if (op === 'receipt') { if (!tokenOk) throw refuse('Wrong payer token'); if (p.status !== 'confirmed') throw refuse('Payment must be confirmed'); say('receipt   ', p.id, 'asked for (not sent here)'); return { saved: true }; }
-  if (op === 'confirm_digital') {
-    if (!service) throw refuse('Verified provider callback required');
-    if (p.externalRef === body.externalRef && p.status === 'confirmed') return p;
-    if (p.status !== 'initiated' || Date.parse(p.expiresAt) <= Date.now()) throw refuse('Reservation expired or changed; reconcile received funds');
-    if (!body.externalRef || body.currency !== p.currency || body.amountCents !== Math.round(p.amount * 100)) throw refuse('Callback amount, currency or reference mismatch');
-    if ([...db.settle.values()].some((x) => x.externalRef === body.externalRef)) throw refuse('Duplicate provider reference');
-    written(Object.assign(p, { status: 'confirmed', confirmedAt: stamp(), externalRef: body.externalRef })); say('confirmed ', p.id, money(p.amount), 'reference', body.externalRef); return p;
   }
   throw refuse('Unknown operation');
 }
@@ -129,7 +284,7 @@ async function postgrest(url, init = {}) {
   if (u.pathname === '/rest/v1/rpc/aal_now') return json(200, new Date().toISOString());   // a JSON string, as PostgREST answers a timestamptz
   if (u.pathname === '/rest/v1/rpc/aal_snapshot') return guest ? json(200, snapshot()) : pgError('Open a current bill link.');
   if (u.pathname === '/rest/v1/rpc/aal_mutate') {
-    if (!guest && !service) return pgError('Open a current bill link.');
+    if (!guest && !service) return pgError('Access denied');   // aal_mutate with no bill scope, as live
     try { return json(200, mutate(body.p_op, body.p_body, body.p_token, service)); } catch (e) { if (e.refused) return pgError(e.message); throw e; }
   }
   if (u.pathname === '/rest/v1/site_events') return json(201, null);   // the website funnel: accepted, not kept
@@ -156,7 +311,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 async function functionHandlers(opts = {}) {
   const start = await import(path.join(ROOT, 'supabase', 'functions', 'payment-start', 'handler.js'));
   const hook = await import(path.join(ROOT, 'supabase', 'functions', 'payment-webhook', 'handler.js'));
-  const env = { SUPABASE_URL: SELF, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: FAKE_SECRET, PAYMENT_RETURN_ORIGINS: ORIGINS.join(',') };
+  const env = { SUPABASE_URL: SELF, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: FAKE_SECRET, PAYMENT_RETURN_ORIGINS: ORIGINS.join(','), PAYMENT_ALLOW_LOCAL_ORIGINS: '1' };   // plain http: this computer and its Wi-Fi (never on live)
   const quiet = opts.log || { warn: (...a) => say('function  ', ...a), info: () => {} };
   const webhook = hook.createHandler({ fetch: postgrest, env, log: quiet });
   const fetchFromFunction = (url, init) => String(url).startsWith(SELF + '/functions/v1/payment-webhook/') ? webhook(new Request(url, init)) : postgrest(url, init);
@@ -213,4 +368,4 @@ async function main() {
   });
 }
 if (require.main === module) main().catch((e) => { console.error(e); process.exit(1); });
-module.exports = { postgrest, mutate, snapshot, functionHandlers, db, CHECK, KEY, RID, SELF, ORIGINS };
+module.exports = { postgrest, mutate, snapshot, functionHandlers, db, CHECK, KEY, RID, SELF, ORIGINS, numeric, cents };

@@ -56,7 +56,8 @@ the files that touch staff roles ("Owner groups", below). It replaces `aal_role`
 `aal_staff_role` and `aal_staff` from `auth-2026-09-24.sql`: re-running `auth-2026-09-24.sql`
 means running `groups-2026-10-28.sql` again. `close-narrative-2026-10-28.sql` ("The close, in
 words") and `review-fixes-2026-11-10.sql` ("Review fixes", below) come after it, the review
-fixes last. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` from
+fixes last of those; `all-venues-2026-11-24.sql` ("All venues", below) only adds functions and
+can follow them. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` from
 `theme-2026-09-28.sql`; both earlier files now carry its fallback, so re-running them undoes
 nothing, and it is safe to run again after them.
 
@@ -65,7 +66,7 @@ The whole order, for a fresh project: `migration.sql`, `site-events.sql`,
 `auth-2026-09-24.sql`, `followups-2026-09-24.sql`, `theme-2026-09-28.sql`,
 `daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`, `integrations-2026-09-30.sql`,
 `payment-start-2026-10-14.sql`, `groups-2026-10-28.sql`, `close-narrative-2026-10-28.sql`,
-`review-fixes-2026-11-10.sql`.
+`review-fixes-2026-11-10.sql`, `all-venues-2026-11-24.sql`.
 
 ## Owner groups: one floor for several venues (October 28)
 
@@ -108,8 +109,8 @@ select restaurant_id, aal_role(restaurant_id) from venue_keys;   -- 'owner' for 
 rollback;
 ```
 
-What it does not do yet: the shared-mode dashboard is still one venue per link (the venue switcher and
-the All venues view run in the no-key demo, from the same per-venue figures); `aal_pos_is_owner`
+The shared-mode dashboard's venue switcher and All venues view need `all-venues-2026-11-24.sql`
+("All venues", below); without it a shared dashboard stays one venue per link. `aal_pos_is_owner`
 accepts the venue's own owner key and signed-in owners, not the group key, for POS keys and webhooks.
 `aal_role` is evaluated per row by the policies and now also looks up the group, a few more index
 lookups per row.
@@ -277,7 +278,8 @@ page says "declined") through `aal_payment_failed`, because `aal_mutate`'s cance
 accept the service role; `refunded` is recorded only (202), digital refunds are not modelled.
 Every call that passes the signature check is a row in `payment_callbacks`, whatever the
 outcome; the request body itself is never logged or stored. Bodies over 64 kB are refused,
-and callers are limited to 120 calls a minute per address (per function instance).
+and callers are limited to 120 calls a minute per address (per function instance; the address
+the platform sets, never one the caller writes: "Rate limits", under "Payment leftovers").
 Providers: `fake` (HMAC-SHA256 of the exact body with `FAKE_WEBHOOK_SECRET`, hex in
 `X-Signature`; it exists only while that secret is set, and only confirms payments at venues
 whose demo payments are on in admin.html) and `whish` (answers 501 until Whish shares its
@@ -332,7 +334,7 @@ CHECK=$(call aal_snapshot "$(jq -nc --arg r "$RID" '{p_rid:$r}')" | jq -r .check
 call aal_mutate "$(jq -nc --arg r "$RID" --arg id "$PAY" --arg c "$CHECK" --arg t "$TOKEN" \
   '{p_rid:$r,p_op:"reserve",p_body:{id:$id,checkId:$c,amount:12,tip:0,rail:"whish",items:{}},p_token:$t}')"
 
-# 2. the provider's signed callback: answer {"status":"confirmed"}; the dashboard shows it paid
+# 2. the provider's signed callback: answer {"status":"confirmed","paymentId":...}; the dashboard shows it paid
 EVENT=$(jq -nc --arg id "$PAY" '{externalRef:("fake-"+$id),paymentId:$id,amountCents:1200,currency:"USD",status:"paid",occurredAt:(now|todate)}')
 SIG=$(printf '%s' "$EVENT" | openssl dgst -sha256 -hmac "$FAKE_WEBHOOK_SECRET" | awk '{print $NF}')
 curl -s -X POST "$SB/functions/v1/payment-webhook/fake" -H "X-Signature: $SIG" \
@@ -343,7 +345,11 @@ call aal_mutate "$(jq -nc --arg r "$RID" --arg id "$PAY" --arg t "$TOKEN" --arg 
   '{p_rid:$r,p_op:"receipt",p_body:{id:$id,contact:"you@example.com",channel:"email",receipt:true,marketing:false,requestId:$q},p_token:$t}')"
 ```
 
-Sending step 2 again answers `confirmed` again; changing `amountCents` answers 409. To see
+Sending step 2 again answers `confirmed` again, and so does any callback with that
+`externalRef` once the payment is confirmed (`confirm_digital` returns a payment its own
+reference already confirmed before it compares anything), whatever its `amountCents`: to see
+the 409 for a wrong amount, send step 2 with another `amountCents` before the first one, on a
+fresh reservation. To see
 what happened: `select * from payment_callbacks order by received_at desc limit 5;` and
 `select status, attempts, last_error, provider_id from outbox_email order by created_at desc limit 5;`
 (`cron.job_run_details` and `net._http_response` show the pokes). A manual drain:
@@ -370,13 +376,17 @@ the payer token in `x-aalayna-payer` (the one the reserve was made with; its SHA
 `payment_secrets`) and `{paymentId, returnUrl}` checks that the payment is this bill's, a
 digital rail, `initiated` and not expired, asks the provider adapter for its page, writes a
 `payment_sessions` row and answers `{url, provider, expiresAt}`. `returnUrl` must be on an
-origin in `PAYMENT_RETURN_ORIGINS` (default aalayna.com and the local dev ports); `k`, `s`,
+https origin in `PAYMENT_RETURN_ORIGINS` (default `https://aalayna.com` and
+`https://www.aalayna.com` only; plain-http origins such as localhost only with
+`PAYMENT_ALLOW_LOCAL_ORIGINS`, which live never sets); `k`, `s`,
 `reset` and `pay` are stripped from it and `pay=<paymentId>` added, so no credential travels
 through the provider. Answers: 400 bad request, 401 wrong payer token, 404 bill or payment
 unavailable, 409 the payment is not `initiated` (the status is in the answer) or no provider
-is connected for the rail, 501 adapter not built yet (a `payment_providers` row naming
-`whish`), 502 provider unreachable.
-The function answers CORS for the allowed origins and limits each key to 60 calls a minute.
+is connected for the rail, 413 body over 8 kB, 429 rate limited, 501 adapter not built yet (a
+`payment_providers` row naming `whish`), 502 provider unreachable.
+The function answers CORS for the allowed origins and limits each bill key to 60 calls a
+minute and each caller address to 300 (a table on one Wi-Fi shares an address), so a caller
+cycling made-up keys is held too; the fake checkout's routes, 60 per address.
 
 **Which provider.** `payment_providers` has one row per (venue, rail): `provider` (an adapter
 name), `config` (non-secret settings, e.g. a merchant id) and `secret_name` (a Supabase Vault
@@ -435,8 +445,11 @@ always, `payment-start` where a `payment_providers` row names `whish`.
 3. Function secrets: `FAKE_WEBHOOK_SECRET` (the same value as for payment-webhook; unset it
    after rehearsals, and the fake provider disappears from both functions), optionally
    `PAYMENT_RETURN_ORIGINS` (comma-separated origins; the default is
-   `https://aalayna.com,https://www.aalayna.com,http://127.0.0.1:8787,http://localhost:8787`;
-   `pay-demo.html` calls the function from the same origins, so CORS follows the same list),
+   `https://aalayna.com,https://www.aalayna.com`; `pay-demo.html` calls the function from the
+   same origins, so CORS follows the same list; a plain-http origin in it is ignored unless
+   `PAYMENT_ALLOW_LOCAL_ORIGINS` is `1`, which adds `http://127.0.0.1:8787` and
+   `http://localhost:8787` to the default: for a project used only for local testing, never
+   on live),
    `FAKE_CHECKOUT_URL` only to serve the demo checkout from somewhere other than
    `pay-demo.html` beside the guest page, and `PAYMENT_WEBHOOK_URL` only when payment-webhook
    is not deployed beside this function: its base URL without `/fake` (e.g.
@@ -454,11 +467,47 @@ always, `payment-start` where a `payment_providers` row names `whish`.
 **On one computer, without Supabase.** `node tools/rehearse-payments.js` serves the pages
 (`pay-demo.html` included, with an `aalayna-config.js` that points at itself) and, in the same process, a stand-in for the parts of the shared store a guest touches plus
 the two real function handlers against an in-memory PostgREST. It prints a guest link for
-this computer and for a phone on the same Wi-Fi. The store's rules are approximated there,
-not run; the SQL is tested by `tests/payment-start-sql.test.cjs` with PGLITE_MODULE. Where the
-guest page depends on them it behaves as live (`tests/rehearse-payments.test.cjs`): the
-snapshot strips `externalRef`, a confirmed payment carries `demo`, amount and tip must be
-numbers, and `aal_now` answers the server's time.
+this computer and for a phone on the same Wi-Fi (it sets `PAYMENT_ALLOW_LOCAL_ORIGINS` for
+itself). The store there is a copy of `aal_mutate`'s guest and provider rules, not the SQL:
+the same checks in the same order with the same messages (amounts read as `::numeric` reads
+them and rounded half away from zero, item claims, cash, resends, payer tokens,
+`confirm_digital`, the receipt), and `tests/rehearse-payments.test.cjs` with PGLITE_MODULE
+runs the same requests through it and through the SQL and fails on any difference. Where the
+guest page depends on more it behaves as live: the snapshot strips `externalRef`, a confirmed
+payment carries `demo`, and `aal_now` answers the server's time.
+
+## All venues in shared mode (November 24)
+
+`all-venues-2026-11-24.sql`, run after `groups-2026-10-28.sql` (it stops without changing anything
+if that file is missing; after the review fixes where they are installed; safe to run again). It
+adds functions only: no table, row, policy or existing function changes. Tested against PGlite
+(`tests/all-venues.test.cjs`).
+
+- **`aal_all_venues()`** (anon and authenticated; `POST /rest/v1/rpc/aal_all_venues` with `{}`):
+  for a signed-in session or an owner key, every venue where `aal_role` gives the caller `owner`
+  today, so a venue's owner or manager, a group owner or manager at the group's venues, the group
+  key at the group's venues, a venue key at its venue. A waiter's venue is never listed; a revoked
+  row or a venue removed from its group drops out at once. Each venue comes with its checks, its
+  payments (without device, session, payer and provider references), its guests reduced to their
+  consent history (no contact, channel, device or identity), its rating events (the rating alone)
+  and its floor plan. STABLE and read only.
+- **The dashboard.** Once the first read names the page's role `owner`, the dashboard asks
+  `aal_all_venues`. With two or more venues it shows the switcher: All venues adds up each venue's
+  figures, computed in the browser by the same code as the venue's own dashboard (this venue from its
+  own live records, the others from this read, kept in memory only and re-read every 30 seconds
+  while All venues is shown). Picking another venue opens that venue's own dashboard; everything
+  that changes a venue happens there, as before.
+
+Check after running it, from the SQL editor (a group's key for one transaction):
+
+```sql
+begin;
+select set_config('request.headers', json_build_object('x-aalayna-key',
+  (select owner_key from owner_groups where name = 'Mayda Group'))::text, true);
+select v->>'restaurant_id', jsonb_array_length(v->'rows')
+  from jsonb_array_elements(aal_all_venues()->'venues') v;   -- the group's venues, nothing else
+rollback;
+```
 
 ## Review fixes (November 10)
 
@@ -487,6 +536,53 @@ it; it is safe to run again). Tested against PGlite (`tests/review-fixes-sql.tes
 - **The database's clock.** `aal_now()` (anon and authenticated) answers `now()` as a
   timestamptz; `POST /rest/v1/rpc/aal_now` answers a JSON string. The guest page measures a
   payment's ten minutes against it, not against the phone's clock.
+
+## Insights for the owner (November 24)
+
+File: `insights-2026-11-24.sql`. Run it after `review-fixes-2026-11-10.sql`, and after
+`all-venues-2026-11-24.sql` where that is installed. It adds `aal_insights_events(p_rid, p_body)`,
+a read-only (STABLE, security definer) reader of one venue's events for the dashboard's Insights tab,
+and the index `kv_rows_events_created`. Nothing else changes, and it is safe to run again.
+
+- Who: `aal_role(p_rid) = 'owner'` (the venue's owner or manager, its owner key, a group owner or
+  manager or the group key at a venue of the group). Anyone else gets 42501.
+- `p_body`: `{"since": ISO, "until": ISO}`. `until` is at most now; the window is at most 90 days
+  (`"clamped": true` when it was cut).
+- Answer: `{version: 1, since, until, clamped, limit, truncated, from, count, firstEventAt,
+  deviceFirstSeen, events}`. Events are the types Insights reads, narrowed to the fields it reads (no
+  customerId, user agent, payer or provider reference), oldest first, at most 40,000 (the newest are
+  kept; `truncated` and `from` say when the cap cut the period).
+- The dashboard keeps the answer in memory only. Without this file it falls back to the events the
+  device holds, which a full browser store cuts to its last 200, and says so on the tab.
+
+## Payment leftovers (November 24)
+
+No SQL. `payment-start` and `payment-webhook` change (and `functions/_shared/http.js`, which
+both import), so both are redeployed; the guest page's payment refusals read in the guest's
+language.
+
+- **Origins.** `payment-start` accepts return URLs and answers CORS for
+  `https://aalayna.com` and `https://www.aalayna.com` only, unless `PAYMENT_RETURN_ORIGINS`
+  says otherwise; any plain-http origin (localhost, 127.0.0.1, a LAN address), even one named
+  there, needs `PAYMENT_ALLOW_LOCAL_ORIGINS=1`. Until this change the default also held
+  `http://127.0.0.1:8787` and `http://localhost:8787`, so live accepted them.
+- **Rate limits.** Both functions keep their counts in the instance's memory
+  (`_shared/http.js`, `createLimiter`). A full table (10,000 keys) now drops the windows that
+  have ended, then the oldest window, one key at a time; it used to clear every key at once, so
+  a flood of new keys reset everyone's limit. The address a limit keys on is
+  `clientAddress(request)`: `CF-Connecting-IP`, which Cloudflare (in front of Supabase's API
+  gateway) sets and replaces, else the last `X-Forwarded-For` entry (the header is appended to,
+  so the caller writes the first one; the old code took the first), else one shared
+  `unknown` key. `X-Real-IP` and Deno's `remoteAddr` (the gateway's address) are not used.
+  Supabase documents no client-address header for Edge Functions, so check it once after the
+  deploy: send ~70 requests a minute to the fake checkout with a different made-up first
+  `X-Forwarded-For` entry each time,
+  `for i in $(seq 70); do curl -s -o /dev/null -w '%{http_code}\n' -H "X-Forwarded-For: 10.9.$i.1" "$SB/functions/v1/payment-start/fake/checkout?s=x"; done | sort | uniq -c`,
+  and read some 429s: the limit held although every request named another address. Only 404s
+  (on a second run too, as counts are per instance) would mean the platform passes the
+  caller's `X-Forwarded-For` through without adding its own entry and sets no
+  `CF-Connecting-IP`; then the address is the caller's to choose, and `clientAddress` needs
+  the header the platform does set.
 
 ## POS bridge (September 30)
 
