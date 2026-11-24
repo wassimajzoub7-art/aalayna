@@ -1,4 +1,5 @@
-/* Payment provider callbacks (T14): POST /functions/v1/payment-webhook/<provider>.
+/* Payment provider callbacks (T14): POST /functions/v1/payment-webhook/<provider>, or
+   POST /functions/v1/payment-webhook/<provider>/<route> for a provider whose secret is per venue.
 
    The guest's reserve creates an aal.settle row with status 'initiated' and an expiresAt ten
    minutes out. Only a call carrying the service role may run aal_mutate confirm_digital
@@ -14,13 +15,31 @@
        crypto   Web Crypto (default globalThis.crypto)
        log      {warn, info} (default console); never given a request body
 
-   A provider adapter is {name, enabled(env), verify(request, rawBody, env, crypto) ->
-   boolean or Promise<boolean>, parse(rawBody) -> event}. rawBody is the exact body as a
-   string (UTF-8, at most 64 kB); env is a getter, env('NAME') -> value. event is
+   A provider adapter is {name, secretScope?, enabled(env), verify(request, rawBody, env,
+   crypto, venue) -> boolean or Promise<boolean>, parse(rawBody) -> event}. rawBody is the
+   exact body as a string (UTF-8, at most 64 kB); env is a getter, env('NAME') -> value.
+   secretScope says whose secret signs the callbacks:
+     'project'  (the default; fake, whish) one secret for the whole project, read from env.
+                The address is /payment-webhook/<provider>; anything after it is ignored.
+                verify's venue argument is undefined: nothing is known about the venue yet.
+     'venue'    each venue has its own secret (a card gateway's per-merchant notification
+                secret, e.g. areeba). The address is /payment-webhook/<provider>/<route>,
+                <route> being the payment_providers row's webhook_route (an opaque token,
+                'whk_' and 32 hex digits by default; supabase/webhook-venues-2026-11-24.sql).
+                After the rate limit and the body read, the function reads the enabled row
+                with that provider and route through aal_payment_provider_by_route (service
+                role; the secret comes out of Vault) and calls verify(request, rawBody, env,
+                crypto, {config, secret, restaurantId, rail}); a row whose secret is empty is
+                refused (401) without calling verify. The payment is then looked up at that
+                row's venue only: a callback signed with venue A's secret can never decide
+                about a payment at venue B.
+   event is
      {externalRef, paymentId, restaurantId?, amountCents, currency, status, occurredAt}
      externalRef   the provider's transaction reference (stored on the payment)
      paymentId     the aal.settle id the guest's reserve created
-     restaurantId  optional; when absent the payment is looked up by id alone
+     restaurantId  optional; when absent the payment is looked up by id alone (project scope)
+                   or at the route's venue (venue scope). Under venue scope a restaurantId
+                   that is not the route's venue is refused (403, below).
      amountCents   integer, the whole amount charged including the tip
      currency      ISO 4217 upper case; the server compares it with the payment's ('USD')
      status        'paid' | 'failed' | 'refunded'
@@ -38,20 +57,27 @@
                                      already released
      202 {status:'recorded'}         a refund: recorded only, digital refunds are not modelled
      400 unreadable or incomplete callback (after a good signature)
-     401 bad or missing signature    403 fake provider at a venue with demo payments off
-     404 unknown or disabled provider, or no such payment
+     401 bad or missing signature, or a venue-scoped row with no secret in Vault
+     403 fake provider at a venue with demo payments off; or, venue scope, a callback naming
+         a restaurantId other than the route's venue (outcome 'wrong_venue': signed by one
+         venue's secret, about another venue; retrying cannot change it)
+     404 unknown or disabled provider; venue scope, a missing, malformed, unknown or disabled
+         route (the same body as an unknown provider: no hint which part was wrong); or no
+         such payment (venue scope: no such payment at the route's venue, which is also the
+         answer for another venue's payment id when the callback names no restaurant)
      409 the server refused: reservation expired or changed, amount/currency mismatch, a
          failure for a payment already confirmed, or a payment id found at two venues
      413 body over 64 kB   429 rate limited   501 adapter not built yet (whish)
-     500 the database refused for another reason, or the callbacks row could not be written;
-         the provider retries, and every retry is idempotent
+     500 the database refused for another reason, or the callbacks row could not be written,
+         or (venue scope) the route could not be looked up; the provider retries, and every
+         retry is idempotent
    Every 200, 202, 403, 404 and 409 written after a readable callback names the payment it
-   decided about ({..., paymentId}); the 404 for an unknown provider, 401, 400, 413, 429, 501
-   and 500 do not. That is how payment-start's fake checkout tells this function's decision
+   decided about ({..., paymentId}); the 404 for an unknown provider or route, 401, 400, 413,
+   429, 501 and 500 do not. That is how payment-start's fake checkout tells this function's decision
    from a gateway's answer or a wrong address (a 500 may come after the confirmation itself,
    when only the callbacks row failed, so it decides nothing either way).
    Every call that passes the signature check writes one payment_callbacks row, whatever the
-   outcome. A request body is never logged or stored; the row keeps the parsed fields. */
+   outcome (under venue scope its restaurant_id is the route's venue, wrong_venue included). A request body is never logged or stored; the row keeps the parsed fields. */
 
 import { hmacHex, timingSafeEqual } from '../_shared/verify.js';
 import { createClient, envGetter, eq, SupabaseError } from '../_shared/supabase.js';
@@ -137,6 +163,15 @@ export function checkEvent(e) {
   return null;
 }
 
+/* the segment after "<provider>" in the path, as written (routes are case sensitive); '' if none */
+export function routeFrom(pathname) {
+  const parts = String(pathname || '').split('/').filter(Boolean);
+  const i = parts.lastIndexOf('payment-webhook');
+  return i >= 0 ? parts[i + 2] || '' : '';
+}
+/* what webhook_route may look like (the SQL's check constraint); anything else is 404 unread */
+export const ROUTE_RE = /^[A-Za-z0-9_-]{16,100}$/;
+
 /* per provider and caller address; the address is what the platform sets (CF-Connecting-IP,
    else the last X-Forwarded-For entry), never the first X-Forwarded-For entry, which the
    caller writes (_shared/http.js, clientAddress) */
@@ -158,6 +193,9 @@ export function createHandler(deps = {}) {
     const provider = providerFrom(new URL(request.url).pathname);
     const adapter = Object.prototype.hasOwnProperty.call(adapters, provider) ? adapters[provider] : null;
     if (!adapter || !adapter.enabled(env)) return reply(404, { error: 'Unknown payment provider' });
+    const venueScoped = adapter.secretScope === 'venue';
+    const route = venueScoped ? routeFrom(new URL(request.url).pathname) : '';
+    if (venueScoped && !ROUTE_RE.test(route)) return reply(404, { error: 'Unknown payment provider' });
     if (!limiter.take(clientKey(request, provider), now())) return reply(429, { error: 'Too many callbacks' }, { 'Retry-After': '60' });
     if (adapter.notImplemented) return reply(501, { error: adapter.notImplemented });
 
@@ -165,14 +203,40 @@ export function createHandler(deps = {}) {
     if (body.tooLarge) return reply(413, { error: 'Callback body is over 64 kB' });
     if (body.invalid) return reply(400, { error: 'Callback body is not UTF-8' });
 
+    const client = db();
+    /* venue scope: the row the route names, and with it the venue and its secret */
+    let venue;
+    if (venueScoped) {
+      let found = null;
+      try { found = await client.rpc('aal_payment_provider_by_route', { p_provider: provider, p_route: route }); } catch (e) {
+        log.warn('payment-webhook: route lookup failed', JSON.stringify({ provider, error: String(e && e.message || e).slice(0, 200) }));
+        return reply(500, { error: 'Temporary failure; send the callback again' });
+      }
+      if (!found || typeof found !== 'object' || found.provider !== provider || typeof found.restaurant_id !== 'string' || !found.restaurant_id) {
+        return reply(404, { error: 'Unknown payment provider' });
+      }
+      venue = {
+        config: found.config && typeof found.config === 'object' ? found.config : {},
+        secret: typeof found.secret === 'string' ? found.secret : null,
+        restaurantId: found.restaurant_id, rail: found.rail,
+      };
+      if (!venue.secret) {
+        log.warn('payment-webhook: no venue secret in Vault', JSON.stringify({ provider, rail: venue.rail }));
+        return reply(401, { error: 'Invalid signature' });
+      }
+    }
+
     let verified = false;
-    try { verified = (await adapter.verify(request, body.text, env, cryptoImpl)) === true; } catch (_) { verified = false; }
+    try {
+      verified = (await (venueScoped
+        ? adapter.verify(request, body.text, env, cryptoImpl, Object.assign({}, venue))
+        : adapter.verify(request, body.text, env, cryptoImpl))) === true;
+    } catch (_) { verified = false; }
     if (!verified) {
       log.warn('payment-webhook: signature refused', JSON.stringify({ provider }));
       return reply(401, { error: 'Invalid signature' });
     }
 
-    const client = db();
     const row = { provider, external_ref: null, payment_id: null, restaurant_id: null, amount_cents: null, currency: null, status: null, occurred_at: null };
     /* Writes the callbacks row, then answers. A row that cannot be written turns the answer
        into 500 so the provider sends it again; every path below is safe to repeat. */
@@ -201,13 +265,20 @@ export function createHandler(deps = {}) {
       currency: cut(event && event.currency, 3), status: cut(event && event.status, 20),
       occurred_at: event && typeof event.occurredAt === 'string' && Number.isFinite(Date.parse(event.occurredAt)) ? new Date(event.occurredAt).toISOString() : null,
     });
+    if (venueScoped) row.restaurant_id = venue.restaurantId;   // the venue whose secret signed it
     const problem = checkEvent(event);
     if (problem) return finish(400, 'invalid', problem, { error: problem });
+    if (venueScoped && event.restaurantId != null && event.restaurantId !== venue.restaurantId) {
+      const m = 'This callback names another venue than the one its address and signature belong to';
+      return finish(403, 'wrong_venue', m, { error: m });
+    }
+    /* venue scope: only ever the route's venue */
+    const lookupRid = venueScoped ? venue.restaurantId : event.restaurantId;
 
     try {
       // the payment, and so its venue when the provider does not send one
       const rows = await client.rest('kv_rows?collection=eq.aal.settle&id=' + eq(event.paymentId) +
-        (event.restaurantId ? '&restaurant_id=' + eq(event.restaurantId) : '') + '&select=restaurant_id,body&limit=2');
+        (lookupRid ? '&restaurant_id=' + eq(lookupRid) : '') + '&select=restaurant_id,body&limit=2');
       if (!rows || !rows.length) return finish(404, 'unknown_payment', 'Payment unavailable', { error: 'Payment unavailable' });
       if (rows.length > 1) {
         const m = 'This payment id exists at more than one venue; the callback must name the restaurant';

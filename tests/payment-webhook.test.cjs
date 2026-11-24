@@ -16,7 +16,12 @@
    - the fake provider never confirms at a venue with demo payments off (403);
    - whish answers 501 naming what is unknown; bodies over 64 kB are 413; callers are rate
      limited; a callbacks row that cannot be written turns the answer into 500; no body is
-     ever logged. */
+     ever logged;
+   - a venue-scoped adapter (secretScope 'venue', a test-only one here) is reached at
+     <provider>/<route>, verified with the secret of the payment_providers row the route
+     names, and decides only about payments at that row's venue: another venue's secret is
+     401, a missing, unknown or disabled route is the unknown-provider 404, a callback naming
+     another venue is 403 and another venue's payment id 404; fake and whish are unchanged. */
 const test = require('node:test'), assert = require('node:assert/strict'), path = require('node:path'), crypto = require('node:crypto');
 const root = path.join(__dirname, '..');
 const load = (rel) => import(path.join(root, 'supabase', 'functions', rel));
@@ -32,7 +37,7 @@ const future = () => new Date(Date.now() + 5 * 60000).toISOString();
    RPCs, with confirm_digital's checks in the SQL's order. */
 function fakeDb(o = {}) {
   const s = {
-    calls: [], callbacks: [], failCallbacks: false,
+    calls: [], callbacks: [], failCallbacks: false, providers: [],
     settle: new Map(), profiles: new Map([[RID, { demo_payments: true }], [OTHER, { demo_payments: false }]]),
   };
   const put = (rid, body) => s.settle.set(rid + '|' + body.id, { restaurant_id: rid, body });
@@ -66,6 +71,12 @@ function fakeDb(o = {}) {
       if ([...s.settle.values()].some((r) => r.restaurant_id === p_rid && r.body.externalRef === p_body.externalRef)) return refuse('Duplicate provider reference');
       Object.assign(p, { status: 'confirmed', confirmedAt: new Date().toISOString(), externalRef: p_body.externalRef });
       return res(200, p);
+    }
+    if (u.pathname === '/rest/v1/rpc/aal_payment_provider_by_route') {
+      if (o.routeDown) return res(503, { message: 'down' });
+      // as the SQL: the enabled row with that provider and route, or null
+      const r = s.providers.find((p) => p.provider === body.p_provider && p.webhook_route === body.p_route && p.enabled);
+      return res(200, r ? { restaurant_id: r.restaurant_id, rail: r.rail, provider: r.provider, config: r.config, secret: r.secret } : null);
     }
     if (u.pathname === '/rest/v1/rpc/aal_payment_failed') {
       const p = s.row(body.p_rid, body.p_id);
@@ -381,6 +392,192 @@ test('every decision about a payment (200, 202, 403, 404, 409) names it; 400, 40
     assert.equal(r.status, status);
     assert.equal(r.body.paymentId, undefined, String(status));
   }
+});
+
+/* ------------------------------------------------------------------ venue-scoped secrets */
+
+/* A test-only card gateway whose callbacks are signed with each venue's own secret (as
+   areeba's per-merchant notification secret is). Not in ADAPTERS: shipped code has none yet. */
+const ROUTE_A = 'whk_' + 'a'.repeat(32), ROUTE_B = 'whk_' + 'b'.repeat(32);
+const ROUTE_OFF = 'whk_' + 'c'.repeat(32), ROUTE_NOSECRET = 'whk_' + 'd'.repeat(32);
+const SECRET_A = 'venue-a-secret-' + 'y'.repeat(16), SECRET_B = 'venue-b-secret-' + 'z'.repeat(16);
+
+function venueAdapter(seen) {
+  return {
+    name: 'cardtest',
+    secretScope: 'venue',
+    enabled: () => true,
+    async verify(request, rawBody, env, cryptoImpl, venue) {
+      seen.push(venue);
+      const v = await load('_shared/verify.js');
+      const given = String(request.headers.get('x-signature') || '').toLowerCase();
+      return /^[0-9a-f]{64}$/.test(given) && v.timingSafeEqual(given, await v.hmacHex(venue.secret, rawBody, cryptoImpl));
+    },
+    parse(rawBody) { return JSON.parse(rawBody); },
+  };
+}
+
+async function venueSetup(o = {}) {
+  const mod = await load('payment-webhook/handler.js');
+  const db = fakeDb(o);
+  db.put(RID, settleRow());
+  db.put(OTHER, settleRow({ id: 'pay-b' }));
+  db.providers.push(
+    { restaurant_id: RID, rail: 'card', provider: 'cardtest', config: { merchant: 'M-A' }, secret: SECRET_A, webhook_route: ROUTE_A, enabled: true },
+    { restaurant_id: OTHER, rail: 'card', provider: 'cardtest', config: { merchant: 'M-B' }, secret: SECRET_B, webhook_route: ROUTE_B, enabled: true },
+    { restaurant_id: RID, rail: 'whish', provider: 'cardtest', config: {}, secret: SECRET_A, webhook_route: ROUTE_OFF, enabled: false },
+    { restaurant_id: OTHER, rail: 'whish', provider: 'cardtest', config: {}, secret: null, webhook_route: ROUTE_NOSECRET, enabled: true },
+  );
+  const seen = [], logs = [];
+  const log = { warn: (...a) => logs.push(a.join(' ')), info: (...a) => logs.push(a.join(' ')) };
+  const env = { SUPABASE_URL: URL_BASE, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: SECRET };
+  const handle = mod.createHandler({ fetch: db.fetch, env, log, adapters: Object.assign({}, mod.ADAPTERS, { cardtest: venueAdapter(seen) }), limiter: o.limiter });
+  const call = (body, { route = ROUTE_A, secret = SECRET_A, signature, provider = 'cardtest' } = {}) => {
+    const raw = typeof body === 'string' ? body : JSON.stringify(body);
+    const h = { 'Content-Type': 'application/json', 'x-forwarded-for': '203.0.113.9', 'X-Signature': signature === undefined ? sign(raw, secret) : signature };
+    return handle(new Request(URL_BASE + '/functions/v1/payment-webhook/' + provider + (route == null ? '' : '/' + route), { method: 'POST', headers: h, body: raw }));
+  };
+  return { mod, db, seen, logs, call };
+}
+
+test('venue scope: a callback signed with the venue secret its route names confirms at that venue only', async () => {
+  const t = await venueSetup();
+  const r = await read(await t.call(event()));
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.body, { status: 'confirmed', paymentId: 'pay-1' });
+  const look = t.db.rpcs('aal_payment_provider_by_route');
+  assert.equal(look.length, 1);
+  assert.deepEqual(look[0].body, { p_provider: 'cardtest', p_route: ROUTE_A });
+  assert.equal(look[0].headers.Authorization, 'Bearer ' + SERVICE);
+  assert.deepEqual(t.seen, [{ config: { merchant: 'M-A' }, secret: SECRET_A, restaurantId: RID, rail: 'card' }]);
+  // the payment is looked up at the route's venue, though the callback named none
+  const kv = t.db.calls.find((c) => c.path === '/rest/v1/kv_rows');
+  assert.equal(new URLSearchParams(kv.search).get('restaurant_id'), 'eq.' + RID);
+  assert.deepEqual(t.db.rpcs('aal_mutate')[0].body.p_rid, RID);
+  assert.equal(t.db.row(RID, 'pay-1').status, 'confirmed');
+  assert.equal(t.db.callbacks.length, 1);
+  assert.deepEqual([t.db.callbacks[0].provider, t.db.callbacks[0].restaurant_id, t.db.callbacks[0].outcome], ['cardtest', RID, 'confirmed']);
+  // the same callback again is still 200 confirmed (idempotent), naming its restaurant is fine
+  const again = await read(await t.call(event({ restaurantId: RID })));
+  assert.equal(again.status, 200);
+  assert.equal(again.body.status, 'confirmed');
+  // venue B's route with venue B's secret reaches venue B's payment
+  const b = await read(await t.call(event({ paymentId: 'pay-b', externalRef: 'ref-b' }), { route: ROUTE_B, secret: SECRET_B }));
+  assert.equal(b.status, 200);
+  assert.equal(t.db.row(OTHER, 'pay-b').status, 'confirmed');
+  assert.equal(t.seen.at(-1).restaurantId, OTHER);
+});
+
+test('venue scope: another venue\'s secret, the project secret or no signature is 401 and decides nothing', async () => {
+  const t = await venueSetup();
+  const body = JSON.stringify(event());
+  for (const opts of [{ secret: SECRET_B }, { secret: SECRET }, { signature: '' }, { signature: '0'.repeat(64) }]) {
+    const r = await read(await t.call(body, opts));
+    assert.equal(r.status, 401);
+    assert.deepEqual(r.body, { error: 'Invalid signature' });
+  }
+  // a venue A callback sent to venue B's route is checked with B's secret, and refused
+  assert.equal((await t.call(body, { route: ROUTE_B, secret: SECRET_A })).status, 401);
+  assert.equal(t.db.callbacks.length, 0);
+  assert.equal(t.db.rpcs('aal_mutate').length, 0);
+  assert.equal(t.db.calls.filter((c) => c.path === '/rest/v1/kv_rows').length, 0);
+  assert.equal(t.db.row(RID, 'pay-1').status, 'initiated');
+});
+
+test('venue scope: a missing, malformed, unknown or disabled route is the unknown-provider 404, with no hint', async () => {
+  const t = await venueSetup();
+  const unknown = { error: 'Unknown payment provider' };
+  for (const route of [null, '', 'short', 'whk_' + 'a'.repeat(31) + '!', 'x'.repeat(101)]) {
+    const r = await read(await t.call(event(), { route }));
+    assert.equal(r.status, 404, String(route));
+    assert.deepEqual(r.body, unknown);
+  }
+  assert.equal(t.db.calls.length, 0, 'a malformed route reads nothing');
+  for (const route of ['whk_' + 'e'.repeat(32), ROUTE_OFF, ROUTE_A.toUpperCase()]) {
+    const r = await read(await t.call(event(), { route }));
+    assert.equal(r.status, 404, route);
+    assert.deepEqual(r.body, unknown);
+  }
+  // another provider's route is not this provider's
+  t.db.providers.push({ restaurant_id: RID, rail: 'card', provider: 'other', config: {}, secret: SECRET_A, webhook_route: 'whk_' + 'f'.repeat(32), enabled: true });
+  assert.equal((await t.call(event(), { route: 'whk_' + 'f'.repeat(32) })).status, 404);
+  assert.equal(t.seen.length, 0, 'verify is never called without a row');
+  assert.equal(t.db.callbacks.length, 0);
+  assert.equal(t.db.rpcs('aal_mutate').length, 0);
+});
+
+test('venue scope: a row with no secret in Vault is 401 without calling verify; a failed lookup is 500', async () => {
+  const t = await venueSetup();
+  const r = await read(await t.call(event({ paymentId: 'pay-b' }), { route: ROUTE_NOSECRET, signature: sign(JSON.stringify(event({ paymentId: 'pay-b' })), '') }));
+  assert.equal(r.status, 401);
+  assert.equal(t.seen.length, 0);
+  assert.ok(t.logs.some((l) => /no venue secret/.test(l)));
+  const down = await venueSetup({ routeDown: true });
+  const d = await read(await down.call(event()));
+  assert.equal(d.status, 500);
+  assert.equal(d.body.paymentId, undefined);
+  assert.equal(down.db.callbacks.length, 0);
+  assert.equal(down.db.rpcs('aal_mutate').length, 0);
+});
+
+test('venue scope: a callback signed by venue A never decides about a payment at venue B', async () => {
+  const t = await venueSetup();
+  // B's payment id under A's route and secret, no restaurant named: not a payment of venue A
+  let r = await read(await t.call(event({ paymentId: 'pay-b' })));
+  assert.equal(r.status, 404);
+  assert.deepEqual(r.body, { error: 'Payment unavailable', paymentId: 'pay-b' });
+  // naming venue B outright: refused before any lookup, 403 wrong_venue
+  r = await read(await t.call(event({ paymentId: 'pay-b', restaurantId: OTHER })));
+  assert.equal(r.status, 403);
+  assert.equal(r.body.paymentId, 'pay-b');
+  assert.match(r.body.error, /another venue/);
+  // the same id at both venues: venue A's alone is confirmed, never "ambiguous"
+  t.db.put(OTHER, settleRow());
+  r = await read(await t.call(event()));
+  assert.equal(r.status, 200);
+  assert.equal(t.db.row(RID, 'pay-1').status, 'confirmed');
+  assert.equal(t.db.row(OTHER, 'pay-1').status, 'initiated');
+  // a failure signed by A cannot release B's payment either
+  r = await read(await t.call(event({ paymentId: 'pay-b', status: 'failed' })));
+  assert.equal(r.status, 404);
+  assert.equal(t.db.row(OTHER, 'pay-b').status, 'initiated');
+  assert.equal(t.db.rpcs('aal_payment_failed').length, 0);
+  for (const m of t.db.rpcs('aal_mutate')) assert.equal(m.body.p_rid, RID);
+  for (const c of t.db.calls.filter((x) => x.path === '/rest/v1/kv_rows')) assert.equal(new URLSearchParams(c.search).get('restaurant_id'), 'eq.' + RID);
+  // every verified callback is recorded, at the venue whose secret signed it
+  assert.deepEqual(t.db.callbacks.map((c) => [c.outcome, c.restaurant_id]),
+    [['unknown_payment', RID], ['wrong_venue', RID], ['confirmed', RID], ['unknown_payment', RID]]);
+});
+
+test('venue scope: rate limiting and the body cap come before any lookup', async () => {
+  const http = await load('_shared/http.js');
+  const t = await venueSetup({ limiter: http.createLimiter({ max: 0, windowMs: 60000 }) });
+  assert.equal((await t.call(event())).status, 429);
+  const u = await venueSetup();
+  const big = JSON.stringify(Object.assign(event(), { pad: 'x'.repeat(65 * 1024) }));
+  assert.equal((await u.call(big)).status, 413);
+  assert.equal(t.db.calls.length + u.db.calls.length, 0);
+});
+
+test('project scope is unchanged: fake and whish declare no venue scope, and the fake route ignores a trailing segment', async () => {
+  const mod = await load('payment-webhook/handler.js');
+  for (const a of Object.values(mod.ADAPTERS)) assert.notEqual(a.secretScope, 'venue', a.name);
+  assert.equal(mod.routeFrom('/functions/v1/payment-webhook/cardtest/' + ROUTE_A), ROUTE_A);
+  assert.equal(mod.routeFrom('/functions/v1/payment-webhook/cardtest'), '');
+  const t = await setup();
+  const r = await read(await t.call(event(), { provider: 'fake/' + ROUTE_A }));
+  assert.equal(r.status, 200);
+  assert.equal(r.body.status, 'confirmed');
+  assert.equal(t.db.rpcs('aal_payment_provider_by_route').length, 0);
+  // the fake adapter is still verified with FAKE_WEBHOOK_SECRET and no venue argument
+  const args = [];
+  const spy = Object.assign({}, mod.fakeAdapter, { verify: (...a) => { args.push(a.length); return mod.fakeAdapter.verify(...a); } });
+  const db = fakeDb(); db.put(RID, settleRow());
+  const h = mod.createHandler({ fetch: db.fetch, env: { SUPABASE_URL: URL_BASE, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: SECRET }, log: { warn() {}, info() {} }, adapters: { fake: spy } });
+  const raw = JSON.stringify(event());
+  const res = await h(new Request(URL_BASE + '/functions/v1/payment-webhook/fake', { method: 'POST', headers: { 'X-Signature': sign(raw) }, body: raw }));
+  assert.equal(res.status, 200);
+  assert.deepEqual(args, [4]);
 });
 
 test('the Deno wrapper only wires the handler', () => {
