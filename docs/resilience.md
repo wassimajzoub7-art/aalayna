@@ -79,9 +79,11 @@ The outbox already existed (shared mode, T8). T1 adds three rules to it:
 The server already treats these ids as idempotency keys, under the venue lock that
 serializes every `aal_mutate` call (`supabase/auth-2026-09-24.sql`):
 
-- `reserve` with an id it already holds: the same payer token and the same amount, tip, rail
-  and items return the stored request unchanged; anything else is refused ("Payment request
-  changed").
+- `reserve` with an id it already holds: the same payer token ("Wrong payer token"
+  otherwise), and the same bill, amount, tip, rail and items as stored, return the stored
+  request unchanged; anything else is refused ("Payment request changed"). Same means equal as
+  JSON values: `6` and `6.0` are the same amount, `"6"` is not, and a request without `items`
+  is not the stored `{}` (the sync layer always sends `items` and `tip`).
 - `confirm_cash` on a confirmed request returns it unchanged; no second `payment_completed`
   event is written.
 - `cancel` on a cancelled request returns it unchanged.
