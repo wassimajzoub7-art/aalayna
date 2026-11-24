@@ -80,16 +80,16 @@
       railWhish: 'Whish Money', railCard: 'Carte', railCash: 'Espèces', reqCash: 'Demander l’encaissement', paidCash: 'Payé {pay} · espèces',
       cashOk: 'Encaissement confirmé par votre serveur.' },
     ar: { back: 'رجوع', table: 'طاولة 12', sub: 'طاولة 12 · مشاوي لبنانية', lang: 'اللغة', ccy: 'العملة', usd: 'دولار $', lbp: 'ليرة ل.ل.',
-      filters: 'فلاتر الحمية', openBill: 'افتح الفاتورة', splitTitle: 'كيف نتقاسم الفاتورة؟', splitSub: 'ولا أحد يحسب شيئاً',
+      filters: 'فلاتر غذائية', openBill: 'افتح الفاتورة', splitTitle: 'كيف نقسّم الفاتورة؟', splitSub: 'لا أحد مضطر إلى الحساب',
       even: 'بالتساوي', mine: 'ما طلبتُه', custom: 'مبلغ آخر', all: 'كلّها عليّ', howMany: 'كم شخصاً على الطاولة؟', fewer: 'شخص أقل', more: 'شخص أكثر',
-      yourShare: 'حصّتك', rest: 'يبقى {rest} لبقية الضيوف. الدفع النقدي المعلّق يبقى محجوزاً إلى أن يؤكّده الفريق أو يلغيه.',
+      yourShare: 'حصّتك', rest: 'يبقى {rest} لبقية الضيوف. والنقد المعلّق محجوز حتى يؤكّده الموظفون أو يلغوه.',
       cont: 'متابعة · {share}', powered: 'بتقنية', toPay: 'المبلغ المستحق · طاولة 12', billShare: 'حصّتك من الفاتورة', tip: 'الإكرامية',
-      tipFor: 'شي لـ{server}؟', noTip: 'بلا إكرامية', whishDesc: 'يفتح والمبلغ معبّأ', card: 'بطاقة', cash: 'الدفع نقداً',
-      cashDesc: 'يؤكّده الفريق عند الاستلام', cashMark: 'نقد', pay: 'ادفع {pay}', thanks: 'شكراً.', paidVia: 'دُفعت عبر', tableL: 'الطاولة',
-      mailPh: 'واتساب أو بريد إلكتروني', send: 'أرسلوا الإيصال', offers: 'أرسلوا لي عروض Mayda', rateQ: 'كيف كانت السهرة في Mayda؟',
+      tipFor: 'إكرامية لـ{server}؟', noTip: 'بدون', whishDesc: 'يُفتح والمبلغ معبّأ مسبقاً', card: 'بطاقة', cash: 'الدفع نقداً',
+      cashDesc: 'يؤكّده الموظفون بعد الاستلام', cashMark: 'نقد', pay: 'ادفع {pay}', thanks: 'شكراً.', paidVia: 'الدفع عبر', tableL: 'الطاولة',
+      mailPh: 'واتساب (+رمز الدولة) أو البريد الإلكتروني', send: 'أرسل إيصالي', offers: 'أرسلوا لي عروض Mayda', rateQ: 'كيف كانت سهرتك في Mayda؟',
       paid: 'مدفوع {pay}', onBill: '{q} على الفاتورة', offBill: 'ليس على الفاتورة', tipOf: 'إكرامية {p}، {amt}',
-      railWhish: 'Whish Money', railCard: 'بطاقة', railCash: 'نقداً', reqCash: 'اطلبوا استلام المبلغ نقداً', paidCash: 'مدفوع {pay} · نقداً',
-      cashOk: 'استلم النادل المبلغ نقداً وأكّده.' }
+      railWhish: 'Whish Money', railCard: 'بطاقة', railCash: 'نقداً', reqCash: 'اطلب استلام المبلغ نقداً', paidCash: 'مدفوع {pay} · نقداً',
+      cashOk: 'أكّد النادل استلام المبلغ نقداً.' }
   };
   // The printed receipt on the brass tray speaks the page's language (it is the restaurant's paper, not the app).
   var RC = {

@@ -134,22 +134,22 @@
      Per-item FR/AR name and description. These live ON the item so the editor
      can edit them; the diner app reads them with English as the fallback. */
   var SEED_TR = {
-    i01:{fr:{n:"Assiette de foul et houmous",d:"Fèves, pois chiches, tahini, huile d'olive, cumin"},ar:{n:"صحن فول وحمص",d:"فول، حمص، طحينة، زيت زيتون، كمون"}},
-    i02:{fr:{n:"Œufs à l'awarma",d:"Œufs baladi, confit d'agneau, ghee"},ar:{n:"بيض بالقاورما",d:"بيض بلدي، قاورما، سمنة"}},
-    i03:{fr:{n:"Lahm b'ajin · 4 pièces",d:"Agneau haché, tomate, oignon, mélasse de grenade, pignons"},ar:{n:"لحم بعجين · ٤ قطع",d:"لحمة مفرومة، بندورة، بصل، دبس رمان، صنوبر"}},
-    i04:{fr:{n:"Fatteh au yaourt",d:"Pois chiches, yaourt à l'ail, pain frit, pignons"},ar:{n:"فتة باللبن",d:"حمص، لبن بالثوم، خبز مقلي، صنوبر"}},
-    i05:{fr:{n:"Taboulé",d:"Persil, boulgour, tomate, oignon, citron, huile d'olive"},ar:{n:"تبولة",d:"بقدونس، برغل، بندورة، بصل، حامض، زيت زيتون"}},
+    i01:{fr:{n:"Assiette de foul et houmous",d:"Fèves, pois chiches, tahini, huile d’olive, cumin"},ar:{n:"صحن فول وحمص",d:"فول، حمص، طحينة، زيت زيتون، كمون"}},
+    i02:{fr:{n:"Œufs à l’awarma",d:"Œufs baladi, confit d’agneau, ghee"},ar:{n:"بيض بالقاورما",d:"بيض بلدي، قاورما، سمنة"}},
+    i03:{fr:{n:"Lahm b’ajin · 4 pièces",d:"Agneau haché, tomate, oignon, mélasse de grenade, pignons"},ar:{n:"لحم بعجين · 4 قطع",d:"لحمة مفرومة، بندورة، بصل، دبس رمان، صنوبر"}},
+    i04:{fr:{n:"Fatteh au yaourt",d:"Pois chiches, yaourt à l’ail, pain frit, pignons"},ar:{n:"فتة باللبن",d:"حمص، لبن بالثوم، خبز مقلي، صنوبر"}},
+    i05:{fr:{n:"Taboulé",d:"Persil, boulgour, tomate, oignon, citron, huile d’olive"},ar:{n:"تبولة",d:"بقدونس، برغل، بندورة، بصل، حامض، زيت زيتون"}},
     i06:{fr:{n:"Houmous beyrouthin",d:"Pois chiches, tahini, ail, citron, piment"},ar:{n:"حمص بيروتي",d:"حمص، طحينة، ثوم، حامض، فليفلة حارة"}},
-    i07:{fr:{n:"Assiette de grillades",d:"Kebab, chiche taouk, côtelettes d'agneau, frites"},ar:{n:"مشاوي مشكلة",d:"كباب، شيش طاووق، ريش غنم، بطاطا"}},
+    i07:{fr:{n:"Assiette de grillades",d:"Kebab, chiche taouk, côtelettes d’agneau, frites"},ar:{n:"مشاوي مشكلة",d:"كباب، شيش طاووق، ريش غنم، بطاطا"}},
     i08:{fr:{n:"Arayes",d:"Pain pita grillé, agneau haché épicé, oignon, persil"},ar:{n:"عرايس",d:"خبز مشوي، لحمة مفرومة، بصل، بقدونس"}},
-    i09:{fr:{n:"Atayef à l’ashta · 3 pièces",d:"Crêpes pliées, crème ashta, sirop à la fleur d’oranger, pistache"},ar:{n:"قطايف بالقشطة · ٣ قطع",d:"قطايف، قشطة، قطر بماء الزهر، فستق حلبي"}},
+    i09:{fr:{n:"Atayef à l’ashta · 3 pièces",d:"Crêpes pliées, crème ashta, sirop à la fleur d’oranger, pistache"},ar:{n:"قطايف بالقشطة · 3 قطع",d:"قطايف، قشطة، قطر بماء الزهر، فستق حلبي"}},
     i10:{fr:{n:"Halawet el jeben",d:"Pâte de fromage sucrée, crème ashta, sirop de rose, pistache"},ar:{n:"حلاوة الجبن",d:"عجينة جبن حلوة، قشطة، ماء ورد، فستق"}},
-    i11:{fr:{n:"Assortiment de maamoul · 250 g",d:"Sablés à la semoule fourrés aux dattes, à la pistache et aux noix"},ar:{n:"معمول مشكّل · ٢٥٠ غ",d:"معمول بالسميد محشي تمر وفستق حلبي وجوز"}},
+    i11:{fr:{n:"Assortiment de maamoul · 250 g",d:"Sablés à la semoule fourrés aux dattes, à la pistache et aux noix"},ar:{n:"معمول مشكّل · 250 غ",d:"معمول بالسميد محشي تمر وفستق حلبي وجوز"}},
     i12:{fr:{n:"Glace ashta",d:"Lait, crème, mastic, sucre, croûte de pistache"},ar:{n:"بوظة قشطة",d:"حليب، قشطة، مستكة، سكر، فستق"}},
     i13:{fr:{n:"Espresso",d:"Origine unique, préparé à la commande"},ar:{n:"إسبريسو",d:"بن مختار، يُحضّر عند الطلب"}},
-    i14:{fr:{n:"Café libanais",d:"Rakweh pour deux, eau de fleur d'oranger"},ar:{n:"قهوة عربية",d:"ركوة لشخصين، ماء زهر"}},
+    i14:{fr:{n:"Café libanais",d:"Rakweh pour deux, eau de fleur d’oranger"},ar:{n:"قهوة عربية",d:"ركوة لشخصين، ماء زهر"}},
     i15:{fr:{n:"Jallab",d:"Mélasse de dattes, eau de rose, pignons, raisins secs"},ar:{n:"جلاب",d:"دبس تمر، ماء ورد، صنوبر، زبيب"}},
-    i16:{fr:{n:"Limonade à la fleur d'oranger",d:"Citron, sucre, eau de fleur d'oranger, menthe"},ar:{n:"ليموناضة بماء الزهر",d:"حامض، سكر، ماء زهر، نعناع"}},
+    i16:{fr:{n:"Limonade à la fleur d’oranger",d:"Citron, sucre, eau de fleur d’oranger, menthe"},ar:{n:"ليموناضة بماء الزهر",d:"حامض، سكر، ماء زهر، نعناع"}},
     i17:{fr:{n:"Latte",d:"Espresso, lait vapeur"},ar:{n:"لاتيه",d:"إسبريسو مع حليب مبخّر"}}
   };
 
