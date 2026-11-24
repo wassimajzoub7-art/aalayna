@@ -594,3 +594,26 @@ test('webhookResult: only payment-webhook\'s decisions about this payment count'
   assert.equal(webhookResult(200, null, 'p1'), null);
   assert.equal(webhookResult(200, 'confirmed', 'p1'), null);
 });
+
+/* 2026-11-24 mutation pass: rules no test held before. */
+test('POST: a payment of another bill at the same venue is 404, and opens nothing', async () => {
+  const t = await setup();
+  t.db.put(RID, settleRow({ id: 'pay-other', requestId: 'pay-other', checkId: 'bill-8' }));
+  const r = await read(await t.start({ body: { paymentId: 'pay-other', returnUrl: RETURN } }));
+  assert.equal(r.status, 404);
+  assert.equal(r.body.error, 'Payment unavailable');
+  assert.equal(t.db.sessions.length, 0);
+});
+
+test('a venue with no demo_payments value, or no profile row, is a live venue: no fake provider', async () => {
+  for (const profile of [{}, { demo_payments: null }, { demo_payments: 'true' }, undefined]) {
+    const t = await setup();
+    if (profile === undefined) t.db.profiles.delete(RID); else t.db.profiles.set(RID, profile);
+    let r = await read(await t.req('GET'));
+    assert.deepEqual(r.body, { rails: {} }, JSON.stringify(profile));
+    r = await read(await t.start());
+    assert.equal(r.status, 409, JSON.stringify(profile));
+    assert.equal(r.body.status, 'no_provider');
+    assert.equal(t.db.sessions.length, 0);
+  }
+});
