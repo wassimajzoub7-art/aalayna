@@ -156,7 +156,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; ch
 async function functionHandlers(opts = {}) {
   const start = await import(path.join(ROOT, 'supabase', 'functions', 'payment-start', 'handler.js'));
   const hook = await import(path.join(ROOT, 'supabase', 'functions', 'payment-webhook', 'handler.js'));
-  const env = { SUPABASE_URL: SELF, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: FAKE_SECRET, PAYMENT_RETURN_ORIGINS: ORIGINS.join(',') };
+  const env = { SUPABASE_URL: SELF, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: FAKE_SECRET, PAYMENT_RETURN_ORIGINS: ORIGINS.join(','), PAYMENT_ALLOW_LOCAL_ORIGINS: '1' };   // plain http: this computer and its Wi-Fi (never on live)
   const quiet = opts.log || { warn: (...a) => say('function  ', ...a), info: () => {} };
   const webhook = hook.createHandler({ fetch: postgrest, env, log: quiet });
   const fetchFromFunction = (url, init) => String(url).startsWith(SELF + '/functions/v1/payment-webhook/') ? webhook(new Request(url, init)) : postgrest(url, init);

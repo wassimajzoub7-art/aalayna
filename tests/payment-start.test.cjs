@@ -401,7 +401,13 @@ test('CORS, method, size and rate limits', async () => {
   r = await read(await t.req('GET', { origin: 'https://evil.example' }));
   assert.equal(r.status, 200);   // the function answers; the browser withholds the answer
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), null);
+  // live (no opt-in): localhost is just another origin, refused
   r = await read(await t.req('GET', { origin: 'http://127.0.0.1:8787' }));
+  assert.equal(r.headers.get('Access-Control-Allow-Origin'), null);
+  r = await t.handle(new Request(FN, { method: 'OPTIONS', headers: { Origin: 'http://localhost:8787' } }));
+  assert.equal(r.headers.get('Access-Control-Allow-Origin'), null);
+  const local = await setup({ env: { PAYMENT_ALLOW_LOCAL_ORIGINS: '1' } });
+  r = await read(await local.req('GET', { origin: 'http://127.0.0.1:8787' }));
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'http://127.0.0.1:8787');
   r = await read(await t.req('DELETE'));
   assert.equal(r.status, 405);
@@ -441,6 +447,7 @@ test('helpers: routes, self base, return URL cleaning, base64url round trip', as
   assert.deepEqual(mod.cleanReturnUrl('https://aalayna.com/guest.html', 'p9', env), { url: 'https://aalayna.com/guest.html?pay=p9' });
   assert.match(mod.cleanReturnUrl('https://aalayna.com.evil.example/g', 'p9', env).error, /allowed origin/);
   assert.deepEqual(mod.allowedOrigins(env), mod.DEFAULT_ORIGINS);
+  assert.deepEqual(mod.DEFAULT_ORIGINS, ['https://aalayna.com', 'https://www.aalayna.com']);
   assert.deepEqual(mod.allowedOrigins((k) => ({ PAYMENT_RETURN_ORIGINS: ' https://a.example/, https://b.example ' })[k]), ['https://a.example', 'https://b.example']);
   for (const s of ['plain', '["مايدا","Hamra"]', 'a+b/c=', '']) assert.equal(http.unb64u(http.b64u(s)), s);
   assert.doesNotMatch(http.b64u('a+b/c='), /[+/=]/);

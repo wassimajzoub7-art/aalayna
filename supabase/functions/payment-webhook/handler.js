@@ -55,7 +55,7 @@
 
 import { hmacHex, timingSafeEqual } from '../_shared/verify.js';
 import { createClient, envGetter, eq, SupabaseError } from '../_shared/supabase.js';
-import { readCapped, createLimiter } from '../_shared/http.js';
+import { readCapped, createLimiter, clientAddress } from '../_shared/http.js';
 
 export const MAX_BODY = 64 * 1024;
 export const RATE_LIMIT = { max: 120, windowMs: 60 * 1000 };
@@ -137,8 +137,10 @@ export function checkEvent(e) {
   return null;
 }
 
-const clientKey = (request, provider) =>
-  provider + '|' + (String(request.headers.get('x-forwarded-for') || '').split(',')[0].trim() || request.headers.get('x-real-ip') || 'unknown');
+/* per provider and caller address; the address is what the platform sets (CF-Connecting-IP,
+   else the last X-Forwarded-For entry), never the first X-Forwarded-For entry, which the
+   caller writes (_shared/http.js, clientAddress) */
+const clientKey = (request, provider) => provider + '|' + clientAddress(request);
 
 /* ------------------------------------------------------------------ handler */
 
