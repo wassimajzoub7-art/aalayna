@@ -60,14 +60,16 @@ fixes last. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` fro
 `theme-2026-09-28.sql`; both earlier files now carry its fallback, so re-running them undoes
 nothing, and it is safe to run again after them. `webhook-venues-2026-11-24.sql` ("Hosted
 payment pages", per-venue webhook secrets) needs only `payment-start-2026-10-14.sql` and
-replaces nothing; it goes after the review fixes.
+replaces nothing; it goes after the review fixes. `payment-connect-2026-11-24.sql`
+("Connecting a payment provider from admin", below) comes last; it replaces no earlier
+function and works whether `webhook-venues-2026-11-24.sql` has run or not.
 
 The whole order, for a fresh project: `migration.sql`, `site-events.sql`,
 `hardening-2026-09-15.sql`, `hardening-2026-09-24.sql`, `admin.sql`, `sessions-2026-09-24.sql`,
 `auth-2026-09-24.sql`, `followups-2026-09-24.sql`, `theme-2026-09-28.sql`,
 `daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`, `integrations-2026-09-30.sql`,
 `payment-start-2026-10-14.sql`, `groups-2026-10-28.sql`, `close-narrative-2026-10-28.sql`,
-`review-fixes-2026-11-10.sql`, `webhook-venues-2026-11-24.sql`.
+`review-fixes-2026-11-10.sql`, `webhook-venues-2026-11-24.sql`, `payment-connect-2026-11-24.sql`.
 
 ## Owner groups: one floor for several venues (October 28)
 
@@ -391,7 +393,9 @@ gets the fake provider while `FAKE_WEBHOOK_SECRET` is set; with demo payments of
 the rail is not offered. A row naming `fake` is taken only while the venue's demo payments are
 on, and a row naming `whish` is the only way Whish is offered (there is no Whish fallback).
 Demo payments are off for a venue unless the admin turns them on (since
-`review-fixes-2026-11-10.sql`). When a venue's provider account is ready:
+`review-fixes-2026-11-10.sql`). When a venue's provider account is ready, connect it from
+admin.html (venue panel, Payments; "Connecting a payment provider from admin", below). By
+hand in the SQL editor, which is what that page does for you:
 
 ```sql
 select vault.create_secret('<the credentials, as the adapter documents them>', 'whish_<slug>');
@@ -430,7 +434,9 @@ the payment, the amount, the return URL and the reservation's expiry. Decline po
 request, our payment id as the merchant reference, the return URL) and one in
 `payment-webhook/handler.js` (`verify` and `parse`: their callback; `secretScope: 'venue'`
 when the provider signs each venue's callbacks with that venue's own secret), a
-`payment_providers` row per venue, and the acceptance tests in INTEGRATIONS.md. `whish` exists in both files and
+`payment_providers` row per venue (from admin.html's Payments block; the adapter's `label`,
+`rails` and `fields` draw its form, and its `check` is Test connection), and the acceptance
+tests in INTEGRATIONS.md. `whish` exists in both files and
 answers 501 naming what is unknown until Whish shares its merchant API: `payment-webhook/whish`
 always, `payment-start` where a `payment_providers` row names `whish`.
 
@@ -517,6 +523,52 @@ it; it is safe to run again). Tested against PGlite (`tests/review-fixes-sql.tes
 - **The database's clock.** `aal_now()` (anon and authenticated) answers `now()` as a
   timestamptz; `POST /rest/v1/rpc/aal_now` answers a JSON string. The guest page measures a
   payment's ten minutes against it, not against the phone's clock.
+
+## Connecting a payment provider from admin (November 24)
+
+A venue's card or Whish provider is connected from admin.html instead of the SQL editor:
+`payment-connect-2026-11-24.sql` (run it after `review-fixes-2026-11-10.sql`; safe to run
+again; it replaces no earlier function) and two routes in `functions/payment-start`.
+
+**On the page.** Open a venue's panel (Manage). Under **Payments**, each rail shows its
+connection: provider, enabled or disabled, whether credentials are saved, when it last
+changed, and, when the row has a `webhook_route` (from `webhook-venues-2026-11-24.sql`), the
+provider's callback address `<functions base>/payment-webhook/<provider>/<webhook_route>` with
+Copy. While the venue's demo payments are on, no real provider can be connected (card and Whish
+go to the demo provider, no money moves); switch demo payments off first. Then **Connect**
+(or **Change**) draws the form from the connector's fields: a text field goes to the row's
+`config`, the secret fields together become one Vault secret. Secret inputs are password
+fields, never prefilled and emptied on every save; left empty, the saved secret is kept, and
+changing one means typing every required secret field again. **Test connection** asks the
+provider with the saved credentials (enabled rows only), **Disable**/**Enable** flips the row,
+**Remove** deletes it and its Vault secret after a confirmation.
+
+**The SQL** (each `aal_admin_*` checks the admin key first, as admin.sql's do):
+
+- `aal_admin_list_payment_providers(p_rid)`: the venue's rows, every column through `to_jsonb`
+  (so `webhook_route` appears once that file has run), plus `has_secret`. Never the secret.
+- `aal_admin_set_payment_provider(p_rid, p_rail, p_provider, p_config, p_secret, p_enabled)`:
+  insert or update. Null config, secret or enabled keeps the current value. Config is a small
+  object (20 keys, plain values, 300 characters a value, 2,000 in all). A secret updates the
+  Vault secret the row already names, or creates `aalayna_pay_<rail>_<md5 of the venue id>`;
+  changing the provider without a new secret drops the old one. Without Vault, a call with a
+  secret is refused ("Supabase Vault is not available ...") and nothing changes.
+- `aal_admin_remove_payment_provider(p_rid, p_rail)`: deletes the row (disabling is the set
+  function with `p_enabled` false) and its Vault secret, unless another row names it.
+- `aal_admin_key_valid(p_key)`: service role only; how payment-start checks an admin key.
+
+**payment-start.** `GET /functions/v1/payment-start/providers` (public, no key) answers
+`{providers: [{name, label, rails, fields, ready}]}`, each field `{key, label, kind: 'text' |
+'secret', required, hint?}`; nothing about a venue, no secret. `POST
+/functions/v1/payment-start/admin/check` with the admin key in `x-aalayna-admin` and
+`{restaurantId, rail}` checks the key with `aal_admin_key_valid`, reads the enabled row with
+`aal_payment_provider` and runs the adapter's `check`: 200 `{ok, detail}`, 401 wrong key, 404
+no enabled row, 409 an adapter this server lacks, 501 no check yet (Whish, until its API is
+known), 502 the provider could not be reached; 20 calls a minute per address. A secret an
+adapter echoes in `detail` is cut out. Redeploy payment-start for both routes.
+
+**Set up.** Run `payment-connect-2026-11-24.sql`, redeploy `payment-start`
+(`--no-verify-jwt`, as before). Vault (`supabase_vault`) is on in every Supabase project.
 
 ## POS bridge (September 30)
 

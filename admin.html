@@ -106,6 +106,13 @@
   .staff-invite select.in,.line select.in{flex:0 0 auto;min-width:130px;width:auto}
   .line.revoked .u{color:var(--faint)}
   /* ==== T4 staff styles: end ==== */
+  /* ==== T7 payments styles: start ==== */
+  .pay-form{border-top:1px solid var(--line-soft);padding:4px 0 10px}
+  .pay-form .fields{margin-top:10px}
+  .check{display:flex;gap:8px;align-items:center;min-height:44px;font-size:14px;margin-top:10px;cursor:pointer}
+  .check input{width:18px;height:18px;accent-color:var(--brand)}
+  @media(max-width:720px){.pay-line .u{flex-basis:100%}}
+  /* ==== T7 payments styles: end ==== */
   /* Brand pass: square corners, no soft shadows, red for the main action, Instrument Sans for small labels, a system
      monospace for keys and links. */
   .notice,.card,.btn,.badge,.in,.sw,.chip,.vd,.confirm{border-radius:0}
@@ -161,7 +168,7 @@
         <li>Register the venue. Take the brand colour, background and font from their menu or Instagram; pick a menu pack if one exists in venues/.</li>
         <li>Open Manage on the new row. Send the owner editor and owner dashboard links to the owner only: each carries the owner key, and the page keeps it after the first visit.</li>
         <li>Guests do not use a venue link. Staff open a bill on the dashboard's Live floor and send its Guest bill link, a chk_ key for that bill only. The venue's gst_ key only reads the published menu.</li>
-        <li>Demo payments stays on until the venue's payment provider confirms real payments; then switch it off here.</li>
+        <li>Demo payments stays on until the venue's payment provider account is ready. Then switch it off in the venue's panel and connect card or Whish under Payments: the credentials go to Supabase Vault and are never shown again. Test connection checks them with the provider.</li>
         <li>If a key leaks, rotate it in the venue's panel and send the new links. The old key stops working at once.</li>
       </ol>
     </details>
@@ -513,6 +520,214 @@ Aalayna.on(function(){ paintAll(); });
 })();
 </script>
 <!-- ==== T2 owner groups (admin) script: end ==== -->
+<!-- ==== T7 payments (admin) script: start ==== -->
+<script>
+/* Payments (supabase/payment-connect-2026-11-24.sql and supabase/functions/payment-start): per
+   venue, which provider takes card and which takes Whish. The form is drawn from GET
+   /payment-start/providers (each connector's fields); a 'text' field goes to the row's config,
+   'secret' fields together become one Vault secret, written by aal_admin_set_payment_provider
+   and never read back: secret inputs are password fields, never prefilled, empty after every
+   save. Test connection is POST /payment-start/admin/check with the admin key from this tab's
+   session storage; the function checks the key against admin_keys before it runs. Real
+   provider rows are offered only once the venue's demo payments are off. The T6 venue panel
+   mounts section(v, demo) and repaints it freely; the state lives here, per venue. */
+(function(){
+  'use strict';
+  var RAILS=[['card','Card'],['whish','Whish']];
+  var PS={}, PROVIDERS=null, providersError='', providersLoading=false;
+  function el(tag,text,cls){ var n=document.createElement(tag); if(text!=null)n.textContent=text; if(cls)n.className=cls; return n; }
+  function button(text,cls,fn){ var b=el('button',text,'btn small'+(cls?' '+cls:'')); b.type='button'; b.onclick=fn; return b; }
+  function when(v){ return v?new Date(v).toLocaleString('en-GB',{timeZone:'Asia/Beirut',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):''; }
+  function adminKey(){ try{ return sessionStorage.getItem('aal.adminKey')||''; }catch(e){ return ''; } }
+  function cfg(){ return window.AalaynaConfig||{}; }
+  function functionsBase(){ var c=cfg(); return String(c.functionsUrl||(c.supabaseUrl?String(c.supabaseUrl).replace(/\/$/,'')+'/functions/v1':'')).replace(/\/$/,''); }
+  function webhookUrl(row){ return functionsBase()+'/payment-webhook/'+encodeURIComponent(row.provider)+'/'+encodeURIComponent(row.webhook_route); }
+  function state(rid){ return PS[rid]||(PS[rid]={rows:null,busy:false,msg:null,open:{},draft:{},confirm:null,node:null,v:null,demo:false}); }
+  function rowFor(st,rail){ return (st.rows||[]).filter(function(r){ return r.rail===rail; })[0]||null; }
+  function providerByName(name){ return (PROVIDERS||[]).filter(function(p){ return p.name===name; })[0]||null; }
+  /* the connectors an admin may pick for a rail: every one that serves it, except the demo
+     provider, which needs no row (demo payments on is what turns it on) */
+  function choices(rail){ return (PROVIDERS||[]).filter(function(p){ return p.name!=='fake'&&(p.rails||[]).indexOf(rail)>=0; }); }
+  function labelOf(name){ var p=providerByName(name); return p?p.label:name; }
+
+  function rpc(fn,args){
+    var c=cfg(), k=adminKey();
+    if(!c.supabaseUrl||!c.anonKey)return Promise.reject(new Error('No shared store is configured in aalayna-config.js.'));
+    if(!k)return Promise.reject(new Error('Connect with the admin key above first.'));
+    return fetch(String(c.supabaseUrl).replace(/\/$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',cache:'no-store',
+      headers:{apikey:c.anonKey,Authorization:'Bearer '+c.anonKey,'x-aalayna-admin':k,'Content-Type':'application/json'},body:JSON.stringify(args||{})})
+    .then(function(res){ return res.text().then(function(t){
+      var j=null; try{ j=t?JSON.parse(t):null; }catch(e){}
+      if(!res.ok){
+        if(j&&j.code==='PGRST202')throw new Error('Payment connections are not on the shared store yet. Run supabase/payment-connect-2026-11-24.sql in the Supabase SQL editor.');
+        throw new Error(j&&j.message?j.message:'The shared store answered '+res.status+'.');
+      }
+      return j; }); },function(){ throw new Error('Could not reach the shared store. Check the connection and try again.'); });
+  }
+  function loadProviders(){
+    if(PROVIDERS||providersLoading)return;
+    var base=functionsBase(); if(!base){ providersError='No shared store is configured in aalayna-config.js.'; return; }
+    providersLoading=true;
+    fetch(base+'/payment-start/providers',{cache:'no-store'}).then(function(res){
+      if(!res.ok)throw new Error('payment-start answered '+res.status);
+      return res.json();
+    }).then(function(j){
+      providersLoading=false; PROVIDERS=j&&Object.prototype.toString.call(j.providers)==='[object Array]'?j.providers:[]; providersError=''; paintAll();
+    },function(e){
+      providersLoading=false; providersError='The list of connectors could not be read from the payment-start function ('+(e&&e.message||'no answer')+'). Is it deployed?'; paintAll();
+    });
+  }
+  function load(v){
+    var st=state(v.restaurant_id); st.busy=true; st.msg=null; paint(v);
+    return rpc('aal_admin_list_payment_providers',{p_rid:v.restaurant_id}).then(function(rows){
+      st.busy=false; st.rows=Object.prototype.toString.call(rows)==='[object Array]'?rows:[]; paint(v);
+    },function(e){ st.busy=false; st.rows=st.rows||null; st.msg={text:e.message,kind:'err'}; paint(v); });
+  }
+  function run(v,promise,okText,after){
+    var st=state(v.restaurant_id); st.busy=true; st.msg=null; paint(v);
+    return promise.then(function(){ return rpc('aal_admin_list_payment_providers',{p_rid:v.restaurant_id}); }).then(function(rows){
+      st.busy=false; st.rows=rows||[]; if(after)after(); st.msg={text:okText,kind:'ok'}; paint(v); return true;
+    },function(e){ st.busy=false; st.msg={text:e.message,kind:'err'}; paint(v); return false; });
+  }
+  function testConnection(v,rail){
+    var st=state(v.restaurant_id), k=adminKey(), base=functionsBase();
+    if(!k){ st.msg={text:'Connect with the admin key above first.',kind:'err'}; paint(v); return; }
+    st.busy=true; st.msg={text:'Testing the '+rail+' connection...',kind:''}; paint(v);
+    fetch(base+'/payment-start/admin/check',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json','x-aalayna-admin':k},
+      body:JSON.stringify({restaurantId:v.restaurant_id,rail:rail})})
+    .then(function(res){ return res.text().then(function(t){ var j=null; try{ j=t?JSON.parse(t):null; }catch(e){} return {status:res.status,j:j}; }); })
+    .then(function(r){
+      st.busy=false;
+      var detail=r.j&&r.j.detail?r.j.detail:'payment-start answered '+r.status+'.';
+      st.msg=r.j&&r.j.ok===true?{text:'Connection works. '+detail,kind:'ok'}:{text:'Connection test failed. '+detail,kind:'err'}; paint(v);
+    },function(){ st.busy=false; st.msg={text:'Could not reach the payment-start function. Check the connection and that it is deployed.',kind:'err'}; paint(v); });
+  }
+
+  /* the form for one rail: the provider, its text fields (prefilled from the saved config of the
+     same provider), its secret fields (never prefilled), enabled */
+  function form(v,rail,row,idx){
+    var st=state(v.restaurant_id), list=choices(rail), d=st.draft[rail];
+    if(!d){ d=st.draft[rail]={provider:row&&providerByName(row.provider)&&row.provider!=='fake'?row.provider:(list[0]?list[0].name:''),values:{},enabled:null}; }
+    var box=el('form',null,'pay-form'); box.noValidate=true;
+    if(!list.length){ box.appendChild(el('p','No connector on this server takes '+(rail==='card'?'card':'Whish')+' payments yet. A new provider is one adapter in supabase/functions/payment-start/handler.js.','hint')); box.appendChild(el('div',null,'row')).appendChild(button('Cancel','',function(){ st.open[rail]=false; paint(v); })); return box; }
+    var prov=providerByName(d.provider)||list[0]; d.provider=prov.name;
+    var same=row&&row.provider===prov.name, saved=same&&row.has_secret;
+    var fields=el('div',null,'fields'), pid='pay-'+idx+'-'+rail;
+    var pbox=el('div'), plab=el('label','Provider','lbl'), sel=el('select',null,'in'); plab.htmlFor=pid+'-provider'; sel.id=pid+'-provider';
+    list.forEach(function(p){ var o=el('option',p.label+(p.ready?'':' (not ready)')); o.value=p.name; sel.appendChild(o); }); sel.value=prov.name;
+    sel.onchange=function(){ d.provider=sel.value; d.values={}; d.enabled=null; paint(v); };
+    pbox.append(plab,sel); fields.appendChild(pbox);
+    (prov.fields||[]).forEach(function(f){
+      var b=el('div'), id=pid+'-'+f.key, lab=el('label',f.label+(f.required?'':' (optional)'),'lbl'), input=el('input',null,'in');
+      lab.htmlFor=id; input.id=id; input.setAttribute('data-pay-field',f.key); input.setAttribute('data-kind',f.kind); input.spellcheck=false;
+      if(f.kind==='secret'){
+        input.type='password'; input.autocomplete='new-password'; input.value='';
+        input.placeholder=saved?'Saved. Leave empty to keep it':'';
+      }else{
+        input.type='text'; input.autocomplete='off'; input.maxLength=300;
+        input.value=d.values[f.key]!=null?d.values[f.key]:(same&&row.config&&row.config[f.key]!=null?String(row.config[f.key]):'');
+        input.oninput=function(){ d.values[f.key]=input.value; };
+      }
+      input.addEventListener('input',function(){ input.removeAttribute('aria-invalid'); });
+      b.append(lab,input); if(f.hint)b.appendChild(el('div',f.hint,'hint')); fields.appendChild(b);
+    });
+    box.appendChild(fields);
+    if(!prov.ready)box.appendChild(el('p',prov.label+' is not ready on this server yet: a guest who picks '+(rail==='card'?'card':'Whish')+' would be refused. Save it with Enabled off until the adapter is built.','hint'));
+    var en=d.enabled!=null?d.enabled:(same?row.enabled!==false:prov.ready);
+    var chk=el('label',null,'check'), cb=el('input'); cb.type='checkbox'; cb.checked=en; cb.id=pid+'-enabled';
+    cb.onchange=function(){ d.enabled=cb.checked; };
+    chk.append(cb,document.createTextNode('Enabled: offer '+(rail==='card'?'card':'Whish')+' to guests through '+prov.label)); box.appendChild(chk);
+    var r=el('div',null,'row'), save=el('button',st.busy?'Saving...':'Save connection','btn small primary'); save.type='submit'; save.disabled=st.busy;
+    r.append(save,button('Cancel','',function(){ st.open[rail]=false; delete st.draft[rail]; paint(v); }));
+    box.appendChild(r);
+    box.onsubmit=function(e){
+      e.preventDefault();
+      var config={}, secret={}, anySecret=false, bad=null;
+      if(same&&row.config&&typeof row.config==='object')Object.keys(row.config).forEach(function(k){ config[k]=row.config[k]; });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-pay-field]'),function(n){
+        var key=n.getAttribute('data-pay-field'), f=(prov.fields||[]).filter(function(x){ return x.key===key; })[0]||{}, val=n.value;
+        if(n.getAttribute('data-kind')==='secret'){ if(val!==''){ secret[key]=val; anySecret=true; } }
+        else{ val=String(val).replace(/^\s+|\s+$/g,''); if(val)config[key]=val; else delete config[key]; if(f.required&&!val&&!bad)bad=n; }
+      });
+      // a secret is saved whole: when one secret field is typed, or none is saved yet, every required one is needed
+      if(!bad&&(anySecret||!saved))Array.prototype.forEach.call(box.querySelectorAll('[data-kind="secret"]'),function(n){
+        var f=(prov.fields||[]).filter(function(x){ return x.key===n.getAttribute('data-pay-field'); })[0]||{};
+        if(f.required&&n.value===''&&!bad)bad=n;
+      });
+      if(bad){ bad.setAttribute('aria-invalid','true'); bad.focus(); st.msg={text:'Fill in '+(bad.previousSibling&&bad.previousSibling.textContent||'this field').replace(/ \(optional\)$/,'')+(bad.getAttribute('data-kind')==='secret'&&saved?': the credentials are saved together, so type each of them again to change one.':'.'),kind:'err'}; var m=st.node&&st.node.querySelector('[data-pay-msg]'); if(m){ m.textContent=st.msg.text; m.className='status err'; } return; }
+      var args={p_rid:v.restaurant_id,p_rail:rail,p_provider:prov.name,p_config:config,p_secret:anySecret?JSON.stringify(secret):null,p_enabled:cb.checked};
+      // the secret inputs are emptied now, whatever the answer; the secret lives only in this one request
+      Array.prototype.forEach.call(box.querySelectorAll('[data-kind="secret"]'),function(n){ n.value=''; });
+      run(v,rpc('aal_admin_set_payment_provider',args),(rail==='card'?'Card':'Whish')+' is connected to '+prov.label+(cb.checked?'.':', disabled.')+(anySecret?' The credentials are in Vault.':''),function(){ st.open[rail]=false; delete st.draft[rail]; });
+    };
+    return box;
+  }
+
+  function fill(box,v){
+    var rid=v.restaurant_id, st=state(rid), demo=st.demo, idx=Object.keys(PS).indexOf(rid);
+    box.replaceChildren();
+    box.appendChild(el('h3','Payments'));
+    box.appendChild(el('p',demo
+      ?'Demo payments is on: card and Whish go to the demo provider and no money moves. Real provider connections are offered once demo payments is off, above. With demo payments off and nothing connected, guests can pay cash only.'
+      :'Each rail takes one provider. Credentials go to Supabase Vault and are never shown again; Test connection checks them with the provider. A rail with nothing connected is not offered to guests: cash only.','hint'));
+    if(providersError&&(st.open.card||st.open.whish))box.appendChild(el('p',providersError,'status err'));
+    if(!st.rows){
+      if(st.busy)box.appendChild(el('p','Loading payment connections...','status'));
+      else box.appendChild(button('Load payment connections','',function(){ load(v); }));
+    }else RAILS.forEach(function(rr){
+      var rail=rr[0], row=rowFor(st,rail), buttons=[], text;
+      if(row){
+        text=labelOf(row.provider)+' · '+(row.enabled?'Enabled':'Disabled')+' · '+(row.has_secret?'Credentials saved':'No credentials')+' · Updated '+when(row.updated_at);
+        if(row.provider==='fake')text+=' · Taken only while demo payments is on';
+        var test=button('Test connection','',function(){ testConnection(v,rail); }); test.disabled=st.busy||!row.enabled;
+        if(!row.enabled)test.title='Enable it first: the test reads enabled connections only.';
+        var tog=button(row.enabled?'Disable':'Enable','',function(){
+          run(v,rpc('aal_admin_set_payment_provider',{p_rid:rid,p_rail:rail,p_provider:row.provider,p_config:null,p_secret:null,p_enabled:!row.enabled}),rr[1]+(row.enabled?' is disabled: guests are not offered it.':' is enabled.'));
+        }); tog.disabled=st.busy;
+        var rm=button('Remove','danger',function(){ st.confirm=rail; paint(v); }); rm.disabled=st.busy;
+        buttons=[test,tog,rm];
+        [test,tog,rm].forEach(function(b){ b.setAttribute('aria-label',b.textContent+' ('+rr[1]+')'); });
+      }else{
+        text=demo?'Demo provider (no row needed while demo payments is on)':'Not connected: not offered to guests';
+      }
+      if(!demo&&!st.open[rail]){ var c=button(row?'Change':'Connect',row?'':'primary',function(){ st.open[rail]=true; loadProviders(); paint(v); }); c.disabled=st.busy; c.setAttribute('aria-label',(row?'Change ':'Connect ')+rr[1].toLowerCase()); buttons.unshift(c); }
+      var d=el('div',null,'line pay-line'), u=el('div',text,'u p'); d.append(el('div',rr[1],'t'),u); buttons.forEach(function(b){ d.appendChild(b); }); box.appendChild(d);
+      if(row&&row.webhook_route){
+        var url=webhookUrl(row), w=el('div',null,'line pay-line'), cp=button('Copy','',function(){
+          function done(){ cp.textContent='Copied'; cp.classList.add('done'); setTimeout(function(){ cp.textContent='Copy'; cp.classList.remove('done'); },1600); }
+          if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,function(){ st.msg={text:'Copy did not work in this browser. Select the address and copy it by hand.',kind:'err'}; paint(v); });
+        });
+        cp.setAttribute('aria-label','Copy the '+rr[1].toLowerCase()+' webhook URL');
+        w.append(el('div','Webhook URL','t'),el('div',url,'u'),cp); box.appendChild(w);
+        box.appendChild(el('p','Give this address to '+labelOf(row.provider)+' as the callback for this venue. Only its signed callbacks confirm a payment.','hint'));
+      }
+      if(row&&st.confirm===rail){
+        var cf=el('div',null,'confirm'); cf.appendChild(el('div','Remove the '+rr[1].toLowerCase()+' connection to '+labelOf(row.provider)+'? Its credentials are deleted from Vault and cannot be recovered; '+(demo?'the rail goes back to the demo provider.':'guests are no longer offered '+rr[1].toLowerCase()+'.')));
+        var rw=el('div',null,'row');
+        var yes=button(st.busy?'Removing...':'Remove connection','danger',function(){ run(v,rpc('aal_admin_remove_payment_provider',{p_rid:rid,p_rail:rail}),rr[1]+' connection removed.',function(){ st.confirm=null; }); }); yes.disabled=st.busy;
+        rw.append(yes,button('Cancel','',function(){ st.confirm=null; paint(v); })); cf.appendChild(rw); box.appendChild(cf);
+      }
+      if(!demo&&st.open[rail]){
+        if(PROVIDERS)box.appendChild(form(v,rail,row,idx));
+        else if(!providersError)box.appendChild(el('p','Loading connectors...','status'));
+      }
+    });
+    var p=el('p',st.msg?st.msg.text:'','status'+(st.msg&&st.msg.kind?' '+st.msg.kind:'')); p.setAttribute('role','status'); p.setAttribute('aria-live','polite'); p.setAttribute('data-pay-msg','');
+    box.appendChild(p);
+  }
+  function paint(v){ var st=state(v.restaurant_id); st.v=v; if(st.node)fill(st.node,v); }
+  function paintAll(){ Object.keys(PS).forEach(function(rid){ var st=PS[rid]; if(st.v&&st.node)fill(st.node,st.v); }); }
+  function section(v,demo){
+    var st=state(v.restaurant_id), box=el('div');
+    box.setAttribute('data-pay-venue',v.restaurant_id); st.node=box; st.v=v; st.demo=demo===true;
+    if(!providersError)loadProviders();   // once; after a failure, only Connect asks again
+    if(!st.rows&&!st.busy&&adminKey()){ load(v); } else fill(box,v);
+    return box;
+  }
+  window.AalaynaAdminPayments={section:section,state:function(rid){ return PS[rid]; },providers:function(){ return PROVIDERS; },choices:choices,webhookUrl:webhookUrl};
+})();
+</script>
+<!-- ==== T7 payments (admin) script: end ==== -->
 <!-- ==== T6 Venues (onboarding) script: start ==== -->
 <script>
 /* Venues: onboarding with an admin key (supabase/admin.sql).
@@ -788,7 +1003,10 @@ Aalayna.on(function(){ paintAll(); });
     var demoText=p.demo?'On: the venue is marked as still using simulated payments.':'Off: the venue is marked as using its real payment provider.';
     var toggle=button(p.demo?'Switch demo payments off':'Switch demo payments on','',function(){ saveProfile(v,{demo_payments:!p.demo},'Demo payments switched '+(p.demo?'off.':'on.')); });
     toggle.disabled=busy;
-    box.appendChild(line('Status',demoText+' Stored with the profile. On: card and Whish on a shared bill go to the fake provider (no money moves) while FAKE_WEBHOOK_SECRET is set on the functions. Off: only the rails with a payment_providers row are offered; with none, cash only.',[toggle],true));
+    box.appendChild(line('Status',demoText+' Stored with the profile. On: card and Whish on a shared bill go to the fake provider (no money moves) while FAKE_WEBHOOK_SECRET is set on the functions. Off: only the rails connected under Payments, below, are offered; with none, cash only.',[toggle],true));
+    /* ==== T7 payments hook: start ==== */
+    if(window.AalaynaAdminPayments)box.appendChild(window.AalaynaAdminPayments.section(v,p.demo));
+    /* ==== T7 payments hook: end ==== */
 
     box.appendChild(el('h3','Profile'));
     if(VS.editing[rid]){
