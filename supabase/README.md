@@ -56,20 +56,24 @@ the files that touch staff roles ("Owner groups", below). It replaces `aal_role`
 `aal_staff_role` and `aal_staff` from `auth-2026-09-24.sql`: re-running `auth-2026-09-24.sql`
 means running `groups-2026-10-28.sql` again. `close-narrative-2026-10-28.sql` ("The close, in
 words") and `review-fixes-2026-11-10.sql` ("Review fixes", below) come after it, the review
-fixes last. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` from
+fixes last of those; `all-venues-2026-11-24.sql` ("All venues", below) only adds functions and
+can follow them. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` from
 `theme-2026-09-28.sql`; both earlier files now carry its fallback, so re-running them undoes
 nothing, and it is safe to run again after them. `webhook-venues-2026-11-24.sql` ("Hosted
 payment pages", per-venue webhook secrets) needs only `payment-start-2026-10-14.sql` and
 replaces nothing; it goes after the review fixes. `payment-connect-2026-11-24.sql`
 ("Connecting a payment provider from admin", below) comes last; it replaces no earlier
-function and works whether `webhook-venues-2026-11-24.sql` has run or not.
+function and works whether `webhook-venues-2026-11-24.sql` has run or not. Neither of the two
+November 24 payment files needs `groups-2026-10-28.sql` or `close-narrative-2026-10-28.sql`:
+they use only `payment_providers`, `venue_keys`, `admin_keys` and Vault.
 
 The whole order, for a fresh project: `migration.sql`, `site-events.sql`,
 `hardening-2026-09-15.sql`, `hardening-2026-09-24.sql`, `admin.sql`, `sessions-2026-09-24.sql`,
 `auth-2026-09-24.sql`, `followups-2026-09-24.sql`, `theme-2026-09-28.sql`,
 `daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`, `integrations-2026-09-30.sql`,
 `payment-start-2026-10-14.sql`, `groups-2026-10-28.sql`, `close-narrative-2026-10-28.sql`,
-`review-fixes-2026-11-10.sql`, `webhook-venues-2026-11-24.sql`, `payment-connect-2026-11-24.sql`.
+`review-fixes-2026-11-10.sql`, `all-venues-2026-11-24.sql`, `webhook-venues-2026-11-24.sql`,
+`payment-connect-2026-11-24.sql`.
 
 ## Owner groups: one floor for several venues (October 28)
 
@@ -112,8 +116,8 @@ select restaurant_id, aal_role(restaurant_id) from venue_keys;   -- 'owner' for 
 rollback;
 ```
 
-What it does not do yet: the shared-mode dashboard is still one venue per link (the venue switcher and
-the All venues view run in the no-key demo, from the same per-venue figures); `aal_pos_is_owner`
+The shared-mode dashboard's venue switcher and All venues view need `all-venues-2026-11-24.sql`
+("All venues", below); without it a shared dashboard stays one venue per link. `aal_pos_is_owner`
 accepts the venue's own owner key and signed-in owners, not the group key, for POS keys and webhooks.
 `aal_role` is evaluated per row by the policies and now also looks up the group, a few more index
 lookups per row.
@@ -511,6 +515,39 @@ runs the same requests through it and through the SQL and fails on any differenc
 guest page depends on more it behaves as live: the snapshot strips `externalRef`, a confirmed
 payment carries `demo`, and `aal_now` answers the server's time.
 
+## All venues in shared mode (November 24)
+
+`all-venues-2026-11-24.sql`, run after `groups-2026-10-28.sql` (it stops without changing anything
+if that file is missing; after the review fixes where they are installed; safe to run again). It
+adds functions only: no table, row, policy or existing function changes. Tested against PGlite
+(`tests/all-venues.test.cjs`).
+
+- **`aal_all_venues()`** (anon and authenticated; `POST /rest/v1/rpc/aal_all_venues` with `{}`):
+  for a signed-in session or an owner key, every venue where `aal_role` gives the caller `owner`
+  today, so a venue's owner or manager, a group owner or manager at the group's venues, the group
+  key at the group's venues, a venue key at its venue. A waiter's venue is never listed; a revoked
+  row or a venue removed from its group drops out at once. Each venue comes with its checks, its
+  payments (without device, session, payer and provider references), its guests reduced to their
+  consent history (no contact, channel, device or identity), its rating events (the rating alone)
+  and its floor plan. STABLE and read only.
+- **The dashboard.** Once the first read names the page's role `owner`, the dashboard asks
+  `aal_all_venues`. With two or more venues it shows the switcher: All venues adds up each venue's
+  figures, computed in the browser by the same code as the venue's own dashboard (this venue from its
+  own live records, the others from this read, kept in memory only and re-read every 30 seconds
+  while All venues is shown). Picking another venue opens that venue's own dashboard; everything
+  that changes a venue happens there, as before.
+
+Check after running it, from the SQL editor (a group's key for one transaction):
+
+```sql
+begin;
+select set_config('request.headers', json_build_object('x-aalayna-key',
+  (select owner_key from owner_groups where name = 'Mayda Group'))::text, true);
+select v->>'restaurant_id', jsonb_array_length(v->'rows')
+  from jsonb_array_elements(aal_all_venues()->'venues') v;   -- the group's venues, nothing else
+rollback;
+```
+
 ## Review fixes (November 10)
 
 `review-fixes-2026-11-10.sql`, run after `payment-start-2026-10-14.sql` (and every file before
@@ -538,6 +575,24 @@ it; it is safe to run again). Tested against PGlite (`tests/review-fixes-sql.tes
 - **The database's clock.** `aal_now()` (anon and authenticated) answers `now()` as a
   timestamptz; `POST /rest/v1/rpc/aal_now` answers a JSON string. The guest page measures a
   payment's ten minutes against it, not against the phone's clock.
+
+## Insights for the owner (November 24)
+
+File: `insights-2026-11-24.sql`. Run it after `review-fixes-2026-11-10.sql`, and after
+`all-venues-2026-11-24.sql` where that is installed. It adds `aal_insights_events(p_rid, p_body)`,
+a read-only (STABLE, security definer) reader of one venue's events for the dashboard's Insights tab,
+and the index `kv_rows_events_created`. Nothing else changes, and it is safe to run again.
+
+- Who: `aal_role(p_rid) = 'owner'` (the venue's owner or manager, its owner key, a group owner or
+  manager or the group key at a venue of the group). Anyone else gets 42501.
+- `p_body`: `{"since": ISO, "until": ISO}`. `until` is at most now; the window is at most 90 days
+  (`"clamped": true` when it was cut).
+- Answer: `{version: 1, since, until, clamped, limit, truncated, from, count, firstEventAt,
+  deviceFirstSeen, events}`. Events are the types Insights reads, narrowed to the fields it reads (no
+  customerId, user agent, payer or provider reference), oldest first, at most 40,000 (the newest are
+  kept; `truncated` and `from` say when the cap cut the period).
+- The dashboard keeps the answer in memory only. Without this file it falls back to the events the
+  device holds, which a full browser store cuts to its last 200, and says so on the tab.
 
 ## Payment leftovers (November 24)
 

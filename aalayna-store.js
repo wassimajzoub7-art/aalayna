@@ -134,22 +134,22 @@
      Per-item FR/AR name and description. These live ON the item so the editor
      can edit them; the diner app reads them with English as the fallback. */
   var SEED_TR = {
-    i01:{fr:{n:"Assiette de foul et houmous",d:"Fèves, pois chiches, tahini, huile d'olive, cumin"},ar:{n:"صحن فول وحمص",d:"فول، حمص، طحينة، زيت زيتون، كمون"}},
-    i02:{fr:{n:"Œufs à l'awarma",d:"Œufs baladi, confit d'agneau, ghee"},ar:{n:"بيض بالقاورما",d:"بيض بلدي، قاورما، سمنة"}},
-    i03:{fr:{n:"Lahm b'ajin · 4 pièces",d:"Agneau haché, tomate, oignon, mélasse de grenade, pignons"},ar:{n:"لحم بعجين · ٤ قطع",d:"لحمة مفرومة، بندورة، بصل، دبس رمان، صنوبر"}},
-    i04:{fr:{n:"Fatteh au yaourt",d:"Pois chiches, yaourt à l'ail, pain frit, pignons"},ar:{n:"فتة باللبن",d:"حمص، لبن بالثوم، خبز مقلي، صنوبر"}},
-    i05:{fr:{n:"Taboulé",d:"Persil, boulgour, tomate, oignon, citron, huile d'olive"},ar:{n:"تبولة",d:"بقدونس، برغل، بندورة، بصل، حامض، زيت زيتون"}},
+    i01:{fr:{n:"Assiette de foul et houmous",d:"Fèves, pois chiches, tahini, huile d’olive, cumin"},ar:{n:"صحن فول وحمص",d:"فول، حمص، طحينة، زيت زيتون، كمون"}},
+    i02:{fr:{n:"Œufs à l’awarma",d:"Œufs baladi, confit d’agneau, ghee"},ar:{n:"بيض بالقاورما",d:"بيض بلدي، قاورما، سمنة"}},
+    i03:{fr:{n:"Lahm b’ajin · 4 pièces",d:"Agneau haché, tomate, oignon, mélasse de grenade, pignons"},ar:{n:"لحم بعجين · 4 قطع",d:"لحمة مفرومة، بندورة، بصل، دبس رمان، صنوبر"}},
+    i04:{fr:{n:"Fatteh au yaourt",d:"Pois chiches, yaourt à l’ail, pain frit, pignons"},ar:{n:"فتة باللبن",d:"حمص، لبن بالثوم، خبز مقلي، صنوبر"}},
+    i05:{fr:{n:"Taboulé",d:"Persil, boulgour, tomate, oignon, citron, huile d’olive"},ar:{n:"تبولة",d:"بقدونس، برغل، بندورة، بصل، حامض، زيت زيتون"}},
     i06:{fr:{n:"Houmous beyrouthin",d:"Pois chiches, tahini, ail, citron, piment"},ar:{n:"حمص بيروتي",d:"حمص، طحينة، ثوم، حامض، فليفلة حارة"}},
-    i07:{fr:{n:"Assiette de grillades",d:"Kebab, chiche taouk, côtelettes d'agneau, frites"},ar:{n:"مشاوي مشكلة",d:"كباب، شيش طاووق، ريش غنم، بطاطا"}},
+    i07:{fr:{n:"Assiette de grillades",d:"Kebab, chiche taouk, côtelettes d’agneau, frites"},ar:{n:"مشاوي مشكلة",d:"كباب، شيش طاووق، ريش غنم، بطاطا"}},
     i08:{fr:{n:"Arayes",d:"Pain pita grillé, agneau haché épicé, oignon, persil"},ar:{n:"عرايس",d:"خبز مشوي، لحمة مفرومة، بصل، بقدونس"}},
-    i09:{fr:{n:"Atayef à l’ashta · 3 pièces",d:"Crêpes pliées, crème ashta, sirop à la fleur d’oranger, pistache"},ar:{n:"قطايف بالقشطة · ٣ قطع",d:"قطايف، قشطة، قطر بماء الزهر، فستق حلبي"}},
+    i09:{fr:{n:"Atayef à l’ashta · 3 pièces",d:"Crêpes pliées, crème ashta, sirop à la fleur d’oranger, pistache"},ar:{n:"قطايف بالقشطة · 3 قطع",d:"قطايف، قشطة، قطر بماء الزهر، فستق حلبي"}},
     i10:{fr:{n:"Halawet el jeben",d:"Pâte de fromage sucrée, crème ashta, sirop de rose, pistache"},ar:{n:"حلاوة الجبن",d:"عجينة جبن حلوة، قشطة، ماء ورد، فستق"}},
-    i11:{fr:{n:"Assortiment de maamoul · 250 g",d:"Sablés à la semoule fourrés aux dattes, à la pistache et aux noix"},ar:{n:"معمول مشكّل · ٢٥٠ غ",d:"معمول بالسميد محشي تمر وفستق حلبي وجوز"}},
+    i11:{fr:{n:"Assortiment de maamoul · 250 g",d:"Sablés à la semoule fourrés aux dattes, à la pistache et aux noix"},ar:{n:"معمول مشكّل · 250 غ",d:"معمول بالسميد محشي تمر وفستق حلبي وجوز"}},
     i12:{fr:{n:"Glace ashta",d:"Lait, crème, mastic, sucre, croûte de pistache"},ar:{n:"بوظة قشطة",d:"حليب، قشطة، مستكة، سكر، فستق"}},
     i13:{fr:{n:"Espresso",d:"Origine unique, préparé à la commande"},ar:{n:"إسبريسو",d:"بن مختار، يُحضّر عند الطلب"}},
-    i14:{fr:{n:"Café libanais",d:"Rakweh pour deux, eau de fleur d'oranger"},ar:{n:"قهوة عربية",d:"ركوة لشخصين، ماء زهر"}},
+    i14:{fr:{n:"Café libanais",d:"Rakweh pour deux, eau de fleur d’oranger"},ar:{n:"قهوة عربية",d:"ركوة لشخصين، ماء زهر"}},
     i15:{fr:{n:"Jallab",d:"Mélasse de dattes, eau de rose, pignons, raisins secs"},ar:{n:"جلاب",d:"دبس تمر، ماء ورد، صنوبر، زبيب"}},
-    i16:{fr:{n:"Limonade à la fleur d'oranger",d:"Citron, sucre, eau de fleur d'oranger, menthe"},ar:{n:"ليموناضة بماء الزهر",d:"حامض، سكر، ماء زهر، نعناع"}},
+    i16:{fr:{n:"Limonade à la fleur d’oranger",d:"Citron, sucre, eau de fleur d’oranger, menthe"},ar:{n:"ليموناضة بماء الزهر",d:"حامض، سكر، ماء زهر، نعناع"}},
     i17:{fr:{n:"Latte",d:"Espresso, lait vapeur"},ar:{n:"لاتيه",d:"إسبريسو مع حليب مبخّر"}}
   };
 
@@ -184,6 +184,12 @@
      viewVenue is that in-memory choice. Records are already scoped by venueId; the floor is the one
      venue document kept per venue, as aal.floor@<venueId> for every venue but the device's own. */
   var viewVenue = null;
+  /* All venues in shared mode (owner-group.js, supabase/all-venues-2026-11-24.sql): the other venues
+     of the signed-in owner, as the server last listed them, kept in memory only (never in this
+     page's storage). lent maps a venue key to { venue, data: { storage key: JSON text } }; while
+     util.withVenue reads one of them (lending), every read answers from its data and every write
+     throws: another venue's figures are read here, never changed. */
+  var lent = {}, lending = null;
   function venueKeyOf(v) { return JSON.stringify([String(v.name || '').trim().toLowerCase(), String(v.place || '').trim().toLowerCase()]); }
   function storageKey(k) {
     if (!activeScope) {
@@ -197,6 +203,7 @@
     return 'aal.scope:' + activeScope + ':' + k;
   }
   function read(k, fallback) {
+    if (lending) { var t = lending.data[k]; try { return t ? JSON.parse(t) : fallback; } catch (e) { return fallback; } }
     try { var v = localStorage.getItem(storageKey(k)); return v ? JSON.parse(v) : fallback; }
     catch (e) { return fallback; }
   }
@@ -226,12 +233,15 @@
       } catch (e) {}
     });
   }
+  function readOnly() { if (lending) throw new Error('Another venue is read only here. Open it to make changes.'); }
   function write(k, v) {
+    readOnly();
     if (!put(k, v)) { relieve(); put(k, v); }
     fire(k);
     hooks.afterWrite.forEach(function (h) { try { h(k, v); } catch (e) {} });
   }
   function rawWrite(k, v) {
+    readOnly();
     if (!put(k, v)) { relieve(); put(k, v); }
     fire(k);
   }
@@ -360,6 +370,7 @@
   }
 
   function seedIfEmpty() {
+    if (lending) return;   // a lent venue is the server's rows as they are
     if (!read(K.live, null)) {
       var seeded = clone(SEED_ITEMS).map(function (x) {
         var tr = SEED_TR[x.id] ? clone(SEED_TR[x.id]) : null;
@@ -859,6 +870,7 @@
       return JSON.stringify([v.name.trim().toLowerCase(), (v.place || '').trim().toLowerCase()]);
     },
     venue: function () {
+      if (lending) return clone(lending.venue);
       if (activeVenue) return clone(activeVenue);
       if (viewVenue) return clone(viewVenue);
       var u = venueFromURL();
@@ -982,12 +994,33 @@
     on: function (fn) { subs.push(fn); },
     notify: function (key) { fire(key); },
     util: { storageKey: storageKey, activateScope: function (scope) { activeVenue = clone(A.venue()); activeScope = scope; seedIfEmpty(); migrate(); },
-            /* run fn as if venue v were shown (the demo's group figures read each venue this way) */
+            /* run fn as if venue v were shown (group figures read each venue this way). In the demo
+               it is the venue's own records on this device. In shared mode it is this page's venue
+               itself, or another venue the server lent (lendVenues), read only; any other throws. */
             withVenue: function (v, fn) {
-              if (activeScope) throw new Error('Group figures are read venue by venue only in the demo.');
+              if (activeScope) {
+                var id = venueKeyOf(v);
+                var own = id === venueKeyOf(activeVenue), l = own ? null : Object.prototype.hasOwnProperty.call(lent, id) ? lent[id] : null;
+                if (!own && !l) throw new Error('Group figures are read venue by venue only in the demo.');
+                var prev = lending; lending = l;
+                try { return fn(); } finally { lending = prev; }
+              }
               var was = viewVenue; viewVenue = clone(v);
               try { return fn(); } finally { viewVenue = was; }
             },
+            /* shared mode: the other venues' rows for withVenue, { venueKey: { venue, data: { key: value } } }.
+               Each venue's data is keyed by its own venue key, never this page's; this page's venue is not lent. */
+            lendVenues: function (map) {
+              var next = {};
+              Object.keys(map || {}).forEach(function (id) {
+                var m = map[id]; if (!m || !m.venue || venueKeyOf(m.venue) !== id) return;
+                if (activeVenue && id === venueKeyOf(activeVenue)) return;
+                var data = {}; Object.keys(m.data || {}).forEach(function (k) { data[k] = JSON.stringify(m.data[k]); });
+                next[id] = { venue: clone(m.venue), data: data };
+              });
+              lent = next;
+            },
+            lentVenues: function () { return Object.keys(lent); },
             venueKey: venueKeyOf, read: read, write: write, rawWrite: rawWrite, hooks: hooks, uid: uid, now: now, cents: cents, clone: clone },
     reset: function () {
       try { localStorage.removeItem(storageKey('aal.pack')); } catch (e) {}

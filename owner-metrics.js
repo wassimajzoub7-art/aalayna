@@ -78,6 +78,7 @@
     });
     return order.map(function(id){ return best[id]; });
   }
+  A.latestOrders=latestOrders;
   function median(list){ if(!list.length)return null; var a=list.slice().sort(function(x,y){return x-y;}),m=Math.floor(a.length/2); return a.length%2?a[m]:(a[m-1]+a[m])/2; }
   A.eventMetrics=function(range,at){
     at=at==null?Date.now():at;
@@ -117,21 +118,27 @@
       payments:payments.length, identifiedPayments:identified, captureRate:ratio(identified,payments.length)};
   };
   /* ---- dish interest: opens, attention, and whether it reached a bill, per live dish ---- */
-  A.dishInterest=function(range,at){
-    at=at==null?Date.now():at;
-    var w=A.ownerWindow(range,at), byId={};
+  /* The rows for a list of events already cut to a period, over the menu items given (the
+     Insights tab, owner-insights.js, calls this with its own period and the venue's events). */
+  A.dishInterestFrom=function(inWindow,items){
+    var byId={};
     /* Upstream: one count per distinct bill, orderless events ignored. T1: of the
        append-only revisions of a bill only the latest counts. Both apply. */
-    A.published().items.forEach(function(x){ if(!x.archivedAt) byId[x.id]={itemId:x.id,name:x.name,section:x.sec,opens:0,sessions:{},dwell:[],onBills:0,units:0,billIds:{}}; });
-    var inWindow=A.events().filter(function(e){ return within(Date.parse(e.createdAt),w); }), current=new Set(latestOrders(inWindow));
+    (items||[]).forEach(function(x){ if(!x.archivedAt) byId[x.id]={itemId:x.id,name:x.name,section:x.sec,opens:0,sessions:{},dwell:[],onBills:0,units:0,billIds:{}}; });
+    var current=new Set(latestOrders(inWindow));
     inWindow.forEach(function(e){
       if(e.eventType==='item_view'&&byId[e.payload.itemId]){ var d=byId[e.payload.itemId]; d.opens++; d.sessions[e.sessionId]=1; }
       else if(e.eventType==='ui_action'&&e.payload.action==='dwell'&&byId[e.payload.value]&&Number.isFinite(e.payload.n)){ byId[e.payload.value].dwell.push(e.payload.n); }
       else if(e.eventType==='order_placed'&&current.has(e)){ (e.payload.items||[]).forEach(function(i){ var d=byId[i.itemId]; if(d && e.payload.orderId && !d.billIds[e.payload.orderId]){ d.billIds[e.payload.orderId]=true; d.onBills++; d.units+=i.qty||1; } }); }
     });
     return Object.keys(byId).map(function(k){ var d=byId[k], n=Object.keys(d.sessions).length;
-      return {itemId:d.itemId,name:d.name,section:d.section,opens:d.opens,sessions:n,avgDwellS:d.dwell.length?Math.round(d.dwell.reduce(function(a,b){return a+b;},0)/d.dwell.length):null,onBills:d.onBills,units:d.units,billRate:null};
+      return {itemId:d.itemId,name:d.name,section:d.section,opens:d.opens,sessions:n,avgDwellS:d.dwell.length?Math.round(d.dwell.reduce(function(a,b){return a+b;},0)/d.dwell.length):null,dwellReads:d.dwell.length,onBills:d.onBills,units:d.units,billRate:null};
     }).sort(function(a,b){ return b.opens-a.opens||b.onBills-a.onBills||a.name.localeCompare(b.name); });
+  };
+  A.dishInterest=function(range,at){
+    at=at==null?Date.now():at;
+    var w=A.ownerWindow(range,at);
+    return A.dishInterestFrom(A.events().filter(function(e){ return within(Date.parse(e.createdAt),w); }),A.published().items);
   };
   /* ---- how guests use the interface, from ui_action events, per session (last choice wins) ---- */
   A.uiUsage=function(range,at){

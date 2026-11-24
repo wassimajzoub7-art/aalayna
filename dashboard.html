@@ -11,12 +11,12 @@
 <link rel="icon" href="brand/icons/icon-32.png" sizes="32x32">
 <link rel="icon" href="brand/svg/3layna/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="brand/icons/icon-180.png">
-<script src="aalayna-store.js?v=27"></script>
+<script src="aalayna-store.js?v=28"></script>
 <script src="restaurant-growth.js?v=8"></script>
-<script src="owner-metrics.js?v=8"></script>
-<script src="owner-group.js?v=1"></script>
+<script src="owner-metrics.js?v=9"></script>
+<script src="owner-group.js?v=2"></script>
 <script src="aalayna-config.js"></script>
-<script src="aalayna-sync.js?v=11"></script>
+<script src="aalayna-sync.js?v=12"></script>
 
 <style>
   :root{
@@ -239,7 +239,7 @@
     .btn:active{transform:none}
   }
 </style>
-<link rel="stylesheet" href="restaurant-ops.css?v=8">
+<link rel="stylesheet" href="restaurant-ops.css?v=9">
 <style>
   /* ==== T4 staff sign-in: start ==== */
   .staff-gate{position:fixed;inset:0;z-index:10000;background:var(--bg);overflow:auto;display:flex;
@@ -292,6 +292,7 @@
   <nav>
     <button class="ni on" onclick="go(this,'tonight')">Service</button>
     <button class="ni" data-owner-only onclick="go(this,'week')">Overview</button>
+    <button class="ni" data-owner-only onclick="openInsights(this)">Insights</button>
     <button class="ni" data-owner-only onclick="go(this,'guests')">Customers</button>
     <button class="ni" data-owner-only onclick="go(this,'reviews')">Reviews<span class="bg" id="reviews-badge" hidden></span></button>
     <button class="ni" data-owner-only onclick="go(this,'team')">Team</button>
@@ -498,6 +499,16 @@
       </dialog>
   <dialog id="customer-dialog" class="ops-dialog" aria-label="Customer history"><div class="ops-heading"><h2>Customer history</h2><button class="btn icon-btn" aria-label="Close customer history" onclick="document.getElementById('customer-dialog').close()">×</button></div><div id="customer-detail" aria-live="polite"></div></dialog>
 
+  <!-- ═══════════ INSIGHTS (owner-insights.js, insights-panel.js) ═══════════ -->
+  <div class="view" id="v-insights" data-owner-only>
+    <div class="top">
+      <div><h1>Insights</h1><div class="sub">What guests’ phones and payments say about your dishes, your room and your money</div></div>
+      <div class="actions"><label class="ins-period" for="ins-period">Period <select id="ins-period" onchange="paintInsights()"><option value="30" selected>Last 30 days</option><option value="7">Last 7 days</option><option value="90">Last 90 days</option></select></label></div>
+    </div>
+    <div class="card" data-group-only><h3>Insights are worked out per venue</h3><p class="cs">Each venue’s dishes, tables and guests differ, so its findings come from its own activity. Open a venue to read them.</p><div class="staff-links" data-group-pick></div></div>
+    <section id="insights-body" aria-live="polite"></section>
+  </div>
+
   <!-- ═══════════ REVIEWS ═══════════ -->
   <div class="view" id="v-reviews">
     <div class="top">
@@ -668,6 +679,9 @@
 </script>
 <!-- ==== T4 staff sign-in: end ==== -->
 <script src="restaurant-ops.js?v=14"></script>
+<script src="owner-insights.js?v=1"></script>
+<script src="insights-demo.js?v=1"></script>
+<script src="insights-panel.js?v=1"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
@@ -1034,7 +1048,11 @@ try {
    the Live floor, the period's settlement, the overview, ratings and the team of every venue, each
    venue's figures exactly as its own screens compute them and the group line their sum (owner-metrics.js
    A.groupLive, A.groupReport, A.groupRatings). Picking a venue shows that venue's own screens, unchanged.
-   Customer lists are never joined across venues. Shared mode keeps one venue per link: no switcher. */
+   Customer lists are never joined across venues.
+   Shared mode: a signed-in owner (or an owner link) whose credential runs several venues gets the same
+   switcher once the server has listed them (Aalayna.loadSharedVenues). All venues is read only and
+   re-read every 30 seconds while it is shown; this venue is its own live page, and picking another
+   venue opens that venue's own dashboard. A waiter, or an owner of one venue, sees no switcher. */
 var floorScope = null;   // null: no group; 'all'; or the venue id being shown
 function groupOwnId(){ return Aalayna.groupVenueId(Aalayna.ownVenue()); }
 function groupVenueName(v, g){
@@ -1066,11 +1084,19 @@ function pickVenue(id){
   var g = Aalayna.groupActive(); if (!g) return;
   var v = g.venues.filter(function(x){ return Aalayna.groupVenueId(x) === id; })[0];
   if (id !== 'all' && !v) id = groupOwnId();
+  var shared = Aalayna.groupShared && Aalayna.groupShared();
+  if (shared && id !== 'all' && id !== groupOwnId()){   // another venue: its own page, its own credential scope
+    var href = Aalayna.sharedVenueHref(v);
+    if (href){ try { sessionStorage.setItem('aal.dash.floor', id); } catch (e) {} location.href = href; }
+    return;
+  }
   floorScope = id;
   try { sessionStorage.setItem('aal.dash.floor', id); } catch (e) {}
   document.body.setAttribute('data-floor', id === 'all' ? 'all' : 'venue');
-  billDraft = null; flActive = null; ownerReportSnapshot = null;   // the bill being entered and the server picked belong to the venue left
-  Aalayna.useVenue(id === 'all' || id === groupOwnId() ? null : v);   // repaints the venue's screens through Aalayna.on
+  if (!shared){
+    billDraft = null; flActive = null; ownerReportSnapshot = null;   // the bill being entered and the server picked belong to the venue left
+    Aalayna.useVenue(id === 'all' || id === groupOwnId() ? null : v);   // repaints the venue's screens through Aalayna.on
+  }
   var shown = id === 'all' ? null : Aalayna.venue();
   $('v-sub').textContent = (shown ? shown.name + (shown.place ? ' · ' + shown.place : '') : g.name + ' · ' + g.venues.length + ' venues').toUpperCase();
   paintVenueSwitch(); paintGroup(); paintVenueTeam();
@@ -1088,7 +1114,7 @@ function paintGroup(){
   }), ['All venues', money(live.total.pendingCashCents / 100) + (live.total.pendingCount ? ' · ' + live.total.pendingCount + ' waiting' : ''), String(live.total.openBills), money(live.total.collectedCents / 100)]);
   var settle = function(m){ var r = m.rails; return [money(r.whish / 100), money(r.card / 100), money(r.cash / 100), money((r.pos || 0) / 100), money(m.grossCents / 100), money(m.tipCents / 100), String(m.completedBills)]; };
   groupRows('g-settle-rows', 'g-settle-foot', report.venues.map(function(p){ return { id: p.venueId, cells: [name(p)].concat(settle(p.report.current)) }; }), ['All venues'].concat(settle(report.current)));
-  $('g-settle-note').textContent = report.window.label + ' · Beirut time. Confirmed amounts including tips; pending cash stays on each venue’s Live floor.';
+  $('g-settle-note').textContent = report.window.label + ' · Beirut time. Confirmed amounts including tips; pending cash stays on each venue’s Live floor.' + (g.readAt ? ' Other venues as read at ' + (Aalayna.sync && Aalayna.sync.clock ? Aalayna.sync.clock(g.readAt) : g.readAt.slice(11, 16)) + '.' : '');
   var c = report.current;
   $('overview-period').textContent = report.window.label + ' · every venue of ' + g.name;
   $('g-week-net').textContent = money(c.netCents / 100);
@@ -1142,15 +1168,34 @@ function paintVenueTeam(){
   box.append(col, col2);
 }
 (function(){
+  var started = false;
+  function start(g){
+    var asked = '', kept = '';
+    try { asked = new URLSearchParams(location.search).get('floor') || ''; } catch (e) {}
+    try { kept = sessionStorage.getItem('aal.dash.floor') || ''; } catch (e) {}
+    var ids = g.venues.map(Aalayna.groupVenueId);
+    pickVenue(asked === 'all' ? 'all' : (kept === 'all' || ids.indexOf(kept) >= 0) ? kept : groupOwnId());
+    if (started) return; started = true;
+    $('report-period').addEventListener('change', paintGroup);
+    Aalayna.on(function(k){
+      if (k === 'group' && !Aalayna.groupActive() && floorScope){   // the server no longer lists several venues: back to this one
+        floorScope = null; document.body.removeAttribute('data-floor'); paintVenueSwitch(); var o = Aalayna.ownVenue();
+        $('v-sub').textContent = (o.name + (o.place ? ' · ' + o.place : '')).toUpperCase(); return;
+      }
+      if (k === 'group') paintVenueSwitch();
+      paintGroup(); paintVenueTeam();
+    });
+  }
   var g = Aalayna.seedDemoGroup ? Aalayna.seedDemoGroup() : null;
-  if (!g) return;
-  var asked = '', kept = '';
-  try { asked = new URLSearchParams(location.search).get('floor') || ''; } catch (e) {}
-  try { kept = sessionStorage.getItem('aal.dash.floor') || ''; } catch (e) {}
-  var ids = g.venues.map(Aalayna.groupVenueId);
-  pickVenue(asked === 'all' ? 'all' : (kept === 'all' || ids.indexOf(kept) >= 0) ? kept : groupOwnId());
-  $('report-period').addEventListener('change', paintGroup);
-  Aalayna.on(function(){ paintGroup(); paintVenueTeam(); });
+  if (g) return start(g);
+  // shared mode: owners only, after the first read has named the role
+  if (!(Aalayna.sync && Aalayna.sync.enabled && Aalayna.sync.onReady && Aalayna.loadSharedVenues)) return;
+  function load(){ return Aalayna.loadSharedVenues().then(function(sg){ if (sg && !started) start(sg); }); }
+  Aalayna.sync.onReady(function(){
+    if (Aalayna.sync.state().role !== 'owner') return;
+    load();
+    setInterval(function(){ if (floorScope === 'all' && document.visibilityState !== 'hidden') load(); }, 30000);
+  });
 })();
 </script>
 <!-- ==== T2 owner group: end ==== -->
