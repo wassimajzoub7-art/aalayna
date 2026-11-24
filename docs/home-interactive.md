@@ -132,9 +132,9 @@ The page's own new words (the hints beside the phones on a wide screen, the capt
 
 | English | Arabic | Back-translation |
 | --- | --- | --- |
-| Try it: change the language or the currency, or tap a dish. | جرّبها: غيّر اللغة أو العملة، أو اضغط على طبق. | Try it: change the language or the currency, or press a dish. |
-| Try it: change how many of you there are. | جرّبها: غيّر عدد الأشخاص. | Try it: change the number of people. |
-| Try it: choose the tip, or how to pay. | جرّبها: اختر الإكرامية، أو طريقة الدفع. | Try it: choose the tip, or the way to pay. |
+| Try it: change the language or the currency, or tap a dish. | جرّب بنفسك: غيّر اللغة أو العملة، أو اضغط على طبق. | Try it yourself: change the language or the currency, or press a dish. |
+| Try it: change how many of you there are. | جرّب بنفسك: غيّر عدد الأشخاص. | Try it yourself: change the number of people. |
+| Try it: choose the tip, or how to pay. | جرّب بنفسك: اختر الإكرامية، أو طريقة الدفع. | Try it yourself: choose the tip, or the way to pay. |
 | Pay with: Whish, Card, Cash | الدفع عبر: Whish، بطاقة، نقداً | Payment via: Whish, card, cash |
 | Guests | الضيوف | The guests |
 | USD / LBP | دولار / ليرة | Dollar / Lira |

@@ -28,7 +28,7 @@ const PAGE = {
   fr: { tryMenu: 'Essayez\u202f: changez la langue ou la devise, ou touchez un plat.', trySplit: 'Essayez\u202f: changez le nombre de convives.', tryPay: 'Essayez\u202f: choisissez le pourboire, ou le moyen de paiement.',
     menuG: 'Essayer le menu', langG: 'Langue', ccyG: 'Devise', usd: 'USD', lbp: 'LBP', guests: 'Convives', fewer: 'Un de moins', more: 'Un de plus',
     noTip: 'Aucun', tipG: 'Pourboire', wayG: 'Payer par', ways: ['Whish', 'Carte', 'Espèces'], menuL: 'L’appli client\u202f: le menu', splitL: 'L’appli client\u202f: le partage', payL: 'L’appli client\u202f: le paiement' },
-  ar: { tryMenu: 'جرّبها: غيّر اللغة أو العملة، أو اضغط على طبق.', trySplit: 'جرّبها: غيّر عدد الأشخاص.', tryPay: 'جرّبها: اختر الإكرامية، أو طريقة الدفع.',
+  ar: { tryMenu: 'جرّب بنفسك: غيّر اللغة أو العملة، أو اضغط على طبق.', trySplit: 'جرّب بنفسك: غيّر عدد الأشخاص.', tryPay: 'جرّب بنفسك: اختر الإكرامية، أو طريقة الدفع.',
     menuG: 'جرّب القائمة', langG: 'اللغة', ccyG: 'العملة', usd: 'دولار', lbp: 'ليرة', guests: 'الضيوف', fewer: 'شخص أقل', more: 'شخص أكثر',
     noTip: 'بلا', tipG: 'الإكرامية', wayG: 'الدفع عبر', ways: ['Whish', 'بطاقة', 'نقداً'], menuL: 'تطبيق الضيف: القائمة', splitL: 'تطبيق الضيف: التقسيم', payL: 'تطبيق الضيف: الدفع' }
 };
