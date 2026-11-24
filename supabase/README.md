@@ -56,7 +56,8 @@ the files that touch staff roles ("Owner groups", below). It replaces `aal_role`
 `aal_staff_role` and `aal_staff` from `auth-2026-09-24.sql`: re-running `auth-2026-09-24.sql`
 means running `groups-2026-10-28.sql` again. `close-narrative-2026-10-28.sql` ("The close, in
 words") and `review-fixes-2026-11-10.sql` ("Review fixes", below) come after it, the review
-fixes last. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` from
+fixes last of those; `all-venues-2026-11-24.sql` ("All venues", below) only adds functions and
+can follow them. `review-fixes-2026-11-10.sql` replaces `aal_admin_write_profile` from
 `theme-2026-09-28.sql`; both earlier files now carry its fallback, so re-running them undoes
 nothing, and it is safe to run again after them.
 
@@ -65,7 +66,7 @@ The whole order, for a fresh project: `migration.sql`, `site-events.sql`,
 `auth-2026-09-24.sql`, `followups-2026-09-24.sql`, `theme-2026-09-28.sql`,
 `daily-close-2026-09-30.sql`, `payments-2026-09-30.sql`, `integrations-2026-09-30.sql`,
 `payment-start-2026-10-14.sql`, `groups-2026-10-28.sql`, `close-narrative-2026-10-28.sql`,
-`review-fixes-2026-11-10.sql`.
+`review-fixes-2026-11-10.sql`, `all-venues-2026-11-24.sql`.
 
 ## Owner groups: one floor for several venues (October 28)
 
@@ -108,8 +109,8 @@ select restaurant_id, aal_role(restaurant_id) from venue_keys;   -- 'owner' for 
 rollback;
 ```
 
-What it does not do yet: the shared-mode dashboard is still one venue per link (the venue switcher and
-the All venues view run in the no-key demo, from the same per-venue figures); `aal_pos_is_owner`
+The shared-mode dashboard's venue switcher and All venues view need `all-venues-2026-11-24.sql`
+("All venues", below); without it a shared dashboard stays one venue per link. `aal_pos_is_owner`
 accepts the venue's own owner key and signed-in owners, not the group key, for POS keys and webhooks.
 `aal_role` is evaluated per row by the policies and now also looks up the group, a few more index
 lookups per row.
@@ -459,6 +460,39 @@ not run; the SQL is tested by `tests/payment-start-sql.test.cjs` with PGLITE_MOD
 guest page depends on them it behaves as live (`tests/rehearse-payments.test.cjs`): the
 snapshot strips `externalRef`, a confirmed payment carries `demo`, amount and tip must be
 numbers, and `aal_now` answers the server's time.
+
+## All venues in shared mode (November 24)
+
+`all-venues-2026-11-24.sql`, run after `groups-2026-10-28.sql` (it stops without changing anything
+if that file is missing; after the review fixes where they are installed; safe to run again). It
+adds functions only: no table, row, policy or existing function changes. Tested against PGlite
+(`tests/all-venues.test.cjs`).
+
+- **`aal_all_venues()`** (anon and authenticated; `POST /rest/v1/rpc/aal_all_venues` with `{}`):
+  for a signed-in session or an owner key, every venue where `aal_role` gives the caller `owner`
+  today, so a venue's owner or manager, a group owner or manager at the group's venues, the group
+  key at the group's venues, a venue key at its venue. A waiter's venue is never listed; a revoked
+  row or a venue removed from its group drops out at once. Each venue comes with its checks, its
+  payments (without device, session, payer and provider references), its guests reduced to their
+  consent history (no contact, channel, device or identity), its rating events (the rating alone)
+  and its floor plan. STABLE and read only.
+- **The dashboard.** Once the first read names the page's role `owner`, the dashboard asks
+  `aal_all_venues`. With two or more venues it shows the switcher: All venues adds up each venue's
+  figures, computed in the browser by the same code as the venue's own dashboard (this venue from its
+  own live records, the others from this read, kept in memory only and re-read every 30 seconds
+  while All venues is shown). Picking another venue opens that venue's own dashboard; everything
+  that changes a venue happens there, as before.
+
+Check after running it, from the SQL editor (a group's key for one transaction):
+
+```sql
+begin;
+select set_config('request.headers', json_build_object('x-aalayna-key',
+  (select owner_key from owner_groups where name = 'Mayda Group'))::text, true);
+select v->>'restaurant_id', jsonb_array_length(v->'rows')
+  from jsonb_array_elements(aal_all_venues()->'venues') v;   -- the group's venues, nothing else
+rollback;
+```
 
 ## Review fixes (November 10)
 

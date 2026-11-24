@@ -10,10 +10,18 @@
    Who sees what follows aal_role: a group owner or manager runs every venue of the group as an
    owner, a venue's own staff see only that venue, a waiter only the Live floor of it.
 
-   The group applies only in the demo (no key, no session) and only when this device's own venue
-   is one of its venues. Shared mode keeps one venue per page; the server model is the SQL file.
-   Records stay per venue (venueId): a group view reads each venue in turn (util.withVenue) and
-   adds the figures up (owner-metrics.js A.groupReport, A.groupLive). Guest lists are never joined. */
+   The demo group applies only in the demo (no key, no session) and only when this device's own
+   venue is one of its venues. Records stay per venue (venueId): a group view reads each venue in
+   turn (util.withVenue) and adds the figures up (owner-metrics.js A.groupReport, A.groupLive).
+   Guest lists are never joined.
+
+   Shared mode (a signed-in owner or an owner link): the page is still one venue's credential scope,
+   and A.loadSharedVenues asks the server which venues this credential runs as an owner
+   (aalayna-sync.js A.sync.pullVenues, supabase/all-venues-2026-11-24.sql). With two or more, they
+   are the group: this page's venue reads its own live records, the others are lent to the store
+   read only and in memory (util.lendVenues), so the same A.groupReport adds up the same per-venue
+   figures. Opening another venue opens its own page (A.sharedVenueHref). A waiter never asks, and
+   a venue the server does not list is never shown. */
 (function (global) {
   'use strict';
   var A = global.Aalayna, U = A.util, KEY = 'aal.group', RANK = { waiter: 1, manager: 2, owner: 3 };
@@ -21,6 +29,7 @@
   function higher(a, b) { return (RANK[b] || 0) > (RANK[a] || 0) ? b : a; }
   function clean(email) { return String(email || '').trim().toLowerCase(); }
 
+  var shared = null;   // shared mode: { id, name, venues, staff, shared: true, readAt } from the server
   A.group = function () {
     var g = U.read(KEY, null);
     return g && Array.isArray(g.venues) && g.venues.length ? g : null;
@@ -28,6 +37,7 @@
   A.setGroup = function (g) { U.write(KEY, g); };
   /* the group this device's own venue belongs to, in the demo only */
   A.groupActive = function () {
+    if (shared) return !A.demoMode() && shared.venues.length > 1 ? shared : null;
     var g = A.group();
     if (!g || !A.demoMode()) return null;
     var own = idOf(A.ownVenue());
@@ -39,6 +49,62 @@
     return g ? g.venues.map(function (v) { return U.clone(v); }) : [A.ownVenue()];
   };
   A.groupVenueId = idOf;
+
+  /* ---- shared mode: the venues the server lists for this credential ---- */
+  function ridParts(rid) { try { var a = JSON.parse(rid); if (Array.isArray(a)) return a; } catch (e) {} return [String(rid || ''), '']; }
+  /* the venue object for a listed venue: its own name and place when they give back its id, else the id's */
+  function sharedVenueOf(m) {
+    var p = ridParts(m.restaurantId), v = { name: m.name || p[0], place: m.place == null ? p[1] || '' : m.place };
+    if (idOf(v) !== m.restaurantId) v = { name: p[0], place: p[1] || '' };
+    v.slug = m.slug || '';
+    return v;
+  }
+  function staffRows(list, groupIds) {
+    var rows = [];
+    (list || []).forEach(function (g) {
+      if (!g || groupIds.indexOf(g.group_id) < 0) return;
+      (g.staff || []).forEach(function (s) { rows.push({ email: s.email, name: '', role: s.role, venueId: null, revokedAt: s.revoked_at || null }); });
+      (g.venue_staff || []).forEach(function (vs) {
+        (vs && vs.staff || []).forEach(function (s) { rows.push({ email: s.email, name: '', role: s.role, venueId: vs.restaurant_id, revokedAt: s.revoked_at || null }); });
+      });
+    });
+    return rows;
+  }
+  /* Ask the server (owner pages only). Resolves with the group, or null when this credential runs
+     one venue, the page's own venue is not among the listed ones, or the server cannot answer
+     (then the page stays on its venue, as before). */
+  A.loadSharedVenues = function () {
+    var sync = A.sync;
+    if (A.demoMode() || !sync || !sync.pullVenues) return Promise.resolve(null);
+    return sync.pullVenues().then(function (list) {
+      var own = idOf(A.ownVenue());
+      if (!list || !list.some(function (m) { return m.restaurantId === own; })) { shared = null; U.lendVenues({}); A.notify('group'); return null; }
+      var lend = {}, venues = list.map(function (m) {
+        if (m.restaurantId === own) return A.ownVenue();
+        var v = sharedVenueOf(m); lend[m.restaurantId] = { venue: v, data: m.data }; return v;
+      });
+      U.lendVenues(lend);
+      var groups = list.map(function (m) { return m.groupId; }).filter(function (g, i, all) { return g && all.indexOf(g) === i; });
+      var one = groups.length === 1 && list.every(function (m) { return m.groupId === groups[0]; });
+      var prev = shared;
+      shared = { id: one ? groups[0] : 'mine', name: one ? list[0].groupName || 'Your venues' : 'Your venues', venues: venues,
+                 staff: prev ? prev.staff : [], shared: true, readAt: new Date().toISOString() };
+      A.notify('group');
+      if (!sync.groupStaff || !groups.length) return A.groupActive();
+      return Promise.all(groups.map(function (g) { return sync.groupStaff(g); })).then(function (answers) {
+        if (shared) { shared.staff = staffRows(answers, groups); A.notify('group'); }
+        return A.groupActive();
+      });
+    }, function () { return A.groupActive(); });
+  };
+  A.groupShared = function () { return !!A.groupActive() && !!shared; };
+  /* the address of another listed venue's own dashboard, for the drill-down in shared mode */
+  A.sharedVenueHref = function (v, page) {
+    var id = idOf(v);
+    if (!shared || !A.sync || !A.sync.openVenue || !A.sync.openVenue(id)) return null;
+    var p = ridParts(id), name = v.name || p[0], place = v.place == null ? p[1] : v.place;
+    return (page || 'dashboard.html') + '?venue=' + encodeURIComponent(name) + (place ? '&place=' + encodeURIComponent(place) : '');
+  };
 
   /* What a person may open, per venue id: 'owner' (owner or manager rights) or 'waiter'.
      A group role covers every venue of the group; a venue role only that venue; the higher wins. */
