@@ -200,7 +200,9 @@ test('homepage figures: what the restaurant gets, none of them from the calculat
     const s = read(f);
     const figs = [...s.matchAll(/<article class="stretch (s-[a-z]+)[^"]*"[^>]*>([\s\S]*?)<\/article>/g)]
       .map(m => [m[1], m[2].match(/<div class="fig"><p class="num" data-count>([^<]+)<\/p><p class="src">[^<]+<\/p><\/div>/)]).filter(x => x[1]).map(x => x[0] + ' ' + x[1][1]);
-    assert.deepEqual(figs, f === AR ? ['s-bill 10 دقائق', 's-pay 22%', 's-review 83%', 's-again 50%'] : ['s-bill 10 min', 's-pay 22%', 's-review 83%', 's-again 50%'], f);
+    // French sets a narrow no-break space before the per cent sign.
+    const pc = f === FR ? '&#8239;%' : '%';
+    assert.deepEqual(figs, f === AR ? ['s-bill 10 دقائق', 's-pay 22%', 's-review 83%', 's-again 50%'] : ['s-bill 10 min', 's-pay 22' + pc, 's-review 83' + pc, 's-again 50' + pc], f);
     const note = s.match(/<!-- Where the figures come from \(for meetings; not shown\): ([^>]*) -->/);
     assert.ok(note, f + ': the sources, noted');
     ['Barclaycard', 'The New York Times', 'BrightLocal', 'Toast Regulars Report'].forEach(src => assert.ok(note[1].includes(src), f + ': ' + src));
@@ -489,7 +491,7 @@ test('fr copy: written in French, nothing left in English, French spacing before
     for (const m of t.matchAll(/[:;?!]/g)) if (!/\d/.test(t[m.index - 1] || '')) assert.ok(t[m.index - 1] === ' ' || t[m.index - 1] === ' ', 'no narrow no-break space before "' + m[0] + '" in "' + t + '"');
   });
   // French sets a narrow space before % (the app does too): the same figures either way.
-  const figures = s => [...new Set(visible(s).join(' ').replace(/(\d)\u202F%/g, '$1%').match(/\$\d[\d,.]*\d|\b\d+%|\d+ min\b/g))].sort();
+  const figures = s => [...new Set(visible(s).join(' ').replace(/(\d)[\u202F ]%/g, '$1%').match(/\$\d[\d,.]*\d|\b\d+%|\d+ min\b/g))].sort();
   assert.deepEqual(figures(fr), figures(en), 'the same amounts, percentages and minutes');
   ['<span class="amt">$150</span> <span class="unit">/ mois / établissement</span>', '<strong>$100/mois par établissement.</strong>', 'Deux mois gratuits à partir de la mise en service', 'Pilote gratuit de deux mois'].forEach(t => assert.ok(fr.includes(t), t));
   ['Aalayna', 'USD', 'LBP', 'Whish', 'QR'].forEach(t => assert.ok(fr.includes(t), t + ' kept'));
