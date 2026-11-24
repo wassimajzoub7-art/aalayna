@@ -695,3 +695,21 @@ test('404.html: static, absolute paths, the way home, the site CTAs and the one 
   assert.ok(!/—|&mdash;/.test(s), '404.html has an em dash');
   assert.match(read('.gitignore'), /^!404\.html$/m);
 });
+
+test('the calculator is retired from the public site: no public page links it, it stays noindex, system.html keeps it for meetings', () => {
+  // Roadmap T6, "the calculator relinked or retired": retired. The homepage figures are published research.
+  HOMES.concat(['book.html', '404.html', 'pitch.html', 'reel.html']).forEach(f => assert.ok(!/numbers\.html/.test(read(f)), f + ' links the calculator'));
+  assert.match(read('numbers.html'), /<meta name="robots" content="noindex">/);
+  assert.match(read('system.html'), /<a class="app" href="numbers\.html\?focus=all">/);
+});
+
+test('book.html on a phone: the pilot and the questions are named above the calendar, and the questions lead back to it', () => {
+  // Roadmap T6, "the questions reachable on phones": under 1024 px the owners' column sits below a calendar ~2,200 px tall.
+  const s = read('book.html');
+  const main = s.slice(s.indexOf('<main'), s.indexOf('<div class="booking"'));
+  assert.match(main, /<nav class="jump" aria-label="On this page"><a href="#pilot">How the pilot runs<\/a><a href="#faq">The questions owners ask<\/a><\/nav>/);
+  assert.match(s, /<div class="booking" id="calendar">/);
+  assert.match(s.slice(s.indexOf('id="faq"')), /<p class="to-cal"><a href="#calendar">Back to the calendar<\/a><\/p>/);
+  assert.match(s, /@media\(min-width:1024px\)\{\.jump,\.to-cal\{display:none\}\}/, 'beside the calendar on a computer, no jump');
+  assert.match(s, /\.jump a,\.to-cal a\{display:inline-flex;align-items:center;min-height:44px/, '44 px targets');
+});
