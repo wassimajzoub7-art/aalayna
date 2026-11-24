@@ -86,7 +86,7 @@
       cont: 'متابعة · {share}', powered: 'بتقنية', toPay: 'المبلغ المستحق · طاولة 12', billShare: 'حصّتك من الفاتورة', tip: 'الإكرامية',
       tipFor: 'إكرامية لـ{server}؟', noTip: 'بدون', whishDesc: 'يُفتح والمبلغ معبّأ مسبقاً', card: 'بطاقة', cash: 'الدفع نقداً',
       cashDesc: 'يؤكّده الموظفون بعد الاستلام', cashMark: 'نقد', pay: 'ادفع {pay}', thanks: 'شكراً.', paidVia: 'الدفع عبر', tableL: 'الطاولة',
-      mailPh: 'واتساب (+رمز الدولة) أو البريد الإلكتروني', send: 'أرسل إيصالي', offers: 'أرسلوا لي عروض Mayda', rateQ: 'كيف كانت سهرتك في Mayda؟',
+      mailPh: 'واتساب (+رمز الدولة) أو البريد الإلكتروني', send: 'أرسلوا لي الإيصال', offers: 'أرسلوا لي عروض Mayda', rateQ: 'كيف كانت سهرتك في Mayda؟',
       paid: 'مدفوع {pay}', onBill: '{q} على الفاتورة', offBill: 'ليس على الفاتورة', tipOf: 'إكرامية {p}، {amt}',
       railWhish: 'Whish Money', railCard: 'بطاقة', railCash: 'نقداً', reqCash: 'اطلب استلام المبلغ نقداً', paidCash: 'مدفوع {pay} · نقداً',
       cashOk: 'أكّد النادل استلام المبلغ نقداً.' }

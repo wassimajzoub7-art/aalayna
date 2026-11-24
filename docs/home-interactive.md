@@ -118,7 +118,7 @@ app's own wording wherever the two show the same thing; back-translations in bra
 | thanks | شكراً. | Thank you. |
 | paidVia / tableL | الدفع عبر / الطاولة | Payment via / Table |
 | mailPh | واتساب (+رمز الدولة) أو البريد الإلكتروني | WhatsApp (+country code) or email |
-| send | أرسل إيصالي | Send my receipt |
+| send | أرسلوا لي الإيصال | Send me the receipt |
 | offers | أرسلوا لي عروض Mayda | Send me Mayda's offers |
 | rateQ | كيف كانت سهرتك في Mayda؟ | How was your evening at Mayda? |
 | paid | مدفوع {مبلغ} | Paid {amount} |
