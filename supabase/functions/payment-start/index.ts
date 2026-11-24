@@ -4,7 +4,8 @@
 // wrapper; all logic is in handler.js, which node --test exercises (tests/payment-start.test.cjs).
 // Deploy with verify_jwt false: the guest page presents the bill key and the payer token, and
 // pay-demo.html presents only its signed token; the function checks them itself and answers
-// CORS for the origins in PAYMENT_RETURN_ORIGINS.
+// CORS for the origins in PAYMENT_RETURN_ORIGINS (https only, aalayna.com by default; plain
+// http only with PAYMENT_ALLOW_LOCAL_ORIGINS, never set on live).
 // deno-lint-ignore-file no-explicit-any
 import { createHandler } from './handler.js';
 

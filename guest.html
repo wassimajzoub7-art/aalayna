@@ -1631,7 +1631,10 @@ var STR = {
 /* i18n:end */
 /* the venue's place line in the guest's language, when the link carries one */
 function venuePlace(v){ return (LANG !== 'en' && v.placeTr && v.placeTr[LANG]) || v.place || ''; }
-/* a store or network refusal, in the guest's language; English keeps the store's own wording */
+/* a store or network refusal, in the guest's language. English keeps this page's and the demo
+   store's own wording; the shared store's answers (aal_mutate, e.serverMessage) are written
+   for developers, so they are worded by these keys in every language, and one with no key
+   reads errGeneric. Each entry is a prefix of the message. */
 var ERR_KEYS = [
   ['Enter a valid payment and tip.', 'errPay'],
   ['Choose enough cash to cover your share and tip.', 'errCash'],
@@ -1645,8 +1648,80 @@ var ERR_KEYS = [
   ['This payment is already linked to another contact.', 'errLinked'],
   ['Link contact details to a confirmed payment first.', 'errLinked'],
   ['The restaurant could not be reached', 'errNet'],
-  ['Paying by card or Whish needs the connection', 'errDigitalOnline']
+  ['Paying by card or Whish needs the connection', 'errDigitalOnline'],
+  // the demo store (aalayna-store.js) and the sync layer (aalayna-sync.js)
+  ['This payment reference was already used for a different request.', 'errPayRestart'],
+  ['Unknown payment request.', 'errPayGone'],
+  ['This request is ', 'errPayDone'],
+  ['Card and Whish payments complete on the payment provider', 'errProviderStart'],
+  ['Connect to the restaurant before continuing.', 'errNet'],
+  ['Saved on this device.', 'queuedAlert'],
+  ['Already saved on this device.', 'queuedAlert'],
+  ['Your role cannot save this change', 'errBillLink'],
+  // the shared store: aal_mutate reserve, cancel and receipt (supabase/auth-2026-09-24.sql)
+  ['Access denied', 'errBillLink'],
+  ['Wrong bill', 'errBillLink'],
+  ['Open a current bill link', 'errBillLink'],
+  ['Missing payer token', 'errPayRestart'],
+  ['Wrong payer token', 'errOtherDevice'],
+  ['Payment request changed', 'errPayRestart'],
+  ['Invalid amount', 'errPay'],
+  ['invalid input syntax for type', 'errPay'],
+  ['bigint out of range', 'errPay'],
+  ['cannot convert ', 'errPay'],
+  ['Bill closed or unavailable', 'errClosed'],
+  ['Another payment already covers this balance.', 'errCovered'],
+  ['Invalid item selection', 'errChanged'],
+  ['cannot call jsonb_each_text', 'errChanged'],
+  ['Item already reserved', 'errTaken'],
+  ['Items do not match the amount', 'errChanged'],
+  ['Not enough cash', 'errCash'],
+  ['Payment unavailable', 'errPayGone'],
+  ['Payment already completed', 'errPayDone'],
+  ['Payment already confirmed', 'errPayDone'],
+  ['Payment must be confirmed', 'errReceiptWait'],
+  ['Invalid email', 'mailInvalid'],
+  ['International number required', 'mailInvalid'],
+  ['Invalid channel', 'mailInvalid'],
+  ['Payment already linked', 'errLinked'],
+  ['Reservation expired or changed', 'errExpired']
 ];
+/* the texts of the payment refusals added on 2026-11-24, kept here with the table that uses
+   them and added to STR (a key STR already has is left as it is) */
+var ERR_STR = {
+  en: {
+    errCovered: 'Another payment already covers part of this bill. Check your share and try again.',
+    errBillLink: 'This bill link is no longer valid. Ask your server for the current one.',
+    errPayRestart: 'This payment could not be checked. Please start again.',
+    errOtherDevice: 'This payment was started on another phone or browser. Finish it there, or ask your server.',
+    errPayGone: 'This payment is no longer on the bill. Check your bill and try again.',
+    errPayDone: 'This payment is already complete. Check your bill.',
+    errReceiptWait: 'The receipt can be sent once the payment is confirmed.'
+  },
+  fr: {
+    errCovered: 'Un autre paiement couvre déjà une partie de cette addition. Vérifiez votre part et réessayez.',
+    errBillLink: 'Ce lien d’addition n’est plus valide. Demandez le lien actuel à votre serveur.',
+    errPayRestart: 'Ce paiement n’a pas pu être vérifié. Veuillez recommencer.',
+    errOtherDevice: 'Ce paiement a été lancé sur un autre téléphone ou navigateur. Terminez-le là-bas, ou demandez à votre serveur.',
+    errPayGone: 'Ce paiement ne figure plus sur l’addition. Vérifiez l’addition et réessayez.',
+    errPayDone: 'Ce paiement est déjà terminé. Vérifiez l’addition.',
+    errReceiptWait: 'Le reçu pourra être envoyé une fois le paiement confirmé.'
+  },
+  ar: {
+    errCovered: 'دفعةٌ أخرى تغطّي مسبقاً جزءاً من هذه الفاتورة. راجع حصتك وحاول مجدداً.',
+    errBillLink: 'رابط الفاتورة هذا لم يعد صالحاً. اطلب الرابط الحالي من النادل.',
+    errPayRestart: 'تعذّر التحقّق من هذا الدفع. ابدأ من جديد.',
+    errOtherDevice: 'بدأ هذا الدفع على هاتف أو متصفّح آخر. أكمله هناك، أو اسأل النادل.',
+    errPayGone: 'لم يعد هذا الدفع على الفاتورة. راجع الفاتورة وحاول مجدداً.',
+    errPayDone: 'اكتمل هذا الدفع مسبقاً. راجع الفاتورة.',
+    errReceiptWait: 'يمكن إرسال الإيصال بعد تأكيد الدفع.'
+  }
+};
+(function(){ for (var l in ERR_STR) if (STR[l]) for (var k in ERR_STR[l]) if (STR[l][k] == null) STR[l][k] = ERR_STR[l][k]; })();
+function errKey(m){
+  for (var i = 0; i < ERR_KEYS.length; i++) if (m.indexOf(ERR_KEYS[i][0]) === 0) return ERR_KEYS[i][1];
+  return null;
+}
 /* payment-start's answers (aalayna-sync.js marks them provider) are worded by their status,
    in every language: its own sentences are written for developers */
 function providerErrKey(e){
@@ -1662,9 +1737,10 @@ function errText(e){
   if (e && e.provider) return t(providerErrKey(e));
   // a browser's own network error ("Failed to fetch", "Load failed") is never shown as is
   if (/^(Failed to fetch|Load failed|NetworkError|Network request failed)/.test(m)) return t('errNet');
+  var k = errKey(m);
+  if (e && e.serverMessage) return t(k || 'errGeneric');
   if (LANG === 'en' && m) return m;
-  for (var i = 0; i < ERR_KEYS.length; i++) if (m.indexOf(ERR_KEYS[i][0]) === 0) return t(ERR_KEYS[i][1]);
-  return t('errGeneric');
+  return t(k || 'errGeneric');
 }
 function t(k, vars){
   var s = (STR[LANG] || STR.en)[k];
