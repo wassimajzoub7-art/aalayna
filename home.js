@@ -492,7 +492,8 @@
       // traveller's pace, so it stays in the stage from lift to landing.
       var PAN = { 2: [.06, .62], 3: [.06, .62], 4: [.16, .62] };
       var last = heroEls.length - 1, endY = hand(last - 1)[1] + vh;
-      add(T0 - vh, endY, function (p) {
+      // No phone laid out yet (a hidden tab, fonts still loading): nothing to move until the next measure.
+      if (last >= 0) add(T0 - vh, endY, function (p) {
         var y = T0 - vh + p * (endY - T0 + vh), ty = tys[0];
         for (var k = 0; k < last; k++) {
           var h = hand(k);
