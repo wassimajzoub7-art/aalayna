@@ -393,7 +393,7 @@ test('CORS, method, size and rate limits', async () => {
   let r = await t.handle(new Request(FN, { method: 'OPTIONS', headers: { Origin: 'https://aalayna.com', 'Access-Control-Request-Method': 'POST' } }));
   assert.equal(r.status, 204);
   assert.equal(r.headers.get('Access-Control-Allow-Origin'), 'https://aalayna.com');
-  assert.equal(r.headers.get('Access-Control-Allow-Headers'), 'content-type, x-aalayna-key, x-aalayna-payer');
+  assert.equal(r.headers.get('Access-Control-Allow-Headers'), 'content-type, x-aalayna-key, x-aalayna-payer, x-aalayna-admin');
   assert.equal(r.headers.get('Vary'), 'Origin');
   r = await t.handle(new Request(FN, { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } }));
   assert.equal(r.status, 204);

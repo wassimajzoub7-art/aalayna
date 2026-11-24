@@ -41,6 +41,26 @@
                                          answer says nothing was charged: a 500 can follow the
                                          confirmation itself. 400 bad body, 404 {error,
                                          status: 'expired'} for a token not ours or expired.
+     GET  /payment-start/providers       the connectors this server has, for admin.html's
+                                         Payments block: {providers: [{name, label, rails,
+                                         fields, ready}]}. Public: no key, nothing about any
+                                         venue, never a secret or a config value.
+     POST /payment-start/admin/check     {restaurantId, rail} -> {ok, detail, provider?}: a
+                                         live test of the venue's credentials against the
+                                         provider (the adapter's check). Header
+                                         x-aalayna-admin, the admin key admin.html holds; its
+                                         shape is checked first, then the key itself, against
+                                         admin_keys, by aal_admin_key_valid (service role
+                                         only, payment-connect-2026-11-24.sql), before any row
+                                         is read. The row comes from aal_payment_provider
+                                         (enabled rows only). 200 {ok, detail} the check ran
+                                         (ok false: the provider refused), 400 bad body, 401
+                                         no or wrong admin key, 404 no enabled row for the
+                                         rail, 409 the row names an adapter this server
+                                         lacks, 429 rate limited, 501 the adapter has no check
+                                         yet (Whish) or the SQL file is missing, 502 the check
+                                         threw. detail never carries the secret (cut out if an
+                                         adapter echoes it).
    No route answers HTML: Supabase rewrites HTML from Edge Functions to text/plain with a
    sandbox CSP, so a provider's page lives elsewhere (the fake one on the site, pay-demo.html).
    Headers from the guest page: x-aalayna-key (the chk_ bill key; the same credential the
@@ -68,7 +88,20 @@
    when payment-webhook is not deployed beside this function, e.g. the local rehearsal).
 
    A provider adapter is
-     {name, enabled(env), create(ctx) -> {url, providerRef?}, pages?: {<page>: {get, post}}}
+     {name, enabled(env), create(ctx) -> {url, providerRef?}, pages?: {<page>: {get, post}},
+      label?, rails?, fields?, ready?, check?(ctx) -> {ok, detail}}
+     label     what admin.html calls it ("Whish Money")
+     rails     which of 'card' and 'whish' it can take (default both)
+     fields    what the admin types to connect a venue: [{key, label, kind: 'text'|'secret',
+               required, hint?}]. 'text' fields go to payment_providers.config under key;
+               the 'secret' fields together are the Vault secret, one JSON object
+               {<key>: <value>} (secretFields(ctx.secret) reads it back; a secret set by hand
+               that is not JSON reads as {value: <it>}). Saving any secret field replaces the
+               whole secret, so admin.html asks for every required secret field at once.
+     ready     false while the adapter cannot take a payment yet (Whish); GET /providers
+               answers ready = enabled(env) && ready !== false
+     check     ctx = {rid, rail, config, secret, selfBase, env, crypto, now, fetch}: create's
+               without the payment. Throws {notImplemented: sentence} -> 501.
      create    ctx = {rid, pid, payment, amountCents, currency, rail, returnUrl, config, secret,
                selfBase, env, crypto, now, fetch}; selfBase is this function's own URL
                (…/functions/v1/payment-start). Throws {notImplemented: sentence} -> 501.
@@ -99,13 +132,15 @@
      failed), or no provider for the rail   413 body over 8 kB   429 rate limited
      501 adapter not built yet (a row naming whish)   502 the provider could not be reached
      500 the database refused, or the session row could not be written
+   (the admin check's answers are listed with its route above)
 
    Plain ES module with injected dependencies, so node --test runs it without Deno:
-     createHandler({fetch, now, env, crypto, log, adapters, limiter, addressLimiter}) -> (Request) -> Response
+     createHandler({fetch, now, env, crypto, log, adapters, limiter, addressLimiter, adminLimiter}) -> (Request) -> Response
    Rate limits (in this instance's memory, _shared/http.js): the bill routes RATE_LIMIT per bill
    key and ADDRESS_LIMIT per caller address (clientAddress: never a header the caller can
    forge), so a caller cycling made-up bill keys is still held; the fake checkout's routes
-   RATE_LIMIT per address. */
+   RATE_LIMIT per address, GET /providers too; the admin check ADMIN_LIMIT per address, taken
+   before the admin key is looked up, so guessing keys is slow. */
 
 import { hmacHex, sha256Hex, timingSafeEqual } from '../_shared/verify.js';
 import { createClient, envGetter, eq, SupabaseError } from '../_shared/supabase.js';
@@ -116,6 +151,9 @@ export const RATE_LIMIT = { max: 60, windowMs: 60 * 1000 };
 /* per address: a whole table on one venue Wi-Fi shares an address, so this is well above one
    phone's use (RATE_LIMIT per bill key) */
 export const ADDRESS_LIMIT = { max: 300, windowMs: 60 * 1000 };
+/* the admin check, per address: one founder pressing Test connection */
+export const ADMIN_LIMIT = { max: 20, windowMs: 60 * 1000 };
+const ADMIN_KEY_RE = /^adm_[0-9a-f]{12,64}$/;
 /* production only; until 2026-11 the default also held the local dev ports, so live accepted
    return URLs and CORS from localhost */
 export const DEFAULT_ORIGINS = ['https://aalayna.com', 'https://www.aalayna.com'];
@@ -144,7 +182,7 @@ function corsHeaders(request, env) {
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'content-type, x-aalayna-key, x-aalayna-payer',
+    'Access-Control-Allow-Headers': 'content-type, x-aalayna-key, x-aalayna-payer, x-aalayna-admin',
     'Access-Control-Max-Age': '600',
     Vary: 'Origin',
   };
@@ -246,9 +284,25 @@ export function webhookResult(status, answer, pid) {
   return 'refused';   // a duplicate reference, a refund record, a live venue, no such payment, expired or mismatched
 }
 
+/* The credentials an adapter's secret fields were saved as (one JSON object in Vault); a
+   secret set by hand in the SQL editor that is not a JSON object reads as {value}. */
+export function secretFields(secret) {
+  if (secret == null || secret === '') return {};
+  try {
+    const j = JSON.parse(secret);
+    if (j && typeof j === 'object' && !Array.isArray(j)) return j;
+  } catch (_) { /* not JSON */ }
+  return { value: String(secret) };
+}
+
 export const fakeAdapter = {
   name: 'fake',
+  label: 'Demo provider (no money moves)',
+  rails: ['card', 'whish'],
+  fields: [],
   enabled: (env) => Boolean(env('FAKE_WEBHOOK_SECRET')),
+  /* nothing to reach: it is ready whenever FAKE_WEBHOOK_SECRET is set (enabled) */
+  check: () => ({ ok: true, detail: 'The demo provider is ready on this server. It takes payments only while the venue has demo payments on, and no money moves.' }),
   async create(ctx) {
     const nonce = Array.from(ctx.crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, '0')).join('');
     const exp = Math.min(Date.parse(ctx.payment.expiresAt) || 0, ctx.now().getTime() + 10 * 60000);
@@ -313,19 +367,58 @@ export const fakeAdapter = {
    is unknown. After the documentation arrives: build the collect request here (their endpoint,
    authentication, amount units, our reference, return and callback URLs), answer its URL, and
    fill in verify/parse in payment-webhook/handler.js. */
+export const WHISH_UNKNOWN = 'Unknown until Whish shares its merchant API: ' +
+  'the endpoint and authentication that create a collect, the amount units and currency codes, how our payment id ' +
+  'travels as the merchant reference, the return URL after the customer confirms, and the callback (see payment-webhook).';
+/* The fields are a placeholder for what a merchant account usually carries (an id, and a key
+   kept in Vault); rename them when Whish's documentation arrives. */
 export const whishAdapter = {
   name: 'whish',
+  label: 'Whish Money',
+  rails: ['whish'],
+  fields: [
+    { key: 'merchant', label: 'Merchant id', kind: 'text', required: true, hint: 'From the venue\'s Whish merchant account.' },
+    { key: 'apiKey', label: 'API key', kind: 'secret', required: true, hint: 'Kept in Supabase Vault; never shown again after saving.' },
+  ],
+  ready: false,
   enabled: () => true,
+  check() {
+    const e = new Error('Whish is not connected yet');
+    e.notImplemented = 'Testing a Whish connection is not built yet. ' + WHISH_UNKNOWN;
+    throw e;
+  },
   create() {
     const e = new Error('Whish is not connected yet');
-    e.notImplemented = 'Whish checkout is not connected yet. Unknown until Whish shares its merchant API: ' +
-      'the endpoint and authentication that create a collect, the amount units and currency codes, how our payment id ' +
-      'travels as the merchant reference, the return URL after the customer confirms, and the callback (see payment-webhook).';
+    e.notImplemented = 'Whish checkout is not connected yet. ' + WHISH_UNKNOWN;
     throw e;
   },
 };
 
 export const ADAPTERS = { fake: fakeAdapter, whish: whishAdapter };
+
+/* One adapter as GET /providers describes it: no function, no secret, nothing per venue. */
+export function describeAdapter(name, a, env) {
+  const rails = Array.isArray(a.rails) ? a.rails.filter((r) => RAILS.includes(r)) : RAILS.slice();
+  const fields = (Array.isArray(a.fields) ? a.fields : []).map((f) => {
+    const d = { key: String(f.key), label: String(f.label || f.key), kind: f.kind === 'secret' ? 'secret' : 'text', required: Boolean(f.required) };
+    if (f.hint) d.hint = String(f.hint);
+    return d;
+  });
+  return { name, label: String(a.label || name), rails, fields, ready: Boolean(a.enabled(env)) && a.ready !== false };
+}
+
+/* an adapter's sentence with the secret (whole, and each of its fields) cut out, at most 300
+   characters */
+export function scrub(text, secret) {
+  let t = String(text == null ? '' : text);
+  const parts = [];
+  if (secret) {
+    parts.push(String(secret));
+    Object.values(secretFields(secret)).forEach((v) => { if (v != null && String(v).length >= 4) parts.push(String(v)); });
+  }
+  parts.sort((x, y) => y.length - x.length).forEach((p) => { t = t.split(p).join('[secret]'); });
+  return t.slice(0, 300);
+}
 
 /* ------------------------------------------------------------------ handler */
 
@@ -337,6 +430,7 @@ export function createHandler(deps = {}) {
   const adapters = deps.adapters || ADAPTERS;
   const limiter = deps.limiter || createLimiter(RATE_LIMIT);
   const addressLimiter = deps.addressLimiter || createLimiter(ADDRESS_LIMIT);
+  const adminLimiter = deps.adminLimiter || createLimiter(ADMIN_LIMIT);
   const fetchImpl = deps.fetch || ((...a) => globalThis.fetch(...a));
   const db = () => createClient({ url: env('SUPABASE_URL'), serviceKey: env('SUPABASE_SERVICE_ROLE_KEY'), fetch: deps.fetch });
 
@@ -354,11 +448,69 @@ export function createHandler(deps = {}) {
     return null;
   }
 
+  /* POST /payment-start/admin/check: shape of the key, rate limit, body, then the key itself
+     (aal_admin_key_valid), then the row (aal_payment_provider), then the adapter's check */
+  async function adminCheck(request, route, cors, selfBase) {
+    const headers = Object.assign({ 'Cache-Control': 'no-store' }, cors);
+    const no = (status, detail, extra) => reply(status, Object.assign({ ok: false, detail }, extra || {}), headers);
+    if (route.length !== 2 || route[1] !== 'check') return reply(404, { error: 'No such route' }, cors);
+    if (request.method !== 'POST') return reply(405, { error: 'Use POST' }, Object.assign({ Allow: 'POST, OPTIONS' }, cors));
+    if (!adminLimiter.take('admin|' + clientAddress(request), now())) return reply(429, { ok: false, detail: 'Too many requests; wait a minute.' }, Object.assign({ 'Retry-After': '60' }, headers));
+    const adminKey = String(request.headers.get('x-aalayna-admin') || '').trim();
+    if (!ADMIN_KEY_RE.test(adminKey)) return no(401, 'Admin key required.');
+    const body = await readCapped(request, MAX_BODY);
+    if (body.tooLarge) return no(413, 'Request body is over 8 kB');
+    let j = null;
+    try { j = body.text ? JSON.parse(body.text) : null; } catch (_) { j = null; }
+    if (!j || typeof j !== 'object' || typeof j.restaurantId !== 'string' || !j.restaurantId || j.restaurantId.length > 200 || !RAILS.includes(j.rail)) {
+      return no(400, 'Send {restaurantId, rail: "card" or "whish"}');
+    }
+    const client = db();
+    let row;
+    try {
+      if ((await client.rpc('aal_admin_key_valid', { p_key: adminKey })) !== true) return no(401, 'Admin key required.');
+      row = await client.rpc('aal_payment_provider', { p_rid: j.restaurantId, p_rail: j.rail });
+    } catch (e) {
+      const missing = e instanceof SupabaseError && (e.code === 'PGRST202' || e.status === 404);
+      log.warn('payment-start: admin check failed', JSON.stringify({ error: String(e && e.message || e).slice(0, 300), status: e instanceof SupabaseError ? e.status : null }));
+      return missing ? no(501, 'The connection test needs supabase/payment-connect-2026-11-24.sql on the database.') : no(500, 'Temporary failure; try again.');
+    }
+    if (!row || !row.provider) return no(404, 'No enabled provider is connected for this rail at this venue.');
+    const a = Object.prototype.hasOwnProperty.call(adapters, row.provider) ? adapters[row.provider] : null;
+    if (!a || !a.enabled(env)) return no(409, 'The ' + row.provider + ' provider is not available on this server.', { provider: row.provider });
+    if (typeof a.check !== 'function') return no(501, 'The ' + row.provider + ' provider has no connection test yet.', { provider: row.provider });
+    const secret = row.secret || null;
+    try {
+      const r = await a.check({
+        rid: j.restaurantId, rail: j.rail, config: row.config && typeof row.config === 'object' ? row.config : {}, secret,
+        selfBase, env, crypto: cryptoImpl, now, fetch: fetchImpl,
+      });
+      const ok = Boolean(r && r.ok === true);
+      log.info('payment-start: admin check', JSON.stringify({ provider: row.provider, rail: j.rail, ok }));
+      return reply(200, { ok, detail: scrub(r && r.detail || (ok ? 'Connected.' : 'The provider refused the credentials.'), secret), provider: row.provider }, headers);
+    } catch (e) {
+      if (e && e.notImplemented) return no(501, scrub(e.notImplemented, secret), { provider: row.provider });
+      log.warn('payment-start: admin check threw', JSON.stringify({ provider: row.provider, rail: j.rail, error: scrub(e && e.message || e, secret).slice(0, 200) }));
+      return no(502, 'The provider could not be reached; try again.', { provider: row.provider });
+    }
+  }
+
   return async function handle(request) {
     const cors = corsHeaders(request, env);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     const route = routeFrom(new URL(request.url).pathname);
     const selfBase = selfBaseFrom(request.url, env);
+
+    // the connectors this server has (public, nothing venue-specific)
+    if (route.length === 1 && route[0] === 'providers') {
+      if (request.method !== 'GET') return reply(405, { error: 'Use GET' }, Object.assign({ Allow: 'GET, OPTIONS' }, cors));
+      if (!limiter.take('page|' + clientAddress(request), now())) return reply(429, { error: 'Too many requests' }, Object.assign({ 'Retry-After': '60' }, cors));
+      const providers = Object.keys(adapters).map((name) => describeAdapter(name, adapters[name], env));
+      return reply(200, { providers }, Object.assign({ 'Cache-Control': 'no-store' }, cors));
+    }
+
+    // the admin's connection test
+    if (route[0] === 'admin') return adminCheck(request, route, cors, selfBase);
 
     // a provider's own routes (the fake checkout's data and its outcome; JSON only)
     if (route.length) {
