@@ -187,6 +187,25 @@ test('the reel closes on the logo: reel.html plays the Block reveal, and its sou
   assert.match(read('tools/reel-audio.js'), /const joinAr = [^\n]*LOGO_AR/);
 });
 
+test('the film reads like the site: Instrument Sans for its words, IBM Plex Sans Arabic for Arabic, the name alone in the logo\'s capitals or the Kufi', () => {
+  const s = read('reel.html');
+  assert.ok(!/Saira|Kode Mono|Kode\+Mono/.test(s), 'no Saira or Kode Mono left');
+  const fonts = s.match(/<link href="https:\/\/fonts\.googleapis\.com\/css2\?([^"]+)" rel="stylesheet">/)[1];
+  ['Instrument+Sans:wght@400;500;600;700', 'IBM+Plex+Sans+Arabic:wght@400;500;600;700', 'Noto+Kufi+Arabic:wght@700'].forEach(f => assert.ok(fonts.includes('family=' + f), 'loads ' + f));
+  assert.match(s, /--label:'Instrument Sans','IBM Plex Sans Arabic',[^;]*;--text:'Instrument Sans','IBM Plex Sans Arabic',/);
+  assert.match(s, /html\[lang="ar"\]\{--label:'IBM Plex Sans Arabic','Instrument Sans',[^;]*;--text:'IBM Plex Sans Arabic','Instrument Sans',/);
+  // The restaurant's panels are the dashboard and the editor, which read in Instrument Sans in every cut.
+  assert.match(s, /--staff:'Instrument Sans',/);
+  assert.match(s, /\n\.pnl\{[^}]*font-family:var\(--staff\)/);
+  // The logo's capitals set 3layna. and nothing else; in Arabic the name, علينا, is in the Kufi of the mark.
+  assert.equal((s.match(/var\(--display\)/g) || []).length, 1, 'only #k3 uses Aalayna Block');
+  assert.match(s, /\n#k3\{[^}]*font-family:var\(--display\)/);
+  assert.match(s, /html\[lang="ar"\] #k3\{font-family:'Noto Kufi Arabic',/);
+  // The tagline under the logo is words, so the close sets it in the reading face, not the Block.
+  assert.match(s, /AalaynaMotion\.block\(\{ tagAt: [\d.]+, words: C\.tagw, font: "'Instrument Sans', sans-serif"/);
+  assert.match(s, /AalaynaMotion\.kufi\(\{ tagAt: [\d.]+, words: C\.tagw, font: "'IBM Plex Sans Arabic', sans-serif"/);
+});
+
 test('brand pages: every local src and href resolves to a file', () => {
   for (const f of ['brand/index.html', 'brand/motion.html', 'reel.html']) {
     const refs = [...read(f).matchAll(/\b(?:href|src|data-sound)="([^"]*)"/g)].map(m => m[1]).filter(u => !/^(?:[a-z]+:|#|\/\/)/i.test(u));
