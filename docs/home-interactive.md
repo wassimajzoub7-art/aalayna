@@ -87,45 +87,45 @@ lands; the two cross over the last tenth of the hand-off, so the cream band is n
 
 ## The app's Arabic, written for this page
 
-English and French are the real app's strings. The Arabic below is written fresh for the page (the app has its own,
-which these follow in spirit); back-translations in brackets.
+English and French are the real app's strings. The Arabic below was written fresh for the page and, since the T6 read (November 2026), uses the
+app's own wording wherever the two show the same thing; back-translations in brackets.
 
 | Key | Arabic | Back-translation |
 | --- | --- | --- |
 | sub | طاولة 12 · مشاوي لبنانية | Table 12 · Lebanese grills |
 | lang / ccy | اللغة / العملة | Language / Currency |
 | usd / lbp | دولار $ / ليرة ل.ل. | Dollar $ / Lira LL |
-| filters | فلاتر الحمية | Diet filters |
+| filters | فلاتر غذائية | Dietary filters |
 | openBill | افتح الفاتورة | Open the bill |
-| splitTitle | كيف نتقاسم الفاتورة؟ | How do we share the bill? |
-| splitSub | ولا أحد يحسب شيئاً | And nobody works anything out |
+| splitTitle | كيف نقسّم الفاتورة؟ | How do we split the bill? |
+| splitSub | لا أحد مضطر إلى الحساب | Nobody has to do the maths |
 | even / mine / custom / all | بالتساوي / ما طلبتُه / مبلغ آخر / كلّها عليّ | Equally / What I ordered / Another amount / All of it on me |
 | howMany | كم شخصاً على الطاولة؟ | How many people at the table? |
 | fewer / more | شخص أقل / شخص أكثر | One person fewer / One person more |
 | yourShare | حصّتك | Your share |
-| rest | يبقى {مبلغ} لبقية الضيوف. الدفع النقدي المعلّق يبقى محجوزاً إلى أن يؤكّده الفريق أو يلغيه. | {amount} remains for the other guests. A pending cash payment stays held until the team confirms or cancels it. |
+| rest | يبقى {مبلغ} لبقية الضيوف. والنقد المعلّق محجوز حتى يؤكّده الموظفون أو يلغوه. | {amount} remains for the other guests. Pending cash is held until staff confirm or cancel it. |
 | cont | متابعة · {مبلغ} | Continue · {amount} |
 | powered | بتقنية | Powered by (literally: with the technology of) |
 | toPay | المبلغ المستحق · طاولة 12 | Amount due · Table 12 |
 | billShare / tip | حصّتك من الفاتورة / الإكرامية | Your share of the bill / The tip |
-| tipFor | شي لـأبو كريم؟ | Something for Abou Karim? (Lebanese) |
-| noTip | بلا إكرامية | No tip |
-| whishDesc | يفتح والمبلغ معبّأ | Opens with the amount filled in |
+| tipFor | إكرامية لـأبو كريم؟ | A tip for Abou Karim? |
+| noTip | بدون | None |
+| whishDesc | يُفتح والمبلغ معبّأ مسبقاً | Opens with the amount already filled in |
 | card / cash | بطاقة / الدفع نقداً | Card / Paying cash |
-| cashDesc | يؤكّده الفريق عند الاستلام | The team confirms it on collection |
+| cashDesc | يؤكّده الموظفون بعد الاستلام | Staff confirm it after collection |
 | cashMark | نقد | Cash |
 | pay | ادفع {مبلغ} | Pay {amount} |
 | thanks | شكراً. | Thank you. |
-| paidVia / tableL | دُفعت عبر / الطاولة | Paid via / Table |
-| mailPh | واتساب أو بريد إلكتروني | WhatsApp or email |
-| send | أرسلوا الإيصال | Send the receipt |
+| paidVia / tableL | الدفع عبر / الطاولة | Payment via / Table |
+| mailPh | واتساب (+رمز الدولة) أو البريد الإلكتروني | WhatsApp (+country code) or email |
+| send | أرسل إيصالي | Send my receipt |
 | offers | أرسلوا لي عروض Mayda | Send me Mayda's offers |
-| rateQ | كيف كانت السهرة في Mayda؟ | How was the evening at Mayda? |
+| rateQ | كيف كانت سهرتك في Mayda؟ | How was your evening at Mayda? |
 | paid | مدفوع {مبلغ} | Paid {amount} |
 | railCard / railCash | بطاقة / نقداً | Card / Cash |
-| reqCash | اطلبوا استلام المبلغ نقداً | Ask for the cash to be collected |
+| reqCash | اطلب استلام المبلغ نقداً | Ask for the cash to be collected |
 | paidCash | مدفوع {مبلغ} · نقداً | Paid {amount} · cash |
-| cashOk | استلم النادل المبلغ نقداً وأكّده. | The server collected the cash and confirmed it. |
+| cashOk | أكّد النادل استلام المبلغ نقداً. | The server confirmed collecting the cash. |
 | onBill / offBill (labels) | {عدد} على الفاتورة / ليس على الفاتورة | {n} on the bill / not on the bill |
 
 The page's own new words (the hints beside the phones on a wide screen, the caption controls on a phone):

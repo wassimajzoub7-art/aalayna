@@ -90,7 +90,7 @@ test('Arabic mirrors the whole app, the language survives Start over, and ?lang=
  assert.equal(p.run('LANG'),'ar');
  assert.equal(p.$('app').getAttribute('dir'),'rtl');assert.equal(p.$('app').getAttribute('lang'),'ar');
  assert.equal(p.document.title,'Mayda · Aalayna');
- assert.equal(p.$('pay-who').textContent,'المبلغ المطلوب · طاولة 12');
+ assert.equal(p.$('pay-who').textContent,'المبلغ المستحق · طاولة 12');
  assert.equal(p.$('rate-q').textContent,'كيف كانت سهرتك في Mayda؟');
  p.run('restart()');
  assert.equal(p.run('LANG'),'ar');assert.equal(p.$('app').getAttribute('dir'),'rtl');
