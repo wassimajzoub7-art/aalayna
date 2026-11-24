@@ -586,3 +586,46 @@ test('the Deno wrapper only wires the handler', () => {
   assert.match(src, /Deno\.serve\(createHandler\(/);
   assert.match(src, /verify_jwt false/);
 });
+
+/* 2026-11-24 mutation pass: rules no test held before. */
+test('a venue with no demo_payments value, or no profile row, is a live venue: the fake provider confirms nothing there (403)', async () => {
+  for (const profile of [{}, { demo_payments: null }, { demo_payments: 'true' }, undefined]) {
+    const t = await setup();
+    if (profile === undefined) t.db.profiles.delete(RID); else t.db.profiles.set(RID, profile);
+    const r = await t.call(event());
+    assert.equal(r.status, 403, JSON.stringify(profile));
+    assert.equal(t.db.row(RID, 'pay-1').status, 'initiated');
+    assert.ok(!t.db.calls.some((c) => c.path === '/rest/v1/rpc/aal_mutate'));
+  }
+});
+
+test('a currency not in upper case is 400 before the database is asked', async () => {
+  for (const currency of ['usd', 'Usd', 'US', 'USDT']) {
+    const t = await setup();
+    const r = await read(await t.call(event({ currency })));
+    assert.equal(r.status, 400, currency);
+    assert.equal(t.db.rpcs('aal_mutate').length, 0, currency);
+    assert.equal(t.db.row(RID, 'pay-1').status, 'initiated');
+  }
+});
+
+test('the database failing during confirm_digital (5xx, or no answer) is 500, so the provider retries; never a 409 that stops it', async () => {
+  for (const failure of [503, 500, 'network']) {
+    const t = await setup();
+    const mod = await load('payment-webhook/handler.js');
+    const fetch = async (url, init) => {
+      if (new URL(url).pathname === '/rest/v1/rpc/aal_mutate') {
+        if (failure === 'network') throw new TypeError('fetch failed');
+        return new Response(JSON.stringify({ message: 'Reservation expired or changed' }), { status: failure, headers: { 'Content-Type': 'application/json' } });
+      }
+      return t.db.fetch(url, init);
+    };
+    const handle = mod.createHandler({ fetch, env: { SUPABASE_URL: URL_BASE, SUPABASE_SERVICE_ROLE_KEY: SERVICE, FAKE_WEBHOOK_SECRET: SECRET }, log: { warn() {}, info() {} } });
+    const raw = JSON.stringify(event());
+    const r = await handle(new Request(URL_BASE + '/functions/v1/payment-webhook/fake', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Signature': sign(raw) }, body: raw }));
+    assert.equal(r.status, 500, String(failure));
+    const body = await r.json();
+    assert.equal('paymentId' in body, false, 'a 500 decides nothing');
+    assert.equal(t.db.callbacks.at(-1).outcome, 'error');
+  }
+});

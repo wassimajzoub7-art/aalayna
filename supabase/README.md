@@ -281,7 +281,8 @@ page says "declined") through `aal_payment_failed`, because `aal_mutate`'s cance
 accept the service role; `refunded` is recorded only (202), digital refunds are not modelled.
 Every call that passes the signature check is a row in `payment_callbacks`, whatever the
 outcome; the request body itself is never logged or stored. Bodies over 64 kB are refused,
-and callers are limited to 120 calls a minute per address (per function instance).
+and callers are limited to 120 calls a minute per address (per function instance; the address
+the platform sets, never one the caller writes: "Rate limits", under "Payment leftovers").
 Providers: `fake` (HMAC-SHA256 of the exact body with `FAKE_WEBHOOK_SECRET`, hex in
 `X-Signature`; it exists only while that secret is set, and only confirms payments at venues
 whose demo payments are on in admin.html) and `whish` (answers 501 until Whish shares its
@@ -339,7 +340,7 @@ CHECK=$(call aal_snapshot "$(jq -nc --arg r "$RID" '{p_rid:$r}')" | jq -r .check
 call aal_mutate "$(jq -nc --arg r "$RID" --arg id "$PAY" --arg c "$CHECK" --arg t "$TOKEN" \
   '{p_rid:$r,p_op:"reserve",p_body:{id:$id,checkId:$c,amount:12,tip:0,rail:"whish",items:{}},p_token:$t}')"
 
-# 2. the provider's signed callback: answer {"status":"confirmed"}; the dashboard shows it paid
+# 2. the provider's signed callback: answer {"status":"confirmed","paymentId":...}; the dashboard shows it paid
 EVENT=$(jq -nc --arg id "$PAY" '{externalRef:("fake-"+$id),paymentId:$id,amountCents:1200,currency:"USD",status:"paid",occurredAt:(now|todate)}')
 SIG=$(printf '%s' "$EVENT" | openssl dgst -sha256 -hmac "$FAKE_WEBHOOK_SECRET" | awk '{print $NF}')
 curl -s -X POST "$SB/functions/v1/payment-webhook/fake" -H "X-Signature: $SIG" \
@@ -350,7 +351,11 @@ call aal_mutate "$(jq -nc --arg r "$RID" --arg id "$PAY" --arg t "$TOKEN" --arg 
   '{p_rid:$r,p_op:"receipt",p_body:{id:$id,contact:"you@example.com",channel:"email",receipt:true,marketing:false,requestId:$q},p_token:$t}')"
 ```
 
-Sending step 2 again answers `confirmed` again; changing `amountCents` answers 409. To see
+Sending step 2 again answers `confirmed` again, and so does any callback with that
+`externalRef` once the payment is confirmed (`confirm_digital` returns a payment its own
+reference already confirmed before it compares anything), whatever its `amountCents`: to see
+the 409 for a wrong amount, send step 2 with another `amountCents` before the first one, on a
+fresh reservation. To see
 what happened: `select * from payment_callbacks order by received_at desc limit 5;` and
 `select status, attempts, last_error, provider_id from outbox_email order by created_at desc limit 5;`
 (`cron.job_run_details` and `net._http_response` show the pokes). A manual drain:
@@ -377,13 +382,17 @@ the payer token in `x-aalayna-payer` (the one the reserve was made with; its SHA
 `payment_secrets`) and `{paymentId, returnUrl}` checks that the payment is this bill's, a
 digital rail, `initiated` and not expired, asks the provider adapter for its page, writes a
 `payment_sessions` row and answers `{url, provider, expiresAt}`. `returnUrl` must be on an
-origin in `PAYMENT_RETURN_ORIGINS` (default aalayna.com and the local dev ports); `k`, `s`,
+https origin in `PAYMENT_RETURN_ORIGINS` (default `https://aalayna.com` and
+`https://www.aalayna.com` only; plain-http origins such as localhost only with
+`PAYMENT_ALLOW_LOCAL_ORIGINS`, which live never sets); `k`, `s`,
 `reset` and `pay` are stripped from it and `pay=<paymentId>` added, so no credential travels
 through the provider. Answers: 400 bad request, 401 wrong payer token, 404 bill or payment
 unavailable, 409 the payment is not `initiated` (the status is in the answer) or no provider
-is connected for the rail, 501 adapter not built yet (a `payment_providers` row naming
-`whish`), 502 provider unreachable.
-The function answers CORS for the allowed origins and limits each key to 60 calls a minute.
+is connected for the rail, 413 body over 8 kB, 429 rate limited, 501 adapter not built yet (a
+`payment_providers` row naming `whish`), 502 provider unreachable.
+The function answers CORS for the allowed origins and limits each bill key to 60 calls a
+minute and each caller address to 300 (a table on one Wi-Fi shares an address), so a caller
+cycling made-up keys is held too; the fake checkout's routes, 60 per address.
 
 **Which provider.** `payment_providers` has one row per (venue, rail): `provider` (an adapter
 name), `config` (non-secret settings, e.g. a merchant id) and `secret_name` (a Supabase Vault
@@ -471,8 +480,11 @@ and update the provider's dashboard. `fake` and `whish` keep the project-wide ad
 3. Function secrets: `FAKE_WEBHOOK_SECRET` (the same value as for payment-webhook; unset it
    after rehearsals, and the fake provider disappears from both functions), optionally
    `PAYMENT_RETURN_ORIGINS` (comma-separated origins; the default is
-   `https://aalayna.com,https://www.aalayna.com,http://127.0.0.1:8787,http://localhost:8787`;
-   `pay-demo.html` calls the function from the same origins, so CORS follows the same list),
+   `https://aalayna.com,https://www.aalayna.com`; `pay-demo.html` calls the function from the
+   same origins, so CORS follows the same list; a plain-http origin in it is ignored unless
+   `PAYMENT_ALLOW_LOCAL_ORIGINS` is `1`, which adds `http://127.0.0.1:8787` and
+   `http://localhost:8787` to the default: for a project used only for local testing, never
+   on live),
    `FAKE_CHECKOUT_URL` only to serve the demo checkout from somewhere other than
    `pay-demo.html` beside the guest page, and `PAYMENT_WEBHOOK_URL` only when payment-webhook
    is not deployed beside this function: its base URL without `/fake` (e.g.
@@ -490,11 +502,14 @@ and update the provider's dashboard. `fake` and `whish` keep the project-wide ad
 **On one computer, without Supabase.** `node tools/rehearse-payments.js` serves the pages
 (`pay-demo.html` included, with an `aalayna-config.js` that points at itself) and, in the same process, a stand-in for the parts of the shared store a guest touches plus
 the two real function handlers against an in-memory PostgREST. It prints a guest link for
-this computer and for a phone on the same Wi-Fi. The store's rules are approximated there,
-not run; the SQL is tested by `tests/payment-start-sql.test.cjs` with PGLITE_MODULE. Where the
-guest page depends on them it behaves as live (`tests/rehearse-payments.test.cjs`): the
-snapshot strips `externalRef`, a confirmed payment carries `demo`, amount and tip must be
-numbers, and `aal_now` answers the server's time.
+this computer and for a phone on the same Wi-Fi (it sets `PAYMENT_ALLOW_LOCAL_ORIGINS` for
+itself). The store there is a copy of `aal_mutate`'s guest and provider rules, not the SQL:
+the same checks in the same order with the same messages (amounts read as `::numeric` reads
+them and rounded half away from zero, item claims, cash, resends, payer tokens,
+`confirm_digital`, the receipt), and `tests/rehearse-payments.test.cjs` with PGLITE_MODULE
+runs the same requests through it and through the SQL and fails on any difference. Where the
+guest page depends on more it behaves as live: the snapshot strips `externalRef`, a confirmed
+payment carries `demo`, and `aal_now` answers the server's time.
 
 ## Review fixes (November 10)
 
@@ -523,6 +538,35 @@ it; it is safe to run again). Tested against PGlite (`tests/review-fixes-sql.tes
 - **The database's clock.** `aal_now()` (anon and authenticated) answers `now()` as a
   timestamptz; `POST /rest/v1/rpc/aal_now` answers a JSON string. The guest page measures a
   payment's ten minutes against it, not against the phone's clock.
+
+## Payment leftovers (November 24)
+
+No SQL. `payment-start` and `payment-webhook` change (and `functions/_shared/http.js`, which
+both import), so both are redeployed; the guest page's payment refusals read in the guest's
+language.
+
+- **Origins.** `payment-start` accepts return URLs and answers CORS for
+  `https://aalayna.com` and `https://www.aalayna.com` only, unless `PAYMENT_RETURN_ORIGINS`
+  says otherwise; any plain-http origin (localhost, 127.0.0.1, a LAN address), even one named
+  there, needs `PAYMENT_ALLOW_LOCAL_ORIGINS=1`. Until this change the default also held
+  `http://127.0.0.1:8787` and `http://localhost:8787`, so live accepted them.
+- **Rate limits.** Both functions keep their counts in the instance's memory
+  (`_shared/http.js`, `createLimiter`). A full table (10,000 keys) now drops the windows that
+  have ended, then the oldest window, one key at a time; it used to clear every key at once, so
+  a flood of new keys reset everyone's limit. The address a limit keys on is
+  `clientAddress(request)`: `CF-Connecting-IP`, which Cloudflare (in front of Supabase's API
+  gateway) sets and replaces, else the last `X-Forwarded-For` entry (the header is appended to,
+  so the caller writes the first one; the old code took the first), else one shared
+  `unknown` key. `X-Real-IP` and Deno's `remoteAddr` (the gateway's address) are not used.
+  Supabase documents no client-address header for Edge Functions, so check it once after the
+  deploy: send ~70 requests a minute to the fake checkout with a different made-up first
+  `X-Forwarded-For` entry each time,
+  `for i in $(seq 70); do curl -s -o /dev/null -w '%{http_code}\n' -H "X-Forwarded-For: 10.9.$i.1" "$SB/functions/v1/payment-start/fake/checkout?s=x"; done | sort | uniq -c`,
+  and read some 429s: the limit held although every request named another address. Only 404s
+  (on a second run too, as counts are per instance) would mean the platform passes the
+  caller's `X-Forwarded-For` through without adding its own entry and sets no
+  `CF-Connecting-IP`; then the address is the caller's to choose, and `clientAddress` needs
+  the header the platform does set.
 
 ## Connecting a payment provider from admin (November 24)
 
