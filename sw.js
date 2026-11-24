@@ -43,7 +43,10 @@ var STAFF_SHELL = [
   'aalayna-sync.js',
   'restaurant-ops.css',
   'restaurant-ops.js',
-  'owner-group.js'
+  'owner-group.js',
+  'owner-insights.js',
+  'insights-demo.js',
+  'insights-panel.js'
 ];
 var TIMEOUT_MS = 6000;
 var WARM_MAX = 60;

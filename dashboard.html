@@ -292,6 +292,7 @@
   <nav>
     <button class="ni on" onclick="go(this,'tonight')">Service</button>
     <button class="ni" data-owner-only onclick="go(this,'week')">Overview</button>
+    <button class="ni" data-owner-only onclick="openInsights(this)">Insights</button>
     <button class="ni" data-owner-only onclick="go(this,'guests')">Customers</button>
     <button class="ni" data-owner-only onclick="go(this,'reviews')">Reviews<span class="bg" id="reviews-badge" hidden></span></button>
     <button class="ni" data-owner-only onclick="go(this,'team')">Team</button>
@@ -498,6 +499,16 @@
       </dialog>
   <dialog id="customer-dialog" class="ops-dialog" aria-label="Customer history"><div class="ops-heading"><h2>Customer history</h2><button class="btn icon-btn" aria-label="Close customer history" onclick="document.getElementById('customer-dialog').close()">×</button></div><div id="customer-detail" aria-live="polite"></div></dialog>
 
+  <!-- ═══════════ INSIGHTS (owner-insights.js, insights-panel.js) ═══════════ -->
+  <div class="view" id="v-insights" data-owner-only>
+    <div class="top">
+      <div><h1>Insights</h1><div class="sub">What guests’ phones and payments say about your dishes, your room and your money</div></div>
+      <div class="actions"><label class="ins-period" for="ins-period">Period <select id="ins-period" onchange="paintInsights()"><option value="30" selected>Last 30 days</option><option value="7">Last 7 days</option><option value="90">Last 90 days</option></select></label></div>
+    </div>
+    <div class="card" data-group-only><h3>Insights are worked out per venue</h3><p class="cs">Each venue’s dishes, tables and guests differ, so its findings come from its own activity. Open a venue to read them.</p><div class="staff-links" data-group-pick></div></div>
+    <section id="insights-body" aria-live="polite"></section>
+  </div>
+
   <!-- ═══════════ REVIEWS ═══════════ -->
   <div class="view" id="v-reviews">
     <div class="top">
@@ -668,6 +679,9 @@
 </script>
 <!-- ==== T4 staff sign-in: end ==== -->
 <script src="restaurant-ops.js?v=14"></script>
+<script src="owner-insights.js?v=1"></script>
+<script src="insights-demo.js?v=1"></script>
+<script src="insights-panel.js?v=1"></script>
 <script>
 /* ───────── static illustrative data (labelled where shown) ───────── */
 var RTREND = [{d:'W1',v:4.5},{d:'W2',v:4.5},{d:'W3',v:4.6},{d:'W4',v:4.6},{d:'W5',v:4.7},{d:'W6',v:4.7}];
