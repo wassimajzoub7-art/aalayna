@@ -679,3 +679,17 @@ test('the table variants (?table=a, b, c): A (elevation) by default, set before 
     sel.split(',').forEach(x => assert.match(x.trim(), /^html(\.pin|:not\(\.pin\))?\[data-table(="[abc]")?\] /, 'keyed on data-table: ' + x.trim()));
   }
 });
+
+test('404.html: static, absolute paths, the way home, the site CTAs and the one WhatsApp number', () => {
+  const s = read('404.html'), index = read('index.html');
+  assert.match(s, /<link rel="stylesheet" href="\/website\.css/);
+  assert.match(s, /<a [^>]*href="\/"[^>]*>Back to the homepage/);
+  assert.match(s, /href="\/fr\/"/); assert.match(s, /href="\/ar\/"/);
+  assert.match(s, /<a class="btn" href="\/book\.html">Book a demo<\/a>/);
+  assert.match(s, /<a class="btn outline" href="https:\/\/wa\.me\/[^"]*">WhatsApp us<\/a>/);
+  assert.deepEqual(new Set(s.match(/wa\.me\/[^?"'\s]*/g)), new Set(index.match(/wa\.me\/[^?"'\s]*/g)));
+  assert.ok(!/<script\b/.test(s), '404.html loads no script');
+  assert.ok(!/(?:href|src)="(?!\/|https:|#)/.test(s), '404.html uses only absolute paths');
+  assert.ok(!/—|&mdash;/.test(s), '404.html has an em dash');
+  assert.match(read('.gitignore'), /^!404\.html$/m);
+});
